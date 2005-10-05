@@ -1,0 +1,21 @@
+This directory contains the files required to integrate OpenFDM
+into flightgear.
+
+To do this, build and install the OpenFDM package into the same
+prefix than SimGear is built into.
+
+Create a new directory in flightgears source directory:
+  source/src/FDM/OpenFDM
+
+Then copy the files from this directory into the newly created
+one.
+
+Apply the patch 'flightgear.diff' to the source directory. This
+one will integrate this new directory into the build system and
+it will call the initialization routines if we find a OpenFDM
+aircraft.
+
+Reconfigure and rebuild flightgear.
+
+Have fun.
+

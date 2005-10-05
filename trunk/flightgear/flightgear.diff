@@ -1,0 +1,129 @@
+Index: configure.ac
+===================================================================
+RCS file: /var/cvs/FlightGear-0.9/source/configure.ac,v
+retrieving revision 1.96
+diff -u -r1.96 configure.ac
+--- configure.ac	24 Sep 2005 12:31:41 -0000	1.96
++++ configure.ac	5 Oct 2005 15:17:44 -0000
+@@ -444,6 +444,14 @@
+ fi
+ AM_CONDITIONAL(ENABLE_JPEG_SERVER, test "x$ac_cv_header_simgear_screen_jpgfactory_hxx" = "xyes")
+ 
++dnl Check for installed OpenFDM
++AC_CHECK_HEADER(OpenFDM/OpenFDMConfig.h)
++AM_CONDITIONAL(ENABLE_OpenFDM_FDM, \
++               [ test "x$ac_cv_header_OpenFDM_OpenFDMConfig_h" = "xyes" ] )
++if test "x$ac_cv_header_OpenFDM_OpenFDMConfig_h" = "xyes" ; then
++    AC_DEFINE([FG_ENABLE_OPENFDM_FDM], 1, [Define for no logging output])
++fi
++
+ AC_LANG_POP
+ 
+ dnl Check for system installed zlib
+@@ -519,6 +527,7 @@
+ 	src/FDM/JSBSim/Makefile \
+ 	src/FDM/JSBSim/filtersjb/Makefile \
+ 	src/FDM/LaRCsim/Makefile \
++	src/FDM/OpenFDM/Makefile \
+ 	src/FDM/SP/Makefile \
+ 	src/FDM/UIUCModel/Makefile \
+ 	src/FDM/YASim/Makefile \
+Index: src/FDM/Makefile.am
+===================================================================
+RCS file: /var/cvs/FlightGear-0.9/source/src/FDM/Makefile.am,v
+retrieving revision 1.7
+diff -u -r1.7 Makefile.am
+--- src/FDM/Makefile.am	22 Nov 2004 10:10:33 -0000	1.7
++++ src/FDM/Makefile.am	5 Oct 2005 15:17:44 -0000
+@@ -4,8 +4,14 @@
+ SP_DIR =
+ endif
+ 
++if ENABLE_OpenFDM_FDM
++OpenFDM_DIR = OpenFDM
++else
++OpenFDM_DIR =
++endif
++
+ SUBDIRS	= Balloon JSBSim LaRCsim UIUCModel YASim \
+-          $(SP_DIR) ExternalNet ExternalPipe
++          $(SP_DIR) $(OpenFDM_DIR) ExternalNet ExternalPipe
+ 
+ noinst_LIBRARIES = libFlight.a
+ 
+Index: src/FDM/flight.hxx
+===================================================================
+RCS file: /var/cvs/FlightGear-0.9/source/src/FDM/flight.hxx,v
+retrieving revision 1.9
+diff -u -r1.9 flight.hxx
+--- src/FDM/flight.hxx	3 Jul 2005 09:39:14 -0000	1.9
++++ src/FDM/flight.hxx	5 Oct 2005 15:17:45 -0000
+@@ -433,7 +433,10 @@
+ 	FG_PARACHUTE = 9,
+ 
+ 	// Driven externally via a serial port, net, file, etc.
+-	FG_EXTERNAL = 10
++	FG_EXTERNAL = 10,
++
++	// OpenFDM. Reads JSBSim legacy and new files.
++	FG_OPENFDM = 11
+     };
+ 
+     // initialization
+Index: src/Main/Makefile.am
+===================================================================
+RCS file: /var/cvs/FlightGear-0.9/source/src/Main/Makefile.am,v
+retrieving revision 1.54
+diff -u -r1.54 Makefile.am
+--- src/Main/Makefile.am	25 Jun 2005 11:21:18 -0000	1.54
++++ src/Main/Makefile.am	5 Oct 2005 15:17:45 -0000
+@@ -13,6 +13,13 @@
+ SP_FDM_LIBS = 
+ endif
+ 
++if ENABLE_OpenFDM_FDM
++OpenFDM_LIBS = $(top_builddir)/src/FDM/OpenFDM/libFGOpenFDM.a \
++               -lJSBReader -lOpenFDM
++else
++OpenFDM_LIBS = 
++endif
++
+ if WITH_THREADS
+ THREAD_LIBS = -lsgthreads $(thread_LIBS)
+ else
+@@ -70,6 +77,7 @@
+ 	$(top_builddir)/src/FDM/LaRCsim/libLaRCsim.a \
+ 	$(top_builddir)/src/FDM/UIUCModel/libUIUCModel.a \
+ 	$(SP_FDM_LIBS) \
++	$(OpenFDM_LIBS) \
+ 	$(top_builddir)/src/GUI/libGUI.a \
+ 	$(top_builddir)/src/Autopilot/libAutopilot.a \
+ 	$(top_builddir)/src/Input/libInput.a \
+Index: src/Main/fg_init.cxx
+===================================================================
+RCS file: /var/cvs/FlightGear-0.9/source/src/Main/fg_init.cxx,v
+retrieving revision 1.131
+diff -u -r1.131 fg_init.cxx
+--- src/Main/fg_init.cxx	4 Oct 2005 20:36:38 -0000	1.131
++++ src/Main/fg_init.cxx	5 Oct 2005 15:17:46 -0000
+@@ -91,6 +91,9 @@
+ #include <FDM/UFO.hxx>
+ #include <FDM/NullFDM.hxx>
+ #include <FDM/YASim/YASim.hxx>
++#ifdef FG_ENABLE_OPENFDM_FDM
++#include <FDM/OpenFDM/FGOpenFDM.h>
++#endif
+ #include <GUI/new_gui.hxx>
+ #include <Include/general.hxx>
+ #include <Input/input.hxx>
+@@ -1382,6 +1385,10 @@
+             cur_fdm_state = new FGNullFDM( dt );
+         } else if ( model == "yasim" ) {
+             cur_fdm_state = new YASim( dt );
++#ifdef FG_ENABLE_OPENFDM_FDM
++        } else if ( model == "openfdm" ) {
++            cur_fdm_state = new OpenFDM::FGOpenFDM();
++#endif
+         } else {
+             SG_LOG(SG_GENERAL, SG_ALERT,
+                    "Unrecognized flight model '" << model
