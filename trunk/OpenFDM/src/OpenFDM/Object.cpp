@@ -42,6 +42,27 @@ Object::listProperties(void) const
   return nameList;
 }
 
+Variant
+Object::getPropertyValue(const std::string& name) const
+{
+  // Just use the current property system for now
+
+  // Return an empty variant if this property does not exist.
+  if (mProperties.count(name) <= 0)
+    return Variant();
+
+  // Return the value of the property
+  // FIXME: properties, like they are now, do not preserve constness
+  return ((Property&)(mProperties.find(name)->second)).getValue();
+}
+
+void
+Object::setPropertyValue(const std::string& name, const Variant& value)
+{
+  // Just use the current property system for now
+  getProperty(name).setValue(value);
+}
+
 void
 Object::addProperty(const std::string& name, const Property& property)
 {

@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include "Referenced.h"
+#include "Variant.h"
 #include "Property.h"
 
 namespace OpenFDM {
@@ -25,10 +26,18 @@ public:
   Property getProperty(const std::string& name);
   std::list<std::string> listProperties(void) const;
 
+  /// Returns the objects property named name
+  Variant getPropertyValue(const std::string& name) const;
+  /// Set an objects property named name to the given value
+  void setPropertyValue(const std::string& name, const Variant& value);
+
+  /// Returns the objects attached user data
   Object* getUserData(void)
   { return mUserData; }
+  /// Returns the objects attached const user data
   const Object* getUserData(void) const
   { return mUserData; }
+  /// Sets the objects user data
   void setUserData(Object* userData)
   { mUserData = userData; }
 

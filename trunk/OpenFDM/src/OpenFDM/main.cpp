@@ -279,28 +279,15 @@ public:
 
       const XMLElement* propElement = element->getElement(*it);
       if (propElement) {
-        Property prop = object->getProperty(*it);
+        if (1 != propElement->getNumElements("matrix"))
+          return error("InitialValue tag found without content!");
 
-        if (prop.isMatrixProperty()) {
-          if (1 != propElement->getNumElements("matrix"))
-            return error("InitialValue tag found without content!");
+        Matrix m;
+        if (!readMatrix(propElement->getElement("matrix"), m))
+          return error("Cannot read InitialValue Matrix!");
 
-          Matrix m;
-          if (!readMatrix(propElement->getElement("matrix"), m))
-            return error("Cannot read InitialValue Matrix!");
+        object->setPropertyValue(*it, Variant(m));
 
-          prop.setValue(m);
-        } else if (prop.isRealProperty()) {
-          if (1 != propElement->getNumElements("matrix"))
-            return error("InitialValue tag found without content!");
-
-          Matrix m;
-          if (!readMatrix(propElement->getElement("matrix"), m))
-            return error("Cannot read InitialValue Matrix!");
-
-          /// FIXME
-          prop.setValue(m(1, 1));
-        }
         // FIXME add more here
       }
       ++it;
@@ -694,9 +681,6 @@ int main(int argc, char *argv[])
     printVehicle(vehicle);
   }
 #endif
-
-//   Property prop = vehicle->getProperty("cartPosition");
-//   cout << prop.getValue().toMatrix() << std::endl;
 
   return 0;
 }

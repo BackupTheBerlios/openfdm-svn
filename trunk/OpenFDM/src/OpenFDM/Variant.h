@@ -10,7 +10,6 @@
 #include "Types.h"
 #include "Referenced.h"
 #include "RefPtr.h"
-#include "Vector.h"
 #include "Matrix.h"
 
 namespace OpenFDM {
@@ -47,12 +46,13 @@ public:
     mData(new StringVariantData(value))
   {}
 
-  // FIXME we need some kind of struct
-  
   /// Assignment operator
   /// Variant follows the copy on copy sematics, that is in this operator
   /// the contents of the Variant is copied.
   inline Variant& operator=(const Variant& value);
+
+  /// Returns true if the variant contains some value
+  inline bool isValid(void) const;
 
   /// Returns true if the variant can be converted to the given type.
   inline bool isString(void) const;
@@ -139,6 +139,12 @@ Variant::operator=(const Variant& value)
 {
   mData = value.mData;
   return *this;
+}
+
+inline bool
+Variant::isValid(void) const
+{
+  return mData;
 }
 
 inline bool
