@@ -1,0 +1,35 @@
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2005 Mathias Froehlich 
+ *
+ */
+
+#ifndef OpenFDM_Summer_H
+#define OpenFDM_Summer_H
+
+#include <string>
+
+#include "Matrix.h"
+#include "Model.h"
+
+namespace OpenFDM {
+
+class Summer :
+    public Model {
+public:
+  Summer(const std::string& name);
+  virtual ~Summer(void);
+  
+  virtual bool init(void);
+  virtual void output(void);
+
+  const Matrix& getSum(void) const;
+
+  unsigned getNumSummands(void) const;
+  void setNumSummands(const unsigned& num);
+
+private:
+  Matrix mSum;
+};
+
+} // namespace OpenFDM
+
+#endif

@@ -1,0 +1,185 @@
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2005 Mathias Froehlich 
+ *
+ */
+
+#include "Assert.h"
+#include "Object.h"
+#include "Vector.h"
+#include "Quaternion.h"
+#include "Force.h"
+#include "RigidBody.h"
+#include "FreeJoint.h"
+#include "RootFrame.h"
+#include "Planet.h"
+#include "Wind.h"
+#include "ExplicitEuler.h"
+#include "ExplicitAdams.h"
+#include "ImplicitEuler.h"
+#include "MidpointRule.h"
+#include "DoPri5.h"
+#include "Property.h"
+#include "ModelGroup.h"
+#include "System.h"
+#include "Vehicle.h"
+
+namespace OpenFDM {
+
+Vehicle::Vehicle(void)
+{
+  // The environment models and callbacks of this vehicle.
+  mEnvironment = new Environment;
+
+  // The Planet centered frame is used by the others!
+  mRootFrame = new RootFrame("Planet centered frame");
+  Vector3 earthRotation(0.0, 0.0, 2.0*pi/(60*60*24));
+  mRootFrame->setAngularRelVel(earthRotation);
+
+  mTopBody = new RigidBody("Topmost rigid body");
+  mRootFrame->addChildFrame(mTopBody);
+
+  mFreeJoint = new FreeJoint(mEnvironment, "Mobile vehicle base (free joint)");
+  mRootFrame->addMultiBodyModel(mFreeJoint, 1);
+  mTopBody->addMultiBodyModel(mFreeJoint);
+
+  mSystem = new System("Top Vehicle System");
+
+  mModelGroup = new ModelGroup("Flight Control System");
+
+  mMultiBodySystem = new MultiBodySystem(mRootFrame);
+
+//   mSystem->setTimestepper(new ExplicitAdams);
+  mSystem->setTimestepper(new DoPri5);
+//   mSystem->setTimestepper(new ImplicitEuler);
+//   mSystem->setTimestepper(new MidpointRule);
+
+  mSystem->init();
+
+  mSystem->addModel(mModelGroup);
+  mSystem->addModel(mMultiBodySystem);
+
+  // Now register the local properties.
+  addProperty("cartPosition", Property(this, &Vehicle::getCartPosition, &Vehicle::setCartPosition));
+}
+
+Vehicle::~Vehicle(void)
+{
+}
+
+bool
+Vehicle::init(void)
+{
+  return mSystem->init();
+}
+
+void
+Vehicle::output(void)
+{
+}
+
+void
+Vehicle::update(real_type dt)
+{
+  mSystem->simulate(mSystem->getTime() + dt);
+}
+
+void
+Vehicle::setPlanet(Planet* p)
+{
+  mEnvironment->setPlanet(p);
+}
+
+void
+Vehicle::setGround(Ground* p)
+{
+  mEnvironment->setGround(p);
+}
+
+void
+Vehicle::setAtmosphere(Atmosphere* p)
+{
+  mEnvironment->setAtmosphere(p);
+}
+
+void
+Vehicle::setWind(Wind* w)
+{
+  mEnvironment->setWind(w);
+}
+
+Vector3
+Vehicle::getCartPosition(void) const
+{
+  return mTopBody->getRefPosition();/*FIXME*/
+}
+
+void
+Vehicle::setCartPosition(const Vector3& pos)
+{
+  mFreeJoint->setRefPosition(pos);/*FIXME*/
+}
+
+Geodetic
+Vehicle::getGeodPosition(void) const
+{
+  return getPlanet()->toGeod(getCartPosition());
+}
+
+void
+Vehicle::setGeodPosition(const Geodetic& geod)
+{
+  setCartPosition(getPlanet()->toCart(geod));
+}
+
+Geocentric
+Vehicle::getGeocPosition(void) const
+{
+  return getPlanet()->toGeoc(getCartPosition());
+}
+
+void
+Vehicle::setGeocPosition(const Geocentric& geoc)
+{
+  setCartPosition(getPlanet()->toCart(geoc));
+}
+
+Quaternion
+Vehicle::getCartOrientation(void) const
+{
+  return mTopBody->getRefOrientation();/*FIXME*/
+}
+
+void
+Vehicle::setCartOrientation(const Quaternion& o)
+{
+  mFreeJoint->setRefOrientation(o);/*FIXME*/
+}
+
+Quaternion
+Vehicle::getGeocOrientation(void) const
+{
+  Quaternion hlOr = getPlanet()->getGeocHLOrientation(getCartPosition());
+  return inverse(hlOr)*getCartOrientation();
+}
+
+void
+Vehicle::setGeocOrientation(const Quaternion& o)
+{
+  Quaternion hlOr = getPlanet()->getGeocHLOrientation(getCartPosition());
+  setCartOrientation(hlOr*o);
+}
+
+Quaternion
+Vehicle::getGeodOrientation(void) const
+{
+  Quaternion hlOr = getPlanet()->getGeodHLOrientation(getCartPosition()); 
+  return inverse(hlOr)*getCartOrientation();
+}
+
+void
+Vehicle::setGeodOrientation(const Quaternion& o)
+{
+  Quaternion hlOr = getPlanet()->getGeodHLOrientation(getCartPosition()); 
+  setCartOrientation(hlOr*o);
+}
+
+} // namespace OpenFDM

@@ -1,0 +1,18 @@
+
+OpenFDM
+-------
+
+OpenFDM is a flightmodel for realtime or for standalone scriptable use.
+It has grown out of the desire to have a professional aerodynamic flightmodel
+with properly modeled ground reactions. Starting from that it became clear
+that existing code is not fixable without major modifications.
+Thus I started a new project of a flightmodel with the following Features:
+
+- Table driven aerodynamics.
+- Accurate and stable timestepping.
+- Multibody system for mechanical components.
+- Up to date friction/tire models.
+- Crash detection with load limits for particular parts.
+- Flight control system.
+- Reads old and new JSBSim configs files.
+

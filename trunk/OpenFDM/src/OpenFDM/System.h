@@ -1,0 +1,58 @@
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2005 Mathias Froehlich 
+ *
+ */
+
+#ifndef OpenFDM_System_H
+#define OpenFDM_System_H
+
+#include <string>
+
+#include "ModelGroup.h"
+#include "ODESolver.h"
+
+namespace OpenFDM {
+
+/// The System is the top \ref Model node.
+/// It is derived from the \ref ModelGroup and additionally provides
+/// algorithms to simulate and trim the whole system.
+
+class System : public ModelGroup {
+public:
+  /// Constructor, we need a name
+  System(const std::string& name);
+  virtual ~System(void);
+
+  /// Set the system to its initial state
+  virtual bool init(void);
+
+  /// Note that there are still these routines available
+//   virtual void output();
+//   virtual void update(real_type dt);
+
+  /// Simulate the system until the time tEnd
+  bool simulate(real_type tEnd);
+
+  /// Bring the system in an equilibrum state near the current state
+  /// ...
+  bool trim(void);
+
+  /// Return the current simulation time, convenience function
+  real_type getTime(void) const
+  { return mTimestepper->getTime(); }
+
+  /// Sets a timestepping algorithm for use with this system.
+  void setTimestepper(ODESolver* timestepper);
+  /// Return a const reference to the timestepping algorithm
+  const ODESolver* getTimestepper(void) const { return mTimestepper; }
+  /// Return a reference to the timestepping algorithm
+  ODESolver* getTimestepper(void) { return mTimestepper; }
+
+private:
+  /// The timestepper used to get time discrete approximate solutions to the
+  /// continous system
+  shared_ptr<ODESolver> mTimestepper;
+};
+
+} // namespace OpenFDM
+
+#endif

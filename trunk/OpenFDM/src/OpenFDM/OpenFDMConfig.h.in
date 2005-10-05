@@ -1,0 +1,10 @@
+
+#ifdef OpenFDM_ENABLE_DEBUG
+#undef OpenFDM_ENABLE_DEBUG
+#endif
+#define OpenFDM_ENABLE_DEBUG @enable_debug@
+
+#ifdef OpenFDM_ENABLE_RANGE_CHECKING
+#undef OpenFDM_ENABLE_RANGE_CHECKING
+#endif
+#define OpenFDM_ENABLE_RANGE_CHECKING @enable_range_checking@
