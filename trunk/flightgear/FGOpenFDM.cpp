@@ -219,7 +219,8 @@ void FGOpenFDM::bind()
 
   FGInterface::bind();
 
-  SGPropertyNode* sgProp = mAircraftRootNode->getChild("fdm/vehicle", 0, true);
+  SGPropertyNode* sgProp = mAircraftRootNode->getChild("fdm", 0, true);
+  sgProp = sgProp->getChild("vehicle", 0, true);
   sgProp = sgProp->getChild("system", 0, true);
   tieModelGroup(sgProp, mData->vehicle->getSystem());
 }
@@ -341,8 +342,7 @@ FGOpenFDM::tieObject(SGPropertyNode* base, Object* object)
   if (outputModel) {
     std::string pName = outputModel->getOutputName();
     SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
-    Property prop = object->getProperty("value");
-    sgProp->tie(FGRealPropertyAdapter(prop.toRealProperty()));
+    sgProp->tie(FGRealPropertyAdapter(outputModel, "value"));
   }
 
   // Check for input models
@@ -366,51 +366,32 @@ FGOpenFDM::tieObject(SGPropertyNode* base, Object* object)
     // ... well, FIXME cleanup ...
     std::string pName = toPropname(*it);
     SGPropertyNode* sgProp = base->getChild(pName.c_str(), 0, true);
-    Property prop = object->getProperty(*it);
-    if (prop.isStringProperty())
-      sgProp->tie(FGStringPropertyAdapter(prop.toStringProperty()));
-    else if (prop.isRealProperty())
-      sgProp->tie(FGRealPropertyAdapter(prop.toRealProperty()));
-    else if (prop.isIntegerProperty())
-      sgProp->tie(FGIntPropertyAdapter(prop.toIntegerProperty()));
-    else if (prop.isUnsignedProperty())
-      sgProp->tie(FGUnsignedPropertyAdapter(prop.toUnsignedProperty()));
-    else if (prop.isVector2Property()) {
-      sgProp->tie(FGVector2PropertyAdapter(prop.toVector2Property(), 1));
-      sgProp = base->getChild(pName.c_str(), 1, true);
-      sgProp->tie(FGVector2PropertyAdapter(prop.toVector2Property(), 2));
+    Variant value = object->getPropertyValue(*it);
+
+    if (value.isString())
+      sgProp->tie(FGStringPropertyAdapter(object, *it));
+    else if (value.isReal())
+      sgProp->tie(FGRealPropertyAdapter(object, *it));
+    else if (value.isInteger())
+      sgProp->tie(FGIntegerPropertyAdapter(object, *it));
+    else if (value.isUnsigned())
+      sgProp->tie(FGIntegerPropertyAdapter(object, *it));
+
+    else if (value.isMatrix()) {
+      Matrix m = value.toMatrix();
+      unsigned reshapeSize = rows(m) * cols(m);
+
+      sgProp->tie(FGRealPropertyAdapter(object, *it));
+      for (unsigned i = 2; i <= reshapeSize; ++i) {
+        sgProp = base->getChild(pName.c_str(), i-1, true);
+        sgProp->tie(FGRealPropertyAdapter(object, *it, i));
+      }
     }
-    else if (prop.isVector3Property()) {
-      sgProp->tie(FGVector3PropertyAdapter(prop.toVector3Property(), 1));
-      sgProp = base->getChild(pName.c_str(), 1, true);
-      sgProp->tie(FGVector3PropertyAdapter(prop.toVector3Property(), 2));
-      sgProp = base->getChild(pName.c_str(), 2, true);
-      sgProp->tie(FGVector3PropertyAdapter(prop.toVector3Property(), 3));
+    else if (value.isValid()) {
+      SG_LOG(SG_FLIGHT, SG_WARN,
+             "Found unexpected property type with property named \""
+             << *it << "\"");
     }
-    else if (prop.isQuaternionProperty()) {
-      sgProp->tie(FGQuaternionPropertyAdapter(prop.toQuaternionProperty(), 1));
-      sgProp = base->getChild(pName.c_str(), 1, true);
-      sgProp->tie(FGQuaternionPropertyAdapter(prop.toQuaternionProperty(), 2));
-      sgProp = base->getChild(pName.c_str(), 2, true);
-      sgProp->tie(FGQuaternionPropertyAdapter(prop.toQuaternionProperty(), 3));
-      sgProp = base->getChild(pName.c_str(), 3, true);
-      sgProp->tie(FGQuaternionPropertyAdapter(prop.toQuaternionProperty(), 4));
-    }
-    else if (prop.isVector6Property()) {
-      sgProp->tie(FGVector6PropertyAdapter(prop.toVector6Property(), 1));
-      sgProp = base->getChild(pName.c_str(), 1, true);
-      sgProp->tie(FGVector6PropertyAdapter(prop.toVector6Property(), 2));
-      sgProp = base->getChild(pName.c_str(), 2, true);
-      sgProp->tie(FGVector6PropertyAdapter(prop.toVector6Property(), 3));
-      sgProp = base->getChild(pName.c_str(), 3, true);
-      sgProp->tie(FGVector6PropertyAdapter(prop.toVector6Property(), 4));
-      sgProp = base->getChild(pName.c_str(), 4, true);
-      sgProp->tie(FGVector6PropertyAdapter(prop.toVector6Property(), 5));
-      sgProp = base->getChild(pName.c_str(), 5, true);
-      sgProp->tie(FGVector6PropertyAdapter(prop.toVector6Property(), 6));
-    }
-    else
-      sgProp->tie(FGVariantPropertyAdapter(prop));
     ++it;
   }
 }

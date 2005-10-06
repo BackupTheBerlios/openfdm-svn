@@ -12,207 +12,124 @@
 
 namespace OpenFDM {
 
-class FGStringPropertyAdapter :
-    public SGRawValue<const char*> {
+template<typename T>
+class FGPropertyAdapter :
+    public SGRawValue<T> {
 public:
-  FGStringPropertyAdapter(const StringProperty& stringProperty) :
-    mStringProperty(stringProperty)
+  FGPropertyAdapter(Object* object, const std::string& propertyName) :
+    mObject(object), mPropertyName(propertyName)
+  {}
+
+protected:
+  Variant getPropertyValue(void) const
+  {
+    if (!mObject)
+      return Variant();
+
+    return mObject->getPropertyValue(mPropertyName);
+  }
+  bool setPropertyValue(const Variant& value)
+  {
+    if (!mObject)
+      return false;
+
+    // FIXME: check if settable ...
+    mObject->setPropertyValue(mPropertyName, value);
+    return true;
+  }
+
+private:
+  std::string mPropertyName;
+  managed_ptr<Object> mObject;
+};
+
+
+class FGStringPropertyAdapter :
+    public FGPropertyAdapter<const char*> {
+public:
+  FGStringPropertyAdapter(Object* object, const std::string& propertyName) :
+    FGPropertyAdapter<const char*>(object, propertyName)
   {}
   virtual ~FGStringPropertyAdapter(void) {}
 
   /// Implements the SimGear property interface.
   virtual bool setValue(const char* value)
-  { return false; }
+  { return setPropertyValue(Variant(std::string(value))); }
   /// Implements the SimGear property interface.
   virtual const char* getValue(void) const
-  { mValue = mStringProperty.getValue(); return mValue.c_str(); }
+  { mValue = getPropertyValue().toString(); return mValue.c_str(); }
   
   virtual FGStringPropertyAdapter* clone(void) const
   { return new FGStringPropertyAdapter(*this); }
 
 private:
   mutable std::string mValue;
-  mutable StringProperty mStringProperty; /*FIXME*/
 };
 
+
 class FGRealPropertyAdapter :
-    public SGRawValue<double> {
+    public FGPropertyAdapter<double> {
 public:
-  FGRealPropertyAdapter(const RealProperty& realProperty) :
-    mRealProperty(realProperty)
-  { }
+  FGRealPropertyAdapter(Object* object, const std::string& propertyName,
+                        unsigned index = 1) :
+    FGPropertyAdapter<double>(object, propertyName), mIndex(index)
+  {}
   virtual ~FGRealPropertyAdapter(void) {}
 
   /// Implements the SimGear property interface.
   virtual bool setValue(double value)
-  { mRealProperty.setValue(value); return mRealProperty.isValid(); }
+  {
+    Matrix m = getPropertyValue().toMatrix();
+    unsigned r = mIndex % rows(m);
+    unsigned c = mIndex / rows(m);
+    if (r < 1 || rows(m) < r)
+      return false;
+    if (c < 1 || cols(m) < c)
+      return false;
+    
+    m(r, c) = value;
+    return setPropertyValue(Variant(m));
+  }
   /// Implements the SimGear property interface.
   virtual double getValue(void) const
-  { return mRealProperty.getValue(); }
+  {
+    if (mIndex == 1)
+      return getPropertyValue().toReal();
+    else {
+      Matrix m = getPropertyValue().toMatrix();
+      unsigned r = mIndex % rows(m);
+      unsigned c = mIndex / rows(m);
+      if (r < 1 || rows(m) < r)
+        return 0;
+      if (c < 1 || cols(m) < c)
+        return 0;
+      return m(r, c);
+    }
+  }
   
   virtual FGRealPropertyAdapter* clone(void) const
   { return new FGRealPropertyAdapter(*this); }
-
 private:
-  mutable RealProperty mRealProperty; /*FIXME*/
+  unsigned mIndex;
 };
 
-class FGIntPropertyAdapter :
-    public SGRawValue<int> {
+class FGIntegerPropertyAdapter :
+    public FGPropertyAdapter<int> {
 public:
-  FGIntPropertyAdapter(const IntegerProperty& intProperty) :
-    mIntProperty(intProperty)
-  { }
-  virtual ~FGIntPropertyAdapter(void) {}
+  FGIntegerPropertyAdapter(Object* object, const std::string& propertyName) :
+    FGPropertyAdapter<int>(object, propertyName)
+  {}
+  virtual ~FGIntegerPropertyAdapter(void) {}
 
   /// Implements the SimGear property interface.
   virtual bool setValue(int value)
-  { mIntProperty.setValue(value); return mIntProperty.isValid(); }
+  { return setPropertyValue(Variant(value)); }
   /// Implements the SimGear property interface.
   virtual int getValue(void) const
-  { return mIntProperty.getValue(); }
-  
-  virtual FGIntPropertyAdapter* clone(void) const
-  { return new FGIntPropertyAdapter(*this); }
+  { return getPropertyValue().toInteger(); }
 
-private:
-  mutable IntegerProperty mIntProperty; /*FIXME*/
-};
-
-class FGUnsignedPropertyAdapter :
-    public SGRawValue<int> {
-public:
-  FGUnsignedPropertyAdapter(const UnsignedProperty& unsignedProperty) :
-    mUnsignedProperty(unsignedProperty)
-  { }
-  virtual ~FGUnsignedPropertyAdapter(void) {}
-
-  /// Implements the SimGear property interface.
-  virtual bool setValue(int value)
-  { if (value < 0) return false; mUnsignedProperty.setValue(value); return mUnsignedProperty.isValid(); }
-  /// Implements the SimGear property interface.
-  virtual int getValue(void) const
-  { return mUnsignedProperty.getValue(); }
-  
-  virtual FGUnsignedPropertyAdapter* clone(void) const
-  { return new FGUnsignedPropertyAdapter(*this); }
-
-private:
-  mutable UnsignedProperty mUnsignedProperty; /*FIXME*/
-};
-
-class FGVector2PropertyAdapter :
-    public SGRawValue<double> {
-public:
-  FGVector2PropertyAdapter(const Vector2Property& property, unsigned idx) :
-    mProperty(property), mIndex(idx)
-  { if (mIndex < 1 || 2 < mIndex) mIndex = 1; }
-  virtual ~FGVector2PropertyAdapter(void) {}
-
-  /// Implements the SimGear property interface.
-  virtual bool setValue(double value)
-  { Vector2 tmp = mProperty.getValue(); tmp(mIndex) = value; mProperty.setValue(tmp); return mProperty.isValid(); }
-  /// Implements the SimGear property interface.
-  virtual double getValue(void) const
-  { Vector2 value = mProperty.getValue(); return value(mIndex); }
-  
-  virtual FGVector2PropertyAdapter* clone(void) const
-  { return new FGVector2PropertyAdapter(*this); }
-
-private:
-  mutable Vector2Property mProperty; /*FIXME*/
-  unsigned mIndex;
-};
-
-class FGVector3PropertyAdapter :
-    public SGRawValue<double> {
-public:
-  FGVector3PropertyAdapter(const Vector3Property& property, unsigned idx) :
-    mProperty(property), mIndex(idx)
-  { if (mIndex < 1 || 3 < mIndex) mIndex = 1; }
-  virtual ~FGVector3PropertyAdapter(void) {}
-
-  /// Implements the SimGear property interface.
-  virtual bool setValue(double value)
-  { Vector3 tmp = mProperty.getValue(); tmp(mIndex) = value; mProperty.setValue(tmp); return mProperty.isValid(); }
-  /// Implements the SimGear property interface.
-  virtual double getValue(void) const
-  { Vector3 value = mProperty.getValue(); return value(mIndex); }
-  
-  virtual FGVector3PropertyAdapter* clone(void) const
-  { return new FGVector3PropertyAdapter(*this); }
-
-private:
-  mutable Vector3Property mProperty; /*FIXME*/
-  unsigned mIndex;
-};
-
-class FGQuaternionPropertyAdapter :
-    public SGRawValue<double> {
-public:
-  FGQuaternionPropertyAdapter(const QuaternionProperty& property, unsigned idx) :
-    mProperty(property), mIndex(idx)
-  { if (mIndex < 1 || 4 < mIndex) mIndex = 1; }
-  virtual ~FGQuaternionPropertyAdapter(void) {}
-
-  /// Implements the SimGear property interface.
-  virtual bool setValue(double value)
-  { Quaternion tmp = mProperty.getValue(); tmp(mIndex) = value; mProperty.setValue(tmp); return mProperty.isValid(); }
-  /// Implements the SimGear property interface.
-  virtual double getValue(void) const
-  { Quaternion value = mProperty.getValue(); return value(mIndex); }
-  
-  virtual FGQuaternionPropertyAdapter* clone(void) const
-  { return new FGQuaternionPropertyAdapter(*this); }
-
-private:
-  mutable QuaternionProperty mProperty; /*FIXME*/
-  unsigned mIndex;
-};
-
-class FGVector6PropertyAdapter :
-    public SGRawValue<double> {
-public:
-  FGVector6PropertyAdapter(const Vector6Property& property, unsigned idx) :
-    mProperty(property), mIndex(idx)
-  { if (mIndex < 1 || 6 < mIndex) mIndex = 1; }
-  virtual ~FGVector6PropertyAdapter(void) {}
-
-  /// Implements the SimGear property interface.
-  virtual bool setValue(double value)
-  { Vector6 tmp = mProperty.getValue(); tmp(mIndex) = value; mProperty.setValue(tmp); return mProperty.isValid(); }
-  /// Implements the SimGear property interface.
-  virtual double getValue(void) const
-  { Vector6 value = mProperty.getValue(); return value(mIndex); }
-  
-  virtual FGVector6PropertyAdapter* clone(void) const
-  { return new FGVector6PropertyAdapter(*this); }
-
-private:
-  mutable Vector6Property mProperty; /*FIXME*/
-  unsigned mIndex;
-};
-
-class FGVariantPropertyAdapter :
-    public SGRawValue<double> {
-public:
-  FGVariantPropertyAdapter(const Property& property) :
-    mProperty(property)
-  { }
-  virtual ~FGVariantPropertyAdapter(void) {}
-
-  /// Implements the SimGear property interface.
-  virtual bool setValue(double value)
-  { mProperty.setValue(Variant(value)); return mProperty.isValid(); }
-  /// Implements the SimGear property interface.
-  virtual double getValue(void) const
-  { return mProperty.getValue().toReal(); }
-  
-  virtual FGVariantPropertyAdapter* clone(void) const
-  { return new FGVariantPropertyAdapter(*this); }
-
-private:
-  mutable Property mProperty; /*FIXME*/
+  virtual FGIntegerPropertyAdapter* clone(void) const
+  { return new FGIntegerPropertyAdapter(*this); }
 };
 
 class FGRealInputModel :
@@ -223,9 +140,6 @@ public:
     mPropertyNode(propertyNode)
   {
     setDirectFeedThrough(false);
-  
-//   setNumInputPorts(1);
-//   setInputPortName(0, "input");
   
     setNumOutputPorts(1);
     setOutputPort(0, "value", Property(this, &FGRealInputModel::getValue));
