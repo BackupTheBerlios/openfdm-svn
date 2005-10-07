@@ -17,7 +17,7 @@
 #include <OpenFDM/ModelGroup.h>
 #include <OpenFDM/TimeDerivative.h>
 #include <OpenFDM/TransferFunction.h>
-#include <OpenFDM/Integrator.h>
+#include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/Saturation.h>

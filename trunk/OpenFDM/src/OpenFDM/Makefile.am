@@ -47,6 +47,7 @@ Inertia.h \
   DefaultGround.h \
   DefaultPlanet.h \
   DirectForce.h \
+  DiscreteIntegrator.h \
   DoPri5.h \
   Environment.h \
   EnvironmentObject.h \
@@ -124,6 +125,7 @@ libOpenFDM_la_SOURCES = \
   DefaultGround.cpp \
   DefaultPlanet.cpp \
   DirectForce.cpp \
+  DiscreteIntegrator.cpp \
   DoPri5.cpp \
   Environment.cpp \
   EnvironmentObject.cpp \

@@ -39,8 +39,7 @@ public:
   virtual void getStateDeriv(Vector& stateDeriv, unsigned offset);
 
   /// FIXME Hmm, may be different ...
-  void evalFunction(real_type t, const Vector& v, Vector& out)
-  { setState(t, v, 0); out.resize(getNumContinousStates()); getStateDeriv(out, 0); }
+  void evalFunction(real_type t, const Vector& v, Vector& out);
   /// Compute the jacobian
   /// The default implementation computes a numeric approximation by finite
   /// differences

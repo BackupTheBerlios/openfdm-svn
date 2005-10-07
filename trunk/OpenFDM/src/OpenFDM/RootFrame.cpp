@@ -206,8 +206,6 @@ MultiBodySystem::getState(Vector& state, unsigned offset) const
 void
 MultiBodySystem::getStateDeriv(Vector& stateDeriv, unsigned offset)
 {
-  OpenFDMAssert(offset == 0);
-
   // Compute the external and interaction forces.
   ForceComputationVisitor forceVisitor;
   mRootFrame->accept(forceVisitor);
@@ -223,9 +221,7 @@ MultiBodySystem::getStateDeriv(Vector& stateDeriv, unsigned offset)
   // And finally extract the derivative vector from the tree.
   GetStateDerivVisitor gsdv(getNumContinousStates());
   mRootFrame->accept(gsdv);
-//   stateDeriv(Range(offset+1, offset+getNumContinousStates()))
-//     = gsdv.getStateDeriv();
-  stateDeriv
+  stateDeriv(Range(offset+1, offset+getNumContinousStates()))
     = gsdv.getStateDeriv();
 }
 

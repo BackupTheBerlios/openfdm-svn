@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_Integrator_H
-#define OpenFDM_Integrator_H
+#ifndef OpenFDM_DiscreteIntegrator_H
+#define OpenFDM_DiscreteIntegrator_H
 
 #include "Assert.h"
 #include "Types.h"
@@ -12,18 +12,18 @@
 
 namespace OpenFDM {
 
-class Integrator :
+class DiscreteIntegrator :
     public Model {
 public:
-  Integrator(const std::string& name);
-  virtual ~Integrator(void);
+  DiscreteIntegrator(const std::string& name);
+  virtual ~DiscreteIntegrator(void);
 
   virtual bool init(void);
   virtual void output(void);
+  virtual void update(real_type dt);
 
-  virtual void setState(real_type t, const Vector& state, unsigned offset);
-  virtual void getState(Vector& state, unsigned offset) const;
-  virtual void getStateDeriv(Vector& stateDeriv, unsigned offset);
+  virtual void setDiscreteState(const Vector& state, unsigned offset);
+  virtual void getDiscreteState(Vector& state, unsigned offset) const;
 
   const Matrix& getInitialValue(void) const;
   void setInitialValue(const Matrix& value);

@@ -40,19 +40,22 @@ using namespace std;
 #include <OpenFDM/LogStream.h>
 #include <OpenFDM/Variant.h>
 #include <OpenFDM/Property.h>
+
+// Model includes
 #include <OpenFDM/Model.h>
 #include <OpenFDM/ModelGroup.h>
+#include <OpenFDM/Bias.h>
 #include <OpenFDM/ConstSystem.h>
+#include <OpenFDM/DeadBand.h>
+#include <OpenFDM/DiscreteIntegrator.h>
+#include <OpenFDM/Gain.h>
 #include <OpenFDM/Integrator.h>
 #include <OpenFDM/TimeDerivative.h>
 #include <OpenFDM/UnaryFunctionModel.h>
 #include <OpenFDM/BinaryFunctionModel.h>
 #include <OpenFDM/Product.h>
-#include <OpenFDM/Summer.h>
-#include <OpenFDM/Bias.h>
-#include <OpenFDM/Gain.h>
-#include <OpenFDM/DeadBand.h>
 #include <OpenFDM/Saturation.h>
+#include <OpenFDM/Summer.h>
 
 #include "XML/XMLReader.h"
 
@@ -309,14 +312,18 @@ public:
       model = new ConstSystem(name, Matrix()); // FIXME
     } else if (type == "DeadBand") {
       model = new DeadBand(name);
+    } else if (type == "DiscreteIntegrator") {
+      model = new DiscreteIntegrator(name);
     } else if (type == "Gain") {
       model = new Gain(name);
     } else if (type == "Integrator") {
-      model = new DiscreteIntegrator(name);
+      model = new Integrator(name);
     } else if (type == "Product") {
       model = new Product(name);
     } else if (type == "Saturation") {
       model = new Saturation(name);
+    } else if (type == "TimeDerivative") {
+      model = new TimeDerivative(name);
     } else
       return error(std::string("Error loading Models: Unknown Model type \"")
                    + type + "\" !");
@@ -605,19 +612,18 @@ int main(int argc, char *argv[])
 
   printVehicle(vehicle);
 
-  ModelGroup* modelGroup = vehicle->getModelGroup();
-  for (unsigned i = 0; i < modelGroup->getNumModels(); ++i) {
-    cout << modelGroup->getModel(i)->getName() << endl;
-  }
-
-  bool initOk = modelGroup->init();
+  System* system = vehicle->getSystem();
+  bool initOk = system->init();
   if (!initOk) {
     cout << "Error  in init" << endl;
     return -17;
   }
+  ModelGroup* modelGroup = vehicle->getModelGroup();
+  for (unsigned i = 0; i < modelGroup->getNumModels(); ++i) {
+    cout << modelGroup->getModel(i)->getName() << endl;
+  }
   for (unsigned j = 0; j < 1000; ++j) {
-    modelGroup->output();
-    modelGroup->update(0.01);
+    system->simulate(j*0.01);
 
     for (unsigned i = 0; i < modelGroup->getNumModels(); ++i)
       cout << modelGroup->getModel(i)->getOutputPort("output").getValue().toMatrix() << " ";

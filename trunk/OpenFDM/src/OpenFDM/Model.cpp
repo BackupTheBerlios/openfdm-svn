@@ -72,6 +72,16 @@ Model::getStateDeriv(Vector& stateDeriv, unsigned offset)
 }
 
 void
+Model::evalFunction(real_type t, const Vector& v, Vector& out)
+{
+  /// FIXME Hmm, may be different ...
+  setState(t, v, 0);
+  output();
+  out.resize(getNumContinousStates());
+  getStateDeriv(out, 0);
+}
+
+void
 Model::evalJacobian(real_type t, const Vector& v,
                    Matrix& jac, unsigned offset)
 {
@@ -84,6 +94,7 @@ Model::evalJacobian(real_type t, const Vector& v,
   // Get the function value at the current position.
   Vector fv(nStates);
   setState(t, v, 0);
+  output();
   getStateDeriv(fv, 0);
 
   real_type sqrteps = 1e4*sqrt(Limits<real_type>::epsilon());
@@ -95,6 +106,7 @@ Model::evalJacobian(real_type t, const Vector& v,
 
     // Evaluate then function ...
     setState(t, tmpv, 0);
+    output();
     getStateDeriv(tmpfv, 0);
 
     // ... and compute the differencequotient to approximate the derivative.
