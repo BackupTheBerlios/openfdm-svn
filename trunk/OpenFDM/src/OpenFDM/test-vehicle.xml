@@ -48,9 +48,9 @@
 
   <MechanicalSystem>
 
-    <Frame Name="Structural Frame" Id="structural"/>
+    <Frame Name="structural"/>
 
-    <RigidBody Name="Vehicle Top Body" Id="top">
+    <RigidBody Name="top">
       <Mass>
         <Position>
           <Vector Unit="m">1 1 1</Vector>
@@ -69,8 +69,8 @@
       </Mass>
     </RigidBody>
 
-    <Joint Type="Revolute" Name="Nose Strut Retract Joint" Id="noseStrutRetractJoint">
-      <Mount Id="top">
+    <Joint Type="Revolute" Name="noseStrutRetractJoint">
+      <Mount Name="top">
         <!-- The position of the joint in this body's coordinates. -->
         <Position>
           <Vector Unit="m">1 1 1</Vector>
@@ -80,7 +80,7 @@
           <quaternion>1 0 0 0</quaternion>
         </Orientation>
       </Mount>
-      <Mount Id="noseStrutBody">
+      <Mount Name="noseStrutBody">
         <!-- The position of the joint in this body's coordinates. -->
         <Position>
           <Vector Unit="m">1 1 1</Vector>
@@ -92,112 +92,37 @@
       </Mount>
 <!--       <Actuator></Actuator> -->
     </Joint>
-    <RigidBody Name="Nose Strut Body" Id="noseStrutBody">
+    <RigidBody Name="noseStrutBody">
     </RigidBody>
-    <Joint Type="Revolute" Name="Nose Strut Steering Joint" Id="noseStrutSteeringJoint">
-      <Mount Id="noseStrutBody">
+    <Joint Type="Revolute" Name="noseStrutSteeringJoint">
+      <Mount Name="noseStrutBody">
       </Mount>
-      <Mount Id="noseStrutSteerBody">
+      <Mount Name="noseStrutSteerBody">
       </Mount>
     </Joint>
-    <RigidBody Name="Nose Strut Steering Body" Id="noseStrutSteerBody">
+    <RigidBody Name="noseStrutSteerBody">
       <Mass>
         <Mass Unit="kg">17</Mass>
       </Mass>
     </RigidBody>
-    <Joint Type="Prismatic" Name="Nose Compression Joint" Id="noseCompressionJoint">
-      <Mount Id="noseStrutSteerBody">
+    <Joint Type="Prismatic" Name="noseCompressionJoint">
+      <Mount Name="noseStrutSteerBody">
       </Mount>
-      <Mount Id="noseStrutCompressBody">
+      <Mount Name="noseStrutCompressBody">
       </Mount>
     </Joint>
-    <RigidBody Name="Nose Strut Compress Body" Id="noseStrutCompressBody">
+    <RigidBody Name="noseStrutCompressBody">
       <Mass>
         <Mass Unit="kg">17</Mass>
       </Mass>
     </RigidBody>
-    <Joint Type="Revolute" Name="Nose Wheel Hub" Id="noseWheelHub">
-      <Mount Id="noseStrutCompressBody">
+    <Joint Type="Revolute" Name="noseWheelHub">
+      <Mount Name="noseStrutCompressBody">
       </Mount>
-      <Mount Id="noseWheel">
-      </Mount>
-    </Joint>
-    <RigidBody Name="Nose Wheel" Id="noseWheel">
-      <Mass>
-        <Mass Unit="kg">17</Mass>
-      </Mass>
-      <Inertia Unit="kg*m*m">
-        <Iyy>17</Iyy>
-      </Inertia>
-    </RigidBody>
-
-
-    <Joint Type="Revolute" Name="Right Main Strut Retract" Id="rightStrutRestractJoint">
-      <Mount Id="top">
-      </Mount>
-      <Mount Id="rightStrutBody">
+      <Mount Name="noseWheel">
       </Mount>
     </Joint>
-    <RigidBody Name="Right Strut Body" Id="rightStrutBody">
-      <Mass>
-        <Mass Unit="kg">17</Mass>
-      </Mass>
-    </RigidBody>
-    <Joint Type="Revolute" Name="Right Strut Compress Joint" Id="rightStrutCompressJoint">
-      <Mount Id="rightStrutBody">
-      </Mount>
-      <Mount Id="rightStrutCompressBody">
-      </Mount>
-    </Joint>
-    <RigidBody Name="Right Strut Compression Body" Id="rightStrutCompressBody">
-      <Mass>
-        <Mass Unit="kg">17</Mass>
-      </Mass>
-    </RigidBody>
-    <Joint Type="Revolute" Name="Right Wheel Hub" Id="rightWheelHub">
-      <Mount Id="rightStrutCompressBody">
-      </Mount>
-      <Mount Id="rightWheel">
-      </Mount>
-    </Joint>
-    <RigidBody Name="Right Wheel" Id="rightWheel">
-      <Mass>
-        <Mass Unit="kg">17</Mass>
-      </Mass>
-      <Inertia Unit="kg*m*m">
-        <Iyy>17</Iyy>
-      </Inertia>
-    </RigidBody>
-
-    <Joint Type="Revolute" Name="Left Main Strut" Id="leftStrut">
-      <Mount Id="top">
-      </Mount>
-      <Mount Id="leftStrutBody">
-      </Mount>
-    </Joint>
-    <RigidBody Name="Left Strut Body" Id="leftStrutBody">
-      <Mass>
-        <Mass Unit="kg">17</Mass>
-      </Mass>
-    </RigidBody>
-    <Joint Type="Revolute" Name="Left Strut Compress Joint" Id="leftStrutCompressJoint">
-      <Mount Id="leftStrutBody">
-      </Mount>
-      <Mount Id="leftStrutCompressBody">
-      </Mount>
-    </Joint>
-    <RigidBody Type="Revolute" Name="Left Strut Compression Body" Id="leftStrutCompressBody">
-      <Mass>
-        <Mass Unit="kg">17</Mass>
-      </Mass>
-    </RigidBody>
-    <Joint Type="Revolute" Name="Left Wheel Hub" Id="leftWheelHub">
-      <Mount Id="leftStrutCompressBody">
-      </Mount>
-      <Mount Id="leftWheel">
-      </Mount>
-    </Joint>
-    <RigidBody Name="Left Wheel" Id="leftWheel">
+    <RigidBody Name="noseWheel">
       <Mass>
         <Mass Unit="kg">17</Mass>
       </Mass>
@@ -207,21 +132,96 @@
     </RigidBody>
 
 
-    <AeroForce Name="Aerodynamic Force Tables" Id="aeroFroce">
-      <Mount Id="top">
+    <Joint Type="Revolute" Name="rightStrutRestractJoint">
+      <Mount Name="top">
+      </Mount>
+      <Mount Name="rightStrutBody">
+      </Mount>
+    </Joint>
+    <RigidBody Name="rightStrutBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="rightStrutCompressJoint">
+      <Mount Name="rightStrutBody">
+      </Mount>
+      <Mount Name="rightStrutCompressBody">
+      </Mount>
+    </Joint>
+    <RigidBody Name="rightStrutCompressBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="rightWheelHub">
+      <Mount Name="rightStrutCompressBody">
+      </Mount>
+      <Mount Name="rightWheel">
+      </Mount>
+    </Joint>
+    <RigidBody Name="rightWheel">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+      <Inertia Unit="kg*m*m">
+        <Iyy>17</Iyy>
+      </Inertia>
+    </RigidBody>
+
+    <Joint Type="Revolute" Name="leftStrut">
+      <Mount Name="top">
+      </Mount>
+      <Mount Name="leftStrutBody">
+      </Mount>
+    </Joint>
+    <RigidBody Name="leftStrutBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="leftStrutCompressJoint">
+      <Mount Name="leftStrutBody">
+      </Mount>
+      <Mount Name="leftStrutCompressBody">
+      </Mount>
+    </Joint>
+    <RigidBody Type="Revolute" Name="leftStrutCompressBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="leftWheelHub">
+      <Mount Name="leftStrutCompressBody">
+      </Mount>
+      <Mount Name="leftWheel">
+      </Mount>
+    </Joint>
+    <RigidBody Name="leftWheel">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+      <Inertia Unit="kg*m*m">
+        <Iyy>17</Iyy>
+      </Inertia>
+    </RigidBody>
+
+
+    <AeroForce Name="aeroFroce">
+      <Mount Name="top">
         <Position>
           <Vector Unit="m">1 1 1</Vector>
         </Position>
       </Mount>
     </AeroForce>
 
-    <SimpleContact Name="Contact 1" Id="contact1">
+    <SimpleContact Name="contact1">
     </SimpleContact>
-    <SimpleContact Name="Contact 2" Id="contact2">
+    <SimpleContact Name="contact2">
     </SimpleContact>
-    <SimpleContact Name="Contact 3" Id="contact3">
+    <SimpleContact Name="contact3">
     </SimpleContact>
-    <SimpleContact Name="Contact 4" Id="contact4">
+    <SimpleContact Name="contact4">
     </SimpleContact>
   </MechanicalSystem>
 </OpenFDM>
