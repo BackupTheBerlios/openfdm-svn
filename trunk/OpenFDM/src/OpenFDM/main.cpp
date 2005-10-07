@@ -448,9 +448,12 @@ public:
         return error("Error loading Vehicle: More or less then 2 Mounts!");
       std::list<XMLElement::const_pointer>::iterator mit = mounts.begin();
       for (unsigned idx = 0; mit != mounts.end(); ++idx, ++mit) {
-        RigidBody* body = mVehicle->getRigidBody((*mit)->getAttribute("Name"));
+        std::string mountAttrName = (*mit)->getAttribute("Name");
+        RigidBody* body = mVehicle->getRigidBody(mountAttrName);
         if (!body)
-          return error("Error loading Vehicle: Cannot find RigidBody for Mount!");
+          return error(std::string("Error loading Vehicle:") +
+                       " Can not find RigidBody \"" + mountAttrName +
+                       "\" for Mount of Joint \"" + joint->getName() + "\"!");
        
         joint->setParentFrame(body, idx);
         
