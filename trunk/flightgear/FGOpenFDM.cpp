@@ -10,7 +10,7 @@
 #include <Main/globals.hxx>
 #include <Main/fg_props.hxx>
 
-#include <JSBSim/JSBReader.h>
+#include <JSBSim/LegacyJSBSimReader.h>
 #include <OpenFDM/Units.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/Input.h>
@@ -184,21 +184,19 @@ void FGOpenFDM::init()
 {
   SG_LOG(SG_FLIGHT, SG_INFO, "FGOpenFDM::init()");
 
-  // Call what needs to be done ... ;-(
-  common_init();
-
-  SGPath fdmConfig(fgGetString("/sim/aircraft-dir"));
-  fdmConfig.append(fgGetString("/sim/aero"));
-  fdmConfig.concat(".xml");
-
   // Try to read JSBSim legacy files.
-  JSBReader reader;
-  try {
-    readXML(fdmConfig.str(), reader);
-  } catch (const sg_exception& e) {
-    SG_LOG(SG_IO, SG_ALERT, "While loading \"" << fdmConfig.str()
-           << "\":\nGot an sg_exception from " << e.getOrigin() << ": "
-           << e.getFormattedMessage());
+  LegacyJSBSimReader reader;
+  reader.addAircraftPath(fgGetString("/sim/aircraft-dir"));
+  reader.addEnginePath(std::string(fgGetString("/sim/aircraft-dir"))
+                       + "/Engine");
+  reader.loadAircraft(std::string(fgGetString("/sim/aero")) + ".xml");
+  if (reader.getErrorState()) {
+    SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() cannot read aircraft!");
+    const ReaderWriter::StringList errors = reader.getErrors();
+    ReaderWriter::StringList::const_iterator it;
+    for (it = errors.begin(); it != errors.end(); ++it) {
+      SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
+    }
     return;
   }
 
@@ -207,6 +205,9 @@ void FGOpenFDM::init()
   mData->vehicle->setGround(mData->ground);
   mData->vehicle->setPlanet(new FGPlanet);
   mData->vehicle->setWind(new FGWind);
+
+  // Call what needs to be done ... ;-(
+  common_init();
 
   mData->vehicle->init();
 
