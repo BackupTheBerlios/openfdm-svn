@@ -2,26 +2,23 @@
  *
  */
 
-#ifndef OpenFDM_JSBReader_H
-#define OpenFDM_JSBReader_H
+#ifndef OpenFDM_LegacyJSBSimReader_H
+#define OpenFDM_LegacyJSBSimReader_H
 
 #include <string>
-#include <sstream>
-#include <iostream>
 #include <list>
 #include <map>
-#include <stack>
-#include <locale>
-using namespace std;
+#include <iosfwd>
 
-#include <simgear/xml/easyxml.hxx>
-
-#include <OpenFDM/Expression.h>
 #include <OpenFDM/AeroForce.h>
-#include <OpenFDM/ReaderWriter.h>
+#include <OpenFDM/Expression.h>
 #include <OpenFDM/Vehicle.h>
+#include <OpenFDM/ReaderWriter.h>
 
 namespace OpenFDM {
+
+class XMLDocument;
+class XMLElement;
 
 // Implements a SimGear SGProperty compatible 'path' to 'expression'
 // mapping.
@@ -31,6 +28,7 @@ namespace OpenFDM {
 // with a function which first simplyfys the given key and then performs the
 // map operations with the simplyfied key instead of the original one.
 // 
+/// FIXME!!!!!!!!
 class PropertyMap
   : public std::map<std::string,Property> {
 public:
@@ -79,16 +77,16 @@ public:
   upper_bound(const key_type& key) const
   { return std::map<std::string,Property>::upper_bound(simplyfy(key)); }
 
-  pair<iterator,iterator>
+  std::pair<iterator,iterator>
   equal_range(const key_type& key)
   { return std::map<std::string,Property>::equal_range(simplyfy(key)); }
 
-  pair<const_iterator,const_iterator>
+  std::pair<const_iterator,const_iterator>
   equal_range(const key_type& key) const
   { return std::map<std::string,Property>::equal_range(simplyfy(key)); }
 
 
-  pair<iterator,bool>
+  std::pair<iterator,bool>
   insert(const value_type& val)
   {
     value_type sval(simplyfy(val.first), val.second);
@@ -104,37 +102,47 @@ public:
 };
 
 
-
-
-
-class JSBReader
-  : public XMLVisitor {
+class LegacyJSBSimReader :
+    public ReaderWriter {
 public:
-  JSBReader(void);
-  virtual ~JSBReader(void);
+  LegacyJSBSimReader(void);
+  virtual ~LegacyJSBSimReader(void);
 
-  /// The interface to easyxml
-  virtual void startElement(const char *name, const XMLAttributes& atts);
-  virtual void endElement(const char *name);
-  virtual void data(const char *s, int length);
-  virtual void warning(const char *message, int line, int column);
+  virtual void reset(void);
 
-  /// Return a pointer to the resulting vehicle
-  Vehicle* getVehicle(void) { return mVehicle; }
+  /// Add a new path component to search for aircraft configurations
+  /// no getter available
+  void addAircraftPath(const std::string& path);
+
+  /// Add a new path component to search for engine configurations
+  /// no getter available
+  void addEnginePath(const std::string& path);
+
+  /// Load the aircraft given in acFileName
+  /// Returns true on successfull load
+  bool loadAircraft(const std::string& acFileName);
+
+private:
+  /// Locates a file from a given path list
+  static bool openFile(const std::list<std::string>& paths,
+                       const std::string& file, std::ifstream& fs);
+  /// Takes a whole config file in a string and makes valid xml
+  /// from JSBSim files
+  static void fixupTEST(std::string& s);
 
   /// Convert a JSBSim, property name like it can appear in config files
   /// into a flightgear property name. That is it strips the optional - sign
   /// and prepends the property with fdm/jsbsim/
-  std::string propNameFromJSBSim(const std::string& jsbSymbol);
+  static std::string propNameFromJSBSim(const std::string& jsbSymbol);
 
   /// Returns true in case the JSBSim property contains a minus
-  bool propMinusFromJSBSim(const std::string& jsbSymbol);
+  static bool propMinusFromJSBSim(const std::string& jsbSymbol);
 
   /// Returns the name of the output property given the fcs component's name
-  std::string normalizeComponentName(const std::string& name);
+  static std::string normalizeComponentName(const std::string& name);
 
 
-
+  /// <FIXME> document and rethink
   Property lookupJSBExpression(const std::string& name);
 
   void registerExpression(const std::string& name, Property expr);
@@ -151,84 +159,60 @@ public:
   Property addAbsModel(const std::string& name, Property& in);
 
   void addFCSModel(Model* model);
+  /// </FIXME> document and rethink
 
 
-  void parseMetrics(istream& data);
-  void parseUndercarriage(istream& data);
-  void parseFCSComponent(istream& data, const char* name, const char* type);
-  TypedProperty<real_type> parseCoefficient(istream& data, const char* type);
-  void parseTank(istream& data, const char* type, const char* number);
-  void parseThruster(istream& data, const char* file);
-  void parseEngine(istream& data, const char* file);
+  /// converts the top dom like representation to an OpenFDM Vehicle
+  bool convertDocument(const XMLDocument* jsbDoc);
+  /// converts the METRICS data
+  bool convertMetrics(const std::string& data);
+  /// converts the UNDERCARRIAGE data
+  bool convertUndercarriage(const std::string& data);
+  /// converts the FLIGHT_CONTROL or AUTOPILOT elements
+  bool convertFCSList(const XMLElement* fcsElement);
+  /// converts a single FCS component
+  bool convertFCSComponent(const std::string& type, const std::string& name,
+                           const std::string& data);
+  /// converts the propulsion elements
+  bool convertPropulsion(const XMLElement* pElem);
+  /// converts FG_TANK data
+  bool convertTank(const std::string& data, const std::string& type,
+                   const std::string& number);
+  /// converts FG_THRUSTER data
+  bool convertThruster(const std::string& data, const std::string& type,
+                       const std::string& number);
+  /// converts FG_ENGINE data
+  bool convertEngine(const std::string& data, const std::string& type,
+                     const std::string& number);
+  /// converts AERODYNAMICS elements
+  bool convertAerodynamics(const XMLElement* aerodynamics);
+  /// converts recursively AERODYNAMICS summands, factors and grooups
+  bool convertAEROSummands(const XMLElement* aeroSummands,
+                           SumExpressionImpl* sum,
+                           ProductExpressionImpl* prod);
 
+  TypedProperty<real_type> convertCoefficient(const std::string& data,
+                                              const std::string& type);
+  void makeAeroprops(void);
+
+
+
+  /// List for the aircraft search path.
+  std::list<std::string> mAircraftPath;
+  /// List for the engine search path.
+  std::list<std::string> mEnginePath;
+
+
+  // For now just copies from the prevous try ...
   Vector3 structToBody(const Vector3& v)
   {
     Vector3 cgoff = v - mCG;
     return convertFrom(uInch, Vector3(-cgoff(1), cgoff(2), -cgoff(3)));
   }
-
-  void makeAeroprops(void);
-  
-
-private:
-  enum ParseMode {
-    PROPULSIONMode,
-    FCSMode,
-    AERODYNAMICSMode,
-    UNKOWNMode
-  };
-
-  enum Axis {
-    Lift,
-    Drag,
-    Side,
-    Roll,
-    Pitch,
-    Yaw
-  };
-
-  enum FCSComponent {
-    SummerComponent,
-    DeadbandComponent,
-    GradientComponent,
-    SwitchComponent,
-    KinematComponent,
-    GainComponent,
-    SchedGainComponent,
-    AeroScaleComponent,
-    IntegratorComponent,
-    FilterComponent
-  };
-
-  typedef PropertyMap expression_table;
-
-  expression_table mExpressionTable;
   Property mPrevousFCSOutput;
-
-  ParseMode mParseMode;
-
-  Axis mAxis;
-
-  struct tagdata {
-    tagdata(const std::string& n, const XMLAttributes& atts)
-      : name(n), attributes(atts)
-    {}
-    std::string name;
-    XMLAttributesDefault attributes;
-    std::stringstream data;
-  };
-
-  std::stack<tagdata*> mElementStack;
-
-  std::stack<shared_ptr<SumExpressionImpl> > mCurrentAxis;
-  std::stack<shared_ptr<ProductExpressionImpl> > mCurrentAxisProd;
-
-  shared_ptr<Vehicle> mVehicle;
+  PropertyMap mExpressionTable;
   shared_ptr<AeroForce> mAeroForce;
-
   Vector3 mCG;
-  unsigned mEngineNumber;
-  unsigned mGearNumber;
 };
 
 } // namespace OpenFDM

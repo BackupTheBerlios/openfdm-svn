@@ -9,8 +9,10 @@ main_LDADD = libJSBReader.la ../OpenFDM/libOpenFDM.la -L$(HOME)/sw/lib -lsgxml -
 OpenFDMincludedir = $(includedir)/JSBSim
 
 OpenFDMinclude_HEADERS = \
-  JSBReader.h
+  JSBReader.h \
+  LegacyJSBSimReader.h
 
 lib_LTLIBRARIES = libJSBReader.la
 libJSBReader_la_SOURCES = \
-  JSBReader.cpp
+  JSBReader.cpp \
+  LegacyJSBSimReader.cpp

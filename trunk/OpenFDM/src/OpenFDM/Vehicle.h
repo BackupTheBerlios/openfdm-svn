@@ -9,6 +9,7 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Quaternion.h"
+#include "Force.h"
 #include "Frame.h"
 #include "FreeJoint.h"
 #include "RootFrame.h"
@@ -30,7 +31,7 @@ public:
   virtual ~Vehicle(void);
 
   bool init(void);
-  void output(void);
+  void output(void); /// FIXME??
   void update(real_type dt);
 
   /** Set planet callback.
@@ -108,6 +109,8 @@ public:
   { return mTopBody; }
   RigidBody* getTopBody(void)
   { return mTopBody; }
+  Environment* getEnvironment(void)
+  { return mEnvironment; }
 
   const System* getSystem(void) const
   { return mSystem; }
