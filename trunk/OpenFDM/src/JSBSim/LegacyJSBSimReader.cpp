@@ -829,9 +829,12 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   shared_ptr<Gain> gain;
   shared_ptr<DiscreteTransferFunction> discreteTransfFunc;
   shared_ptr<Table1D> table1D;
+  shared_ptr<Saturation> kinematRateLimit;
+  shared_ptr<Saturation> inputSaturation;
 
   // The final output property.
   Property out;
+  Property normOut;
 
   // JSBSim FCS output values contain some implicit rules.
   // From the component name a default output property is formed.
@@ -841,22 +844,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   std::list<std::string> outlist;
   outlist.push_back(string("fcs/") + normalizeComponentName(name));
 
-  enum FCSComponent {
-    SummerComponent,
-    DeadbandComponent,
-    GradientComponent,
-    SwitchComponent,
-    KinematComponent,
-    GainComponent,
-    SchedGainComponent,
-    AeroScaleComponent,
-    IntegratorComponent,
-    FilterComponent
-  };
-
-  FCSComponent cType;
   if (type == "SUMMER") {
-    cType = SummerComponent;
     summer = new Summer(name);
     summer->setNumSummands(0);
     model = summer;
@@ -864,36 +852,63 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     out = model->getOutputPort(0);
 
   } else if (type == "DEADBAND") {
-    cType = DeadbandComponent;
-
     deadband = new DeadBand(name);
     model = deadband;
     addFCSModel(model);
     out = model->getOutputPort(0);
 
   } else if (type == "GRADIENT") {
-    cType = GradientComponent;
     model = new TimeDerivative(name);
     addFCSModel(model);
     out = model->getOutputPort(0);
 
   } else if (type == "SWITCH") {
     std::cout << "Ignoring SWITCH" << std::endl;
-    cType = SwitchComponent;
 
   } else if (type == "KINEMAT") {
-    std::cout << "Ignoring KINEMAT" << std::endl;
-    cType = KinematComponent;
-
-    gain = new Gain(name);
+    // A KINEMAT is done as a first order ODE packed into a discrete system
+    // The derivative is limited to match the avarage movement speed of the
+    // KINEMAT. This is not exactly like JSBSim does that, but it is
+    // sufficient for now.
+    gain = new Gain(name + " Input Gain");
+    addFCSModel(gain);
     gain->setGain(1);
     model = gain;
-    addFCSModel(model);
-    out = model->getOutputPort(0);
+
+    inputSaturation = new Saturation(name + "Input Saturation");
+    addFCSModel(inputSaturation);
+    inputSaturation->setInputPort(0, gain->getOutputPort(0));
+
+    Summer* inputError = new Summer(name + " Input Sum");
+    addFCSModel(inputError);
+    inputError->setInputPort(0, inputSaturation->getOutputPort(0));
+    inputError->setNumSummands(2);
+
+    Gain* errorGain = new Gain(name + " Error Gain");
+    addFCSModel(errorGain);
+    errorGain->setGain(100);
+    errorGain->setInputPort(0, inputError->getOutputPort(0));
+
+    kinematRateLimit = new Saturation(name + " Rate Limit");
+    addFCSModel(kinematRateLimit);
+    kinematRateLimit->setInputPort(0, errorGain->getOutputPort(0));
+
+    DiscreteIntegrator* integrator
+      = new DiscreteIntegrator(name + " Integrator");
+    addFCSModel(integrator);
+    integrator->setInputPort(0, kinematRateLimit->getOutputPort(0));
+    Matrix tmp(1, 1);
+    tmp.clear();
+    integrator->setInitialValue(tmp);
+    out = integrator->getOutputPort(0);
+
+    Gain* feedbackGain = new Gain(name + " Feedback Gain");
+    addFCSModel(feedbackGain);
+    feedbackGain->setGain(-1);
+    feedbackGain->setInputPort(0, integrator->getOutputPort(0));
+    inputError->setInputPort(1, feedbackGain->getOutputPort(0));
 
   } else if (type == "PURE_GAIN") {
-    cType = GainComponent;
-
     gain = new Gain(name);
     gain->setGain(1);
     model = gain;
@@ -901,7 +916,20 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     out = model->getOutputPort(0);
 
   } else if (type == "AEROSURFACE_SCALE") {
-    cType = AeroScaleComponent;
+    // An AEROSURFACE_SCALE component is done with n input saturation clipping
+    // the input from -1 to 1. This is the one which is magically mapped to
+    // an output property in /surface-positions/...
+    // This one's output is directly connected to a lookup table
+
+    inputSaturation = new Saturation(name + "Input Saturation");
+    model = inputSaturation;
+    addFCSModel(inputSaturation);
+    normOut = inputSaturation->getOutputPort(0);
+    Matrix tmp(1, 1);
+    tmp(1, 1) = -1;
+    inputSaturation->setMinSaturation(tmp);
+    tmp(1, 1) = 1;
+    inputSaturation->setMaxSaturation(tmp);
 
     table1D = new Table1D(name);
     TableLookup tl;
@@ -920,14 +948,12 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     iv(1) = 3;
     tableData(iv) = 1;
     table1D->setTableData(tableData);
+    table1D->setInputPort(0, inputSaturation->getOutputPort(0));
 
-    model = table1D;
-    addFCSModel(model);
-    out = model->getOutputPort(0);
+    addFCSModel(table1D);
+    out = table1D->getOutputPort(0);
 
   } else if (type == "SCHEDULED_GAIN") {
-    cType = SchedGainComponent;
-
     Product* prod = new Product(name);
     prod->setNumFactors(2);
     table1D = new Table1D(std::string("Lookup table for ") + name);
@@ -938,8 +964,6 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     out = model->getOutputPort(0);
 
   } else if (type == "INTEGRATOR") {
-    cType = IntegratorComponent;
-
     model = new DiscreteIntegrator(name);
     out = model->getOutputPort(0);
     addFCSModel(model);
@@ -948,7 +972,6 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     //   C1
     // ------
     // s + C1
-    cType = FilterComponent;
     discreteTransfFunc = new DiscreteTransferFunction(name);
     Vector v(1);
     discreteTransfFunc->setNumerator(v);
@@ -963,7 +986,6 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     // C1*s + C2
     // ---------
     // C3*s + C4
-    cType = FilterComponent;
     discreteTransfFunc = new DiscreteTransferFunction(name);
     discreteTransfFunc->setNumerator(Vector(2));
     discreteTransfFunc->setDenominator(Vector(2));
@@ -975,7 +997,6 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     //   s
     // ------
     // s + C1
-    cType = FilterComponent;
     discreteTransfFunc = new DiscreteTransferFunction(name);
     Vector v(2);
     v(1) = 1;
@@ -990,7 +1011,6 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     // C1*s + C2*s + C3
     // ----------------
     // C4*s + C5*s + C6
-    cType = FilterComponent;
     discreteTransfFunc = new DiscreteTransferFunction(name);
     discreteTransfFunc->setNumerator(Vector(3));
     discreteTransfFunc->setDenominator(Vector(3));
@@ -998,10 +1018,9 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     addFCSModel(model);
     out = model->getOutputPort(0);
 
-  } else {
+  } else
     return error("Unknown FCS COMPONENT type: \"" + type
                  + "\". Ignoring whole FCS component \"" + name + "\"" );
-  }
 
   OpenFDMAssert(out.isValid());
 
@@ -1055,48 +1074,45 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       double value;
       datastr >> value;
 
-      if (cType == IntegratorComponent) {
+      if (type == "INTEGRATOR") {
         std::string modelName = std::string("Output Gain for ") + name;
         outgain = new Gain(modelName);
         addFCSModel(outgain);
         outgain->setGain(value);
-      } else if (cType == FilterComponent) {
-        if (type == "LAG_FILTER") {
-          //   C1
-          // ------
-          // s + C1
-          Vector v = discreteTransfFunc->getNumerator();
-          v(2) = value;
-          discreteTransfFunc->setNumerator(v);
-          v = discreteTransfFunc->getDenominator();
-          v(2) = value;
-          discreteTransfFunc->setDenominator(v);
-
-        } else if (type == "LEAD_LAG_FILTER") {
-          // C1*s + C2
-          // ---------
-          // C3*s + C4
-          Vector v = discreteTransfFunc->getNumerator();
-          v(1) = value;
-          discreteTransfFunc->setNumerator(v);
-
-        } else if (type == "WASHOUT_FILTER") {
-          //   s
-          // ------
-          // s + C1
-          Vector v = discreteTransfFunc->getDenominator();
-          v(2) = value;
-          discreteTransfFunc->setDenominator(v);
-
-        } else if (type == "SECOND_ORDER_FILTER") {
-          // C1*s + C2*s + C3
-          // ----------------
-          // C4*s + C5*s + C6
-          Vector v = discreteTransfFunc->getNumerator();
-          v(1) = value;
-          discreteTransfFunc->setNumerator(v);
-        } else
-          return error("No C1 parameter allowed for \"" + type + "\"");
+      } else if (type == "LAG_FILTER") {
+        //   C1
+        // ------
+        // s + C1
+        Vector v = discreteTransfFunc->getNumerator();
+        v(2) = value;
+        discreteTransfFunc->setNumerator(v);
+        v = discreteTransfFunc->getDenominator();
+        v(2) = value;
+        discreteTransfFunc->setDenominator(v);
+        
+      } else if (type == "LEAD_LAG_FILTER") {
+        // C1*s + C2
+        // ---------
+        // C3*s + C4
+        Vector v = discreteTransfFunc->getNumerator();
+        v(1) = value;
+        discreteTransfFunc->setNumerator(v);
+        
+      } else if (type == "WASHOUT_FILTER") {
+        //   s
+        // ------
+        // s + C1
+        Vector v = discreteTransfFunc->getDenominator();
+        v(2) = value;
+        discreteTransfFunc->setDenominator(v);
+        
+      } else if (type == "SECOND_ORDER_FILTER") {
+        // C1*s + C2*s + C3
+        // ----------------
+        // C4*s + C5*s + C6
+        Vector v = discreteTransfFunc->getNumerator();
+        v(1) = value;
+        discreteTransfFunc->setNumerator(v);
       } else
         return error("No C1 parameter allowed for \"" + type + "\"");
       
@@ -1198,22 +1214,39 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       } else
         return error("No C6 parameter allowed for \"" + type + "\"");
       
-    } else if (cType == KinematComponent && token == "DETENTS") {
+    } else if (token == "DETENTS") {
       int detents;
       datastr >> detents;
 
-      real_type maxVal = 0;
-      while (datastr && 0 <= --detents) {
-        real_type dummy;
-        datastr >> maxVal >> dummy;
-//         Kinemat::table_entry te;
-//         datastr >> te.first >> te.second;
-//         kinemat->addTableEntry(te);
-      }
+      if (type == "KINEMAT") {
+        real_type minVal = Limits<real_type>::max();
+        real_type maxVal = -Limits<real_type>::max();
+        real_type allTime = 0;
+        for (unsigned i = 0; datastr && i < detents; ++i) {
+          real_type val, time;
+          datastr >> val >> time;
+          // Ignore the first time entry ...
+          if (i)
+            allTime += time;
+          minVal = min(minVal, val);
+          maxVal = max(maxVal, val);
+        }
+        Matrix tmp(1, 1);
+        if (allTime != 0) {
+          real_type avgTransRate = abs((maxVal-minVal)/allTime);
+          tmp(1, 1) = -avgTransRate;
+          kinematRateLimit->setMinSaturation(tmp);
+          tmp(1, 1) = avgTransRate;
+          kinematRateLimit->setMaxSaturation(tmp);
+        }
+        tmp(1, 1) = minVal;
+        inputSaturation->setMinSaturation(tmp);
+        tmp(1, 1) = maxVal;
+        inputSaturation->setMaxSaturation(tmp);
 
-      if (gain && !noScale) {
         gain->setGain(maxVal);
-      }
+      } else
+        return error("No DETENTS parameter allowed for \"" + type + "\"");
 
     } else if (token == "GAIN") {
       double value;
@@ -1240,7 +1273,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       double clipmax;
       datastr >> clipmax;
       
-      if (cType == AeroScaleComponent) {
+      if (type == "AEROSURFACE_SCALE") {
         TableData<1> tableData = table1D->getTableData();
         TableData<1>::Index iv;
         iv(1) = 3;
@@ -1262,7 +1295,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       double clipmin;
       datastr >> clipmin;
       
-      if (cType == AeroScaleComponent) {
+      if (type == "AEROSURFACE_SCALE") {
         TableData<1> tableData = table1D->getTableData();
         TableData<1>::Index iv;
         iv(1) = 1;
@@ -1280,10 +1313,12 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
         saturation->setMinSaturation(tmp);
       }
 
-    } else if (cType == KinematComponent && token == "NOSCALE") {
-      noScale = true;
-      if (gain)
-        gain->setGain(1);
+    } else if (token == "NOSCALE") {
+
+      if (type == "KINEMAT") {
+        noScale = true;
+      } else
+        return error("No NOSCALE parameter allowed for \"" + type + "\"");
       
     } else if (token == "OUTPUT") {
       datastr >> token;
@@ -1312,20 +1347,22 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       
       if (table1D) {
         table1D->setInputPort(0, lookupJSBExpression(token));
-      } else {
+      } else
         return error("SCHEDULED_BY without table ??");
-      }
       
-    } else if (cType == DeadbandComponent && token == "WIDTH") {
+    } else if (token == "WIDTH") {
       // deadband width
       double width;
       datastr >> width;
-      deadband->setWidth(width);
 
-    } else {
+      if (type == "DEADBAND") {
+        deadband->setWidth(width);
+      } else
+        return error("No WIDTH parameter allowed for \"" + type + "\"");
+
+    } else
       return error("Unknown FCS COMPONENT keyword: \"" + token
                    + "\". Ignoring whole FCS component \"" + name + "\"");
-    }
   }
 
   // If no explicit input is given, use that braindead default of the
@@ -1346,6 +1383,11 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   if (!inputs.front().isValid()) {
     return error("No input value defined for FCS COMPONENT. "
                  "Ignoring whole FCS component \"" + name + "\"");
+  }
+
+  // For KINEMATS ...
+  if (type == "KINEMAT" && noScale) {
+    gain->setGain(1);
   }
 
   // Now put the expressions for the output chain together.
@@ -1374,22 +1416,24 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     std::string propName = *it;
     registerJSBExpression(propName, out);
 
+    if (!normOut.isValid())
+      normOut = inputs.front();
     // Well, just an other kind of black magic ...
     if (propName == "fcs/elevator-pos-rad") {
-      registerJSBExpression("fcs/elevator-pos-norm", inputs.front());
+      registerJSBExpression("fcs/elevator-pos-norm", normOut);
     } else if (propName == "fcs/left-aileron-pos-rad" ||
                propName == "fcs/aileron-pos-rad") {
-      registerJSBExpression("fcs/left-aileron-pos-norm", inputs.front());
+      registerJSBExpression("fcs/left-aileron-pos-norm", normOut);
     } else if (propName == "fcs/right-aileron-pos-rad") {
-      registerJSBExpression("fcs/right-aileron-pos-norm", inputs.front());
+      registerJSBExpression("fcs/right-aileron-pos-norm", normOut);
     } else if (propName == "fcs/rudder-pos-rad") {
-      registerJSBExpression("fcs/rudder-pos-norm", inputs.front());
+      registerJSBExpression("fcs/rudder-pos-norm", normOut);
     } else if (propName == "fcs/speedbrake-pos-rad") {
-      registerJSBExpression("fcs/speedbrake-pos-norm", inputs.front());
+      registerJSBExpression("fcs/speedbrake-pos-norm", normOut);
     } else if (propName == "fcs/spoiler-pos-rad") {
-      registerJSBExpression("fcs/spoiler-pos-norm", inputs.front());
+      registerJSBExpression("fcs/spoiler-pos-norm", normOut);
     } else if (propName == "fcs/flap-pos-deg") {
-      registerJSBExpression("fcs/flap-pos-norm", inputs.front());
+      registerJSBExpression("fcs/flap-pos-norm", normOut);
     }
   }
 
