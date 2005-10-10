@@ -7,7 +7,7 @@ INCLUDES = -I$(srcdir)/..
 noinst_PROGRAMS = main units
 
 main_SOURCES = main.cpp
-main_LDADD = libOpenFDM.la -lsgxml -lsgstructure
+main_LDADD = libOpenFDM.la
 
 units_SOURCES = units.cpp
 units_LDADD = libOpenFDM.la
@@ -15,6 +15,9 @@ units_LDADD = libOpenFDM.la
 OpenFDMincludedir = $(includedir)/OpenFDM
 
 lib_LTLIBRARIES = libOpenFDM.la
+
+# Will need these at the moment ...
+libOpenFDM_la_LIBADD = -lsgxml -lsgstructure
 nobase_OpenFDMinclude_HEADERS = \
   Matrix.h \
   Quaternion.h \

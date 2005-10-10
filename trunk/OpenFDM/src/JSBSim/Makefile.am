@@ -1,9 +1,9 @@
 INCLUDES = -I$(srcdir)/..
 
-noinst_PROGRAMS = main
-main_SOURCES = main.cpp
-main_LDFLAGS = 
-main_LDADD = libJSBReader.la ../OpenFDM/libOpenFDM.la -L$(HOME)/sw/lib -lsgxml -lsgstructure
+bin_PROGRAMS = jsb2openfdm
+jsb2openfdm_SOURCES = jsb2openfdm.cpp
+jsb2openfdm_LDFLAGS = 
+jsb2openfdm_LDADD = libJSBReader.la ../OpenFDM/libOpenFDM.la
 
 ### FIXME!!!
 OpenFDMincludedir = $(includedir)/JSBSim
