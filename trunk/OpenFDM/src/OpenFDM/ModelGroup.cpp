@@ -325,14 +325,18 @@ ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& 
       return false;
     }
 
-    // Now recurse into that model.
-    if (!appendDependecies(firstModel, *it, newList))
-      return false;
+    // We need to store that one here since the iterator possibly invalidates
+    // during the next append dependency call
+    shared_ptr<Model> tmpModel = *it;
+    mModels.erase(it);
 
+    // Now recurse into that model.
+    if (!appendDependecies(firstModel, tmpModel, newList))
+      return false;
+ 
     // Finally, past all the dependent models are already in the list,
     // push that one in question.
-    newList.push_back(*it);
-    mModels.erase(it);
+    newList.push_back(tmpModel);
   }
 }
 
