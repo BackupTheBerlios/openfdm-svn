@@ -482,6 +482,18 @@ LegacyJSBSimReader::convertDocument(const XMLDocument* jsbDoc)
   if (!convertMetrics(metricsElem->getData()))
     return error("Cannot convert METRICS data");
 
+  // Convert all the flight control system elements.
+  const XMLElement* fcsElem = topElem->getElement("FLIGHT_CONTROL");
+  if (fcsElem) {
+    if (!convertFCSList(fcsElem))
+      return error("Cannot convert FLIGHT_CONTROL data");
+  }
+  const XMLElement* autopilotElem = topElem->getElement("AUTOPILOT");
+  if (autopilotElem) {
+    if (!convertFCSList(autopilotElem))
+      return error("Cannot convert AUTOPILOT data");
+  }
+
   // Parse the undercarriage section
   const XMLElement* undercarriageElem = topElem->getElement("UNDERCARRIAGE");
   if (undercarriageElem) {
@@ -496,19 +508,6 @@ LegacyJSBSimReader::convertDocument(const XMLDocument* jsbDoc)
       return error("Cannot convert PROPULSION data");
   }
   
-  // Convert all the flight control system elements.
-  const XMLElement* fcsElem = topElem->getElement("FLIGHT_CONTROL");
-  if (fcsElem) {
-    if (!convertFCSList(fcsElem))
-      return error("Cannot convert FLIGHT_CONTROL data");
-  }
-  const XMLElement* autopilotElem = topElem->getElement("AUTOPILOT");
-  if (autopilotElem) {
-    if (!convertFCSList(autopilotElem))
-      return error("Cannot convert AUTOPILOT data");
-  }
-
-
   // Convert the aerodynamic force.
   const XMLElement* aeroElem = topElem->getElement("AERODYNAMICS");
   if (aeroElem) {
@@ -875,7 +874,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     gain->setGain(1);
     model = gain;
 
-    inputSaturation = new Saturation(name + "Input Saturation");
+    inputSaturation = new Saturation(name + " Input Saturation");
     addFCSModel(inputSaturation);
     inputSaturation->setInputPort(0, gain->getOutputPort(0));
 
@@ -898,7 +897,8 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     addFCSModel(integrator);
     integrator->setInputPort(0, kinematRateLimit->getOutputPort(0));
     Matrix tmp(1, 1);
-    tmp.clear();
+    tmp(1, 1) = 1;
+//     tmp.clear();
     integrator->setInitialValue(tmp);
     out = integrator->getOutputPort(0);
 
@@ -1385,11 +1385,6 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
                  "Ignoring whole FCS component \"" + name + "\"");
   }
 
-  // For KINEMATS ...
-  if (type == "KINEMAT" && noScale) {
-    gain->setGain(1);
-  }
-
   // Now put the expressions for the output chain together.
   // Doing that now will put them together in a well defined order.
   if (outbias) {
@@ -1410,14 +1405,29 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   // FIXME put in here a normalized out property, or at least a gain to
   // normalize
 
+  // For KINEMATS ...
+  if (type == "KINEMAT") {
+    if (noScale) {
+      gain->setGain(1);
+      normOut = out;
+    } else {
+      Gain* normGain = new Gain(name + " Normalize Gain");
+      normGain->setGain(1/gain->getGain());
+      addFCSModel(normGain);
+      normGain->setInputPort(0, out);
+      normOut = normGain->getOutputPort(0);
+    }
+  }
+
+  if (!normOut.isValid())
+    normOut = inputs.front();
+
   // Register all output property names.
   std::list<std::string>::iterator it;
   for (it = outlist.begin(); it != outlist.end(); ++it) {
     std::string propName = *it;
     registerJSBExpression(propName, out);
 
-    if (!normOut.isValid())
-      normOut = inputs.front();
     // Well, just an other kind of black magic ...
     if (propName == "fcs/elevator-pos-rad") {
       registerJSBExpression("fcs/elevator-pos-norm", normOut);
