@@ -123,7 +123,7 @@ Contact::getGround(real_type t)
     return;
 
   // Get the position of the contact in the reference system.
-  Vector3 pos = frame->getRefPosition() + getPosition();
+  Vector3 pos = frame->posToRef(getPosition());
   // Query for the ground parameters at this point.
   mGroundVal = mEnvironment->getGround()->getGroundPlane(t, pos);
 }

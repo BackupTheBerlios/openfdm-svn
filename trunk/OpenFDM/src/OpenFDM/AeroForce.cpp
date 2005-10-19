@@ -183,7 +183,7 @@ AeroForce::getRefPosition(void) const
     OpenFDMAssert(frame);
     if (frame) {
       // Get the position in the earth centered coordinate frame.
-      mRefPosition = frame->getRefPosition() + getPosition();
+      mRefPosition = frame->posToRef(getPosition());
       mDirtyRefPosition = false;
     }
   }
