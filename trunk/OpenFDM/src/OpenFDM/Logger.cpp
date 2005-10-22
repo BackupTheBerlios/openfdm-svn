@@ -5,17 +5,43 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+
+#include "Mutex.h"
+#include "ScopeLock.h"
 #include "LogStream.h"
 
 namespace OpenFDM {
 
 namespace Log {
 
+static unsigned
+atou(const char* s)
+{
+  if (!s)
+    return 0u;
+
+  std::stringstream strstream(s);
+  unsigned value;
+  strstream >> value;
+  if (!strstream)
+    return 0u;
+
+  return value;
+}
+
 Logger::Logger(std::basic_ostream<char>* stream) :
   mStream(stream),
   mCategory(~0u),
   mPriority(Log::Error)
 {
+  // Set some defaults from the environment
+  unsigned value = atou(std::getenv("OPENFDM_DEBUG_PRIORITY"));
+  if (value)
+    mPriority = value;
+      
+  value = atou(std::getenv("OPENFDM_DEBUG_CATEGORY"));
+  if (value)
+    mCategory = value;
 }
 
 void
@@ -42,37 +68,17 @@ Logger::setPriority(Log::Priority priority)
   logger->mPriority = priority;
 }
 
-static unsigned
-atou(const char* s)
-{
-  if (!s)
-    return 0u;
-
-  std::stringstream strstream(s);
-  unsigned value;
-  strstream >> value;
-  if (!strstream)
-    return 0u;
-
-  return value;
-}
-
 Logger*
 Logger::Instance(void)
 {
   static Logger* ptr = 0;
   if (!ptr) {
-    // Create new instance ...
-    ptr = new Logger(&std::cerr);
-    
-    // ... and set some defaults from the environment.
-    unsigned value = atou(std::getenv("OPENFDM_DEBUG_PRIORITY"));
-    if (value)
-      ptr->mPriority = value;
-
-    value = atou(std::getenv("OPENFDM_DEBUG_CATEGORY"));
-    if (value)
-      ptr->mCategory = value;
+    static Mutex mutex;
+    ScopeLock scopeLock(mutex);
+    if (!ptr) {
+      // Create new instance ...
+      ptr = new Logger(&std::cerr);
+    }
   }
   return ptr;
 }
