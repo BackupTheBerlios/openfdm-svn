@@ -21,8 +21,7 @@ public:
   Contact(const std::string& name, Environment* env);
   virtual ~Contact(void);
 
-  virtual void output(void);
-  virtual void setState(real_type t, const Vector&, unsigned);
+  virtual void output(const TaskInfo&);
 
   Vector3 mPosition;
   void setPosition(const Vector3& p)
@@ -44,7 +43,6 @@ public:
 private:
   void getGround(real_type t);
 
-  bool mPerStepCallback;
   bool mEnabled;
   GroundValues mGroundVal;
   shared_ptr<Environment> mEnvironment;

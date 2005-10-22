@@ -106,26 +106,27 @@ private:
 class OutputVisitor
   : public Visitor {
 public:
-  OutputVisitor(void)
+  OutputVisitor(const TaskInfo& taskInfo) : mTaskInfo(taskInfo)
   { }
   virtual void apply(MultiBodyModel& abNode)
   {
-    abNode.output();
+    abNode.output(mTaskInfo);
   }
+private:
+  const TaskInfo& mTaskInfo;
 };
 
 class UpdateVisitor
   : public Visitor {
 public:
-  UpdateVisitor(real_type dt) :
-    mDt(dt)
+  UpdateVisitor(const TaskInfo& taskInfo) : mTaskInfo(taskInfo)
   { }
   virtual void apply(MultiBodyModel& abNode)
   {
-    abNode.update(mDt);
+    abNode.update(mTaskInfo);
   }
 private:
-  real_type mDt;
+  const TaskInfo& mTaskInfo;
 };
 
 class StateCountVisitor
@@ -153,6 +154,15 @@ RootFrame::~RootFrame(void)
 {
 }
 
+
+MultiBodySystem::MultiBodySystem(RootFrame* rootFrame) :
+  Model("multibodymodel"),
+  mRootFrame(rootFrame)
+{
+  // FIXME
+  addSampleTime(SampleTime::PerTimestep);
+  addSampleTime(SampleTime::Continous);
+}
 
 MultiBodySystem::~MultiBodySystem(void)
 {
@@ -235,16 +245,16 @@ MultiBodySystem::init(void)
 }
 
 void
-MultiBodySystem::output(void)
+MultiBodySystem::output(const TaskInfo& taskInfo)
 {
-  OutputVisitor ov;
+  OutputVisitor ov(taskInfo);
   mRootFrame->accept(ov);
 }
 
 void
-MultiBodySystem::update(real_type dt)
+MultiBodySystem::update(const TaskInfo& taskInfo)
 {
-  UpdateVisitor uv(dt);
+  UpdateVisitor uv(taskInfo);
   mRootFrame->accept(uv);
 }
 

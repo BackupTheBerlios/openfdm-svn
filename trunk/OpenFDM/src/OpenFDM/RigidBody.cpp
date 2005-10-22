@@ -76,7 +76,7 @@ RigidBody::computeArtValues(void)
   mArtForce = Vector6(cross(iv.getAngular(), Jiv.getAngular()) +
                       cross(iv.getLinear(), Jiv.getLinear()),
                       cross(iv.getAngular(), Jiv.getLinear()));
-  
+
   // Collect all forces acting directly on that body.
   n = getNumMultiBodyModels();
   for (unsigned i = 0; i < n; ++i) {
@@ -84,6 +84,7 @@ RigidBody::computeArtValues(void)
     if (child) {
       Log(ArtBody, Debug) << "Adding local force \"" << child->getName()
                           << "\" to body \"" << getName() << "\"" << endl;
+     
       // FIXME: why is this - sign ???
       // Ok, because of the minus in MobileRoot ...
       mArtForce -= child->getForce(this);

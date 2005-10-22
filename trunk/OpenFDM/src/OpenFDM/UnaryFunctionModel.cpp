@@ -36,7 +36,7 @@ UnaryFunctionModel::init(void)
 }
 
 void
-UnaryFunctionModel::output(void)
+UnaryFunctionModel::output(const TaskInfo&)
 {
   // Evaluate the expression.
   mFunctionValue = mUnaryExpression->getValue();

@@ -19,7 +19,7 @@ public:
   virtual ~Integrator(void);
 
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   virtual void setState(real_type t, const Vector& state, unsigned offset);
   virtual void getState(Vector& state, unsigned offset) const;

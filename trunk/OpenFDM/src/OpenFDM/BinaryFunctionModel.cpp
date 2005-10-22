@@ -36,7 +36,7 @@ BinaryFunctionModel::init(void)
 }
 
 void
-BinaryFunctionModel::output(void)
+BinaryFunctionModel::output(const TaskInfo&)
 {
   // Evaluate the expression.
   mFunctionValue = mBinaryExpression->getValue();

@@ -187,6 +187,8 @@ AeroForce::getRefPosition(void) const
       mDirtyRefPosition = false;
     }
   }
+  Log(ArtBody, Debug3) << "AeroForce::getRefPosition()"
+                       << trans(mRefPosition) << endl;
   return mRefPosition;
 }
 
@@ -208,6 +210,8 @@ AeroForce::getAirSpeed(void) const
       mDirtyAirSpeed = false;
     }
   }
+  Log(ArtBody, Debug3) << "AeroForce::getAirSpeed()"
+                       << trans(mAirSpeed) << endl;
   return mAirSpeed;
 }
 
@@ -218,6 +222,8 @@ AeroForce::getMach(void) const
     mMach = (1/getSoundSpeed())*getAirSpeed().getLinear();
     mDirtyMach = false;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getMach()"
+                       << trans(mMach) << endl;
   return mMach;
 }
 
@@ -228,6 +234,8 @@ AeroForce::getTrueSpeed(void) const
     mTrueSpeed = norm(getAirSpeed().getLinear());
     mDirtyTrueSpeed = false;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getTrueSpeed()"
+                       << mTrueSpeed << endl;
   return mTrueSpeed;
 }
 
@@ -236,6 +244,8 @@ AeroForce::getEquivalentAirSpeed(void) const
 {
   if (mDirtyEquivalentAirSpeed)
     computeCalEquAirspeed();
+  Log(ArtBody, Debug3) << "AeroForce::getEquivalentAirSpeed()"
+                       << mEquivalentAirSpeed << endl;
   return mEquivalentAirSpeed;
 }
 
@@ -244,6 +254,8 @@ AeroForce::getCalibratedAirSpeed(void) const
 {
   if (mDirtyCalibratedAirSpeed)
     computeCalEquAirspeed();
+  Log(ArtBody, Debug3) << "AeroForce::getCalibratedAirSpeed()"
+                       << mCalibratedAirSpeed << endl;
   return mCalibratedAirSpeed;
 }
 
@@ -255,6 +267,8 @@ AeroForce::getDynamicPressure(void) const
     real_type rho = getDensity();
     mDynamicPressure = 0.5*rho*V*V;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getDynamicPressure()"
+                       << mDynamicPressure << endl;
   return mDynamicPressure;
 }
 
@@ -269,6 +283,7 @@ AeroForce::getAlpha(void) const
       mAlpha = atan2(V(iW), V(iU));
     mDirtyAlpha = false;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getAlpha()" << mAlpha << endl;
   return mAlpha;
 }
 
@@ -286,6 +301,7 @@ AeroForce::getAlphaDot(void) const
     mAlphaDot = 0;
     mDirtyAlphaDot = false;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getAlphaDot() " << mAlphaDot << endl;
   return mAlphaDot;
 }
 
@@ -302,6 +318,7 @@ AeroForce::getBeta(void) const
     
     mDirtyBeta = false;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getBeta() " << mBeta << endl;
   return mBeta;
 }
 
@@ -321,6 +338,7 @@ AeroForce::getBetaDot(void) const
 
     mDirtyBetaDot = false;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getBetaDot() " << mBetaDot << endl;
   return mBetaDot;
 }
 
@@ -369,7 +387,7 @@ AeroForce::getBodyR(void) const
 real_type
 AeroForce::getMachNumber(void) const
 {
-  return getTrueSpeed()/getSoundSpeed();
+  return norm(getMach());
 }
 
 real_type
@@ -416,6 +434,7 @@ AeroForce::getAltitude(void) const
     mAltitude = geod.altitude;
     mDirtyAltitude = false;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getAltitude() " << mAltitude << endl;
   return mAltitude;
 }
 
@@ -435,6 +454,8 @@ AeroForce::getAboveGroundLevel(void) const
     }
     mDirtyAboveGroundLevel = false;
   }
+  Log(ArtBody, Debug3) << "AeroForce::getAboveGroundLevel() "
+                       << mAboveGroundLevel << endl;
   return mAboveGroundLevel;
 }
 
@@ -442,6 +463,8 @@ real_type
 AeroForce::getPressure(void) const
 {
   computeAtmosphere();
+  Log(ArtBody, Debug3) << "AeroForce::getPressure() "
+                       << mAtmos.pressure << endl;
   return mAtmos.pressure;
 }
 
@@ -449,6 +472,8 @@ real_type
 AeroForce::getDensity(void) const
 {
   computeAtmosphere();
+  Log(ArtBody, Debug3) << "AeroForce::getDensity() "
+                       << mAtmos.density << endl;
   return mAtmos.density;
 }
 
@@ -456,6 +481,8 @@ real_type
 AeroForce::getSoundSpeed(void) const
 {
   computeAtmosphere();
+  Log(ArtBody, Debug3) << "AeroForce::getSoundSpeed() "
+                       << mAtmos.soundspeed << endl;
   return mAtmos.soundspeed;
 }
 
@@ -463,6 +490,8 @@ real_type
 AeroForce::getTemperature(void) const
 {
   computeAtmosphere();
+  Log(ArtBody, Debug3) << "AeroForce::getTemperature() "
+                       << mAtmos.temperature << endl;
   return mAtmos.temperature;
 }
 
@@ -529,20 +558,6 @@ AeroForce::getLocalGroundPlane(void) const
 }
 
 void
-AeroForce::setConstantProperty(const std::string& pName, real_type value)
-{
-  Property prop(new ConstExpressionPropertyImpl<real_type>(value));
-  addProperty(pName, prop);
-}
-
-void
-AeroForce::removeConstantProperty(const std::string& pName)
-{
-  // FIXME check if it is a constant property
-  removeProperty(pName);
-}
-
-void
 AeroForce::setState(real_type t, const Vector& state, unsigned offset)
 {
   // First determine the intersection depth with the ground.
@@ -590,6 +605,9 @@ AeroForce::computeForce(void)
 
   for (int i = 0; i < 6; ++i)
     force(i+1) += mBodyAxisSummers[i]->getValue();
+
+  Log(ArtBody, Debug3) << "AeroForce::computeForce() "
+                       << trans(force) << endl;
 
   applyForce(forceFrom(mPosition, mOrientation, force));
 }

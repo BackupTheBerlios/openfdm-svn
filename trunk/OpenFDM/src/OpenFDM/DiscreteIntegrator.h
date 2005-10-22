@@ -19,8 +19,8 @@ public:
   virtual ~DiscreteIntegrator(void);
 
   virtual bool init(void);
-  virtual void output(void);
-  virtual void update(real_type dt);
+  virtual void output(const TaskInfo&);
+  virtual void update(const TaskInfo& taskInfo);
 
   virtual void setDiscreteState(const Vector& state, unsigned offset);
   virtual void getDiscreteState(Vector& state, unsigned offset) const;

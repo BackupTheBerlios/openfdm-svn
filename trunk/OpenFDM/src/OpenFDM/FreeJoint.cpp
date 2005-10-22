@@ -21,6 +21,7 @@ FreeJoint::FreeJoint(Environment* env,const std::string& name)
 {
   setNumContinousStates(13);
   mEnvironment = env;
+  addSampleTime(SampleTime::Continous);
 }
 
 FreeJoint::~FreeJoint(void)

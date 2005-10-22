@@ -55,14 +55,17 @@ SimpleGear::~SimpleGear(void)
 // }
 
 void
-SimpleGear::output(void)
+SimpleGear::output(const TaskInfo& taskInfo)
 {
-  if (getInputPort("brakeCommand").isValid())
-    mBrake = getInputPort("brakeCommand").getValue().toReal();
-  if (getInputPort("steeringAngle").isValid())
-    mSteeringAngle = getInputPort("steeringAngle").getValue().toReal();
+  if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
+                          SampleTime::PerTimestep)) {
+    if (getInputPort("brakeCommand").isValid())
+      mBrake = getInputPort("brakeCommand").getValue().toReal();
+    if (getInputPort("steeringAngle").isValid())
+      mSteeringAngle = getInputPort("steeringAngle").getValue().toReal();
+  }
 
-  Contact::output();
+  Contact::output(taskInfo);
 }
 
 real_type

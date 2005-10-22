@@ -22,7 +22,7 @@ public:
   virtual ~SimpleGear(void);
 
 //   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   real_type getSteeringAngle(void) const;
   void setSteeringAngle(const real_type& steeringAngle);

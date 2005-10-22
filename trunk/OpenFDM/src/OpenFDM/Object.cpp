@@ -20,6 +20,12 @@ Object::~Object(void)
   }
 }
 
+const TypeInfo* const
+Object::getTypeInfo(void) const
+{
+  return 0;
+}
+
 Property
 Object::getProperty(const std::string& name)
 {

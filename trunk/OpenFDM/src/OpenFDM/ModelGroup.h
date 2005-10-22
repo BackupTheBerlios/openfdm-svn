@@ -38,9 +38,9 @@ public:
   virtual bool init(void);
   /// Called when the outputs need to be prepared for the next step.
   /// Note that this is called *before* update() is called.
-  virtual void output(void);
+  virtual void output(const TaskInfo& taskInfo);
   /// Called whenever discrete states need to be updated.
-  virtual void update(real_type dt);
+  virtual void update(const TaskInfo& taskInfo);
 
   virtual void setState(real_type t, const Vector& state, unsigned offset);
   virtual void getState(Vector& state, unsigned offset) const;

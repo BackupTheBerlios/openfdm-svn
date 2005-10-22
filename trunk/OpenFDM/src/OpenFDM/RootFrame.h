@@ -12,7 +12,6 @@
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "Frame.h"
-#include "Function.h"
 #include "RigidBody.h"
 #include "Joint.h"
 
@@ -28,8 +27,7 @@ public:
 class MultiBodySystem :
     public Model {
 public:
-  MultiBodySystem(RootFrame* rootFrame) :
-    Model("multibodymodel"), mRootFrame(rootFrame) {}
+  MultiBodySystem(RootFrame* rootFrame);
   virtual ~MultiBodySystem(void);
 
   /** Sets the state of this multibody system from the state vector state.
@@ -45,8 +43,8 @@ public:
   virtual void getStateDeriv(Vector& stateDeriv, unsigned offset);
 
   virtual bool init(void);
-  virtual void output(void);
-  virtual void update(real_type dt);
+  virtual void output(const TaskInfo& taskInfo);
+  virtual void update(const TaskInfo& taskInfo);
 private:
   shared_ptr<RootFrame> mRootFrame;
 };

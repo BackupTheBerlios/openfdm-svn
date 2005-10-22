@@ -25,6 +25,18 @@ Input::~Input(void)
 {
 }
 
+const Input*
+Input::toInput(void) const
+{
+  return this;
+}
+
+Input*
+Input::toInput(void)
+{
+  return this;
+}
+
 bool
 Input::init(void)
 {
@@ -32,7 +44,7 @@ Input::init(void)
 }
 
 void
-Input::output(void)
+Input::output(const TaskInfo&)
 {
   mOutputValue = mInputValue*mInputGain;
 }
@@ -111,8 +123,20 @@ Output::init(void)
   return true;
 }
 
+const Output*
+Output::toOutput(void) const
+{
+  return this;
+}
+
+Output*
+Output::toOutput(void)
+{
+  return this;
+}
+
 void
-Output::output(void)
+Output::output(const TaskInfo&)
 {
   mValue = mOutputGain*getInputPort(0).getValue().toReal();
 }

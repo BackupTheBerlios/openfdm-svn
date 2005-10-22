@@ -12,7 +12,6 @@
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "Frame.h"
-#include "Function.h"
 #include "RigidBody.h"
 #include "Joint.h"
 #include "Environment.h"

@@ -175,37 +175,48 @@ ModelGroup::init(void)
   if (!sortModels())
     return false;
   // Just init all children.
-  ModelList::iterator it = mModels.begin();
-  while (it != mModels.end()) {
-    if (!(*it)->init()) {
-      Log(Model, Error) << "Initialization of \"" << (*it)->getName()
+  ModelList::iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
+    Model* model = *it;
+
+    if (!model->init()) {
+      Log(Model, Error) << "Initialization of \"" << model->getName()
                         << "\" failed!"<< endl;
       return false;
     }
-    ++it;
+    // Now, tell the current model group about the sample times in
+    // this child model.
+    SampleTimeSet sampleTimes = model->getSampleTimeSet();
+    SampleTimeSet::const_iterator sit;
+    for (sit = sampleTimes.begin(); sit != sampleTimes.end(); ++sit)
+      addSampleTime(*sit);
   }
   return true;
 }
 
 void
-ModelGroup::output(void)
+ModelGroup::output(const TaskInfo& taskInfo)
 {
+  if (!nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
+    return;
+
   // Just do output on all children.
-  ModelList::iterator it = mModels.begin();
-  while (it != mModels.end()) {
-    (*it)->output();
-    ++it;
+  ModelList::iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
+    (*it)->output(taskInfo);
   }
 }
 
 void
-ModelGroup::update(real_type dt)
+ModelGroup::update(const TaskInfo& taskInfo)
 {
+  if (!nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
+    return;
+
   // Just update all children.
-  ModelList::iterator it = mModels.begin();
-  while (it != mModels.end()) {
-    (*it)->update(dt);
-    ++it;
+  ModelList::iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
+    (*it)->update(taskInfo);
   }
 }
 
@@ -213,15 +224,15 @@ void
 ModelGroup::setState(real_type t, const Vector& state, unsigned offset)
 {
   OpenFDMAssert(offset + getNumContinousStates() <= rows(state));
-  ModelList::iterator it = mModels.begin();
-  while (it != mModels.end()) {
+
+  ModelList::iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
     unsigned nStates = (*it)->getNumContinousStates();
     if (0 < nStates) {
       OpenFDMAssert(offset + nStates <= rows(state));
       (*it)->setState(t, state, offset);
       offset += nStates;
     }
-    ++it;
   }
 }
 
@@ -229,15 +240,15 @@ void
 ModelGroup::getState(Vector& state, unsigned offset) const
 {
   OpenFDMAssert(offset + getNumContinousStates() <= rows(state));
-  ModelList::const_iterator it = mModels.begin();
-  while (it != mModels.end()) {
+
+  ModelList::const_iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
     unsigned nStates = (*it)->getNumContinousStates();
     if (0 < nStates) {
       OpenFDMAssert(offset + nStates <= rows(state));
       (*it)->getState(state, offset);
       offset += nStates;
     }
-    ++it;
   }
 }
 
@@ -245,15 +256,15 @@ void
 ModelGroup::getStateDeriv(Vector& stateDeriv, unsigned offset)
 {
   OpenFDMAssert(offset + getNumContinousStates() <= rows(stateDeriv));
-  ModelList::iterator it = mModels.begin();
-  while (it != mModels.end()) {
+
+  ModelList::iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
     unsigned nStates = (*it)->getNumContinousStates();
     if (0 < nStates) {
       OpenFDMAssert(offset + nStates <= rows(stateDeriv));
       (*it)->getStateDeriv(stateDeriv, offset);
       offset += nStates;
     }
-    ++it;
   }
 }
 
@@ -261,15 +272,15 @@ void
 ModelGroup::setDiscreteState(const Vector& state, unsigned offset)
 {
   OpenFDMAssert(offset + getNumDiscreteStates() <= rows(state));
-  ModelList::iterator it = mModels.begin();
-  while (it != mModels.end()) {
+
+  ModelList::iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
     unsigned nStates = (*it)->getNumDiscreteStates();
     if (0 < nStates) {
       OpenFDMAssert(offset + nStates <= rows(state));
       (*it)->setDiscreteState(state, offset);
       offset += nStates;
     }
-    ++it;
   }
 }
 
@@ -277,15 +288,15 @@ void
 ModelGroup::getDiscreteState(Vector& state, unsigned offset) const
 {
   OpenFDMAssert(offset + getNumDiscreteStates() <= rows(state));
-  ModelList::const_iterator it = mModels.begin();
-  while (it != mModels.end()) {
+
+  ModelList::const_iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
     unsigned nStates = (*it)->getNumDiscreteStates();
     if (0 < nStates) {
       OpenFDMAssert(offset + nStates <= rows(state));
       (*it)->getDiscreteState(state, offset);
       offset += nStates;
     }
-    ++it;
   }
 }
 

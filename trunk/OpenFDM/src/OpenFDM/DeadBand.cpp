@@ -39,7 +39,7 @@ DeadBand::init(void)
 }
 
 void
-DeadBand::output(void)
+DeadBand::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0).isValid());
   

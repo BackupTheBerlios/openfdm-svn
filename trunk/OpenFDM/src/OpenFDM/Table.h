@@ -205,7 +205,7 @@ public:
     return getInputPort(0).isValid();
   }
 
-  virtual void output(void)
+  virtual void output(const TaskInfo&)
   {
     OpenFDMAssert(getInputPort(0).isValid());
     TableData<1>::InterpVector interpVec;

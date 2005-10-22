@@ -5,7 +5,6 @@
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
-#include "Function.h"
 #include "ODESolver.h"
 #include "MidpointRule.h"
 

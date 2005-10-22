@@ -4,7 +4,6 @@
 
 #include "Object.h"
 #include "Vector.h"
-#include "Function.h"
 #include "ODESolver.h"
 #include "ExplicitEuler.h"
 

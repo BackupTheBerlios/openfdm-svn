@@ -16,7 +16,6 @@ namespace OpenFDM {
 Contact::Contact(const std::string& name, Environment* env)
   : ExternalForce(name)
 {
-  mPerStepCallback = true;
   mEnabled = true;
   mEnvironment = env;
   setPosition(Vector3::zeros());
@@ -24,6 +23,10 @@ Contact::Contact(const std::string& name, Environment* env)
   unsigned inputPortBase = getNumInputPorts();
   setNumInputPorts(inputPortBase + 1);
   setInputPortName(inputPortBase + 0, "enabled");
+
+  // FIXME??
+  addSampleTime(SampleTime::PerTimestep);
+  addSampleTime(SampleTime::Continous);
 }
 
 Contact::~Contact(void)
@@ -31,21 +34,18 @@ Contact::~Contact(void)
 }
 
 void
-Contact::output(void)
+Contact::output(const TaskInfo& taskInfo)
 {
-  if (mPerStepCallback)
+  if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
+                          SampleTime::PerTimestep)) {
+    Log(Model, Debug) << "Contact::output(): \"" << getName()
+                      << "\" computing ground plane below" << endl;
     getGround(0 /*FIXME*/);
 
-  // FIXME
-  if (getInputPort("enabled").isValid())
-    mEnabled = 0.5 < getInputPort("enabled").getValue().toReal();
-}
-
-void
-Contact::setState(real_type t, const Vector&, unsigned)
-{
-  if (!mPerStepCallback)
-    getGround(t);
+    // FIXME
+    if (getInputPort("enabled").isValid())
+      mEnabled = 0.5 < getInputPort("enabled").getValue().toReal();
+  }
 }
 
 void

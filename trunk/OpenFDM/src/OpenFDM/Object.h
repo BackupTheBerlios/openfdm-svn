@@ -18,10 +18,15 @@ class shared_ptr;
 template<typename T>
 class managed_ptr;
 
+class TypeInfo;
+
 class Object
   : public Referenced {
 public:
   Object(void);
+
+  /// Return the typeinfo for that Object.
+  virtual const TypeInfo* const getTypeInfo(void) const;
   
   Property getProperty(const std::string& name);
   std::list<std::string> listProperties(void) const;

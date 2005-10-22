@@ -23,7 +23,7 @@ public:
   virtual ~Saturation(void);
   
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const Matrix& getMinSaturation(void) const;
   void setMinSaturation(const Matrix& minSaturation);

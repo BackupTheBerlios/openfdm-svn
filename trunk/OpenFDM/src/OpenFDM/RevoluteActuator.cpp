@@ -80,15 +80,18 @@ RevoluteActuator::computeRelAccel(void)
 }
 
 void
-RevoluteActuator::output(void)
+RevoluteActuator::output(const TaskInfo&)
 {
   /*FIXME*/
 }
 
 void
-RevoluteActuator::update(real_type h)
+RevoluteActuator::update(const TaskInfo& taskInfo)
 {
   Log(ArtBody, Debug) << __PRETTY_FUNCTION__ << " " << getName() << endl;
+
+  // FIXME
+  real_type h = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
 
   if (mLocked) {
     mJointVel = 0;

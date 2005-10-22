@@ -22,7 +22,7 @@ public:
   virtual ~Gain(void);
   
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const real_type& getGain(void) const;
   void setGain(const real_type& gain);

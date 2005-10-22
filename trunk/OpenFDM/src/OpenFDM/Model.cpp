@@ -8,6 +8,10 @@
 
 namespace OpenFDM {
 
+const SampleTime SampleTime::PerTimestep(-2);
+const SampleTime SampleTime::Inherited(-1);
+const SampleTime SampleTime::Continous(0);
+
 Model::Model(const std::string& name) :
   mNumContinousStates(0l),
   mNumDiscreteStates(0l),
@@ -40,6 +44,30 @@ Model::toModelGroup(void)
   return 0;
 }
 
+const Input*
+Model::toInput(void) const
+{
+  return 0;
+}
+
+Input*
+Model::toInput(void)
+{
+  return 0;
+}
+
+const Output*
+Model::toOutput(void) const
+{
+  return 0;
+}
+
+Output*
+Model::toOutput(void)
+{
+  return 0;
+}
+
 bool
 Model::init(void)
 {
@@ -47,12 +75,12 @@ Model::init(void)
 }
 
 void
-Model::output(void)
+Model::output(const TaskInfo&)
 {
 }
 
 void
-Model::update(real_type dt)
+Model::update(const TaskInfo&)
 {
 }
 
@@ -72,18 +100,29 @@ Model::getStateDeriv(Vector& stateDeriv, unsigned offset)
 }
 
 void
+Model::setDiscreteState(const Vector& state, unsigned offset)
+{
+}
+
+void
+Model::getDiscreteState(Vector& state, unsigned offset) const
+{
+}
+
+void
 Model::evalFunction(real_type t, const Vector& v, Vector& out)
 {
   /// FIXME Hmm, may be different ...
   setState(t, v, 0);
-  output();
+  TaskInfo taskInfo;
+  taskInfo.addSampleTime(SampleTime::Continous);
+  output(taskInfo);
   out.resize(getNumContinousStates());
   getStateDeriv(out, 0);
 }
 
 void
-Model::evalJacobian(real_type t, const Vector& v,
-                   Matrix& jac, unsigned offset)
+Model::evalJacobian(real_type t, const Vector& v, Matrix& jac)
 {
   unsigned nStates = getNumContinousStates();
 
@@ -93,9 +132,7 @@ Model::evalJacobian(real_type t, const Vector& v,
 
   // Get the function value at the current position.
   Vector fv(nStates);
-  setState(t, v, 0);
-  output();
-  getStateDeriv(fv, 0);
+  evalFunction(t, v, fv);
 
   real_type sqrteps = 1e4*sqrt(Limits<real_type>::epsilon());
 
@@ -105,27 +142,14 @@ Model::evalJacobian(real_type t, const Vector& v,
     tmpv(i) += sqrteps;
 
     // Evaluate then function ...
-    setState(t, tmpv, 0);
-    output();
-    getStateDeriv(tmpfv, 0);
+    evalFunction(t, tmpv, tmpfv);
 
     // ... and compute the differencequotient to approximate the derivative.
-    jac(Range(offset + 1, offset + nStates), offset + i)
-      = (1/sqrteps)*(tmpfv-fv);
+    jac(Range(1, nStates), i) = (1/sqrteps)*(tmpfv-fv);
 
     // Restore the original value.
     tmpv(i) = v(i);
   }
-}
-
-void
-Model::setDiscreteState(const Vector& state, unsigned offset)
-{
-}
-
-void
-Model::getDiscreteState(Vector& state, unsigned offset) const
-{
 }
 
 const std::string&

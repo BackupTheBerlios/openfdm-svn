@@ -107,6 +107,20 @@ greatestCommonDivisor(real_type a_, real_type b_)
   return fabs(a_)/floor(fabs(a_)/a + 0.5);
 }
 
+/// Returns true if the floatingpoint values a and b are equal to roundoff
+/// times a security factor sf.
+inline
+bool
+equal(real_type a, real_type b, real_type sf)
+{ return fabs(a-b) < max(fabs(a), fabs(b))*sf*Limits<real_type>::epsilon(); }
+
+/// Returns true if the floatingpoint values are equal to roundoff with a
+/// security factor of 8.
+inline
+bool
+equal(real_type a, real_type b)
+{ return equal(a, b, (real_type)8); }
+
 } // namespace OpenFDM
 
 #endif

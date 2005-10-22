@@ -55,14 +55,4 @@ Function::numJac(value_type t, const invector_type& v, jacobian_type& jac)
   }
 }
 
-void
-Function::output(void)
-{
-}
-
-void
-Function::update(real_type)
-{
-}
-
 } // namespace OpenFDM

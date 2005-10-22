@@ -44,7 +44,7 @@ Gain::init(void)
   return true;
 }
 
-void Gain::output(void)
+void Gain::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0).isValid());
   mOutput = getInputPort(0).getValue().toMatrix();

@@ -7,22 +7,25 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "Node.h"
-#include "Group.h"
 #include "Vector.h"
-#include "Matrix.h"
-#include "Quaternion.h"
-#include "Inertia.h"
 #include "Frame.h"
+#include "RigidBody.h"
+#include "Visitor.h"
+#include "ConstVisitor.h"
 
 namespace OpenFDM {
 
 class Sensor
-  : public Node {
-  OpenFDM_NodeImplementation(2);
+  : public MultiBodyModel {
 public:
-  Sensor(void) {}
-  virtual ~Sensor(void) {}
+  Sensor(const std::string& name);
+  virtual ~Sensor(void);
+
+  virtual void accept(Visitor& visitor);
+  virtual void accept(ConstVisitor& visitor) const;
+
+//   virtual Sensor* toSensor(void);
+//   virtual const Sensor* toSensor(void) const;
 
   Frame* getParentFrame(unsigned idx)
   {
@@ -84,11 +87,7 @@ public:
   { return norm(getOffset(0)); }
 
 private:
-  Vector3 xxx(const Frame* f0, const Frame* f1,
-              const Vector3& p0)
-  { return f1->posFromRef(f0->posToRef(p0)); }
-
-  
+ 
 
   Vector3 mPosition[NumberOfParents];
 //   Vector3 mPosition[NumberOfParents];

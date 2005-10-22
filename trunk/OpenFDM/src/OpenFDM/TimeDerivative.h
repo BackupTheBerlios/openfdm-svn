@@ -20,8 +20,8 @@ public:
   virtual ~TimeDerivative(void);
 
   virtual bool init(void);
-  virtual void output(void);
-  virtual void update(real_type dt);
+  virtual void output(const TaskInfo&);
+  virtual void update(const TaskInfo& taskInfo);
 
   const Matrix& getDerivativeOutput(void) const;
 

@@ -22,7 +22,7 @@ public:
   virtual ~Bias(void);
   
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const Matrix& getBias(void) const;
   void setBias(const Matrix& bias);

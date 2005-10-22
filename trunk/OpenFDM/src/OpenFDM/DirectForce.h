@@ -34,7 +34,7 @@ public:
   const Vector6& getForce(void) const;
 
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
 protected:
   /**

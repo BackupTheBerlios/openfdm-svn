@@ -7,8 +7,13 @@
 
 namespace OpenFDM {
 
-DirectForce::DirectForce(const std::string& name, const Vector6& direction)
-  : ExternalForce(name), mDirection(direction)
+DirectForce::DirectForce(const std::string& name, const Vector6& direction) :
+  ExternalForce(name),
+  mPosition(Vector3::zeros()),
+  mOrientation(Quaternion::unit()),
+  mDirection(direction),
+  mForce(Vector6::zeros()),
+  mMagnitude(0)
 {
   addProperty("position", Property(this, &DirectForce::getPosition, &DirectForce::setPosition));
   addProperty("orientation", Property(this, &DirectForce::getOrientation, &DirectForce::setOrientation));
@@ -83,7 +88,7 @@ DirectForce::init(void)
 }
 
 void
-DirectForce::output(void)
+DirectForce::output(const TaskInfo&)
 {
   mMagnitude = getInputPort(0).getValue().toReal();
   mForce = mMagnitude*mDirection;

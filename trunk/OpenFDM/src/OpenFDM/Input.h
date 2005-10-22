@@ -13,9 +13,12 @@ class Input : public Model {
 public:
   Input(const std::string& name);
   virtual ~Input(void);
-  
+
+  virtual const Input* toInput(void) const;
+  virtual Input* toInput(void);
+
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const real_type& getInputValue(void) const;
   void setInputValue(const real_type& value);
@@ -40,8 +43,11 @@ public:
   Output(const std::string& name);
   virtual ~Output(void);
   
+  virtual const Output* toOutput(void) const;
+  virtual Output* toOutput(void);
+
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const real_type& getValue(void) const;
 

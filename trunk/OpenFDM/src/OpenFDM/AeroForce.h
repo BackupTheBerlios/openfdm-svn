@@ -95,9 +95,6 @@ public:
   const Vector3& getUnitDown(void) const;
   const Plane& getLocalGroundPlane(void) const;
 
-  void setConstantProperty(const std::string& pName, real_type value);
-  void removeConstantProperty(const std::string& pName);
-
   void addStabilityAxisSummand(ForceAxis axis, const RealProperty& prop)
   {
     mStabilityAxisSummers[axis-1]->addInputProperty(prop);

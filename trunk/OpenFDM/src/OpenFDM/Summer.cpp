@@ -52,7 +52,7 @@ Summer::init(void)
 }
 
 void
-Summer::output(void)
+Summer::output(const TaskInfo&)
 {
   mSum.clear();
   for (unsigned i = 0; i < getNumInputPorts(); ++i) {

@@ -19,7 +19,7 @@ public:
   virtual ~Summer(void);
   
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const Matrix& getSum(void) const;
 

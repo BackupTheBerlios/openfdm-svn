@@ -128,7 +128,7 @@ DiscreteTransferFunction::init(void)
 }
 
 void
-DiscreteTransferFunction::output(void)
+DiscreteTransferFunction::output(const TaskInfo&)
 {
   // Compute the output ...
   real_type input = getInputPort(0).getValue().toReal();
@@ -136,8 +136,11 @@ DiscreteTransferFunction::output(void)
 }
 
 void
-DiscreteTransferFunction::update(real_type dt)
+DiscreteTransferFunction::update(const TaskInfo& taskInfo)
 {
+  // FIXME: make sure this is the only dt ...
+  real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
+
   if (0 < rows(mState)) {
     // FIXME: use exponential integration scheme here ...
     // looks very benificial, since it is exact here!

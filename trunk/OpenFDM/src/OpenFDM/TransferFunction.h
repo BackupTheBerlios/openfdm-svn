@@ -38,8 +38,8 @@ public:
   const Vector& getNumerator(void) const;
 
   virtual bool init(void);
-  virtual void output(void);
-  virtual void update(real_type dt);
+  virtual void output(const TaskInfo&);
+  virtual void update(const TaskInfo& taskInfo);
 
   /// This one can have discrete states
   virtual void setDiscreteState(const Vector& state, unsigned offset);

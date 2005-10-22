@@ -24,7 +24,7 @@ public:
   virtual ~UnaryFunctionModel(void);
 
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const real_type& getFunctionValue(void) const;
 

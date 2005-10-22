@@ -52,8 +52,6 @@ Vehicle::Vehicle(void)
 //   mSystem->setTimestepper(new ImplicitEuler);
 //   mSystem->setTimestepper(new MidpointRule);
 
-  mSystem->init();
-
   mSystem->addModel(mModelGroup);
   mSystem->addModel(mMultiBodySystem);
 

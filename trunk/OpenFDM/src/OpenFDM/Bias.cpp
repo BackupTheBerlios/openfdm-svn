@@ -59,7 +59,7 @@ Bias::init(void)
 }
 
 void
-Bias::output(void)
+Bias::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0).isValid());
   OpenFDMAssert(size(getInputPort(0).getValue().toMatrix()) == size(mBias));

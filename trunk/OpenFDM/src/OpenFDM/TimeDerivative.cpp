@@ -39,7 +39,7 @@ TimeDerivative::init(void)
 }
 
 void
-TimeDerivative::output(void)
+TimeDerivative::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0).isValid());
 
@@ -60,10 +60,12 @@ TimeDerivative::output(void)
 }
 
 void
-TimeDerivative::update(real_type dt)
+TimeDerivative::update(const TaskInfo& taskInfo)
 {
   OpenFDMAssert(getInputPort(0).isValid());
 
+  // FIXME
+  real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
   // Updating is just storing required information for the next output step.
   mPastInput = getInputPort(0).getValue().toMatrix();
   mDt = dt;

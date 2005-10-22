@@ -589,7 +589,7 @@ void printVehicle(Vehicle* vehicle)
 
 int main(int argc, char *argv[])
 {
-#if 0
+#if 1
   if (argc < 2)
     return 1;
   

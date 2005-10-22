@@ -7,6 +7,7 @@
 
 #include "Object.h"
 #include "Matrix.h"
+#include "Function.h"
 #include "ODESolver.h"
 
 namespace OpenFDM {

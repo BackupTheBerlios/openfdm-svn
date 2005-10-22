@@ -16,6 +16,8 @@ namespace OpenFDM {
 /// It is derived from the \ref ModelGroup and additionally provides
 /// algorithms to simulate and trim the whole system.
 
+class TaskInfo;
+
 class System : public ModelGroup {
 public:
   /// Constructor, we need a name
@@ -38,7 +40,7 @@ public:
 
   /// Return the current simulation time, convenience function
   real_type getTime(void) const
-  { return mTimestepper->getTime(); }
+  { return mTime; }
 
   /// Sets a timestepping algorithm for use with this system.
   void setTimestepper(ODESolver* timestepper);
@@ -51,6 +53,15 @@ private:
   /// The timestepper used to get time discrete approximate solutions to the
   /// continous system
   shared_ptr<ODESolver> mTimestepper;
+
+  /// Hmm, need to think about this...
+  typedef std::vector<TaskInfo> TaskList;
+  TaskList mDiscreteTaskList;
+  unsigned mCurrentTaskNum;
+  real_type mCurrentSliceTime;
+
+  /// The actual simulation time for the system
+  real_type mTime;
 };
 
 } // namespace OpenFDM

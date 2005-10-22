@@ -19,22 +19,6 @@ lib_LTLIBRARIES = libOpenFDM.la
 # Will need these at the moment ...
 libOpenFDM_la_LIBADD = -lsgxml -lsgstructure
 nobase_OpenFDMinclude_HEADERS = \
-  Matrix.h \
-  Quaternion.h \
-  Vector.h \
-  OpenFDMConfig.h \
-  Types.h \
-LogStream.h \
-Wind.h \
-Plane.h \
-Sensor.h \
-Joint.h \
-Transform.h \
-Turbulence.h \
-Rotation.h \
-Inertia.h \
-\
-\
   AeroForce.h \
   Assert.h \
   Atmosphere.h \
@@ -67,6 +51,8 @@ Inertia.h \
   Input.h \
   Integrator.h \
   ImplicitEuler.h \
+  Inertia.h \
+  Joint.h \
   JointT.h \
   Limits.h \
   LinAlg/Algorithm.h \
@@ -77,8 +63,10 @@ Inertia.h \
   LinAlg/IO.h \
   LinAlg/Misc.h \
   LinAlg/Proxy.h \
+  LogStream.h \
   Mass.h \
   Math.h \
+  Matrix.h \
   MidpointRule.h \
   Model.h \
   ModelGroup.h \
@@ -86,18 +74,23 @@ Inertia.h \
   Newton.h \
   Object.h \
   ODESolver.h \
+  OpenFDMConfig.h \
+  Plane.h \
   Planet.h \
   Property.h \
   Product.h \
   PrismaticJoint.h \
+  Quaternion.h \
   ReaderWriter.h \
   Referenced.h \
   RefPtr.h \
   RevoluteActuator.h \
   RevoluteJoint.h \
   RigidBody.h \
+  Rotation.h \
   RootFrame.h \
   Saturation.h \
+  Sensor.h \
   SimpleContact.h \
   SimpleGear.h \
   Summer.h \
@@ -105,11 +98,16 @@ Inertia.h \
   Table.h \
   TimeDerivative.h \
   TransferFunction.h \
+  Transform.h \
+  Turbulence.h \
+  Types.h \
   UnaryFunctionModel.h \
   Units.h \
   Variant.h \
+  Vector.h \
   Vehicle.h \
   Visitor.h \
+  Wind.h \
   XML/Tablereader.h \
   XML/XMLReader.h
 

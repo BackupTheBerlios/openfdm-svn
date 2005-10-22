@@ -18,20 +18,13 @@ namespace OpenFDM {
 class Function
   : public Object {
 public:
-  enum Linearity {
-    Linear,
-    Piecewise,
-    Nonlinear
-  };
-
   typedef real_type              value_type;
   typedef LinAlg::size_type      size_type;
   typedef Vector                 invector_type;
   typedef Vector                 outvector_type;
   typedef Matrix                 jacobian_type;
 
-  Function(Linearity linearity = Nonlinear)
-    : linearity_(linearity)
+  Function(void)
   { }
   virtual ~Function(void);
 
@@ -41,25 +34,6 @@ public:
                     outvector_type& out) = 0;
   virtual void jac(value_type t, const invector_type& v, jacobian_type& jac);
   void numJac(value_type t, const invector_type& v, jacobian_type& jac);
-
-  virtual void output(void);
-  virtual void update(value_type dt);
-
-  Linearity linearity(void) const
-  { return linearity_; }
-  bool linear(void) const
-  { return linearity_ == Linear; }
-  bool piecewiseLinear(void) const
-  { return linearity_ != Nonlinear; }
-  bool nonLinear(void) const
-  { return linearity_ == Nonlinear; }
-
-protected:
-  void setLinearity(Linearity linearity)
-  { linearity_ = linearity; }
-
-private:
-  Linearity linearity_;
 };
 
 } // namespace OpenFDM

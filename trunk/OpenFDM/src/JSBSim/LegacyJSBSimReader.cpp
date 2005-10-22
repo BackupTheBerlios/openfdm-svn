@@ -77,6 +77,9 @@ LegacyJSBSimReader::loadAircraft(const std::string& acFileName)
   mVehicle = new Vehicle;
   mAeroForce = new AeroForce(mVehicle->getEnvironment(), "Aerodynamic force");
   mVehicle->getTopBody()->addMultiBodyModel(mAeroForce);
+  // Default discrete stepsize of JSBSim
+  mVehicle->getModelGroup()->addSampleTime(SampleTime(1.0/120));
+
   // Create the aerodynamic properties of JSBSim.
   makeAeroprops();
 

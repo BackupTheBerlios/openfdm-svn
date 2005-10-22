@@ -52,7 +52,7 @@ Saturation::init(void)
 }
 
 void
-Saturation::output(void)
+Saturation::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0).isValid());
   

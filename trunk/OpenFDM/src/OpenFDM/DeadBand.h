@@ -21,7 +21,7 @@ public:
   virtual ~DeadBand(void);
   
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const real_type& getWidth(void) const;
   void setWidth(const real_type& width);

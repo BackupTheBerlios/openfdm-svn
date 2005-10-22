@@ -51,7 +51,7 @@ Product::init(void)
 }
 
 void
-Product::output(void)
+Product::output(const TaskInfo&)
 {
   mProduct = getInputPort(0).getValue().toMatrix();
   for (unsigned i = 1; i < getNumInputPorts(); ++i) {

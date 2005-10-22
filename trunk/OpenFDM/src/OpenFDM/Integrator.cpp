@@ -13,6 +13,8 @@ namespace OpenFDM {
 Integrator::Integrator(const std::string& name) :
   Model(name)
 {
+  addSampleTime(SampleTime::Continous);
+
   setNumInputPorts(1);
   setInputPortName(0, "derivatirve");
 
@@ -50,7 +52,7 @@ Integrator::init(void)
 }
 
 void
-Integrator::output(void)
+Integrator::output(const TaskInfo&)
 {
   mIntegralOutput = mIntegralState;
 }

@@ -19,7 +19,7 @@ public:
   virtual ~Product(void);
 
   virtual bool init(void);
-  virtual void output(void);
+  virtual void output(const TaskInfo&);
 
   const Matrix& getProduct(void) const;
 

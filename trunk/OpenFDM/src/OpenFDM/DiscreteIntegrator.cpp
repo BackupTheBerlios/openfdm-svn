@@ -42,21 +42,24 @@ DiscreteIntegrator::init(void)
 
   mIntegralState = mInitialValue;
   mIntegralOutput = mIntegralState;
+
   return true;
 }
 
 void
-DiscreteIntegrator::output(void)
+DiscreteIntegrator::output(const TaskInfo&)
 {
   mIntegralOutput = mIntegralState;
 }
 
 void
-DiscreteIntegrator::update(real_type dt)
+DiscreteIntegrator::update(const TaskInfo& taskInfo)
 {
   OpenFDMAssert(getInputPort(0).isValid());
 
   // Just compute the integral.
+  // FIXME: make sure this is the only dt ...
+  real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
   Matrix input = getInputPort(0).getValue().toMatrix();
   OpenFDMAssert(size(input) == size(mIntegralState));
   if (size(input) == size(mIntegralState))

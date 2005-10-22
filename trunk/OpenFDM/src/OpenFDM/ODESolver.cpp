@@ -7,13 +7,12 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
-#include "Function.h"
 #include "ODESolver.h"
 
 namespace OpenFDM {
 
 ODESolver::ODESolver(void) :
-  mStepsize(1.0/128)
+  mStepsize(1.0/32)
 {
 }
 

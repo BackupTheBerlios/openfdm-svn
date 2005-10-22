@@ -107,8 +107,8 @@ private:
    */
   virtual Vector6 computeRelAccel(void);
 
-  virtual void output(void);
-  virtual void update(real_type h);
+  virtual void output(const TaskInfo&);
+  virtual void update(const TaskInfo& taskInfo);
 
   /** The joint rotation axis.
    */
