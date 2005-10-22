@@ -246,12 +246,8 @@ planeFrom(const Rotation& r, const Plane& plane)
 inline SpatialInertia
 inertiaFrom(const Vector3& p, const Rotation& r, const SpatialInertia& I)
 {
-  InertiaMatrix I11(I(1,1),
-                    I(2,1), I(2,2),
-                    I(3,1), I(3,2), I(3,3));
-  InertiaMatrix I22(I(4,4),
-                    I(5,4), I(5,5),
-                    I(6,4), I(6,5), I(6,6));
+  InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));
+  InertiaMatrix I22(I(4,4), I(5,4), I(6,4), I(5,5), I(6,5), I(6,6));
   
   Matrix33 RI11(trans(r.getTransform())*I11);
   Matrix33 RI22(trans(r.getTransform())*I22);
@@ -304,12 +300,8 @@ inertiaFrom(const Vector3& p, const Rotation& r, const SpatialInertia& I)
 inline SpatialInertia
 inertiaFrom(const Vector3& p, const SpatialInertia& I)
 {
-  InertiaMatrix I11(I(1,1),
-                    I(2,1), I(2,2),
-                    I(3,1), I(3,2), I(3,3));
-  InertiaMatrix I22(I(4,4),
-                    I(5,4), I(5,5),
-                    I(6,4), I(6,5), I(6,6));
+  InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));
+  InertiaMatrix I22(I(4,4), I(5,4), I(6,4), I(5,5), I(6,5), I(6,6));
   
   SpatialInertia It2;
   It2(4,4) = I22(1,1);
@@ -355,12 +347,8 @@ inertiaFrom(const Vector3& p, const SpatialInertia& I)
 inline SpatialInertia
 inertiaFrom(const Rotation& r, const SpatialInertia& I)
 {
-  InertiaMatrix I11(I(1,1),
-                    I(2,1), I(2,2),
-                    I(3,1), I(3,2), I(3,3));
-  InertiaMatrix I22(I(4,4),
-                    I(5,4), I(5,5),
-                    I(6,4), I(6,5), I(6,6));
+  InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));
+  InertiaMatrix I22(I(4,4), I(5,4), I(6,4), I(5,5), I(6,5), I(6,6));
   
   Matrix33 RI11(trans(r.getTransform())*I11);
   Matrix33 RI22(trans(r.getTransform())*I22);
