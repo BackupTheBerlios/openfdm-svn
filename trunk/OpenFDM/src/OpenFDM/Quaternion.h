@@ -155,17 +155,23 @@ public:
     value_type q3 = (*this)(3);
     value_type q4 = (*this)(4);
 
+    value_type r = 1/dot(*this, *this);
+    value_type rq1 = r*q1;
+    value_type rq2 = r*q2;
+    value_type rq3 = r*q3;
+    value_type rq4 = r*q4;
+
     // Now compute the transformation matrix.
-    value_type q1q1 = q1*q1;
-    value_type q2q2 = q2*q2;
-    value_type q3q3 = q3*q3;
-    value_type q4q4 = q4*q4;
-    value_type q1q2 = q1*q2;
-    value_type q1q3 = q1*q3;
-    value_type q1q4 = q1*q4;
-    value_type q2q3 = q2*q3;
-    value_type q2q4 = q2*q4;
-    value_type q3q4 = q3*q4;
+    value_type q1q1 = rq1*q1;
+    value_type q2q2 = rq2*q2;
+    value_type q3q3 = rq3*q3;
+    value_type q4q4 = rq4*q4;
+    value_type q1q2 = rq1*q2;
+    value_type q1q3 = rq1*q3;
+    value_type q1q4 = rq1*q4;
+    value_type q2q3 = rq2*q3;
+    value_type q2q4 = rq2*q4;
+    value_type q3q4 = rq3*q4;
     
     return Matrix33(q1q1+q2q2-q3q3-q4q4, 2*(q2q3+q1q4), 2*(q2q4-q1q3),
                     2*(q2q3-q1q4), q1q1-q2q2+q3q3-q4q4, 2*(q3q4+q1q2),
@@ -177,15 +183,21 @@ public:
 
   Vector3 transform(const Vector3& v) const
   {
+    value_type r = 1/dot(*this, *this);
     Vector3 qimag = imag(*this);
     value_type qr = real(*this);
-    return (2*qr*qr - 1)*v + (2*dot(qimag, v))*qimag - (2*qr)*cross(qimag, v);
+    return (2*r*qr*qr - 1)*v
+      + (2*r*dot(qimag, v))*qimag
+      - (2*r*qr)*cross(qimag, v);
   }
   Vector3 backTransform(const Vector3& v) const
   {
+    value_type r = 1/dot(*this, *this);
     Vector3 qimag = imag(*this);
     value_type qr = real(*this);
-    return (2*qr*qr - 1)*v + (2*dot(qimag, v))*qimag + (2*qr)*cross(qimag, v);
+    return (2*r*qr*qr - 1)*v
+      + (2*r*dot(qimag, v))*qimag
+      + (2*r*qr)*cross(qimag, v);
   }
 
 
