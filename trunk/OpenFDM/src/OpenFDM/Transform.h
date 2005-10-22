@@ -207,23 +207,18 @@ forceFrom(const Rotation& r, const Vector3& f)
 inline Plane
 planeTo(const Vector3& p, const Rotation& r, const Plane& plane)
 {
-  // FIXME: simplify
-  return Plane(normalize(r.transform(plane.getNormal())),
-               posTo(p, r, plane.getPointOnPlane()));
+  return Plane(r.transform(plane.getNormal()),
+               plane.getDist() + dot(plane.getNormal(), p));
 }
 inline Plane
 planeTo(const Vector3& p, const Plane& plane)
 {
-  // FIXME: simplify
-  return Plane(plane.getNormal(),
-               posTo(p, plane.getPointOnPlane()));
+  return Plane(plane.getNormal(), plane.getDist() + dot(plane.getNormal(), p));
 }
 inline Plane
 planeTo(const Rotation& r, const Plane& plane)
 {
-  // FIXME: simplify
-  return Plane(normalize(r.transform(plane.getNormal())),
-               posTo(r, plane.getPointOnPlane()));
+  return Plane(r.transform(plane.getNormal()), plane.getDist());
 }
 
 
@@ -232,23 +227,18 @@ planeTo(const Rotation& r, const Plane& plane)
 inline Plane
 planeFrom(const Vector3& p, const Rotation& r, const Plane& plane)
 {
-  // FIXME: simplify
-  return Plane(normalize(r.backTransform(plane.getNormal())),
-               posFrom(p, r, plane.getPointOnPlane()));
+  return Plane(r.backTransform(plane.getNormal()),
+               plane.getDist() - dot(plane.getNormal(), p));
 }
 inline Plane
 planeFrom(const Vector3& p, const Plane& plane)
 {
-  // FIXME: simplify
-  return Plane(plane.getNormal(),
-               posFrom(p, plane.getPointOnPlane()));
+  return Plane(plane.getNormal(), plane.getDist() - dot(plane.getNormal(), p));
 }
 inline Plane
 planeFrom(const Rotation& r, const Plane& plane)
 {
-  // FIXME: simplify
-  return Plane(normalize(r.backTransform(plane.getNormal())),
-               posFrom(r, plane.getPointOnPlane()));
+  return Plane(r.backTransform(plane.getNormal()), plane.getDist());
 }
 
 
