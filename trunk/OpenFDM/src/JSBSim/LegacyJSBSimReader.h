@@ -206,13 +206,13 @@ private:
   // For now just copies from the prevous try ...
   Vector3 structToBody(const Vector3& v)
   {
-    Vector3 cgoff = v - mCG;
+    Vector3 cgoff = v - mBodyReference;
     return convertFrom(uInch, Vector3(-cgoff(1), cgoff(2), -cgoff(3)));
   }
   Property mPrevousFCSOutput;
   PropertyMap mExpressionTable;
   shared_ptr<AeroForce> mAeroForce;
-  Vector3 mCG;
+  Vector3 mBodyReference;
 };
 
 } // namespace OpenFDM

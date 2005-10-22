@@ -535,6 +535,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   InertiaMatrix I(0, 0, 0, 0, 0, 0);
   real_type mass = 0;
   Vector3 vrp, ap, ep;
+  bool haveVrp = false;
   typedef std::pair<Vector3,real_type> masspoint;
   typedef std::list<masspoint> masslist;
   masslist masses;
@@ -544,88 +545,96 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
     datastr >> name;
     
     if (name == "AC_WINGAREA") {
-      double value;
+      real_type value;
       datastr >> value;
       mAeroForce->setWingArea(convertFrom(uFoot2, value));
     } else if (name == "AC_WINGSPAN") {
-      double value;
+      real_type value;
       datastr >> value;
       mAeroForce->setWingSpan(convertFrom(uFoot, value));
     } else if (name == "AC_WINGINCIDENCE") {
-      double value;
+      real_type value;
       datastr >> value;
       registerJSBExpression("metrics/iw-deg",
                             Property(new ConstExpressionPropertyImpl<real_type>(value)));
     } else if (name == "AC_CHORD") {
-      double value;
+      real_type value;
       datastr >> value;
       mAeroForce->setCoord(convertFrom(uFoot, value));
     } else if (name == "AC_HTAILAREA") {
-      double value;
+      real_type value;
       datastr >> value;
       registerJSBExpression("metrics/Sh-sqft",
                             Property(new ConstExpressionPropertyImpl<real_type>(value)));
     } else if (name == "AC_HTAILARM") {
-      double value;
+      real_type value;
       datastr >> value;
       registerJSBExpression("metrics/lh-ft",
                             Property(new ConstExpressionPropertyImpl<real_type>(value)));
     } else if (name == "AC_VTAILAREA") {
-      double value;
+      real_type value;
       datastr >> value;
       registerJSBExpression("metrics/Sv-sqft",
                             Property(new ConstExpressionPropertyImpl<real_type>(value)));
     } else if (name == "AC_VTAILARM") {
-      double value;
+      real_type value;
       datastr >> value;
       registerJSBExpression("metrics/lv-ft",
                             Property(new ConstExpressionPropertyImpl<real_type>(value)));
     } else if (name == "AC_IXX") {
-      double value;
+      real_type value;
       datastr >> value;
       I(1, 1) = convertFrom(uSlugFt2, value);
     } else if (name == "AC_IYY") {
-      double value;
+      real_type value;
       datastr >> value;
       I(2, 2) = convertFrom(uSlugFt2, value);
     } else if (name == "AC_IZZ") {
-      double value;
+      real_type value;
       datastr >> value;
       I(3, 3) = convertFrom(uSlugFt2, value);
     } else if (name == "AC_IXY") {
-      double value;
+      real_type value;
       datastr >> value;
       I(1, 2) = -convertFrom(uSlugFt2, value);;
     } else if (name == "AC_IXZ") {
-      double value;
+      real_type value;
       datastr >> value;
       I(1, 3) = -convertFrom(uSlugFt2, value);
     } else if (name == "AC_IYZ") {
-      double value;
+      real_type value;
       datastr >> value;
       I(2, 3) = -convertFrom(uSlugFt2, value);
     } else if (name == "AC_EMPTYWT") {
       datastr >> mass;
       mass = convertFrom(uPoundSealevel, mass);
     } else if (name == "AC_CGLOC") {
-      datastr >> mCG(1) >> mCG(2) >> mCG(3);
+      datastr >> mBodyReference(1) >> mBodyReference(2) >> mBodyReference(3);
     } else if (name == "AC_EYEPTLOC") {
       datastr >> ep(1) >> ep(2) >> ep(3);
     } else if (name == "AC_AERORP") {
       datastr >> ap(1) >> ap(2) >> ap(3);
     } else if (name == "AC_VRP") {
       datastr >> vrp(1) >> vrp(2) >> vrp(3);
+      haveVrp = true;
     } else if (name == "AC_POINTMASS") {
       Vector3 loc;
-      double mpmass;
+      real_type mpmass;
       datastr >> mpmass >> loc(1) >> loc(2) >> loc(3);
       masses.push_back(masspoint(loc, mpmass));
     }
   }
 
+  // In contrast to JSBSim, we have the possibility to simulate around a point
+  // not being the center of gravity, use that here ...
+  Vector3 cg = mBodyReference;
+  if (haveVrp)
+    mBodyReference = vrp;
+
   // Now collect all static inertia values starting with the emptyweight
   // and empty inertia together in spi.
   SpatialInertia spi(I, mass);
+  spi = inertiaFrom(structToBody(cg), spi);
   masslist::iterator it = masses.begin();
   while (it != masses.end()) {
     SpatialInertia inertia(convertFrom(uPoundSealevel, it->second));
@@ -663,7 +672,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
     
     if (uctype == "AC_GEAR") {
       std::string name, type, brake, retract;
-      double x, y, z, k, d, fs, fd, rr, sa;
+      real_type x, y, z, k, d, fs, fd, rr, sa;
       datastr >> name >> x >> y >> z >> k >> d >> fs >> fd >> rr
               >> type >> brake >> sa >> retract;
 
@@ -767,7 +776,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
     } else if (uctype == "AC_CONTACT") {
       std::string name, type, brake, retract;
-      double x, y, z, k, d, fs, fd, rr, sa;
+      real_type x, y, z, k, d, fs, fd, rr, sa;
       datastr >> name >> x >> y >> z >> k >> d >> fs >> fd >> rr
               >> type >> brake >> sa >> retract;
 
@@ -1045,7 +1054,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       break;
 
     if (token == "BIAS") {
-      double value;
+      real_type value;
       datastr >> value;
 
       std::string modelName = std::string("Output Bias for ") + name;
@@ -1057,7 +1066,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       outbias->setBias(tmp);
       
     } else if (token == "CLIPTO") {
-      double clipmin, clipmax;
+      real_type clipmin, clipmax;
       datastr >> clipmin >> clipmax;
       
       if (!saturation) {
@@ -1074,7 +1083,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       saturation->setMaxSaturation(tmp);
       
     } else if (token == "C1") {
-      double value;
+      real_type value;
       datastr >> value;
 
       if (type == "INTEGRATOR") {
@@ -1120,7 +1129,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
         return error("No C1 parameter allowed for \"" + type + "\"");
       
     } else if (token == "C2") {
-      double value;
+      real_type value;
       datastr >> value;
 
       if (type == "LEAD_LAG_FILTER") {
@@ -1142,7 +1151,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
         return error("No C2 parameter allowed for \"" + type + "\"");
       
     } else if (token == "C3") {
-      double value;
+      real_type value;
       datastr >> value;
 
       if (type == "LEAD_LAG_FILTER") {
@@ -1165,7 +1174,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
         return error("No C3 parameter allowed for \"" + type + "\"");
       
     } else if (token == "C4") {
-      double value;
+      real_type value;
       datastr >> value;
 
       if (type == "LEAD_LAG_FILTER") {
@@ -1188,7 +1197,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
         return error("No C4 parameter allowed for \"" + type + "\"");
       
     } else if (token == "C5") {
-      double value;
+      real_type value;
       datastr >> value;
 
       if (type == "SECOND_ORDER_FILTER") {
@@ -1203,7 +1212,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
         return error("No C5 parameter allowed for \"" + type + "\"");
       
     } else if (token == "C6") {
-      double value;
+      real_type value;
       datastr >> value;
 
       if (type == "SECOND_ORDER_FILTER") {
@@ -1252,7 +1261,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
         return error("No DETENTS parameter allowed for \"" + type + "\"");
 
     } else if (token == "GAIN") {
-      double value;
+      real_type value;
       datastr >> value;
 
       if (gain) {
@@ -1273,7 +1282,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       outInvert = true;
       
     } else if (token == "MAX") {
-      double clipmax;
+      real_type clipmax;
       datastr >> clipmax;
       
       if (type == "AEROSURFACE_SCALE") {
@@ -1295,7 +1304,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       }
       
     } else if (token == "MIN") {
-      double clipmin;
+      real_type clipmin;
       datastr >> clipmin;
       
       if (type == "AEROSURFACE_SCALE") {
@@ -1355,7 +1364,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       
     } else if (token == "WIDTH") {
       // deadband width
-      double width;
+      real_type width;
       datastr >> width;
 
       if (type == "DEADBAND") {
@@ -1573,11 +1582,11 @@ LegacyJSBSimReader::convertThruster(const std::string& data,
       datastr >> yaw;
       
     } else if (token == "P_FACTOR") {
-      double d;
+      real_type d;
       datastr >> d;
       
     } else if (token == "SENSE") {
-      double d;
+      real_type d;
       datastr >> d;
       
     } else
@@ -1619,7 +1628,7 @@ LegacyJSBSimReader::convertEngine(const std::string& data,
       datastr >> yaw;
       
     } else if (token == "FEED") {
-      double d;
+      real_type d;
       datastr >> d;
       
     } else
