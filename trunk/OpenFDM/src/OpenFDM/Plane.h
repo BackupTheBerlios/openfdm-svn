@@ -5,6 +5,7 @@
 #ifndef OpenFDM_Plane_H
 #define OpenFDM_Plane_H
 
+#include "Assert.h"
 #include "Types.h"
 #include "Limits.h"
 #include "Vector.h"
@@ -23,14 +24,10 @@ public:
   {}
   Plane(const Vector3& normal, value_type dist)
     : mNormal(normal), mDist(dist)
-  {
-    OpenFDMAssert((norm(mNormal)-1) < 8*Limits<value_type>::epsilon());
-  }
+  { OpenFDMAssert((norm(mNormal)-1) < 8*Limits<value_type>::epsilon()); }
   Plane(const Vector3& normal, const Vector3& off)
     : mNormal(normal), mDist(-dot(normal, off))
-  {
-    OpenFDMAssert((norm(mNormal)-1) < 8*Limits<value_type>::epsilon());
-  }
+  { OpenFDMAssert((norm(mNormal)-1) < 8*Limits<value_type>::epsilon()); }
 
   const Vector3& getNormal(void) const
   { return mNormal; }
