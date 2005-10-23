@@ -76,7 +76,7 @@ public:
     value_type tmp = dot(ndir, mNormal);
 
     // Check if the line is parallel to the plane.
-    if (abs(tmp) < Limits<value_type>::epsilon())
+    if (fabs(tmp) < Limits<value_type>::epsilon())
       return false;
 
     ip = base - (getDist(base)/tmp)*ndir;

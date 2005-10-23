@@ -98,7 +98,7 @@ const real_type specific_heat_ratio = 1.4;
 #define R_HAT         8314.32    /*  J/kgmol.K (gas const.) */
 
 
-  if (abs(data.temperature) > Limits<real_type>::min())
+  if (fabs(data.temperature) > Limits<real_type>::min())
     data.density = data.pressure / ((R_HAT/MOL_WT)*data.temperature);
   else
     data.density = 0.0;

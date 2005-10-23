@@ -84,7 +84,7 @@ class AbsExpressionImpl :
     public UnaryExpressionImpl<real_type> {
 private:
   virtual real_type getValue(void) const
-  { return abs(mInput.getValue()); }
+  { return fabs(mInput.getValue()); }
 };
 
 class AcosExpressionImpl :

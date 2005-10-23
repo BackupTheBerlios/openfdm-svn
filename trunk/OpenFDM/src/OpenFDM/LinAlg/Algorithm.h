@@ -136,7 +136,7 @@ normalize(const MatrixRValue<Impl,n,1>& v)
 {
   typedef typename Impl::value_type value_type;
   value_type nrm = norm(v);
-  if (abs(nrm) < Limits<real_type>::min())
+  if (fabs(nrm) < Limits<real_type>::min())
     return Vector<value_type,n>(v);
   else
     return Vector<value_type,n>((1/nrm)*v);
@@ -162,7 +162,7 @@ norm1(const MatrixRValue<Impl,m,n>& A)
   for (j = 1; j <= cols; ++j) {
     value_type sum = static_cast<value_type>(0);
     for (i = 1; i <= rows; ++i)
-      sum += abs(mi(i, j));
+      sum += fabs(mi(i, j));
     if (nrm < sum)
       nrm = sum;
   }
@@ -191,7 +191,7 @@ normInf(const MatrixRValue<Impl,m,n>& A)
   for (i = 1; i <= rows; ++i) {
     value_type sum = static_cast<value_type>(0);
     for (j = 1; j <= cols; ++j)
-      sum += abs(mi(i, j));
+      sum += fabs(mi(i, j));
     nrm = nrm < sum ? sum : nrm;
   }
 
@@ -214,7 +214,7 @@ maxIndex(const MatrixRValue<Impl,n,1>& v)
   size_type rows = vi.rows();
   size_type i;
   for (i = 1; i <= rows; ++i) {
-    value_type absval = abs(vi(i, 1));
+    value_type absval = fabs(vi(i, 1));
     if (maximum < absval) {
       maximum = absval;
       idx = i;
@@ -305,7 +305,7 @@ equal(const MatrixRValue<Impl1,m1,1>& V1,
   for (i = 1; i <= rows; ++i) {
     value_type v1 = V1i(i);
     value_type v2 = V2i(i);
-    value_type d = (v1 - v2)/(atol + rtol*max(abs(v1), abs(v2)));
+    value_type d = (v1 - v2)/(atol + rtol*max(fabs(v1), fabs(v2)));
     nrmd += d*d;
   }
 
@@ -343,7 +343,7 @@ scaledDiff(const MatrixRValue<Impl1,m1,1>& V1,
   for (i = 1; i <= rows; ++i) {
     value_type v1 = V1i(i, 1);
     value_type v2 = V2i(i, 1);
-    value_type d = (v1 - v2)/(atol + rtol*max(abs(v1), abs(v2)));
+    value_type d = (v1 - v2)/(atol + rtol*max(fabs(v1), fabs(v2)));
     nrmd += d*d;
   }
 
@@ -381,7 +381,7 @@ scaledErr(const MatrixRValue<Impl1,m1,1>& scale,
   for (i = 1; i <= rows; ++i) {
     value_type s = scalei(i, 1);
     value_type e = erri(i, 1);
-    value_type d = e/(atol + rtol*max(max(abs(s), abs(s+e)), abs(s-e)));
+    value_type d = e/(atol + rtol*max(max(fabs(s), fabs(s+e)), fabs(s-e)));
     nrmd += d*d;
   }
 
@@ -603,7 +603,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
       value_type Aii = A(i,i);
       // If the matrix is exactly singular, compute the solution where the
       // righthandside is projected into the image of the matrix.
-      if (abs(Aii) < Limits<value_type>::min()) {
+      if (fabs(Aii) < Limits<value_type>::min()) {
         v(i) = static_cast<value_type>(0);
       } else {
         v(i) /= Aii;
@@ -631,7 +631,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
         value_type Aii = A(i,i);
         // If the matrix is exactly singular, compute the solution where the
         // righthandside is projected into the image of the matrix.
-        if (abs(Aii) < Limits<value_type>::min()) {
+        if (fabs(Aii) < Limits<value_type>::min()) {
           v(i,j) = static_cast<value_type>(0);
         } else {
           v(i,j) /= Aii;
@@ -747,7 +747,7 @@ lu_factorize(Matrix<T,dim1,dim2>& A)
   size_type j;
   for (j = 1; j <= n; ++j) {
     // The matrix is exactly singular.
-    if (abs(A(j,j)) < Limits<value_type>::min())
+    if (fabs(A(j,j)) < Limits<value_type>::min())
       nonsingular = false;
     else {
       if (j < n) {
@@ -782,7 +782,7 @@ lu_factorize(Matrix<T,dim1,dim2>& A, Vector<size_type,dim1>& perm)
     perm(j) = jp;
 
     // The matrix is exactly singular.
-    if (abs(A(jp,j)) < Limits<value_type>::min())
+    if (fabs(A(jp,j)) < Limits<value_type>::min())
       nonsingular = false;
     else {
       if (jp != j) {
@@ -869,7 +869,7 @@ qr_reflector(typename Impl::value_type& alpha, MatrixLValue<Impl,dim,1>& x_,
     value_type eps = Limits<value_type>::epsilon();
     value_type safmin = mn/eps;
 
-    if (abs(beta) < safmin) {
+    if (fabs(beta) < safmin) {
       value_type rsafmn = 1/safmin;
       size_type knt = 0;
       do {
@@ -877,7 +877,7 @@ qr_reflector(typename Impl::value_type& alpha, MatrixLValue<Impl,dim,1>& x_,
         x *= rsafmn;
         beta *= rsafmn;
         alpha *= rsafmn;
-      } while (abs(beta) < safmin);
+      } while (fabs(beta) < safmin);
 
       xnorm = norm(x);
       beta = sqrt(alpha*alpha + xnorm*xnorm);
@@ -923,7 +923,7 @@ qr_factorize(Matrix<T,dim1,dim2>& A, Vector<T,dim2>& beta)
 
     // Check if that thing is singular.
     value_type Ajj = A(j, j);
-    if (abs(Ajj) < Limits<value_type>::min())
+    if (fabs(Ajj) < Limits<value_type>::min())
       nonsingular = false;
 
     A(j, j) = 1;

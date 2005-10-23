@@ -295,7 +295,7 @@ public:
     Vector3 nv1 = (1/nrmv1)*v1;
     Vector3 nv2 = (1/nrmv2)*v2;
     value_type dv1v2 = dot(nv1, nv2);
-    if (abs(abs(dv1v2)-1) < Limits<value_type>::epsilon())
+    if (fabs(fabs(dv1v2)-1) < Limits<value_type>::epsilon())
       return Quaternion::unit(1);
 
     // The first rotation can be done with the usual routine.
@@ -342,9 +342,9 @@ public:
   {
     // The vector from points to the oposite direction than to.
     // Find a vector perpandicular to the vector to.
-    value_type absv1 = abs(v(1));
-    value_type absv2 = abs(v(2));
-    value_type absv3 = abs(v(3));
+    value_type absv1 = fabs(v(1));
+    value_type absv2 = fabs(v(2));
+    value_type absv3 = fabs(v(3));
     
     Vector3 axis;
     if (absv2 < absv1 && absv3 < absv1) {

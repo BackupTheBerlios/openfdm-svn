@@ -24,6 +24,7 @@ namespace OpenFDM {
 class JSBReader;
 class System;
 
+/// FIXME: Derive that from System or something like that
 class Vehicle :
     public Object {
 public:

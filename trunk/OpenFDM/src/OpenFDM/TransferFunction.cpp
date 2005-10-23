@@ -149,7 +149,7 @@ DiscreteTransferFunction::update(const TaskInfo& taskInfo)
       /// On dimensional exponetial integrator ...
       real_type z = -dt*dot(mDenNorm, mState);
       // Well, pade approximation is the right thing, but for now ...
-      if (abs(exp(z) - 1) <= sqrt(Limits<real_type>::epsilon()))
+      if (fabs(exp(z) - 1) <= sqrt(Limits<real_type>::epsilon()))
         mState(1) += dt*(input + z);
       else
         mState(1) += dt*(exp(z)-1)/z * (input + z);

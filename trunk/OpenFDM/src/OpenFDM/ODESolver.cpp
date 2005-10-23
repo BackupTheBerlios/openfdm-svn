@@ -24,7 +24,7 @@ bool
 ODESolver::reached(real_type tEnd)
 {
   real_type eps = Limits<real_type>::epsilon();
-  bool reached = abs(tEnd - mTime) < 4*eps*max(abs(tEnd), abs(mTime));
+  bool reached = fabs(tEnd - mTime) < 4*eps*max(fabs(tEnd), fabs(mTime));
   if (reached)
     mTime = tEnd;
   return reached;

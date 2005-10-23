@@ -277,7 +277,7 @@ AeroForce::getAlpha(void) const
 {
   if (mDirtyAlpha) {
     Vector3 V = getAirSpeed().getLinear();
-    if (abs(V(iU)) < Limits<real_type>::min())
+    if (fabs(V(iU)) < Limits<real_type>::min())
       mAlpha = 0;
     else
       mAlpha = atan2(V(iW), V(iU));
@@ -311,7 +311,7 @@ AeroForce::getBeta(void) const
   if (mDirtyBeta) {
     real_type Vuw = getTrueSpeedUW();
     Vector3 V = getAirSpeed().getLinear();
-    if (abs(Vuw) < Limits<real_type>::min())
+    if (fabs(Vuw) < Limits<real_type>::min())
       mBeta = 0;
     else
       mBeta = atan2(V(iV), Vuw);
@@ -401,7 +401,7 @@ real_type
 AeroForce::getWingSpanOver2Speed(void) const
 {
   real_type Vt2 = 2*getTrueSpeed();
-  if (abs(Vt2) < Limits<real_type>::min())
+  if (fabs(Vt2) < Limits<real_type>::min())
     return 0;
   else
     return getWingSpan()/Vt2;
@@ -411,7 +411,7 @@ real_type
 AeroForce::getCoordOver2Speed(void) const
 {
   real_type Vt2 = 2*getTrueSpeed();
-  if (abs(Vt2) < Limits<real_type>::min())
+  if (fabs(Vt2) < Limits<real_type>::min())
     return 0;
   else
     return getCoord()/Vt2;
