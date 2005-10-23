@@ -583,6 +583,11 @@ protected:
   void setAngularRelAccel(const Vector3& accel)
   { setAccelDirty(); mRelAccel.setAngular(accel); }
 
+  void disableAccel(void)
+  { mDisableInAccel = true; }
+  void enableAccel(void)
+  { mDisableInAccel = false; }
+
 protected:
   void setPosDirty(void)
   {
@@ -606,9 +611,6 @@ protected:
   }
   void setAccelDirty(void)
   {
-    // Tell that the accelerations are usable.
-    mDisableInAccel = false;
-
     // Don't bother iterating over all children if we are already dirty.
     if (mDirtyInAccel == true)
       return;

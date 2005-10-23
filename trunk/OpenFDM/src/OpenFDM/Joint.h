@@ -178,6 +178,7 @@ protected:
     if (!outboardBody)
       return;
 
+    outboardBody->disableAccel();
     outboardBody->setPosition(pos);
     outboardBody->setOrientation(orient);
     outboardBody->setRelVel(vel);
@@ -189,6 +190,7 @@ protected:
     if (!outboardBody)
       return;
 
+    outboardBody->disableAccel();
     outboardBody->setPosition(pos);
   }
   void setOutboardOrientation(const Quaternion& orient)
@@ -197,6 +199,7 @@ protected:
     if (!outboardBody)
       return;
 
+    outboardBody->disableAccel();
     outboardBody->setOrientation(orient);
   }
   void setOutboardRelVel(const Vector6& vel)
@@ -205,6 +208,7 @@ protected:
     if (!outboardBody)
       return;
 
+    outboardBody->disableAccel();
     outboardBody->setRelVel(vel);
   }
   void setOutboardRelAccel(const Vector6& accel)
@@ -213,6 +217,7 @@ protected:
     if (!outboardBody)
       return;
 
+    outboardBody->enableAccel();
     outboardBody->setRelAccel(accel);
   }
 };

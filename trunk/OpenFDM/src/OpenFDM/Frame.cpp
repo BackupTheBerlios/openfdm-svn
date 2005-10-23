@@ -19,7 +19,7 @@ Frame::Frame(const std::string& name) :
   mDirtyPos(true),
   mDirtyInVel(true),
   mDirtyInAccel(true),
-  mDisableInAccel(true),
+  mDisableInAccel(false),
   mReferenceFrameId(0)
 {
   setPosition(Vector3::zeros());
@@ -169,7 +169,6 @@ Frame::setPosDirtyUnconditional(void)
   mDirtyPos = true;
   mDirtyInVel = true;
   mDirtyInAccel = true;
-  mDisableInAccel = true;
   
   // Mark all child dirty.
   ChildFrameList::iterator it = mChildFrames.begin();
@@ -186,7 +185,6 @@ Frame::setVelDirtyUnconditional(void)
   // Mark ourself dirty.
   mDirtyInVel = true;
   mDirtyInAccel = true;
-  mDisableInAccel = true;
   
   // Mark all child dirty.
   ChildFrameList::iterator it = mChildFrames.begin();
