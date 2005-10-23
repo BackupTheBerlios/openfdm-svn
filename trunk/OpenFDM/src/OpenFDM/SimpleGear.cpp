@@ -171,8 +171,8 @@ SimpleGear::computeFrictionForce(real_type normForce, const Vector3& vel,
   // The slip angle is the angle between the 'velocity vector' and 
   // the wheel forward direction.
   real_type slipAngle = rad2deg*atan2(wheelVel(2), fabs(wheelVel(1)));
-  if (50*fabs(wheelVel(2)) < fabs(slipAngle))
-    slipAngle = 50*wheelVel(2);
+  if (fabs(wheelVel(2)) < fabs(slipAngle))
+    slipAngle = wheelVel(2);
   
   Vector2 slip(wheelSlip, slipAngle);
 //   if (1 < norm(slip))
