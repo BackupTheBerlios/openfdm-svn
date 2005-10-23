@@ -12,86 +12,50 @@
 #include "RigidBody.h"
 #include "Visitor.h"
 #include "ConstVisitor.h"
+#include "MultiBodyModel.h"
 
 namespace OpenFDM {
 
 class Sensor
   : public MultiBodyModel {
 public:
-  Sensor(const std::string& name);
-  virtual ~Sensor(void);
-
-  virtual void accept(Visitor& visitor);
-  virtual void accept(ConstVisitor& visitor) const;
-
-//   virtual Sensor* toSensor(void);
-//   virtual const Sensor* toSensor(void) const;
-
-  Frame* getParentFrame(unsigned idx)
+  Sensor(const std::string& name) :
+    MultiBodyModel(name)
   {
-    Group* g = getParent(idx);
-    if (g)
-      return g->toFrame();
-    else
-      return 0;
+    mAccel.resize(6, 1);
+    setNumOutputPorts(1);
+    setOutputPort(0, "nz", Property(this, &Sensor::getNZ));
   }
-  const Frame* getParentFrame(unsigned idx) const
-  {
-    const Group* g = getParent(idx);
-    if (g)
-      return g->toFrame();
-    else
-      return 0;
-  }
+  virtual ~Sensor(void)
+  { }
 
-  bool setPosition(unsigned frameIdx, const Vector3& pos)
-  {
-    if (NumberOfParents <= frameIdx)
-      return false;
+  virtual void accept(Visitor& visitor)
+  {  visitor.apply(*this); }
+  virtual void accept(ConstVisitor& visitor) const
+  {  visitor.apply(*this); }
 
-    mPosition[frameIdx] = pos;
-    return true;
+  void output(const TaskInfo& taskInfo)
+  {
+    if (!nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
+        return;
+
+    Frame* frame = getParentFrame(0);
+    if (!frame) {
+      mAccel = Vector6::zeros();
+      return;
+    }
+    mAccel = frame->getInAccel();
   }
 
-  const Vector3& getPosition(unsigned frameIdx) const
+  real_type getNZ(void) const
   {
-    // FIXME, somehow wrong ...
-    if (NumberOfParents <= frameIdx)
-      return mPosition[0];
-    return mPosition[frameIdx];
+    return mAccel(6, 1)/9.81;
   }
-
-  Vector3 getOffset(unsigned frameIdx) const
-  {
-    if (frameIdx == 0) {
-      const Frame* f0 = getParentFrame(0);
-      const Frame* f1 = getParentFrame(1);
-      // FIXME, somehow wrong ...
-      if (!f0 || !f1)
-        return Vector3::zeros();
-      
-      return f1->posFromRef(f0->posToRef(mPosition[0])) - mPosition[1];
-    } else if (frameIdx == 1) {
-      const Frame* f0 = getParentFrame(0);
-      const Frame* f1 = getParentFrame(1);
-      // FIXME, somehow wrong ...
-      if (!f0 || !f1)
-        return Vector3::zeros();
-      
-      return f0->posFromRef(f1->posToRef(mPosition[1])) - mPosition[0];
-    } else
-      return Vector3::zeros();
-  }
-
-  real_type getDistance(void) const
-  { return norm(getOffset(0)); }
 
 private:
- 
+  OpenFDM_NodeImplementation(1);
 
-  Vector3 mPosition[NumberOfParents];
-//   Vector3 mPosition[NumberOfParents];
-
+  Matrix mAccel;
 };
 
 } // namespace OpenFDM
