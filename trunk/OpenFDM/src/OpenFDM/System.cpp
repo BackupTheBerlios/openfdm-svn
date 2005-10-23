@@ -140,7 +140,13 @@ System::simulate(real_type tEnd)
   // restarted. So just set it here.
   Vector state(getNumContinousStates());
   getState(state, 0);
-  mTimestepper->setState(state);
+  // Exact check is currect here, the user does not have to fiddle with
+  // the state during simulation, if the state changes despite of that,
+  // Just spend that extra effort.
+  if (state != mTimestepper->getState()) {
+    mTimestepper->setState(state);
+    evalFunction(mTimestepper->getTime(), mTimestepper->getState(), state);
+  }
 
   while (getTime() < tEnd) {
     // This is the maximum time we can step in this loop
