@@ -17,37 +17,116 @@ struct InterploationData {
   InterploationData(void) {}
   InterploationData(unsigned index0, unsigned index1, real_type _theta)
   {
-    theta[0] = _theta;
-    theta[1] = 1 - _theta;
+    weight[0] = 1 - _theta;
+    weight[1] = _theta;
     index[0] = index0;
     index[1] = index1;
   }
-  real_type theta[2];
+  real_type weight[2];
   unsigned index[2];
 };
 
 class TableLookup {
-private:
-  /// FIXME may be use a std::vector for that.
-  typedef std::map<real_type,unsigned> Table;
-
+  typedef std::map<real_type, unsigned> Table;
+  typedef std::pair<real_type, unsigned> Pair;
+  
+  
 public:
   TableLookup(void)
   {}
 
-  unsigned size(void) const
-  { return mTable.size(); }
-
-  void addBreakPoint(real_type value)
+  /// Return the breakpoint at the given index i
+  /// If it does not exist in the lookup table, zero is returned
+  real_type getAtIndex(unsigned i) const
   {
-    mTable[value] = 0;
-    unsigned index = 1;
+    Table::const_iterator it;
+    for (it = mTable.begin(); it != mTable.end(); ++it) {
+      if (it->second == i)
+        return it->first;
+    }
+    return 0;
+  }
+  /// Set the breakpoint value at index i, the lookup table is extended if
+  /// required. Keep in mind, that the table lookup behaves undefined if
+  /// the sequence of indices does not increase or decrease strictly monotonic
+  /// with the values.
+  void setAtIndex(unsigned i, real_type value)
+  {
     Table::iterator it = mTable.begin();
     while (it != mTable.end()) {
-      it->second = index;
-      ++index;
-      ++it;
+      if (it->second == i) {
+        mTable.erase(it);
+        it = mTable.begin();
+      }
+      else
+        ++it;
     }
+    mTable.insert(it, Pair(value, i));
+  }
+
+  /// Returns the size of the lookup table
+  unsigned size(void) const
+  {
+    unsigned sz = 0;
+    Table::const_iterator it;
+    for (it = mTable.begin(); it != mTable.end(); ++it) {
+      sz = max(sz, it->second);
+    }
+    return sz;
+  }
+
+  /// Check for consistency, that is, the breakpoint indices are strictly
+  /// ordered and there are no holes in the sequence of indices
+  bool isValid(void) const
+  {
+    Table::const_iterator it = mTable.begin();
+    if (it == mTable.end())
+      return false;
+    int indexDir = 0;
+    int valueDir = 0;
+    real_type prevValue = it->first;
+    unsigned prevIndex = it->second;
+    for (++it; it != mTable.end(); ++it) {
+      // We do not yet know which direction we should check
+      if (indexDir == 0) {
+        // Check for the direction of the indices
+        if (prevIndex + 1 == it->second) {
+          indexDir = 1;
+        } else if (prevIndex == it->second + 1) {
+          indexDir = -1;
+        } else {
+          // Duplicate index ...
+          return false;
+        }
+        
+        // Check for the direction of the lookup keys
+        if (prevValue < it->first) {
+          valueDir = 1;
+        } else if (prevValue > it->first) {
+          valueDir = -1;
+        } else {
+          // Duplicate lookup keys ...
+          return false;
+        }
+
+      } else if (indexDir == -1) {
+        // Check if the direction is still the same
+        if (prevIndex != it->second + 1)
+          return false;
+        if (prevValue*valueDir >= it->first*valueDir)
+          return false;
+      } else {
+        // Check if the direction is still the same
+        if (prevIndex + 1 != it->second)
+          return false;
+        if (prevValue*valueDir >= it->first*valueDir)
+          return false;
+      }
+
+      prevValue = it->first;
+      prevIndex = it->second;
+    }
+    return true;
   }
 
   InterploationData lookup(real_type input) const
@@ -168,11 +247,11 @@ private:
     real_type value = 0;
 
     curIndex(indexNum) = interp(indexNum).index[0];
-    value += interp(indexNum).theta[0] *
+    value += interp(indexNum).weight[0] *
       interpolator(indexNum-1, curIndex, interp);
 
     curIndex(indexNum) = interp(indexNum).index[1];
-    value += interp(indexNum).theta[1] *
+    value += interp(indexNum).weight[1] *
       interpolator(indexNum-1, curIndex, interp);
 
     return value;

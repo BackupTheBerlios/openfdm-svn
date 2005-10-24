@@ -23,6 +23,7 @@
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/Saturation.h>
+#include <OpenFDM/Sensor.h>
 #include <OpenFDM/SimpleContact.h>
 #include <OpenFDM/SimpleGear.h>
 #include <OpenFDM/Summer.h>
@@ -534,8 +535,11 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
 
   InertiaMatrix I(0, 0, 0, 0, 0, 0);
   real_type mass = 0;
-  Vector3 vrp, ap, ep;
+  Vector3 vrp = Vector3::zeros();
   bool haveVrp = false;
+  Vector3 ap = Vector3::zeros();
+  Vector3 ep = Vector3::zeros();
+  bool haveEp = false;
   typedef std::pair<Vector3,real_type> masspoint;
   typedef std::list<masspoint> masslist;
   masslist masses;
@@ -612,6 +616,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
       datastr >> mBodyReference(1) >> mBodyReference(2) >> mBodyReference(3);
     } else if (name == "AC_EYEPTLOC") {
       datastr >> ep(1) >> ep(2) >> ep(3);
+      haveEp = true;
     } else if (name == "AC_AERORP") {
       datastr >> ap(1) >> ap(2) >> ap(3);
     } else if (name == "AC_VRP") {
@@ -630,6 +635,8 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   Vector3 cg = mBodyReference;
   if (haveVrp)
     mBodyReference = vrp;
+  if (!haveEp)
+    ep = cg;
 
   // Now collect all static inertia values starting with the emptyweight
   // and empty inertia together in spi.
@@ -643,15 +650,19 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   }
   mVehicle->getTopBody()->addMultiBodyModel(new Mass(spi));
 
-  // Attach the visual reference point.
-  FreeFrame* vrpFrame = new FreeFrame;
-  vrpFrame->setPosition(structToBody(vrp));
-  mVehicle->getTopBody()->addChildFrame(vrpFrame);
-
   // Attach the eye point.
-  FreeFrame* epFrame = new FreeFrame;
+  FreeFrame* epFrame = new FreeFrame("Eyepoint Frame");
   epFrame->setPosition(structToBody(ep));
+  epFrame->setRelVel(Vector6::zeros());
+  epFrame->setRelAccel(Vector6::zeros());
+  Sensor* accelSensor = new Sensor("Acceleration Sensor");
+  accelSensor->addSampleTime(SampleTime(1.0/120));
+  Property prop = accelSensor->getOutputPort("nz");
+  registerJSBExpression("accelerations/n-pilot-z-norm", prop);
+//   epFrame->addMultiBodyModel(accelSensor);
+  mVehicle->getTopBody()->addMultiBodyModel(accelSensor);
   mVehicle->getTopBody()->addChildFrame(epFrame);
+  addOutputModel(prop, "Normalized load value", "/accelerations/nlf");
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
@@ -945,9 +956,9 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
 
     table1D = new Table1D(name);
     TableLookup tl;
-    tl.addBreakPoint(-1);
-    tl.addBreakPoint(0);
-    tl.addBreakPoint(1);
+    tl.setAtIndex(1, -1);
+    tl.setAtIndex(2, 0);
+    tl.setAtIndex(3, 1);
     table1D->setTableLookup(tl);
     TableData<1>::SizeVector sv;
     sv(1) = 3;
@@ -1347,7 +1358,8 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       sz(1) = rows;
       TableData<1> tableData(sz);
       TableLookup lookup;
-      parseTable1D(datastr, tableData, lookup);
+      if (!parseTable1D(datastr, tableData, lookup))
+        return error("Cannot parse lookup table for \"" + type + "\"");
 
       if (table1D) {
         table1D->setTableData(tableData);
@@ -1744,7 +1756,7 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
 {
   ProductExpressionImpl* prod = new ProductExpressionImpl;
 
-  int ndims;
+  unsigned ndims;
   if (type == "VALUE") {
     ndims = 0;
   } else if (type == "VECTOR") {
@@ -1766,13 +1778,13 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
   datastr >> token;
 
   // The number of table entries 
-  int n[3] = { 0 };
-  for (int i = 0; i < ndims; ++i)
+  unsigned n[3] = { 0 };
+  for (unsigned i = 0; i < ndims; ++i)
     datastr >> n[i];
 
   // The table lookup values.
   Property inVal[3];
-  for (int i = 0; i < ndims; ++i) {
+  for (unsigned i = 0; i < ndims; ++i) {
     datastr >> token;
     inVal[i] = lookupJSBExpression(token);
   }
@@ -1803,7 +1815,9 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     size(1) = n[0];
     TableData<1> table(size);
     TableLookup lookup;
-    parseTable1D(datastr, table, lookup);
+    if (!parseTable1D(datastr, table, lookup))
+      // FIXME
+      std::cerr << "Cannot parse " + type + " table" << std::endl;
     TableExpressionImpl<1>* ti = new TableExpressionImpl<1>();
     ti->setTable(table);
     ti->setTableLookup(0, lookup);
@@ -1816,7 +1830,9 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     size(2) = n[1];
     TableData<2> table(size);
     TableLookup lookup[2];
-    parseTable2D(datastr, table, lookup);
+    if (!parseTable2D(datastr, table, lookup))
+      // FIXME
+      std::cerr << "Cannot parse " + type + " table" << data << std::endl;
     TableExpressionImpl<2>* ti = new TableExpressionImpl<2>();
     ti->setTable(table);
     for (unsigned i = 0; i < 2; ++i) {
@@ -1832,7 +1848,9 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     size(3) = n[2];
     TableData<3> table(size);
     TableLookup lookup[3];
-    parseTable3D(datastr, table, lookup);
+    if (!parseTable3D(datastr, table, lookup))
+      // FIXME
+      std::cerr << "Cannot parse " + type + " table" << std::endl;
     TableExpressionImpl<3>* ti = new TableExpressionImpl<3>();
     ti->setTable(table);
     for (unsigned i = 0; i < 3; ++i) {
