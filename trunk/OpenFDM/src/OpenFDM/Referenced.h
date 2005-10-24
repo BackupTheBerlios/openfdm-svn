@@ -9,7 +9,14 @@ namespace OpenFDM {
 
 class Referenced {
 public:
-  Referenced(void) : _refcount(0u) {}
+  Referenced(void) : _refcount(0u)
+  {}
+  /// Do not copy reference counts. Each new object has it's own counter
+  Referenced(const Referenced&) : _refcount(0u)
+  {}
+  /// Do not copy reference counts. Each new object has it's own counter
+  Referenced& operator=(const Referenced&)
+  { return *this; }
 
   static unsigned get(const Referenced* ref)
   { if (ref) return ++(ref->_refcount); else return ~0u; }
