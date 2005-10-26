@@ -52,7 +52,8 @@ public:
 
   OpenFDM_LinAlg_INLINE
   bool isIdentity(void) const
-  { return fabs(fabs((*this)(1))-1) < Limits<T>::epsilon() &&
+  {
+    return fabs(fabs((*this)(1))-1) < Limits<T>::epsilon() &&
       fabs((*this)(2)) < Limits<T>::epsilon() &&
       fabs((*this)(3)) < Limits<T>::epsilon() &&
       fabs((*this)(4)) < Limits<T>::epsilon();
@@ -106,25 +107,25 @@ public:
 
     value_type tmp = sqrQ1 - sqrQ2 - sqrQ3 + sqrQ4;
     if (fabs(tmp) < Limits<value_type>::min())
-      angles(1) = 0.5*pi;
+      angles(1) = pi05;
     else
       angles(1) = atan2(2*(q3*q4 + q1*q2), tmp);
     
     tmp = 2*(q2*q4 - q1*q3);
     if (tmp < -1.0)
-      angles(2) = 0.5*pi;
+      angles(2) = pi05;
     else if (1.0 < tmp)
-      angles(2) = -0.5*pi;
+      angles(2) = -pi05;
     else
       angles(2) = -asin(tmp);
     
     tmp = sqrQ1 + sqrQ2 - sqrQ3 - sqrQ4;
     if (fabs(tmp) < Limits<value_type>::min())
-      angles(3) = 0.5*pi;
+      angles(3) = pi05;
     else {
       value_type psi = atan2(2*(q2*q3 + q1*q4), tmp);
       if (psi < 0.0)
-        psi += 2.0*pi;
+        psi += pi2;
       angles(3) = psi;
     }
 
@@ -227,29 +228,49 @@ public:
     return q1*q2*q3;
   }
 
-  static Quaternion fromHeadAttBank(value_type tht, value_type psi, value_type phi)
+  static Quaternion fromEuler(value_type z, value_type y, value_type x)
   {
-    value_type thtd2 = 0.5*tht;
-    value_type psid2 = 0.5*psi;
-    value_type phid2 = 0.5*phi;
+    value_type zd2 = 0.5*z;
+    value_type yd2 = 0.5*y;
+    value_type xd2 = 0.5*x;
     
-    value_type Sthtd2 = sin(thtd2);
-    value_type Spsid2 = sin(psid2);
-    value_type Sphid2 = sin(phid2);
+    value_type Szd2 = sin(zd2);
+    value_type Syd2 = sin(yd2);
+    value_type Sxd2 = sin(xd2);
     
-    value_type Cthtd2 = cos(thtd2);
-    value_type Cpsid2 = cos(psid2);
-    value_type Cphid2 = cos(phid2);
+    value_type Czd2 = cos(zd2);
+    value_type Cyd2 = cos(yd2);
+    value_type Cxd2 = cos(xd2);
     
-    value_type Cphid2Cthtd2 = Cphid2*Cthtd2;
-    value_type Cphid2Sthtd2 = Cphid2*Sthtd2;
-    value_type Sphid2Sthtd2 = Sphid2*Sthtd2;
-    value_type Sphid2Cthtd2 = Sphid2*Cthtd2;
+    value_type Cxd2Czd2 = Cxd2*Czd2;
+    value_type Cxd2Szd2 = Cxd2*Szd2;
+    value_type Sxd2Szd2 = Sxd2*Szd2;
+    value_type Sxd2Czd2 = Sxd2*Czd2;
     
-    return Quaternion( Cphid2Cthtd2*Cpsid2 + Sphid2Sthtd2*Spsid2,
-                       Sphid2Cthtd2*Cpsid2 - Cphid2Sthtd2*Spsid2,
-                       Cphid2Cthtd2*Spsid2 + Sphid2Sthtd2*Cpsid2,
-                       Cphid2Sthtd2*Cpsid2 - Sphid2Cthtd2*Spsid2);
+    return Quaternion( Cxd2Czd2*Cyd2 + Sxd2Szd2*Syd2,
+                       Sxd2Czd2*Cyd2 - Cxd2Szd2*Syd2,
+                       Cxd2Czd2*Syd2 + Sxd2Szd2*Cyd2,
+                       Cxd2Szd2*Cyd2 - Sxd2Czd2*Syd2);
+  }
+
+  static Quaternion fromYawPitchRoll(value_type y, value_type p, value_type r)
+  { return fromEuler(y, p, r); }
+
+  static Quaternion fromHeadAttBank(value_type h, value_type a, value_type b)
+  { return fromEuler(h, a, b); }
+
+  static Quaternion fromLonLat(value_type lon, value_type lat)
+  {
+    value_type zd2 = 0.5*lon;
+    value_type yd2 = - pi025 - 0.5*lat;
+    
+    value_type Szd2 = sin(zd2);
+    value_type Syd2 = sin(yd2);
+    
+    value_type Czd2 = cos(zd2);
+    value_type Cyd2 = cos(yd2);
+    
+    return Quaternion( Czd2*Cyd2, -Szd2*Syd2, Czd2*Syd2, Szd2*Cyd2);
   }
 
   static Quaternion fromAngleAxis(value_type angle, const Vector3& axis)
@@ -328,9 +349,9 @@ public:
   }
 
 
-  OpenFDM_LinAlg_INLINE
-  static Quaternion zeros(void)
-  { return Quaternion(Vector4<T>::zeros()); }
+//   OpenFDM_LinAlg_INLINE
+//   static Quaternion zeros(void)
+//   { return Quaternion(Vector4<T>::zeros()); }
   OpenFDM_LinAlg_INLINE
   static Quaternion unit(unsigned i = 1)
   { return Quaternion(Vector4<T>::unit(i)); }

@@ -55,8 +55,7 @@ Planet::toGeod(const Geocentric& geoc) const
 Quaternion
 Planet::getGeodHLOrientation(const Geodetic& pos) const
 {
-  return Quaternion::fromEulerSeq(3, pos.longitude,
-                                  2, -0.5*M_PI-pos.latitude);
+  return Quaternion::fromLonLat(pos.longitude, pos.latitude);
 }
 
 Quaternion
@@ -86,8 +85,7 @@ Planet::getGeocHLOrientation(const Vector3& pos) const
 Quaternion
 Planet::getGeocHLOrientation(const Geocentric& pos) const
 {
-  return Quaternion::fromEulerSeq(3, pos.longitude,
-                                  2, -0.5*pi-pos.latitude);
+  return Quaternion::fromLonLat(pos.longitude, pos.latitude);
 }
 
 Vector3

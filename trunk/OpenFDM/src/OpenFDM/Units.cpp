@@ -14,9 +14,10 @@ namespace OpenFDM {
 #endif
 #define PI static_cast<real_type>(3.1415926535897932384626433832795029L)
 
+const real_type pi2 = 2*PI;
 const real_type pi = PI;
-const real_type pi2 = static_cast<real_type>(0.5L)*PI;
-const real_type pi4 = static_cast<real_type>(0.25L)*PI;
+const real_type pi05 = static_cast<real_type>(0.5L)*PI;
+const real_type pi025 = static_cast<real_type>(0.25L)*PI;
 
 const real_type deg2rad = PI/static_cast<real_type>(180);
 const real_type rad2deg = static_cast<real_type>(180)/PI;

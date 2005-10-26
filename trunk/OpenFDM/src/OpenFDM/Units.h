@@ -129,12 +129,14 @@ Measure                         Abbreviation    Comments
 
  */
 
-/** Just pi. */
-extern const real_type pi;
-/** Just 0.5*pi. */
+/** Just pi*2 */
 extern const real_type pi2;
-/** Just 0.25*pi. */
-extern const real_type pi4;
+/** Just pi */
+extern const real_type pi;
+/** Just pi*0.5 */
+extern const real_type pi05;
+/** Just pi*0.25 */
+extern const real_type pi025;
 
 extern const real_type deg2rad;
 extern const real_type rad2deg;

@@ -31,7 +31,7 @@ Vehicle::Vehicle(void)
 
   // The Planet centered frame is used by the others!
   mRootFrame = new RootFrame("Planet centered frame");
-  Vector3 earthRotation(0.0, 0.0, 2.0*pi/(60*60*24));
+  Vector3 earthRotation(0.0, 0.0, pi2/(60*60*24));
   mRootFrame->setAngularRelVel(earthRotation);
 
   mTopBody = new RigidBody("Topmost rigid body");
