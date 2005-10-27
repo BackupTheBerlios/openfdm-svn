@@ -224,7 +224,7 @@ LegacyJSBSimReader::lookupJSBExpression(const std::string& name)
 
   // If we need the negative input, just multiply with a negative gain
   if (propMinusFromJSBSim(name))
-    return addInverterModel(name.substr(name.rfind('/')), prop);
+    return addInverterModel(name.substr(name.rfind('/')+1), prop);
   else
     return prop;
 }
@@ -1876,7 +1876,7 @@ LegacyJSBSimReader::makeAeroprops(void)
   registerJSBExpression("velocities/vt-kts", Property(c));
 
   // Mach numbers, are unitless.
-  e = mAeroForce->getProperty("mach");
+  e = mAeroForce->getProperty("machNumber");
   registerJSBExpression("velocities/mach-norm", e);
 
   // Rotational rates wrt air.

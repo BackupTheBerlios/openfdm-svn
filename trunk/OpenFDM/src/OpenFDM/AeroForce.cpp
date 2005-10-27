@@ -78,6 +78,8 @@ AeroForce::AeroForce(Environment* env, const std::string& name)
   addProperty("betaDot",
               Property(this, &AeroForce::getBetaDot));
   addProperty("mach",
+              Property(this, &AeroForce::getMach));
+  addProperty("machNumber",
               Property(this, &AeroForce::getMachNumber));
   addProperty("trueSpeedUW",
               Property(this, &AeroForce::getTrueSpeedUW));
