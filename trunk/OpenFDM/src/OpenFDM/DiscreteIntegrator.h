@@ -28,6 +28,12 @@ public:
   const Matrix& getInitialValue(void) const;
   void setInitialValue(const Matrix& value);
 
+  const Matrix& getMinSaturation(void) const;
+  void setMinSaturation(const Matrix& value);
+
+  const Matrix& getMaxSaturation(void) const;
+  void setMaxSaturation(const Matrix& value);
+
   const Matrix& getIntegralOutput(void) const;
 
 private:
@@ -37,6 +43,10 @@ private:
   Matrix mIntegralState;
   /// Holds the current integral initial state.
   Matrix mInitialValue;
+  /// Holds the minimum saturation
+  Matrix mMinSaturation;
+  /// Holds the maximum saturation
+  Matrix mMaxSaturation;
 };
 
 } // namespace OpenFDM

@@ -20,6 +20,9 @@ DiscreteIntegrator::DiscreteIntegrator(const std::string& name) :
   setOutputPort(0, "output", Property(this, &DiscreteIntegrator::getIntegralOutput));
 
   addProperty("initialValue", Property(this, &DiscreteIntegrator::getInitialValue, &DiscreteIntegrator::setInitialValue));
+  addProperty("minSaturation", Property(this, &DiscreteIntegrator::getMinSaturation, &DiscreteIntegrator::setMinSaturation));
+  addProperty("maxSaturation", Property(this, &DiscreteIntegrator::getMaxSaturation, &DiscreteIntegrator::setMaxSaturation));
+
   addProperty("output", Property(this, &DiscreteIntegrator::getIntegralOutput));
 }
 
@@ -36,6 +39,13 @@ DiscreteIntegrator::init(void)
   if (rows(mInitialValue) == 0 || cols(mInitialValue) == 0) {
     mInitialValue.resize(getInputPort(0).getValue().toMatrix());
     mInitialValue.clear();
+  }
+
+  if (size(mMinSaturation) != Size(0, 0)) {
+    OpenFDMAssert(size(mMinSaturation) == size(mInitialValue));
+  }
+  if (size(mMaxSaturation) != Size(0, 0)) {
+    OpenFDMAssert(size(mMaxSaturation) == size(mInitialValue));
   }
 
   setNumDiscreteStates(rows(mInitialValue)*cols(mInitialValue));
@@ -64,6 +74,22 @@ DiscreteIntegrator::update(const TaskInfo& taskInfo)
   OpenFDMAssert(size(input) == size(mIntegralState));
   if (size(input) == size(mIntegralState))
     mIntegralState += dt*input;
+
+  // Hmm, should that be done on state setting too???
+  if (size(mMaxSaturation) == size(mInitialValue)) {
+    for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
+      for (unsigned i = 1; i <= rows(mIntegralState); ++i) {
+        mIntegralState(i, j) = min(mIntegralState(i, j), mMaxSaturation(i, j));
+      }
+    }
+  }
+  if (size(mMinSaturation) == size(mInitialValue)) {
+    for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
+      for (unsigned i = 1; i <= rows(mIntegralState); ++i) {
+        mIntegralState(i, j) = max(mIntegralState(i, j), mMinSaturation(i, j));
+      }
+    }
+  }
 }
 
 void
@@ -98,6 +124,30 @@ void
 DiscreteIntegrator::setInitialValue(const Matrix& value)
 {
   mInitialValue = value;
+}
+
+const Matrix&
+DiscreteIntegrator::getMinSaturation(void) const
+{
+  return mMinSaturation;
+}
+
+void
+DiscreteIntegrator::setMinSaturation(const Matrix& value)
+{
+  mMinSaturation = value;
+}
+
+const Matrix&
+DiscreteIntegrator::getMaxSaturation(void) const
+{
+  return mMaxSaturation;
+}
+
+void
+DiscreteIntegrator::setMaxSaturation(const Matrix& value)
+{
+  mMaxSaturation = value;
 }
 
 const Matrix&
