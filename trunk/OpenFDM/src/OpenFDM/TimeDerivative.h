@@ -5,11 +5,8 @@
 #ifndef OpenFDM_TimeDerivative_H
 #define OpenFDM_TimeDerivative_H
 
-#include "Assert.h"
 #include "Types.h"
-#include "Object.h"
 #include "Model.h"
-#include "Expression.h"
 
 namespace OpenFDM {
 

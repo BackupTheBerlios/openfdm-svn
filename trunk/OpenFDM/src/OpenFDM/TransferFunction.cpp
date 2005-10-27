@@ -3,10 +3,7 @@
  */
 
 #include "Assert.h"
-#include "Types.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Property.h"
+#include "LogStream.h"
 #include "TransferFunction.h"
 
 namespace OpenFDM {

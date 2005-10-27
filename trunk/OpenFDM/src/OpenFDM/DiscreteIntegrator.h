@@ -5,9 +5,7 @@
 #ifndef OpenFDM_DiscreteIntegrator_H
 #define OpenFDM_DiscreteIntegrator_H
 
-#include "Assert.h"
 #include "Types.h"
-#include "Object.h"
 #include "Model.h"
 
 namespace OpenFDM {

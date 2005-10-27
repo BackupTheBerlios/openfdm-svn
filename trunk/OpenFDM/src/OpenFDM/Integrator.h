@@ -5,9 +5,7 @@
 #ifndef OpenFDM_Integrator_H
 #define OpenFDM_Integrator_H
 
-#include "Assert.h"
 #include "Types.h"
-#include "Object.h"
 #include "Model.h"
 
 namespace OpenFDM {

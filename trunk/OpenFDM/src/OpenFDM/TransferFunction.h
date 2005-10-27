@@ -5,12 +5,9 @@
 #ifndef OpenFDM_TransferFunction_H
 #define OpenFDM_TransferFunction_H
 
-#include "Assert.h"
 #include "Types.h"
-#include "Object.h"
 #include "Vector.h"
 #include "Model.h"
-#include "Expression.h"
 
 namespace OpenFDM {
 

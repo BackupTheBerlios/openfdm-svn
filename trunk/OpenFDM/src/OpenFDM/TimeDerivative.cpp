@@ -3,9 +3,6 @@
  */
 
 #include "Assert.h"
-#include "Types.h"
-#include "Object.h"
-#include "Expression.h"
 #include "TimeDerivative.h"
 
 namespace OpenFDM {
