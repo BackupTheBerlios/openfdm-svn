@@ -8,7 +8,6 @@
 #include <iosfwd>
 
 #include <OpenFDM/Table.h>
-#include <OpenFDM/Expression.h>
 
 namespace OpenFDM {
 

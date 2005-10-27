@@ -2,11 +2,9 @@
  *
  */
 
-#include <string>
-#include <vector>
 #include <iostream>
 
-#include <OpenFDM/Expression.h>
+#include "Tablereader.h"
 
 namespace OpenFDM {
 
