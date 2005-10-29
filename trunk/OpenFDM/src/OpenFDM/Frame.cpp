@@ -17,9 +17,9 @@ namespace OpenFDM {
 Frame::Frame(const std::string& name) :
   mName(name),
   mDirtyPos(true),
-  mDirtyInVel(true),
-  mDirtyInAccel(true),
-  mDisableInAccel(false),
+  mDirtySpVel(true),
+  mDirtySpAccel(true),
+  mDisableSpAccel(false),
   mReferenceFrameId(0)
 {
   setPosition(Vector3::zeros());
@@ -31,10 +31,11 @@ Frame::Frame(const std::string& name) :
   addProperty("position", Property(this, &Frame::getPosition));
   addProperty("orienatation", Property(this, &Frame::getOrientation));
   addProperty("relVel", Property(this, &Frame::getRelVel));
-  addProperty("inVel", Property(this, &Frame::getInVel));
+  addProperty("spVel", Property(this, &Frame::getSpVel));
   addProperty("refVel", Property(this, &Frame::getRefVel));
   addProperty("relAccel", Property(this, &Frame::getRelAccel));
-  addProperty("inAccel", Property(this, &Frame::getInAccel));
+  addProperty("spAccel", Property(this, &Frame::getSpAccel));
+  addProperty("classicAccel", Property(this, &Frame::getClassicAccel));
   addProperty("refPosition", Property(this, &Frame::getRefPosition));
   addProperty("refOrienatation", Property(this, &Frame::getRefOrientation));
 }
@@ -167,8 +168,8 @@ Frame::setPosDirtyUnconditional(void)
 {
   // Mark ourself dirty.
   mDirtyPos = true;
-  mDirtyInVel = true;
-  mDirtyInAccel = true;
+  mDirtySpVel = true;
+  mDirtySpAccel = true;
   
   // Mark all child dirty.
   ChildFrameList::iterator it = mChildFrames.begin();
@@ -183,8 +184,8 @@ void
 Frame::setVelDirtyUnconditional(void)
 {
   // Mark ourself dirty.
-  mDirtyInVel = true;
-  mDirtyInAccel = true;
+  mDirtySpVel = true;
+  mDirtySpAccel = true;
   
   // Mark all child dirty.
   ChildFrameList::iterator it = mChildFrames.begin();
@@ -199,7 +200,7 @@ void
 Frame::setAccelDirtyUnconditional(void)
 {
   // Mark ourself dirty.
-  mDirtyInAccel = true;
+  mDirtySpAccel = true;
   
   // Mark all child dirty.
   ChildFrameList::iterator it = mChildFrames.begin();

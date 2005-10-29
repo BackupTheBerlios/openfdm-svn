@@ -71,7 +71,7 @@ RigidBody::computeArtValues(void)
   
 
   // 
-  Vector6 iv = getInVel();
+  Vector6 iv = getSpVel();
   Vector6 Jiv = mArtInertia*iv;
   mArtForce = Vector6(cross(iv.getAngular(), Jiv.getAngular()) +
                       cross(iv.getLinear(), Jiv.getLinear()),

@@ -246,29 +246,29 @@ public:
   Vector3 getAngularRelVel(void) const
   { return getRelVel().getAngular(); }
 
-  /** Inertial velocity of the parent frame.
+  /** Spatial velocity of the parent frame.
       @return The spatial velocity of the parent frame with respect to an
       inertial frame transformed to the current frame. If the current frame
-      does not have a parrent it is assumed to be an inertial frame.
+      does not have a parent it is assumed to be an inertial frame.
    */
-  const Vector6& getParentInVel(void) const
+  const Vector6& getParentSpVel(void) const
   {
-    if (mDirtyInVel)
+    if (mDirtySpVel)
       computeVelocityDep();
-    return mParentInVel;
+    return mParentSpVel;
   }
 
-  /** Inertial velocity of the current frame.
+  /** Spatial velocity of the current frame.
       @return The spatial velocity of the current frame with respect to an
-      inertial frame. If the current frame does not have a parrent it is
+      inertial frame. If the current frame does not have a parent it is
       assumed to be an inertial frame.
    */
-  Vector6 getInVel(void) const
-  { return getRelVel() + getParentInVel(); }
+  Vector6 getSpVel(void) const
+  { return getRelVel() + getParentSpVel(); }
 
   Vector6 getRefVel(void) const
   {
-    if (mDirtyInVel)
+    if (mDirtySpVel)
       computeVelocityDep();
     return mRefVel;
   }
@@ -287,28 +287,46 @@ public:
   Vector3 getAngularRelAccel(void) const
   { return getRelAccel().getAngular(); }
 
-  /** Inertial acceleration of the parent frame.
+  /** Spatial acceleration of the parent frame.
       @return The spatial acceleration of the parent frame with respect to an
       inertial frame transformed to the current frame. If the current frame
-      does not have a parrent it is assumed to be an inertial frame.
+      does not have a parent it is assumed to be an inertial frame.
+      Note that the spatial acceleration is not the classical acceleration
+      of the moving and accelerating body (@see getClassicAccel).
    */
-  const Vector6& getParentInAccel(void) const
+  const Vector6& getParentSpAccel(void) const
   {
-    if (mDirtyInAccel)
+    if (mDirtySpAccel)
       computeAccelerationDep();
-    return mParentInAccel;
+    return mParentSpAccel;
   }
 
-  /** Inertial acceleration of the current frame.
+  /** Spatial acceleration of the current frame.
       @return The spatial acceleration of the current frame with respect to an
-      inertial frame. If the current frame does not have a parrent it is
+      inertial frame. If the current frame does not have a parent it is
+      assumed to be an inertial frame.
+      Note that the spatial acceleration is not the classical acceleration
+      of the moving and accelerating body (@see getClassicAccel).
+   */
+  Vector6 getSpAccel(void) const
+  {
+    OpenFDMAssert(!mDisableSpAccel);
+    return getRelAccel() + getParentSpAccel() + getHdot();
+  }
+
+  /** Classical acceleration of the current frame.
+      @return The sensed acceleration of the current frame with respect to an
+      inertial frame. If the current frame does not have a parent it is
       assumed to be an inertial frame.
    */
-  Vector6 getInAccel(void) const
+  Vector6 getClassicAccel(void) const
   {
-    OpenFDMAssert(!mDisableInAccel);
-    return getRelAccel() + getParentInAccel() + getHdot();
+    OpenFDMAssert(!mDisableSpAccel);
+    Vector6 iv = getSpVel();
+    return getRelAccel() + getParentSpAccel() + getHdot()
+      + Vector6(Vector3::zeros(), cross(iv.getAngular(), iv.getLinear()));
   }
+
 
   /** FIXME
    */
@@ -325,7 +343,7 @@ public:
        transformed spatial velocity of the parent frame cross the
        relative velocity.
      */
-    Vector6 pivel = getParentInVel();
+    Vector6 pivel = getParentSpVel();
     return Vector6(cross(pivel.getAngular(), getAngularRelVel()),
                    cross(pivel.getAngular(), getLinearRelVel()) + 
                    cross(pivel.getLinear(), getAngularRelVel()));
@@ -484,27 +502,27 @@ public:
   void computeVelocityDep(void) const
   {
     if (hasParent()) {
-      mParentInVel = motionFromParent(getParentFrame()->getInVel());
+      mParentSpVel = motionFromParent(getParentFrame()->getSpVel());
       mRefVel = getRelVel() + motionFromParent(getParentFrame()->getRefVel());
       mReferenceFrameId = getParentFrame()->getRefFrameId();
     } else {
-      mParentInVel = Vector6::zeros();
+      mParentSpVel = Vector6::zeros();
       mRefVel = Vector6::zeros();
       mReferenceFrameId = getFrameId();
     }
-    mDirtyInVel = false;
+    mDirtySpVel = false;
   }
 
   void computeAccelerationDep(void) const
   {
     if (hasParent()) {
-      mParentInAccel = motionFromParent(getParentFrame()->getInAccel());
+      mParentSpAccel = motionFromParent(getParentFrame()->getSpAccel());
       mReferenceFrameId = getParentFrame()->getRefFrameId();
     } else {
-      mParentInAccel = Vector6::zeros();
+      mParentSpAccel = Vector6::zeros();
       mReferenceFrameId = getFrameId();
     }
-    mDirtyInAccel = false;
+    mDirtySpAccel = false;
   }
 
   /** Reference orientation.
@@ -584,15 +602,15 @@ protected:
   { setAccelDirty(); mRelAccel.setAngular(accel); }
 
   void disableAccel(void)
-  { mDisableInAccel = true; }
+  { mDisableSpAccel = true; }
   void enableAccel(void)
-  { mDisableInAccel = false; }
+  { mDisableSpAccel = false; }
 
 protected:
   void setPosDirty(void)
   {
     // Don't bother iterating over all children if we are already dirty.
-    if (mDirtyPos == true && mDirtyInVel == true && mDirtyInAccel == true)
+    if (mDirtyPos == true && mDirtySpVel == true && mDirtySpAccel == true)
       return;
     // Really set ourself and all children dirty.
     // Is done in this way to help the compiler inline the fast path and
@@ -602,7 +620,7 @@ protected:
   void setVelDirty(void)
   {
     // Don't bother iterating over all children if we are already dirty.
-    if (mDirtyInVel == true && mDirtyInAccel == true)
+    if (mDirtySpVel == true && mDirtySpAccel == true)
       return;
     // Really set ourself and all children dirty.
     // Is done in this way to help the compiler inline the fast path and
@@ -612,7 +630,7 @@ protected:
   void setAccelDirty(void)
   {
     // Don't bother iterating over all children if we are already dirty.
-    if (mDirtyInAccel == true)
+    if (mDirtySpAccel == true)
       return;
     // Really set ourself and all children dirty.
     // Is done in this way to help the compiler inline the fast path and
@@ -644,8 +662,8 @@ private:
   // True? more the relative acceleration ...
   Vector6 mRelAccel;
 
-  mutable Vector6 mParentInVel;
-  mutable Vector6 mParentInAccel;
+  mutable Vector6 mParentSpVel;
+  mutable Vector6 mParentSpAccel;
 
   mutable Rotation mRefOrient;
   mutable Vector3 mRefPos;
@@ -659,9 +677,9 @@ private:
   // Flag which tells the frame if dependent values must
   // be recomputed or not.
   mutable bool mDirtyPos:1;
-  mutable bool mDirtyInVel:1;
-  mutable bool mDirtyInAccel:1;
-  mutable bool mDisableInAccel:1;
+  mutable bool mDirtySpVel:1;
+  mutable bool mDirtySpAccel:1;
+  mutable bool mDisableSpAccel:1;
 
   // The parent frame.
   // FIXME: May be we should store a list of all parents ???

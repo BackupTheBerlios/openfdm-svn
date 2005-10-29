@@ -156,9 +156,6 @@ public:
     if (!outboardBody)
       return false;
 
-//  outboardBody->getHdot();
-//  outboardBody->getParentInAccel();
-
     // Set the local acceleration
     setOutboardRelAccel(computeRelAccel(outboardBody->getArtInertia(),
                                         outboardBody->getArtForce()));

@@ -44,14 +44,14 @@ protected:
   }
   
   void computeRelAccel(const SpatialInertia& outBoardArtInertia,
-                       const Vector6& parentInAccel,
+                       const Vector6& parentSpAccel,
                        const Matrix6N& jointAxis,
                        VectorN& jointAccel) const
   {
     if (hIh.singular()) {
       jointAccel.clear();
     } else {
-      Vector6 tmp = mForcePAlpha - outBoardArtInertia*parentInAccel;
+      Vector6 tmp = mForcePAlpha - outBoardArtInertia*parentSpAccel;
       jointAccel = hIh.solve(trans(jointAxis)*tmp);
     }
   }

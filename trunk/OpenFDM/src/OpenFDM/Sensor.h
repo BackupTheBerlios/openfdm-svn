@@ -44,7 +44,7 @@ public:
       mAccel = Vector6::zeros();
       return;
     }
-    mAccel = frame->getInAccel();
+    mAccel = frame->getClassicAccel();
   }
 
   real_type getNZ(void) const
