@@ -23,7 +23,7 @@ template<typename T>
 class Quaternion;
 
 template<typename T>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Quaternion<T>
 operator*(const Quaternion<T>& q1, const Quaternion<T>& q2);
 
@@ -35,22 +35,22 @@ public:
   typedef Vector3<value_type> Vector3;
   typedef Matrix33<value_type> Matrix33;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Quaternion(void)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Quaternion(const Vector4<T>& v)
     : Vector4<T>(v)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Quaternion(value_type q1, value_type q2, value_type q3, value_type q4)
     : Vector4<T>(q1, q2, q3, q4)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Quaternion(void)
   {}
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool isIdentity(void) const
   {
     return fabs(fabs((*this)(1))-1) < Limits<T>::epsilon() &&
@@ -136,7 +136,7 @@ public:
       Inplace quaternion multiplication.
       @param q a quaternion to be multiplied.
       @return reference to *this. */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Quaternion& operator*=(const Quaternion& q)
   { return (*this) = (*this)*q; }
 
@@ -144,11 +144,11 @@ public:
       Inplace quaternion multiplication.
       @param q a quaternion to be multiplied.
       @return reference to *this. */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Quaternion& operator/=(const Quaternion& q)
   { return (*this) = (*this)*inverse(q); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33 getTransform(void) const
   {
     value_type q1 = (*this)(1);
@@ -178,7 +178,7 @@ public:
                     2*(q2q3-q1q4), q1q1-q2q2+q3q3-q4q4, 2*(q3q4+q1q2),
                     2*(q2q4+q1q3), 2*(q3q4-q1q2), q1q1-q2q2-q3q3+q4q4);
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33 getBackTransform(void) const
   { return trans(getTransform()); }
 
@@ -349,10 +349,10 @@ public:
   }
 
 
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   static Quaternion zeros(void)
 //   { return Quaternion(Vector4<T>::zeros()); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   static Quaternion unit(unsigned i = 1)
   { return Quaternion(Vector4<T>::unit(i)); }
 
@@ -458,7 +458,7 @@ private:
     @return a quaternion representing q1*q2.
 */
 template<typename T>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Quaternion<T>
 operator*(const Quaternion<T>& q1, const Quaternion<T>& q2)
 {
@@ -473,37 +473,37 @@ operator*(const Quaternion<T>& q1, const Quaternion<T>& q2)
 }
 
 template<typename T>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Quaternion<T>
 operator/(const Quaternion<T>& q1, const Quaternion<T>& q2)
 { return q1*inverse(q2); }
 
 template<typename T>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Quaternion<T>
 conjugate(const Quaternion<T>& q)
 { return Quaternion<T>(q(1), -q(2), -q(3), -q(4)); }
 
 template<typename T>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Quaternion<T>
 inverse(const Quaternion<T>& q)
 { return Quaternion<T>((1/dot(q,q))*conjugate(q)); }
 
 template<typename T>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Quaternion<T>::value_type
 real(const Quaternion<T>& q)
 { return q(1); }
 
 template<typename T>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Quaternion<T>::Vector3
 imag(const Quaternion<T>& q)
 { return typename Quaternion<T>::Vector3(q(2), q(3), q(4)); }
 
 template<typename T>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector4<T>
 derivative(const Quaternion<T>& q, const Vector3<T>& angVel)
 {

@@ -18,27 +18,27 @@ public:
   typedef Impl implementation_type;
   typedef typename implementation_type::value_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   TransposeExpr(const implementation_type& ref)
     : ref_(ref)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~TransposeExpr(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return ref_.cols(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return ref_.rows(); }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return ref_(j, i); }
 
@@ -48,7 +48,7 @@ private:
 
 // Returns a matrix expression representing a transposed matrix.
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 TransposeExpr<Impl,m,n>
 trans(const MatrixRValue<Impl,n,m>& A)
 { return TransposeExpr<Impl,m,n>(A.asImpl()); }
@@ -60,27 +60,27 @@ public:
   typedef Impl implementation_type;
   typedef typename implementation_type::value_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixUnaryMinusExpr(const Impl& ref)
     : ref_(ref)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~MatrixUnaryMinusExpr(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return ref_.rows(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return ref_.cols(); }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return -ref_(i, j); }
 
@@ -89,7 +89,7 @@ private:
 };
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 MatrixUnaryMinusExpr<Impl,m,n>
 operator-(const MatrixRValue<Impl,m,n>& A)
 { return MatrixUnaryMinusExpr<Impl,m,n>(A.asImpl()); }
@@ -101,27 +101,27 @@ public:
   typedef Impl implementation_type;
   typedef typename implementation_type::value_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixScalarMultiplyExpr(const Impl& ref, value_type scalar)
     : ref_(ref), scalar_(scalar)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~MatrixScalarMultiplyExpr(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return ref_.rows(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return ref_.cols(); }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return scalar_*ref_(i, j); }
 
@@ -131,13 +131,13 @@ private:
 };
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 MatrixScalarMultiplyExpr<Impl,m,n>
 operator*(typename Impl::value_type scalar, const MatrixRValue<Impl,m,n>& A)
 { return MatrixScalarMultiplyExpr<Impl,m,n>(A.asImpl(), scalar); }
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 MatrixScalarMultiplyExpr<Impl,m,n>
 operator*(const MatrixRValue<Impl,m,n>& A, typename Impl::value_type scalar)
 { return MatrixScalarMultiplyExpr<Impl,m,n>(A.asImpl(), scalar); }
@@ -154,27 +154,27 @@ public:
   // FIXME: is usually correct,but ...
   typedef value1_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixBinaryPlusExpr(const Impl1& op1, const Impl2& op2)
     : op1_(op1), op2_(op2)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~MatrixBinaryPlusExpr(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return op1_.rows(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return op1_.cols(); }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return op1_(i, j) + op2_(i, j); }
 
@@ -185,7 +185,7 @@ private:
 
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 MatrixBinaryPlusExpr<Impl1,Impl2,m1,n1>
 operator+(const MatrixRValue<Impl1,m1,n1>& A1,
           const MatrixRValue<Impl2,m2,n2>& A2)
@@ -207,27 +207,27 @@ public:
   // FIXME: is usually correct,but ...
   typedef value1_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixBinaryMinusExpr(const Impl1& op1, const Impl2& op2)
     : op1_(op1), op2_(op2)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~MatrixBinaryMinusExpr(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return op1_.rows(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return op1_.cols(); }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return op1_(i, j) - op2_(i, j); }
 
@@ -238,7 +238,7 @@ private:
 
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 MatrixBinaryMinusExpr<Impl1,Impl2,m1,n1>
 operator-(const MatrixRValue<Impl1,m1,n1>& A1,
           const MatrixRValue<Impl2,m2,n2>& A2)
@@ -260,27 +260,27 @@ public:
   // FIXME: is usually correct,but ...
   typedef value1_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixBinaryProductExpr(const Impl1& op1, const Impl2& op2)
     : op1_(op1), op2_(op2)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~MatrixBinaryProductExpr(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return op1_.rows(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return op2_.cols(); }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   {
     value_type ret = 0;
@@ -298,7 +298,7 @@ private:
 
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 MatrixBinaryProductExpr<Impl1,Impl2,m1,n2>
 operator*(const MatrixRValue<Impl1,m1,n1>& A1,
           const MatrixRValue<Impl2,m2,n2>& A2)
@@ -310,7 +310,7 @@ operator*(const MatrixRValue<Impl1,m1,n1>& A1,
 #else
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl::value_type,m,n>
 trans(const MatrixRValue<Impl,n,m>& A)
 {
@@ -329,7 +329,7 @@ trans(const MatrixRValue<Impl,n,m>& A)
 }
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl::value_type,m,n>
 operator-(const MatrixRValue<Impl,m,n>& A)
 {
@@ -348,7 +348,7 @@ operator-(const MatrixRValue<Impl,m,n>& A)
 }
 
 template<typename Impl, size_type m>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl::value_type,m>
 operator-(const MatrixRValue<Impl,m,1>& A)
 {
@@ -365,7 +365,7 @@ operator-(const MatrixRValue<Impl,m,1>& A)
 }
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl::value_type,m,n>
 operator*(typename Impl::value_type scalar, const MatrixRValue<Impl,m,n>& A)
 {
@@ -384,7 +384,7 @@ operator*(typename Impl::value_type scalar, const MatrixRValue<Impl,m,n>& A)
 }
 
 template<typename Impl, size_type m>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl::value_type,m>
 operator*(typename Impl::value_type scalar, const MatrixRValue<Impl,m,1>& A)
 {
@@ -401,7 +401,7 @@ operator*(typename Impl::value_type scalar, const MatrixRValue<Impl,m,1>& A)
 }
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl::value_type,m,n>
 operator*(const MatrixRValue<Impl,m,n>& A, typename Impl::value_type scalar)
 {
@@ -420,7 +420,7 @@ operator*(const MatrixRValue<Impl,m,n>& A, typename Impl::value_type scalar)
 }
 
 template<typename Impl, size_type m>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl::value_type,m>
 operator*(const MatrixRValue<Impl,m,1>& A, typename Impl::value_type scalar)
 {
@@ -438,7 +438,7 @@ operator*(const MatrixRValue<Impl,m,1>& A, typename Impl::value_type scalar)
 
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,m1,n1>
 operator+(const MatrixRValue<Impl1,m1,n1>& A1,
           const MatrixRValue<Impl2,m2,n2>& A2)
@@ -462,7 +462,7 @@ operator+(const MatrixRValue<Impl1,m1,n1>& A1,
 
 template<typename Impl1, size_type m1,
          typename Impl2, size_type m2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl1::value_type,m1>
 operator+(const MatrixRValue<Impl1,m1,1>& A1,
           const MatrixRValue<Impl2,m2,1>& A2)
@@ -483,7 +483,7 @@ operator+(const MatrixRValue<Impl1,m1,1>& A1,
 
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,m1,n1>
 operator-(const MatrixRValue<Impl1,m1,n1>& A1,
           const MatrixRValue<Impl2,m2,n2>& A2)
@@ -507,7 +507,7 @@ operator-(const MatrixRValue<Impl1,m1,n1>& A1,
 
 template<typename Impl1, size_type m1,
          typename Impl2, size_type m2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl1::value_type,m1>
 operator-(const MatrixRValue<Impl1,m1,1>& A1,
           const MatrixRValue<Impl2,m2,1>& A2)
@@ -528,7 +528,7 @@ operator-(const MatrixRValue<Impl1,m1,1>& A1,
 
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,m1,n2>
 operator*(const MatrixRValue<Impl1,m1,n1>& A1,
           const MatrixRValue<Impl2,m2,n2>& A2)
@@ -564,7 +564,7 @@ operator*(const MatrixRValue<Impl1,m1,n1>& A1,
 }
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,3,3>
 operator*(const MatrixRValue<Impl1,3,3>& A1,
           const MatrixRValue<Impl2,3,3>& A2)
@@ -587,7 +587,7 @@ operator*(const MatrixRValue<Impl1,3,3>& A1,
 }
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl1::value_type,3>
 operator*(const MatrixRValue<Impl1,3,3>& A1,
           const MatrixRValue<Impl2,3,1>& A2)
@@ -605,7 +605,7 @@ operator*(const MatrixRValue<Impl1,3,3>& A1,
 using LinAlg::Zeros;
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl1::value_type,6>
 operator*(const MatrixRValue<Impl1,6,6>& A1,
           const MatrixRValue<Impl2,6,1>& A2)
@@ -631,7 +631,7 @@ operator*(const MatrixRValue<Impl1,6,6>& A1,
 }
 
 template<typename T, typename Impl2>
-// OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<T,6>
 operator*(const SymMatrix<T,6>& A1,
           const MatrixRValue<Impl2,6,1>& A2)

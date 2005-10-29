@@ -26,48 +26,48 @@ public:
   typedef typename Quaternion<T>::Vector3 Vector3;
   typedef typename Quaternion<T>::Matrix33 Matrix33;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Rotation(void)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Rotation(const Rotation& r)
     : Quaternion<T>(r), mRotationMatrix(r.mRotationMatrix),
       mIdentity(r.mIdentity)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Rotation(const Vector4<T>& v)
     : Quaternion<T>(v)
   { updateRotation(); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Rotation(value_type q1, value_type q2, value_type q3, value_type q4)
     : Quaternion<T>(q1, q2, q3, q4)
   { updateRotation(); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Rotation(void)
   {}
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool isIdentity(void) const
   { return mIdentity; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector3 transform(const Vector3& v) const
   { if (mIdentity) return v; else return mRotationMatrix*v; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector3 backTransform(const Vector3& v) const
   { if (mIdentity) return v; else return trans(mRotationMatrix)*v; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const Matrix33& getTransform(void) const
   { return mRotationMatrix; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33 getBackTransform(void) const
   { return trans(mRotationMatrix); }
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Rotation& operator=(const Quaternion<T>& q)
   { Quaternion<T>::operator=(q); updateRotation(); return *this; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Rotation& operator=(const Rotation& q)
   {
     Quaternion<T>::operator=(q);
@@ -80,7 +80,7 @@ public:
       Inplace quaternion multiplication.
       @param q a quaternion to be multiplied.
       @return reference to *this. */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Rotation& operator*=(const Quaternion<T>& q)
   {
     Quaternion<T>::operator=((*this)*q);
@@ -92,7 +92,7 @@ public:
       Inplace quaternion multiplication.
       @param q a quaternion to be multiplied.
       @return reference to *this. */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Rotation& operator/=(const Quaternion<T>& q)
   {
     Quaternion<T>::operator=((*this)*inverse(q));

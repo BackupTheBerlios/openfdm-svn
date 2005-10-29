@@ -23,17 +23,17 @@ namespace OpenFDM {
     @param v The position vector in the current frame to be transformed.
     @return  The position vector transformed to the child frame.
 */
-inline Vector3
+OpenFDM_FORCE_INLINE Vector3
 posTo(const Vector3& p, const Rotation& r, const Vector3& v)
 {
   return r.transform(v - p);
 }
-inline Vector3
+OpenFDM_FORCE_INLINE Vector3
 posTo(const Vector3& p, const Vector3& v)
 {
   return v - p;
 }
-inline Vector3
+OpenFDM_FORCE_INLINE Vector3
 posTo(const Rotation& r, const Vector3& v)
 {
   return r.transform(v);
@@ -48,17 +48,17 @@ posTo(const Rotation& r, const Vector3& v)
     @param v The position vector in the child frame to be transformed.
     @return  The position vector transformed to the current frame.
 */
-inline Vector3
+OpenFDM_FORCE_INLINE Vector3
 posFrom(const Vector3& p, const Rotation& r, const Vector3& v)
 {
   return r.backTransform(v) + p;
 }
-inline Vector3
+OpenFDM_FORCE_INLINE Vector3
 posFrom(const Vector3& p, const Vector3& v)
 {
   return v + p;
 }
-inline Vector3
+OpenFDM_FORCE_INLINE Vector3
 posFrom(const Rotation& r, const Vector3& v)
 {
   return r.backTransform(v);
@@ -71,7 +71,7 @@ posFrom(const Rotation& r, const Vector3& v)
     @param v The motion vector in the parent frame to be transformed.
     @return  The motion vector transformed to the current frame.
 */
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 motionTo(const Vector3& p, const Rotation& r, const Vector6& v)
 {
   Vector3 tv1 = v.getAngular();
@@ -79,7 +79,7 @@ motionTo(const Vector3& p, const Rotation& r, const Vector6& v)
   tv2 -= cross(p, tv1);
   return Vector6(r.transform(tv1), r.transform(tv2));
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 motionTo(const Vector3& p, const Vector6& v)
 {
   Vector3 tv1 = v.getAngular();
@@ -87,7 +87,7 @@ motionTo(const Vector3& p, const Vector6& v)
   tv2 -= cross(p, tv1);
   return Vector6(tv1, tv2);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 motionTo(const Rotation& r, const Vector6& v)
 {
   Vector3 tv1 = v.getAngular();
@@ -101,7 +101,7 @@ motionTo(const Rotation& r, const Vector6& v)
     @param v The motion vector in the current frame to be transformed.
     @return  The motion vector transformed to the parent frame.
 */
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 motionFrom(const Vector3& p, const Rotation& r, const Vector6& v)
 {
   Vector3 tv1 = r.backTransform(v.getAngular());
@@ -109,7 +109,7 @@ motionFrom(const Vector3& p, const Rotation& r, const Vector6& v)
   tv2 += cross(p, tv1);
   return Vector6(tv1, tv2);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 motionFrom(const Vector3& p, const Vector6& v)
 {
   Vector3 tv1 = v.getAngular();
@@ -117,7 +117,7 @@ motionFrom(const Vector3& p, const Vector6& v)
   tv2 += cross(p, tv1);
   return Vector6(tv1, tv2);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 motionFrom(const Rotation& r, const Vector6& v)
 {
   Vector3 tv1 = r.backTransform(v.getAngular());
@@ -132,7 +132,7 @@ motionFrom(const Rotation& r, const Vector6& v)
     @param v The force vector in the parent frame to be transformed.
     @return  The force vector transformed to the current frame.
 */
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceTo(const Vector3& p, const Rotation& r, const Vector6& f)
 {
   Vector3 tf1 = f.getAngular();
@@ -140,7 +140,7 @@ forceTo(const Vector3& p, const Rotation& r, const Vector6& f)
   tf1 -= cross(p, tf2);
   return Vector6(r.transform(tf1), r.transform(tf2));
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceTo(const Vector3& p, const Vector6& f)
 {
   Vector3 tf1 = f.getAngular();
@@ -148,7 +148,7 @@ forceTo(const Vector3& p, const Vector6& f)
   tf1 -= cross(p, tf2);
   return Vector6(tf1, tf2);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceTo(const Rotation& r, const Vector6& f)
 {
   Vector3 tf1 = f.getAngular();
@@ -162,7 +162,7 @@ forceTo(const Rotation& r, const Vector6& f)
     @param v The force vector in the current frame to be transformed.
     @return  The force vector transformed to the parent frame.
 */
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceFrom(const Vector3& p, const Rotation& r, const Vector6& f)
 {
   Vector3 tf1 = r.backTransform(f.getAngular());
@@ -170,7 +170,7 @@ forceFrom(const Vector3& p, const Rotation& r, const Vector6& f)
   tf1 += cross(p, tf2);
   return Vector6(tf1, tf2);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceFrom(const Vector3& p, const Vector6& f)
 {
   Vector3 tf1 = f.getAngular();
@@ -178,25 +178,25 @@ forceFrom(const Vector3& p, const Vector6& f)
   tf1 += cross(p, tf2);
   return Vector6(tf1, tf2);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceFrom(const Rotation& r, const Vector6& f)
 {
   Vector3 tf1 = r.backTransform(f.getAngular());
   Vector3 tf2 = r.backTransform(f.getLinear());
   return Vector6(tf1, tf2);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceFrom(const Vector3& p, const Rotation& r, const Vector3& f)
 {
   Vector3 tf2 = r.backTransform(f);
   return Vector6(cross(p, tf2), tf2);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceFrom(const Vector3& p, const Vector3& f)
 {
   return Vector6(cross(p, f), f);
 }
-inline Vector6
+OpenFDM_FORCE_INLINE Vector6
 forceFrom(const Rotation& r, const Vector3& f)
 {
   return Vector6(Vector3::zeros(), r.backTransform(f));
@@ -204,18 +204,18 @@ forceFrom(const Rotation& r, const Vector3& f)
 
 /**
  */
-inline Plane
+OpenFDM_FORCE_INLINE Plane
 planeTo(const Vector3& p, const Rotation& r, const Plane& plane)
 {
   return Plane(r.transform(plane.getNormal()),
                plane.getDist() + dot(plane.getNormal(), p));
 }
-inline Plane
+OpenFDM_FORCE_INLINE Plane
 planeTo(const Vector3& p, const Plane& plane)
 {
   return Plane(plane.getNormal(), plane.getDist() + dot(plane.getNormal(), p));
 }
-inline Plane
+OpenFDM_FORCE_INLINE Plane
 planeTo(const Rotation& r, const Plane& plane)
 {
   return Plane(r.transform(plane.getNormal()), plane.getDist());
@@ -224,18 +224,18 @@ planeTo(const Rotation& r, const Plane& plane)
 
 /**
  */
-inline Plane
+OpenFDM_FORCE_INLINE Plane
 planeFrom(const Vector3& p, const Rotation& r, const Plane& plane)
 {
   return Plane(r.backTransform(plane.getNormal()),
                plane.getDist() - dot(plane.getNormal(), p));
 }
-inline Plane
+OpenFDM_FORCE_INLINE Plane
 planeFrom(const Vector3& p, const Plane& plane)
 {
   return Plane(plane.getNormal(), plane.getDist() - dot(plane.getNormal(), p));
 }
-inline Plane
+OpenFDM_FORCE_INLINE Plane
 planeFrom(const Rotation& r, const Plane& plane)
 {
   return Plane(r.backTransform(plane.getNormal()), plane.getDist());
@@ -243,7 +243,7 @@ planeFrom(const Rotation& r, const Plane& plane)
 
 
 
-inline SpatialInertia
+OpenFDM_FORCE_INLINE SpatialInertia
 inertiaFrom(const Vector3& p, const Rotation& r, const SpatialInertia& I)
 {
   InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));
@@ -297,7 +297,7 @@ inertiaFrom(const Vector3& p, const Rotation& r, const SpatialInertia& I)
   
   return It2;
 }
-inline SpatialInertia
+OpenFDM_FORCE_INLINE SpatialInertia
 inertiaFrom(const Vector3& p, const SpatialInertia& I)
 {
   InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));
@@ -344,7 +344,7 @@ inertiaFrom(const Vector3& p, const SpatialInertia& I)
   
   return It2;
 }
-inline SpatialInertia
+OpenFDM_FORCE_INLINE SpatialInertia
 inertiaFrom(const Rotation& r, const SpatialInertia& I)
 {
   InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));

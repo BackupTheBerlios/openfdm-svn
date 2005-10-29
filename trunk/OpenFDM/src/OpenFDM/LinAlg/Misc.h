@@ -5,12 +5,6 @@
 #ifndef OpenFDM_LinAlgMisc_H
 #define OpenFDM_LinAlgMisc_H
 
-#if defined(__GNUC__) && (4 <= __GNUC__) && defined(__OPTIMIZE__)
-# define OpenFDM_LinAlg_INLINE inline __attribute__((always_inline))
-#else
-# define OpenFDM_LinAlg_INLINE inline
-#endif
-
 // #define USE_EXPRESSIONS
 
 namespace OpenFDM {
@@ -22,11 +16,11 @@ typedef unsigned size_type;
 
 // Used to define an index range.
 struct Range {
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Range(size_type f, size_type l)
     : first(f), last(l)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Range(size_type one)
     : first(one), last(one)
   {}
@@ -44,7 +38,7 @@ class SizeCheck;
 // Sizes are equal, so nothing to do here.
 template<size_type s>
 struct SizeCheck<s,s> {
-  static OpenFDM_LinAlg_INLINE
+  static OpenFDM_FORCE_INLINE
   void
   Equal(size_type, size_type)
   { }
@@ -53,7 +47,7 @@ struct SizeCheck<s,s> {
 // Now the three cases where we need to check dynamically.
 template<size_type s>
 struct SizeCheck<0,s> {
-  static OpenFDM_LinAlg_INLINE
+  static OpenFDM_FORCE_INLINE
   void
   Equal(size_type s1, size_type s2)
   {
@@ -64,7 +58,7 @@ struct SizeCheck<0,s> {
 
 template<size_type s>
 struct SizeCheck<s,0> {
-  static OpenFDM_LinAlg_INLINE
+  static OpenFDM_FORCE_INLINE
   void
   Equal(size_type s1, size_type s2)
   {
@@ -75,7 +69,7 @@ struct SizeCheck<s,0> {
 
 template<>
 struct SizeCheck<0,0> {
-  static OpenFDM_LinAlg_INLINE
+  static OpenFDM_FORCE_INLINE
   void
   Equal(size_type s1, size_type s2)
   {

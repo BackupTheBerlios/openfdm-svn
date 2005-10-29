@@ -16,43 +16,43 @@ public:
   typedef Impl implementation_type;
   typedef typename implementation_type::value_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RangeExpr(Impl& ref, const Range& r1, const Range& r2)
     : ref_(ref), r1_(r1), r2_(r2)
   {}
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return r1_.last - r1_.first + 1; }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return r2_.last - r2_.first + 1; }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return ref_(r1_.first - 1 + i, r2_.first - 1 + j); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type& operator()(size_type i, size_type j)
   { return ref_(r1_.first - 1 + i, r2_.first - 1 + j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
   { return i == rows() && j == cols(); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RangeExpr& operator=(const RangeExpr& r)
   { assign(r); return *this; }
 //   template<typename V, size_type m_, size_type n_>
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   RangeExpr& operator=(const MatrixRValue<V,m_,n_>& A)
 //   { assign(A); return *this; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RangeExpr& operator*=(value_type scalar)
   { scalarMultiplyMatrix(*this, scalar); return *this; }
 
@@ -65,7 +65,7 @@ private:
 
 // // FIXME, this should not be required ...
 // template<typename Impl1, typename Impl2>
-// OpenFDM_LinAlg_INLINE
+// OpenFDM_FORCE_INLINE
 // void swap(RangeExpr<Impl1>& m1, RangeExpr<Impl2>& m2)
 // { swapMatrix(m1, m2);}
 
@@ -76,24 +76,24 @@ public:
   typedef Impl implementation_type;
   typedef typename implementation_type::value_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstRangeExpr(const Impl& ref, const Range& r1, const Range& r2)
     : ref_(ref), r1_(r1), r2_(r2)
   {}
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return r1_.last - r1_.first + 1; }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return r2_.last - r2_.first + 1; }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return ref_(r1_.first - 1 + i, r2_.first - 1 + j); }
 
@@ -110,7 +110,7 @@ public:
   typedef Impl implementation_type;
   typedef typename implementation_type::value_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixPointerExpr(Impl& ref, const Range& r1, const Range& r2)
     : ptr_(ref.find(r1.first,r2.first)),
       rows_(1 + r1.last - r1.first),
@@ -120,36 +120,36 @@ public:
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return rows_; }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return cols_; }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return ptr_[ i-1 + (j-1)*ld_]; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type& operator()(size_type i, size_type j)
   { return ptr_[ i-1 + (j-1)*ld_]; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
   { return i == rows() && j == cols(); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixPointerExpr& operator=(const MatrixPointerExpr& r)
   { assign(r); return *this; }
   template<typename V, size_type m_, size_type n_>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixPointerExpr& operator=(const MatrixRValue<V,m_,n_>& A)
   { assign(A); return *this; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixPointerExpr& operator*=(value_type scalar)
   { scalarMultiplyMatrix(*this, scalar); return *this; }
 
@@ -168,7 +168,7 @@ public:
   typedef Impl implementation_type;
   typedef typename implementation_type::value_type value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstMatrixPointerExpr(const Impl& ref, const Range& r1, const Range& r2)
     : ptr_(ref.find(r1.first,r2.first)),
       rows_(1 + r1.last - r1.first),
@@ -178,29 +178,29 @@ public:
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return rows_; }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return cols_; }
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return ptr_[ i-1 + (j-1)*ld_]; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
   { return i == rows() && j == cols(); }
 
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   RangeExpr& operator=(const RangeExpr& r)
 //   { assign(r); return *this; }
 //   template<typename V, size_type m_, size_type n_>
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   RangeExpr& operator=(const MatrixRValue<V,m_,n_>& A)
 //   { assign(A); return *this; }
 

@@ -17,32 +17,32 @@ class LinearArray {
 public:
   typedef T                 value_type;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   LinearArray(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   LinearArray(size_type size)
   { OpenFDMLinAlgAssert(size == size_); }
    
   /// Element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i)
   { return data_ + index(i); }
   /// Const element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i) const
   { return data_ + index(i); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i) const
   { OpenFDMLinAlgAssert(0 < i && i <= size()); return i-1; }
 
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type size() const
   { return size_; }
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type size)
   { OpenFDMLinAlgAssert(size == size_); return size == size_; }
   
@@ -58,38 +58,38 @@ class LinearArray<T,0> {
 public:
   typedef T                 value_type;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   LinearArray(void)
     : data_(0), size_(0)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   LinearArray(size_type size)
     : data_(0), size_(0)
   { resize(size); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~LinearArray()
   { delete[] data_; }
 
   /// Element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i)
   { return data_ + index(i); }
   /// Const element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i) const
   { return data_ + index(i); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i) const
   { OpenFDMLinAlgAssert(0 < i && i <= size()); return i-1; }
 
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type size() const
   { return size_; }
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type size)
   {
     if (size == size_)
@@ -120,23 +120,23 @@ class RectangularArray {
 public:
   typedef T                 value_type;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RectangularArray(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RectangularArray(size_type rows, size_type cols)
   { resize(rows, cols); }
    
   /// Element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_ + index(i, j); }
   /// Const element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_ + index(i, j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
     OpenFDMLinAlgAssert(0 < i && i <= rows());
@@ -144,14 +144,14 @@ public:
     return (i-1) + (j-1)*rows_;
   }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows() const
   { return rows_; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols() const
   { return cols_; }
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type rows, size_type cols)
   {
     OpenFDMLinAlgAssert(rows == rows_);
@@ -171,29 +171,29 @@ class RectangularArray<T,0,cols_> {
 public:
   typedef T                 value_type;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RectangularArray(void)
     : data_(0), rows_(0)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RectangularArray(size_type rows, size_type cols)
     : data_(0), rows_(0)
   { resize(rows, cols); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~RectangularArray()
   { delete[] data_; }
 
   /// Element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_ + index(i, j); }
   /// Const element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_ + index(i, j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
     OpenFDMLinAlgAssert(0 < i && i <= rows());
@@ -201,14 +201,14 @@ public:
     return (i-1) + (j-1)*rows_;
   }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows() const
   { return rows_; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols() const
   { return cols_; }
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type rows, size_type cols)
   {
     OpenFDMLinAlgAssert(cols == cols_);
@@ -237,29 +237,29 @@ class RectangularArray<T,rows_,0> {
 public:
   typedef T                 value_type;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RectangularArray(void)
     : data_(0), cols_(0)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RectangularArray(size_type rows, size_type cols)
     : data_(0), cols_(0)
   { resize(rows, cols); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~RectangularArray()
   { delete[] data_; }
 
   /// Element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_ + index(i, j); }
   /// Const element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_ + index(i, j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
     OpenFDMLinAlgAssert(0 < i && i <= rows());
@@ -267,14 +267,14 @@ public:
     return (i-1) + (j-1)*rows_;
   }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows() const
   { return rows_; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols() const
   { return cols_; }
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type rows, size_type cols)
   {
     OpenFDMLinAlgAssert(rows == rows_);
@@ -303,29 +303,29 @@ class RectangularArray<T,0,0> {
 public:
   typedef T                 value_type;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RectangularArray(void)
     : data_(0), rows_(0), cols_(0)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RectangularArray(size_type rows, size_type cols)
     : data_(0), rows_(0), cols_(0)
   { resize(rows, cols); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~RectangularArray()
   { delete[] data_; }
 
   /// Element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_ + index(i, j); }
   /// Const element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_ + index(i, j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
     OpenFDMLinAlgAssert(0 < i && i <= rows());
@@ -333,14 +333,14 @@ public:
     return (i-1) + (j-1)*rows_;
   }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows() const
   { return rows_; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols() const
   { return cols_; }
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type rows, size_type cols)
   {
     if (rows == rows_ && cols == cols_)
@@ -374,23 +374,23 @@ class SymmetricArray {
 public:
   typedef T                 value_type;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymmetricArray(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymmetricArray(size_type size)
   { OpenFDMLinAlgAssert(size == size_); }
    
   /// Element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_ + index(i, j); }
   /// Const element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_ + index(i, j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
     // For details see Golumb/Van Loan: Matrix Computations, 20pp.
@@ -403,17 +403,17 @@ public:
   }
 
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type size() const
   { return size_; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows() const
   { return size_; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols() const
   { return size_; }
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type size)
   { OpenFDMLinAlgAssert(size == size_); return size == size_; }
   
@@ -429,29 +429,29 @@ class SymmetricArray<T,0> {
 public:
   typedef T                 value_type;
   
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymmetricArray(void)
     : data_(0), size_(0)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymmetricArray(size_type size)
     : data_(0), size_(0)
   { resize(size); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~SymmetricArray()
   { delete[] data_; }
 
   /// Element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_ + index(i, j); }
   /// Const element access.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_ + index(i, j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
     // For details see Golumb/Van Loan: Matrix Computations, 20pp.
@@ -464,17 +464,17 @@ public:
   }
 
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type size() const
   { return size_; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows() const
   { return size_; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols() const
   { return size_; }
   /// Size of the vector.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type size)
   {
     if (size == size_)

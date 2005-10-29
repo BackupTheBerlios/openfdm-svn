@@ -18,40 +18,40 @@ template<typename Impl, size_type m, size_type n>
 class MatrixLValue;
 
 template<typename Impl>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void clearMatrix(Impl&);
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void assignMatrix(Impl1&, const Impl2&);
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void directAssignMatrix(Impl1&, const Impl2&);
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void plusAssignMatrix(Impl1&, const Impl2&);
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void minusAssignMatrix(Impl1&, const Impl2&);
 
 template<typename Impl>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void scalarMultiplyMatrix(Impl&, typename Impl::value_type);
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void swapMatrix(Impl1&, Impl2&);
 
 // Helper class to make handling of that stuff more safe.
 class NonAssignable {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   NonAssignable(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~NonAssignable(void)
   { }
 
@@ -75,18 +75,18 @@ public:
   // Make the original implementation type available.
   typedef Impl implementation_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixRValue(void)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~MatrixRValue(void)
   {}
 
   // For the Barton - Nackman trick.
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Impl& asImpl(void)
   { return *static_cast<Impl*>(this); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const Impl& asImpl(void) const
   { return *static_cast<const Impl*>(this); }
 };
@@ -98,20 +98,20 @@ public:
   // Make the original implementation type available.
   typedef Impl implementation_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixLValue(void)
   {}
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~MatrixLValue(void)
   {}
 
   // Some common methods implemented here.
   // FIXME: might move into those ones being an lvalue??
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void clear(void)
   { clearMatrix(asImpl()); }
   template<typename V, size_type m, size_type n>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void assign(const MatrixRValue<V,m,n>& A)
   {
     // Note that the assignment is first here...
@@ -124,7 +124,7 @@ public:
     SizeCheck<cols_,n>::Equal(asImpl().cols(), A.asImpl().cols());
   }
   template<typename V, size_type m, size_type n>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void directAssign(const MatrixRValue<V,m,n>& A)
   {
     // Note that the assignment is first here...
@@ -133,7 +133,7 @@ public:
     SizeCheck<cols_,n>::Equal(asImpl().cols(), A.asImpl().cols());
   }
   template<typename V, size_type m, size_type n>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void plusAssign(const MatrixRValue<V,m,n>& A)
   {
     SizeCheck<rows_,m>::Equal(asImpl().rows(), A.asImpl().rows());
@@ -141,7 +141,7 @@ public:
     plusAssignMatrix(asImpl(), A.asImpl());
   }
   template<typename V, size_type m, size_type n>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void minusAssign(const MatrixRValue<V,m,n>& A)
   {
     SizeCheck<rows_,m>::Equal(asImpl().rows(), A.asImpl().rows());
@@ -150,17 +150,17 @@ public:
   }
 
   template<typename V, size_type m, size_type n>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixLValue& operator=(const MatrixRValue<V,m,n>& A)
   { assign(A); return *this; }
 
   template<typename V, size_type m, size_type n>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixLValue& operator+=(const MatrixRValue<V,m,n>& A)
   { plusAssign(A); return *this; }
 
   template<typename V, size_type m, size_type n>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixLValue& operator-=(const MatrixRValue<V,m,n>& A)
   { minusAssign(A); return *this; }
 
@@ -169,7 +169,7 @@ public:
 };
 
 template<typename Impl>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void clearMatrix(Impl& m)
 {
   typedef typename Impl::value_type value_type;
@@ -186,7 +186,7 @@ void clearMatrix(Impl& m)
 }
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void assignMatrix(Impl1& m1, const Impl2& m2)
 {
   size_type rows = m2.rows();
@@ -212,7 +212,7 @@ void assignMatrix(Impl1& m1, const Impl2& m2)
 }
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void directAssignMatrix(Impl1& m1, const Impl2& m2)
 {
   size_type rows = m2.rows();
@@ -230,7 +230,7 @@ void directAssignMatrix(Impl1& m1, const Impl2& m2)
 }
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void plusAssignMatrix(Impl1& m1, const Impl2& m2)
 {
   size_type rows = m2.rows();
@@ -245,7 +245,7 @@ void plusAssignMatrix(Impl1& m1, const Impl2& m2)
 }
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void minusAssignMatrix(Impl1& m1, const Impl2& m2)
 {
   size_type rows = m2.rows();
@@ -260,7 +260,7 @@ void minusAssignMatrix(Impl1& m1, const Impl2& m2)
 }
 
 template<typename Impl>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void scalarMultiplyMatrix(Impl& m, typename Impl::value_type scalar)
 {
   size_type rows = m.rows();
@@ -275,7 +275,7 @@ void scalarMultiplyMatrix(Impl& m, typename Impl::value_type scalar)
 }
 
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void swapMatrix(Impl1& m1, Impl2& m2)
 {
   typedef typename Impl1::value_type value_type1;
@@ -300,7 +300,7 @@ void swapMatrix(Impl1& m1, Impl2& m2)
 }
 
 template<size_type m1, size_type n1, typename Impl1, size_type m2, size_type n2, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void swap(MatrixLValue<Impl1,m1,n1>& A1, MatrixLValue<Impl2,m2,n2>& A2)
 {
   SizeCheck<m1,m2>::Equal(A1.asImpl().rows(), A2.asImpl().rows());

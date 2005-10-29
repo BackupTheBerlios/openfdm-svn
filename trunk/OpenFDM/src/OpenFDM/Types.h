@@ -10,9 +10,22 @@ namespace OpenFDM {
 #if defined(__GNUC__) && (3 <= __GNUC__)
 # define OpenFDM_Align_Double __attribute__((aligned(8)))
 # define OpenFDM_Align_SSE2Double __attribute__((aligned(16)))
+#elif defined(__MSVC__)
+# define OpenFDM_Align_Double __declspec(align(8))
+# define OpenFDM_Align_SSE2Double __declspec(align(16))
 #else
 # define OpenFDM_Align_Double
 # define OpenFDM_Align_SSE2Double
+#endif
+
+//
+// Be sure to inline 
+#if defined(__GNUC__) && (4 <= __GNUC__) && defined(__OPTIMIZE__)
+# define OpenFDM_FORCE_INLINE inline __attribute__((always_inline))
+#elif defined(__MSVC__)
+# define OpenFDM_FORCE_INLINE __forceinline
+#else
+# define OpenFDM_FORCE_INLINE inline
 #endif
 
 //

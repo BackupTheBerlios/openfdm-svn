@@ -11,28 +11,28 @@ namespace LinAlg {
 
 /// Return the number of rows of a matrix.
 template<typename Impl1, size_type m1, size_type n1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 size_type
 rows(const MatrixRValue<Impl1,m1,n1>& A)
 { return m1; }
 
 /// Return the number of rows of a matrix.
 template<typename Impl1, size_type n1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 size_type
 rows(const MatrixRValue<Impl1,0,n1>& A)
 { return A.asImpl().rows(); }
 
 /// Return the number of columns of a matrix.
 template<typename Impl1, size_type m1, size_type n1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 size_type
 cols(const MatrixRValue<Impl1,m1,n1>& A)
 { return n1; }
 
 /// Return the number of columns of a matrix.
 template<typename Impl1, size_type m1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 size_type
 cols(const MatrixRValue<Impl1,m1,0>& A)
 { return A.asImpl().cols(); }
@@ -41,32 +41,32 @@ typedef Vector2<size_type> Size;
 
 /// Return the size a matrix in a size_type 2 vector.
 template<typename Impl1, size_type m1, size_type n1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Size
 size(const MatrixRValue<Impl1,m1,n1>& A)
 { return Vector2<size_type>(m1, n1); }
 
 template<typename Impl1, size_type m1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Size
 size(const MatrixRValue<Impl1,m1,0>& A)
 { return Vector2<size_type>(m1, A.asImpl().cols()); }
 
 template<typename Impl1, size_type n1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Size
 size(const MatrixRValue<Impl1,0,n1>& A)
 { return Vector2<size_type>(A.asImpl().rows(), n1); }
 
 template<typename Impl1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Size
 size(const MatrixRValue<Impl1,0,0>& A)
 { return Vector2<size_type>(A.asImpl().rows(), A.asImpl().cols()); }
 
 
 template<typename Impl1, size_type n1, typename Impl2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Impl1::value_type
 dot(const MatrixRValue<Impl1,n1,1>& v1, const MatrixRValue<Impl2,n2,1>& v2)
 {
@@ -89,7 +89,7 @@ dot(const MatrixRValue<Impl1,n1,1>& v1, const MatrixRValue<Impl2,n2,1>& v2)
 }
 
 template<typename Impl, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Impl::value_type
 product(const MatrixRValue<Impl,n,1>& v)
 {
@@ -109,7 +109,7 @@ product(const MatrixRValue<Impl,n,1>& v)
 }
 
 template<typename Impl, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Impl::value_type
 norm(const MatrixRValue<Impl,n,1>& v)
 {
@@ -130,7 +130,7 @@ norm(const MatrixRValue<Impl,n,1>& v)
 }
 
 template<typename Impl, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl::value_type,n>
 normalize(const MatrixRValue<Impl,n,1>& v)
 {
@@ -146,7 +146,7 @@ normalize(const MatrixRValue<Impl,n,1>& v)
 //           1-norm, the largest column sum of the absolute values of A.
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Impl::value_type
 norm1(const MatrixRValue<Impl,m,n>& A)
 {
@@ -175,7 +175,7 @@ norm1(const MatrixRValue<Impl,m,n>& A)
 //           A.
 
 template<typename Impl, size_type m, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Impl::value_type
 normInf(const MatrixRValue<Impl,m,n>& A)
 {
@@ -199,7 +199,7 @@ normInf(const MatrixRValue<Impl,m,n>& A)
 }
 
 template<typename Impl, size_type n>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 size_type
 maxIndex(const MatrixRValue<Impl,n,1>& v)
 {
@@ -233,7 +233,7 @@ maxIndex(const MatrixRValue<Impl,n,1>& v)
 */
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 bool
 operator==(const MatrixRValue<Impl1,m1,n1>& A1,
            const MatrixRValue<Impl2,m2,n2>& A2)
@@ -266,7 +266,7 @@ operator==(const MatrixRValue<Impl1,m1,n1>& A1,
 */
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 bool
 operator!=(const MatrixRValue<Impl1,m1,n1>& A1,
            const MatrixRValue<Impl2,m2,n2>& A2)
@@ -283,7 +283,7 @@ operator!=(const MatrixRValue<Impl1,m1,n1>& A1,
 */
 template<typename Impl1, size_type m1,
          typename Impl2, size_type m2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 bool
 equal(const MatrixRValue<Impl1,m1,1>& V1,
       const MatrixRValue<Impl2,m2,1>& V2,
@@ -321,7 +321,7 @@ equal(const MatrixRValue<Impl1,m1,1>& V1,
 */
 template<typename Impl1, size_type m1,
          typename Impl2, size_type m2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Impl1::value_type
 scaledDiff(const MatrixRValue<Impl1,m1,1>& V1,
            const MatrixRValue<Impl2,m2,1>& V2,
@@ -359,7 +359,7 @@ scaledDiff(const MatrixRValue<Impl1,m1,1>& V1,
 */
 template<typename Impl1, size_type m1,
          typename Impl2, size_type m2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 typename Impl1::value_type
 scaledErr(const MatrixRValue<Impl1,m1,1>& scale,
           const MatrixRValue<Impl2,m2,1>& err,
@@ -398,7 +398,7 @@ scaledErr(const MatrixRValue<Impl1,m1,1>& scale,
 */
 template<typename Impl1, size_type m1,
          typename Impl2, size_type m2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 bool
 equal(const MatrixRValue<Impl1,m1,1>& V1,
       const MatrixRValue<Impl2,m2,1>& V2,
@@ -437,7 +437,7 @@ equal(const MatrixRValue<Impl1,m1,1>& V1,
 */
 template<typename Impl1, size_type m1,
          typename Impl2, size_type m2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 bool
 equal(const MatrixRValue<Impl1,m1,1>& u,
       const MatrixRValue<Impl2,m2,1>& v)
@@ -457,7 +457,7 @@ equal(const MatrixRValue<Impl1,m1,1>& u,
     the given argument.
  */
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Vector<typename Impl1::value_type,3>
 cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,1>& v)
 {
@@ -481,7 +481,7 @@ cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,1>& v)
     \f]
  */
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,3,3>
 cross(const MatrixRValue<Impl1,3,3>& u, const MatrixRValue<Impl2,3,1>& v)
 {
@@ -516,7 +516,7 @@ cross(const MatrixRValue<Impl1,3,3>& u, const MatrixRValue<Impl2,3,1>& v)
     \f]
  */
 template<typename Impl1, typename Impl2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,3,3>
 cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,3>& v)
 {
@@ -540,7 +540,7 @@ cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,3>& v)
 /** Cross product multiplication.
  */
 template<typename Impl1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,3,3>
 cross(const MatrixRValue<Impl1,3,1>& u)
 {
@@ -552,7 +552,7 @@ cross(const MatrixRValue<Impl1,3,1>& u)
 }
 
 template<typename T, size_type dim1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void
 l_substitute(const Matrix<T,dim1,dim1>& A, Vector<T,dim1>& v)
 {
@@ -569,7 +569,7 @@ l_substitute(const Matrix<T,dim1,dim1>& A, Vector<T,dim1>& v)
 }
 
 template<typename T, size_type dim1, size_type dim2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void
 l_substitute(const Matrix<T,dim1,dim1>& A, Matrix<T,dim1,dim2>& v)
 {
@@ -589,7 +589,7 @@ l_substitute(const Matrix<T,dim1,dim1>& A, Matrix<T,dim1,dim2>& v)
 }
 
 template<typename T,size_type dim1,size_type dim2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void
 u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
 {
@@ -615,7 +615,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
 }
 
 template<typename T,size_type dim1,size_type dim2,size_type dim3>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void
 u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
 {
@@ -644,7 +644,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
 }
 
 template<typename T, size_type dim1>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void
 p_substitute(const Vector<size_type,dim1>& perm, Vector<T,dim1>& v)
 {
@@ -663,7 +663,7 @@ p_substitute(const Vector<size_type,dim1>& perm, Vector<T,dim1>& v)
 }
 
 template<typename T, size_type dim1, size_type dim2>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void
 p_substitute(const Vector<size_type,dim1>& perm, Matrix<T,dim1,dim2>& v)
 {
@@ -849,7 +849,7 @@ qr_substitute(const Matrix<T,dim1,dim2>& A, const Vector<T,dim2>& beta,
 
 
 template<typename Impl, size_type dim>
-OpenFDM_LinAlg_INLINE
+OpenFDM_FORCE_INLINE
 void
 qr_reflector(typename Impl::value_type& alpha, MatrixLValue<Impl,dim,1>& x_,
              typename Impl::value_type& tau)
@@ -950,17 +950,17 @@ class MatrixFactors;
 template<typename T,size_type n>
 class MatrixFactors<T,n,n,LUTag> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixFactors(void)
   {}
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixFactors(const MatrixRValue<Impl,n,n>& A)
     : lu_factors_(A)
   { factorize(); }
 
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixFactors& operator=(const MatrixRValue<Impl,n,n>& A)
   { lu_factors_ = A; factorize(); return *this; }
 
@@ -969,25 +969,25 @@ public:
   Matrix<T,n,n>& data(void)
   { return lu_factors_; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool factorize(void)
   { singular_ = ! lu_factorize(lu_factors_, perm_); return singular_; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool singular(void) const
   { return singular_; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void inplaceSolve(Vector<T,n>& v) const
   { lu_substitute(lu_factors_, perm_, v); }
 
   template<typename Impl, size_type m>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix<T,n,m> solve(const MatrixRValue<Impl,n,m>& v) const
   { Matrix<T,n,m> ret(v); lu_substitute(lu_factors_, perm_, ret); return ret; }
 
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector<T,n> solve(const MatrixRValue<Impl,n,1>& v) const
   { Vector<T,n> ret(v); lu_substitute(lu_factors_, perm_, ret); return ret; }
 
@@ -1000,17 +1000,17 @@ private:
 template<typename T,size_type m,size_type n>
 class MatrixFactors<T,m,n,QRTag> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixFactors(void)
   {}
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixFactors(const MatrixRValue<Impl,m,n>& A)
     : qr_factors_(A)
   { factorize(); }
 
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixFactors& operator=(const MatrixRValue<Impl,m,n>& A)
   { qr_factors_ = A; factorize(); return *this; }
 
@@ -1019,20 +1019,20 @@ public:
   Matrix<T,m,n>& data(void)
   { return qr_factors_; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool factorize(void)
   { singular_ = ! qr_factorize(qr_factors_, beta_); return singular_; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool singular(void) const
   { return singular_; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void inplaceSolve(Vector<T,m>& v) const
   { qr_substitute(qr_factors_, beta_, v); }
 
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector<T,n> solve(const MatrixRValue<Impl,m,1>& v) const
   {
     Vector<T,m> tmp(v);

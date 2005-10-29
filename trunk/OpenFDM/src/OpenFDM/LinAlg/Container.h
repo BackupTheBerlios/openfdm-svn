@@ -17,130 +17,130 @@ class Matrix
 public:
   typedef T value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix(size_type i, size_type j)
   { resize(i, j); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix(const Matrix& A)
   { assign(A); }
   template<typename Impl2, size_type m2, size_type n2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix(const MatrixRValue<Impl2,m2,n2>& A)
   { assign(A); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Matrix(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return data_.rows(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return data_.cols(); }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return *data_.find(i, j); }
   /** Nonconst accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type& operator()(size_type i, size_type j)
   { return *data_.find(i, j); }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_.find(i, j); }
   /** Nonconst accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_.find(i, j); }
 
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   RangeExpr<Matrix,0,0>
 //   operator()(const Range& r1, const Range& r2)
 //   { return RangeExpr<Matrix,0,0>(*this, r1, r2); }
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   RangeExpr<Matrix,0,1>
 //   operator()(const Range& r1, size_type j)
 //   { return RangeExpr<Matrix,0,1>(*this, r1, Range(j)); }
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   RangeExpr<Matrix,1,0>
 //   operator()(size_type i, const Range& r2)
 //   { return RangeExpr<Matrix,1,0>(*this, Range(i), r2); }
 
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixPointerExpr<Matrix,0,0>
   operator()(const Range& r1, const Range& r2)
   { return MatrixPointerExpr<Matrix,0,0>(*this, r1, r2); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixPointerExpr<Matrix,0,1>
   operator()(const Range& r1, size_type j)
   { return MatrixPointerExpr<Matrix,0,1>(*this, r1, Range(j)); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixPointerExpr<Matrix,1,0>
   operator()(size_type i, const Range& r2)
   { return MatrixPointerExpr<Matrix,1,0>(*this, Range(i), r2); }
 
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   ConstRangeExpr<Matrix,0,0>
 //   operator()(const Range& r1, const Range& r2) const
 //   { return ConstRangeExpr<Matrix,0,0>(*this, r1, r2); }
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   ConstRangeExpr<Matrix,0,1>
 //   operator()(const Range& r1, size_type j) const
 //   { return ConstRangeExpr<Matrix,0,1>(*this, r1, Range(j)); }
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   ConstRangeExpr<Matrix,1,0>
 //   operator()(size_type i, const Range& r2) const
 //   { return ConstRangeExpr<Matrix,1,0>(*this, Range(i), r2); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstMatrixPointerExpr<Matrix,0,0>
   operator()(const Range& r1, const Range& r2) const
   { return ConstMatrixPointerExpr<Matrix,0,0>(*this, r1, r2); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstMatrixPointerExpr<Matrix,0,1>
   operator()(const Range& r1, size_type j) const
   { return ConstMatrixPointerExpr<Matrix,0,1>(*this, r1, Range(j)); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstMatrixPointerExpr<Matrix,1,0>
   operator()(size_type i, const Range& r2) const
   { return ConstMatrixPointerExpr<Matrix,1,0>(*this, Range(i), r2); }
 
   /** Index function.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   { return data_.index(i, j); }
 
   /** Resize to a given size.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
   { return data_.resize(i, j); }
   template<typename Impl2, size_type m2, size_type n2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(const MatrixRValue<Impl2,m2,n2>& A)
   { return resize(A.asImpl().rows(), A.asImpl().cols()); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix& operator=(const Matrix& mtrx)
   { assign(mtrx); return *this; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix& operator*=(value_type scalar)
   { scalarMultiplyMatrix(*this, scalar); return *this; }
 
@@ -156,114 +156,114 @@ class Vector
 public:
   typedef T value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector(size_type i, size_type = 1)
   { resize(i); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector(const Vector& A)
   { directAssign(A); }
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector(const MatrixRValue<Impl2,m2,1>& A)
   { directAssign(A); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Vector(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return data_.size(); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type size(void) const
   { return data_.size(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return 1; }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i) const
   { return *data_.find(i); }
   /** Nonconst accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type& operator()(size_type i)
   { return *data_.find(i); }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return *data_.find(i); }
   /** Nonconst accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type& operator()(size_type i, size_type j)
   { return *data_.find(i); }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_.find(i); }
   /** Nonconst accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_.find(i); }
 
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   RangeExpr<Vector,0,1>
 //   operator()(const Range& r1)
 //   { return RangeExpr<Vector,0,1>(*this, r1, Range(1)); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   MatrixPointerExpr<Vector,0,1>
   operator()(const Range& r1)
   { return MatrixPointerExpr<Vector,0,1>(*this, r1, Range(1)); }
 
-//   OpenFDM_LinAlg_INLINE
+//   OpenFDM_FORCE_INLINE
 //   ConstRangeExpr<Vector,0,1>
 //   operator()(const Range& r1) const
 //   { return ConstRangeExpr<Vector,0,1>(*this, r1, Range(1)); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstMatrixPointerExpr<Vector,0,1>
   operator()(const Range& r1) const
   { return ConstMatrixPointerExpr<Vector,0,1>(*this, r1, Range(1)); }
 
   /** Index function.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   { return data_.index(i); }
 
   /** Resize to a given size.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type = 1)
   { return data_.resize(i); }
   template<typename Impl2, size_type m2, size_type n2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(const MatrixRValue<Impl2,m2,n2>& A)
   {
     SizeCheck<1,n2>::Equal(1, A.asImpl().cols());
     return resize(A.asImpl().rows());
   }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector& operator*=(value_type scalar)
   { scalarMultiplyMatrix(*this, scalar); return *this; }
 
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector& operator+=(const MatrixRValue<Impl2,m2,1>& A)
   {
     const Impl2& Ai = A.asImpl();
@@ -279,7 +279,7 @@ public:
   }
 
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector& operator-=(const MatrixRValue<Impl2,m2,1>& A)
   {
     const Impl2& Ai = A.asImpl();
@@ -294,7 +294,7 @@ public:
     return *this;
   }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector& operator=(const Vector& Ai)
   {
     size_type r = Ai.rows();
@@ -309,7 +309,7 @@ public:
   }
 
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector& operator=(const MatrixRValue<Impl2,m2,1>& A)
   {
     const Impl2& Ai = A.asImpl();
@@ -361,13 +361,13 @@ class SymMatrix
 public:
   typedef T value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix(size_type i, size_type j)
   { resize(i, j); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix(const SymMatrix& A)
   {
     resize(A.rows(), A.cols());
@@ -379,87 +379,87 @@ public:
       ptr[i] = Aptr[i];
   }
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix(const MatrixRValue<Impl2,m2,m2>& A)
   { directAssign(A.asImpl()); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~SymMatrix(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return data_.rows(); }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return data_.cols(); }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return *data_.find(i, j); }
   /** Nonconst accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type& operator()(size_type i, size_type j)
   { return *data_.find(i, j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   const value_type* find(size_type i, size_type j) const
   { return data_.find(i, j); }
   /** Nonconst accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type* find(size_type i, size_type j)
   { return data_.find(i, j); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RangeExpr<SymMatrix,0,0>
   operator()(const Range& r1, const Range& r2)
   { return RangeExpr<SymMatrix,0,0>(*this, r1, r2); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RangeExpr<SymMatrix,0,1>
   operator()(const Range& r1, size_type j)
   { return RangeExpr<SymMatrix,0,1>(*this, r1, Range(j)); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   RangeExpr<SymMatrix,1,0>
   operator()(size_type i, const Range& r2)
   { return RangeExpr<SymMatrix,1,0>(*this, Range(i), r2); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstRangeExpr<SymMatrix,0,0>
   operator()(const Range& r1, const Range& r2) const
   { return ConstRangeExpr<SymMatrix,0,0>(*this, r1, r2); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstRangeExpr<SymMatrix,0,1>
   operator()(const Range& r1, size_type j) const
   { return ConstRangeExpr<SymMatrix,0,1>(*this, r1, Range(j)); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ConstRangeExpr<SymMatrix,1,0>
   operator()(size_type i, const Range& r2) const
   { return ConstRangeExpr<SymMatrix,1,0>(*this, Range(i), r2); }
 
   /** Index function.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   { return data_.index(i, j); }
 
   /** Resize to a given size.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
   { OpenFDMLinAlgAssert(i == j); return data_.resize(i); }
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(const MatrixRValue<Impl2,m2,m2>& A)
   { return resize(A.asImpl().rows()); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix& operator=(const SymMatrix& A)
   {
 #ifdef USE_EXPRESSIONS
@@ -476,16 +476,16 @@ public:
   }
 
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix& operator=(const MatrixRValue<Impl2,m2,m2>& A)
   { assign(A.asImpl()); return *this; }
 
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix& operator+=(const MatrixRValue<Impl2,m2,m2>& A)
   { plusAssign(A.asImpl()); return *this; }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix& operator+=(const SymMatrix& A)
   {
 #ifdef USE_EXPRESSIONS
@@ -502,12 +502,12 @@ public:
   }
 
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix& operator-=(const MatrixRValue<Impl2,m2,m2>& A)
   { minusAssign(A.asImpl()); return *this; }
 
   template<typename Impl2, size_type m2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix& operator-=(const SymMatrix& A)
   {
 #ifdef USE_EXPRESSIONS
@@ -523,7 +523,7 @@ public:
     return *this;
   }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix& operator*=(value_type scalar)
   {
     T* ptr = find(1,1);
@@ -536,7 +536,7 @@ public:
 
 private:
   template<typename Impl2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void assign(const Impl2& A)
   {
 #ifdef USE_EXPRESSIONS
@@ -564,7 +564,7 @@ private:
 #endif
   }
   template<typename Impl2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void directAssign(const Impl2& A)
   {
     size_type r = A.rows();
@@ -582,7 +582,7 @@ private:
     }
   }
   template<typename Impl2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void plusAssign(const Impl2& A)
   {
     size_type r = A.rows();
@@ -599,7 +599,7 @@ private:
     }
   }
   template<typename Impl2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void minusAssign(const Impl2& A)
   {
     size_type r = A.rows();
@@ -633,55 +633,55 @@ class Zeros<T,0,0>
 public:
   typedef T value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Zeros(void)
     : rows_(0), cols_(0)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Zeros(size_type i, size_type j)
     : rows_(0), cols_(0)
   { resize(i, j); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Zeros(const Zeros& mtrx)
     : rows_(0), cols_(0)
   { resize(mtrx.rows(), mtrx.cols()); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Zeros(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return rows_; }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return cols_; }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return static_cast<value_type>(0); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Zeros<T,0,0>
   operator()(const Range& r1, const Range& r2 = Range(1)) const
   { return Zeros<T,0,0>(r1.last - r1.first + 1, r2.last - r2.first + 1); }
 
   /** Resize to a given size.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
   { rows_ = i; cols_ = j; return true; }
   template<typename Impl2, size_type m2, size_type n2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(const MatrixRValue<Impl2,m2,n2>& A)
   { return resize(A.asImpl().rows(), A.asImpl().cols()); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Zeros& operator=(const Zeros& mtrx)
   { resize(mtrx.rows(), mtrx.cols()); return *this; }
 
@@ -699,34 +699,34 @@ class Zeros
 public:
   typedef T value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Zeros(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Zeros(size_type i, size_type j)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Zeros(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return rows_; }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return cols_; }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return static_cast<value_type>(0); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Zeros<T,0,0>
   operator()(const Range& r1, const Range& r2 = Range(1)) const
   { return Zeros<T,0,0>(r1.last - r1.first + 1, r2.last - r2.first + 1); }
@@ -746,50 +746,50 @@ class Eye<T,0,0>
 public:
   typedef T value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Eye(void)
     : rows_(0), cols_(0)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Eye(size_type i, size_type j)
     : rows_(0), cols_(0)
   { resize(i, j); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Eye(const Eye& mtrx)
     : rows_(0), cols_(0)
   { resize(mtrx.rows(), mtrx.cols()); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Eye(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return rows_; }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return cols_; }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return i == j ? static_cast<value_type>(1) : static_cast<value_type>(0); }
 
   /** Resize to a given size.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
   { rows_ = i; cols_ = j; return true; }
   template<typename Impl2, size_type m2, size_type n2>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   bool resize(const MatrixRValue<Impl2,m2,n2>& A)
   { return resize(A.asImpl().rows(), A.asImpl().cols()); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Eye& operator=(const Eye& mtrx)
   { resize(mtrx.rows(), mtrx.cols()); return *this; }
 
@@ -807,30 +807,30 @@ class Eye
 public:
   typedef T value_type;
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Eye(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Eye(size_type i, size_type j)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Eye(void)
   { }
 
   /** Number of rows.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type rows(void) const
   { return rows_; }
   /** Number of columns.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   size_type cols(void) const
   { return cols_; }
 
   /** Const accessor.
    */
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
   { return i == j ? static_cast<value_type>(1) : static_cast<value_type>(0); }
 };
@@ -839,22 +839,22 @@ template<typename T>
 class Vector2
   : public Vector<T,2> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector2(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector2(T v1, T v2)
   { (*this)(1) = v1; (*this)(2) = v2; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector2(const Vector2& v)
     : Vector<T,2>(v)
   { }
   template<typename Impl, size_type m>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector2(const MatrixRValue<Impl,m,1>& v)
     : Vector<T,2>(v)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Vector2(void)
   { }
 };
@@ -863,22 +863,22 @@ template<typename T>
 class Vector3
   : public Vector<T,3> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector3(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector3(T v1, T v2, T v3)
   { (*this)(1) = v1; (*this)(2) = v2; (*this)(3) = v3; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector3(const Vector3& v)
     : Vector<T,3>(v)
   { }
   template<typename Impl, size_type m>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector3(const MatrixRValue<Impl,m,1>& v)
     : Vector<T,3>(v)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Vector3(void)
   { }
 };
@@ -887,22 +887,22 @@ template<typename T>
 class Vector4
   : public Vector<T,4> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector4(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector4(T v1, T v2, T v3, T v4)
   { (*this)(1) = v1; (*this)(2) = v2; (*this)(3) = v3; (*this)(4) = v4; }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector4(const Vector4& v)
     : Vector<T,4>(v)
   { }
   template<typename Impl, size_type m>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector4(const MatrixRValue<Impl,m,1>& v)
     : Vector<T,4>(v)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Vector4(void)
   { }
 };
@@ -911,45 +911,45 @@ template<typename T>
 class Vector6
   : public Vector<T,6> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector6(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector6(T v1, T v2, T v3, T v4, T v5, T v6)
   {
     (*this)(1) = v1; (*this)(2) = v2; (*this)(3) = v3;
     (*this)(4) = v4; (*this)(5) = v5; (*this)(6) = v6;
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector6(const Vector3<T>& v1, const Vector3<T>& v2)
   {
     (*this)(1) = v1(1); (*this)(2) = v1(2); (*this)(3) = v1(3);
     (*this)(4) = v2(1); (*this)(5) = v2(2); (*this)(6) = v2(3);
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector6(const Vector6& v)
     : Vector<T,6>(v)
   { }
   template<typename Impl, size_type m>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector6(const MatrixRValue<Impl,m,1>& v)
     : Vector<T,6>(v)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Vector6(void)
   { }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector3<T> getAngular(void) const
   { return Vector3<T>((*this)(1), (*this)(2), (*this)(3)); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void setAngular(const Vector3<T>& v)
   { (*this)(1) = v(1); (*this)(2) = v(2); (*this)(3) = v(3); }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Vector3<T> getLinear(void) const
   { return Vector3<T>((*this)(4), (*this)(5), (*this)(6)); }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   void setLinear(const Vector3<T>& v)
   { (*this)(4) = v(1); (*this)(5) = v(2); (*this)(6) = v(3); }
 };
@@ -958,40 +958,40 @@ template<typename T>
 class Matrix22
   : public Matrix<T,2,2> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix22(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix22(T m11, T m12, T m21, T m22)
   {
     (*this)(1, 1) = m11; (*this)(1, 2) = m12;
     (*this)(2, 1) = m21; (*this)(2, 2) = m22;
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix22(const Matrix22& m)
     : Matrix<T,2,2>(m)
   { }
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix22(const MatrixRValue<Impl,2,2>& A)
     : Matrix<T,2,2>(A)
   { }
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix22(const MatrixRValue<Impl,2,0>& A)
     : Matrix<T,2,2>(A)
   { }
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix22(const MatrixRValue<Impl,0,2>& A)
     : Matrix<T,2,2>(A)
   { }
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix22(const MatrixRValue<Impl,0,0>& A)
     : Matrix<T,2,2>(A)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Matrix22(void)
   { }
 };
@@ -1000,41 +1000,41 @@ template<typename T>
 class Matrix33
   : public Matrix<T,3,3> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33(T m11, T m12, T m13, T m21, T m22, T m23, T m31, T m32, T m33)
   {
     (*this)(1, 1) = m11; (*this)(1, 2) = m12; (*this)(1, 3) = m13;
     (*this)(2, 1) = m21; (*this)(2, 2) = m22; (*this)(2, 3) = m23;
     (*this)(3, 1) = m31; (*this)(3, 2) = m32; (*this)(3, 3) = m33;
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33(const Matrix33& m)
     : Matrix<T,3,3>(m)
   { }
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33(const MatrixRValue<Impl,3,3>& A)
     : Matrix<T,3,3>(A)
   { }
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33(const MatrixRValue<Impl,3,0>& A)
     : Matrix<T,3,3>(A)
   { }
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33(const MatrixRValue<Impl,0,3>& A)
     : Matrix<T,3,3>(A)
   { }
   template<typename Impl>
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   Matrix33(const MatrixRValue<Impl,0,0>& A)
     : Matrix<T,3,3>(A)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~Matrix33(void)
   { }
 };
@@ -1043,25 +1043,25 @@ template<typename T>
 class SymMatrix3
   : public SymMatrix<T,3> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix3(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix3(T S11, T S21, T S31, T S22, T S32, T S33)
   {
     (*this)(1, 1) = S11;
     (*this)(2, 1) = S21; (*this)(2, 2) = S22;
     (*this)(3, 1) = S31; (*this)(3, 2) = S32; (*this)(3, 3) = S33;
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix3(const SymMatrix<T,3>& S)
     : SymMatrix<T,3>(S)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix3(const SymMatrix3& S)
     : SymMatrix<T,3>(S)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~SymMatrix3(void)
   { }
 };
@@ -1070,10 +1070,10 @@ template<typename T>
 class SymMatrix6
   : public SymMatrix<T,6> {
 public:
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix6(void)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix6(T m)
   {
     (*this)(1,1) = 0;
@@ -1086,7 +1086,7 @@ public:
     (*this)(6,1) = 0; (*this)(6,2) = 0; (*this)(6,3) = 0;
     (*this)(6,4) = 0; (*this)(6,5) = 0; (*this)(6,6) = m;
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix6(const SymMatrix<T,3>& I, T m)
   {
     (*this)(1,1) = I(1,1);
@@ -1099,7 +1099,7 @@ public:
     (*this)(6,1) = 0;      (*this)(6,2) = 0;      (*this)(6,3) = 0;
     (*this)(6,4) = 0;      (*this)(6,5) = 0;      (*this)(6,6) = m;
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix6(T S11,
               T S21, T S22,
               T S31, T S32, T S33,
@@ -1117,19 +1117,19 @@ public:
     (*this)(6,1) = S61; (*this)(6,2) = S62; (*this)(6,3) = S63;
     (*this)(6,4) = S64; (*this)(6,5) = S65; (*this)(6,6) = S66;
   }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix6(const SymMatrix<T,6>& S)
     : SymMatrix<T,6>(S)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   SymMatrix6(const SymMatrix6& S)
     : SymMatrix<T,6>(S)
   { }
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   ~SymMatrix6(void)
   { }
 
-  OpenFDM_LinAlg_INLINE
+  OpenFDM_FORCE_INLINE
   static SymMatrix6 zeros(void)
   { return SymMatrix6(Zeros<T,6,6>(6,6)); }
 
