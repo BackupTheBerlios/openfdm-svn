@@ -226,7 +226,7 @@ public:
               to the parent frame. The velocity is in the current frames
               coordinates.
    */
-  Vector6 getRelAccel(void) const 
+  const Vector6& getRelAccel(void) const 
   { return mRelAccel; }
 
 
@@ -264,7 +264,7 @@ public:
   Vector6 getSpVel(void) const
   { return getRelVel() + getParentSpVel(); }
 
-  Vector6 getRefVel(void) const
+  const Vector6& getRefVel(void) const
   {
     if (mDirtySpVel)
       computeVelocityDep();
