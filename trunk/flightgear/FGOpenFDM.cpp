@@ -153,6 +153,63 @@ private:
   SGPropertyNode_ptr mPropertyNode;
 };
 
+
+class StatePrintVisitor
+  : public ConstVisitor {
+public:
+  StatePrintVisitor(void) : _indent(3) {}
+  virtual ~StatePrintVisitor(void) {}
+  virtual void apply(const MultiBodyModel& node)
+  {
+    if (node.getName() != "Aerodynamic force")
+      return;
+    const AeroForce* aeroForce = (const AeroForce*)&node;
+    std::cout << "Alpha " << convertTo(uDegree, aeroForce->getAlpha())
+              << ", Beta " << convertTo(uDegree, aeroForce->getBeta())
+//               << ", Mach " << aeroForce->getMachNumber()
+              << ", speed " << trans(aeroForce->getAirSpeed())
+              << std::endl;
+
+//     Vector v(node.getNumContinousStates());
+//     node.getState(v, 0);
+//     std::cout << std::setw(_indent) << ""
+//               << "\"" << node.getName() << "\", "
+//               << trans(v) << endl;
+  }
+  virtual void apply(const Frame& group)
+  {
+    std::cout << std::setw(_indent) << ""
+              << "Traversing \""
+              << group.getName() << "\" ("
+              << trans(group.getRelVel().getLinear())
+              << ", "
+              << trans(group.getSpVel().getLinear())
+              << ", "
+              << trans(group.getRelAccel().getLinear())
+              << ", "
+              << trans(group.getSpAccel().getLinear())
+              << "), "
+              << endl;
+    _indent += 3;
+    traverse(group);
+    _indent -= 3;
+  }
+private:
+  unsigned _indent;
+};
+
+void printVehicle(Vehicle* vehicle)
+{
+  cout << "T = " << vehicle->getTime()
+       << ", Pos: " << vehicle->getGeodPosition()
+//        << ", Or: " << vehicle->getGeodOrientation()
+       << endl;
+
+  StatePrintVisitor spv;
+  vehicle->getTopBody()->getParentFrame()->accept(spv);
+}
+
+
 // Our local storage covers the pointer to our vehicle.
 // A list of the property to expression adaptors.
 struct FGOpenFDMData {
@@ -209,6 +266,7 @@ void FGOpenFDM::init()
   // Call what needs to be done ... ;-(
   common_init();
 
+  // Hmm, twice ??
   mData->vehicle->init();
 
   set_inited(true);
@@ -281,9 +339,6 @@ void FGOpenFDM::update(double dt)
     vehicle->setGeodOrientation(go);
   }
   
-  if (stateChanged)
-    SG_LOG(SG_FLIGHT, SG_INFO, "State changed ------------------------------");
-
   double acrad = vehicle->getRadius();
   double groundCacheRadius = acrad
     + 2*dt*norm(vehicle->getVelocity().getLinear());
@@ -294,43 +349,66 @@ void FGOpenFDM::update(double dt)
     SG_LOG(SG_FLIGHT, SG_WARN,
            "FGInterface is beeing called without scenery below the aircraft!");
 
+  if (stateChanged) {
+    SG_LOG(SG_FLIGHT, SG_INFO, "State changed ------------------------------");
+    vehicle->init();
+  }
+
+  // Here a miracle occures :)
   vehicle->output();
   vehicle->update(dt);
+
+//   printVehicle(vehicle);
 
   // Now write the newly computed values into the interface class.
   gp = vehicle->getGeodPosition();
   _updateGeodeticPosition(gp.latitude, gp.longitude,
                           convertTo(uFoot, gp.altitude));
+//   _set_Altitude_AGL(model->getAGL() * M2FT);
 
-  euler = vehicle->getGeodOrientation().getEuler();
+  Rotation geodOr = vehicle->getGeodOrientation();
+  euler = geodOr.getEuler();
   _set_Euler_Angles(euler(1), euler(2), euler(3));
 
+  // FIXME: wrong velocities are set here ...
+  Vector3 velWrtWind = vehicle->getVelocity().getLinear();
+  _set_V_rel_wind(convertTo(uFeetPSecond, norm(velWrtWind)));
+  _set_Velocities_Wind_Body(convertTo(uFeetPSecond, velWrtWind(1)),
+                            convertTo(uFeetPSecond, velWrtWind(2)),
+                            convertTo(uFeetPSecond, velWrtWind(3)));
+  _set_V_equiv_kts(convertTo(uKnots, norm(velWrtWind)));
+  _set_V_calibrated_kts(convertTo(uKnots, norm(velWrtWind)));
+  _set_Mach_number(norm(velWrtWind)/340);
 
-  _set_V_rel_wind(convertTo(uFeetPSecond,
-                            norm(vehicle->getVelocity().getLinear())));
-
-  _set_V_equiv_kts(convertTo(uKnots,
-                             norm(vehicle->getVelocity().getLinear())));
-  
-  _set_V_calibrated_kts(convertTo(uKnots,
-                                  norm(vehicle->getVelocity().getLinear())));
-
+  Vector3 localVel = convertTo(uFeetPSecond, geodOr.backTransform(velWrtWind));
+  _set_Velocities_Local(localVel(1),localVel(2), localVel(3));
   _set_V_ground_speed(convertTo(uFeetPSecond,
-                                norm(vehicle->getVelocity().getLinear())));
+             sqrt(localVel(1)*localVel(1) + localVel(2)*localVel(2))));
+  _set_Velocities_Ground(localVel(1),localVel(2), -localVel(3));;
+  _set_Climb_Rate(-localVel(3));
 
-  // Velocities
-//   _set_Velocities_Local( Propagate->GetVel(eNorth),
-//                          Propagate->GetVel(eEast),
-//                          Propagate->GetVel(eDown) );
+  const RigidBody* topBody = vehicle->getTopBody();
+  Vector3 bodyAccel = convertTo(uFeetPSec2, topBody->getClassicAccel().getLinear());
+  _set_Accels_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
+  _set_Accels_Pilot_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
+  _set_Accels_CG_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
+  // It is not clear in any way how this 'local acceleration is meant'
+  // Just provide one possible interpretation
+  Vector3 localAccel = geodOr.backTransform(bodyAccel);
+  _set_Accels_Local(localAccel(1), localAccel(2), localAccel(3));
 
-//     _set_Velocities_Wind_Body( Propagate->GetUVW(1),
-//                                Propagate->GetUVW(2),
-//                                Propagate->GetUVW(3) );
+  Vector3 nAccel = 1/convertTo(uFeetPSec2, 9.81) * bodyAccel;
+  _set_Accels_CG_Body_N(nAccel(1), nAccel(2), nAccel(3));
+  _set_Nlf(-nAccel(3));
 
-//     _set_Velocities_Ground( Propagate->GetVel(eNorth),
-//                             Propagate->GetVel(eEast),
-//                             -Propagate->GetVel(eDown) );
+  
+  Vector3 angVel = topBody->getRelVel().getAngular();
+  _set_Omega_Body(angVel(1), angVel(2), angVel(3));
+//   _set_Euler_Rates(roll, pitch, hdg);
 
+//   _set_Alpha( Auxiliary->Getalpha() );
+//   _set_Beta( Auxiliary->Getbeta() );
+//   _set_Gamma_vert_rad( Auxiliary->GetGamma() );
 }
 
 
