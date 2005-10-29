@@ -164,6 +164,49 @@ Frame::getChildFrame(unsigned i) const
 }
 
 void
+Frame::computePositionDep(void) const
+{
+  if (hasParent()) {
+    mRefOrient = getParentFrame()->getRefOrientation()*getOrientation();
+    mRefPos = getParentFrame()->posToRef(getPosition());
+    mReferenceFrameId = getParentFrame()->getRefFrameId();
+  } else {
+    mRefOrient = getOrientation();
+    mRefPos = getPosition();
+    mReferenceFrameId = getFrameId();
+  }
+  mDirtyPos = false;
+}
+
+void
+Frame::computeVelocityDep(void) const
+{
+  if (hasParent()) {
+    mParentSpVel = motionFromParent(getParentFrame()->getSpVel());
+    mRefVel = getRelVel() + motionFromParent(getParentFrame()->getRefVel());
+    mReferenceFrameId = getParentFrame()->getRefFrameId();
+  } else {
+    mParentSpVel = Vector6::zeros();
+    mRefVel = Vector6::zeros();
+    mReferenceFrameId = getFrameId();
+  }
+  mDirtySpVel = false;
+}
+
+void
+Frame::computeAccelerationDep(void) const
+{
+  if (hasParent()) {
+    mParentSpAccel = motionFromParent(getParentFrame()->getSpAccel());
+    mReferenceFrameId = getParentFrame()->getRefFrameId();
+  } else {
+    mParentSpAccel = Vector6::zeros();
+    mReferenceFrameId = getFrameId();
+  }
+  mDirtySpAccel = false;
+}
+
+void
 Frame::setPosDirtyUnconditional(void)
 {
   // Mark ourself dirty.

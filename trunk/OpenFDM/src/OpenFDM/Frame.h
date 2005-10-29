@@ -184,7 +184,7 @@ public:
       parent frame. It is the only vector which is in the parent frames
       coordinates.
    */
-  /* virtual */ const Vector3& getPosition(void) const
+  const Vector3& getPosition(void) const
   { return mPosition; }
 
   /** Orientation of the current frame.
@@ -192,7 +192,7 @@ public:
       parent frame. The quaternion returned here rotates vectors in the parent
       frames coordinated to vectors in current frames coordinates.
    */
-  /* virtual */ const Rotation& getOrientation(void) const
+  const Rotation& getOrientation(void) const
   { return mOrientation; }
 
 
@@ -201,7 +201,6 @@ public:
                frames coordinates.
       @return  The vector v in the parent frames coordinates.
    */
-//   virtual 
   Vector3 rotToParent(const Vector3& v) const
   { return getOrientation().backTransform(v); }
 
@@ -210,7 +209,6 @@ public:
                frames coordinates.
       @return  The vector v in the current frames coordinates.
    */
-//   virtual 
   Vector3 rotFromParent(const Vector3& v) const
   { return getOrientation().transform(v); }
 
@@ -220,7 +218,7 @@ public:
               to the parent frame. The velocity is in the current frames
               coordinates.
    */
-  /* virtual */ const Vector6& getRelVel(void) const
+  const Vector6& getRelVel(void) const
   { return mRelVel; }
 
   /** Relative spatial acceleration.
@@ -228,7 +226,7 @@ public:
               to the parent frame. The velocity is in the current frames
               coordinates.
    */
-  /* virtual */ Vector6 getRelAccel(void) const 
+  Vector6 getRelAccel(void) const 
   { return mRelAccel; }
 
 
@@ -330,7 +328,6 @@ public:
 
   /** FIXME
    */
-//   virtual 
   Vector6 getHdot(void) const
   {
     /**
@@ -355,7 +352,6 @@ public:
       @param v The position vector in the parent frame to be transformed.
       @return  The motion vector transformed to the current frame.
    */
-//   virtual 
   Vector3 posFromParent(const Vector3& v) const
   { return posTo(getPosition(), getOrientation(), v); }
 
@@ -365,7 +361,6 @@ public:
       @param v The position in the current frame to be transformed.
       @return  The position transformed to the parent frame.
    */
-//   virtual 
   Vector3 posToParent(const Vector3& v) const
   { return posFrom(getPosition(), getOrientation(), v); }
 
@@ -375,7 +370,6 @@ public:
       @param v The motion vector in the parent frame to be transformed.
       @return  The motion vector transformed to the current frame.
    */
-//   virtual 
   Vector6 motionFromParent(const Vector6& v) const
   { return motionTo(getPosition(), getOrientation(), v); }
 
@@ -385,7 +379,6 @@ public:
       @param v The motion vector in the current frame to be transformed.
       @return  The motion vector transformed to the parent frame.
    */
-//   virtual 
   Vector6 motionToParent(const Vector6& v) const
   { return motionFrom(getPosition(), getOrientation(), v); }
 
@@ -395,7 +388,6 @@ public:
       @param v The force vector in the parent frame to be transformed.
       @return  The force vector transformed to the current frame.
    */
-//   virtual 
   Vector6 forceFromParent(const Vector6& v) const
   { return forceTo(getPosition(), getOrientation(), v); }
 
@@ -405,7 +397,6 @@ public:
       @param v The force vector in the current frame to be transformed.
       @return  The force vector transformed to the parent frame.
    */
-//   virtual 
   Vector6 forceToParent(const Vector6& v) const
   { return forceFrom(getPosition(), getOrientation(), v); }
 
@@ -465,7 +456,6 @@ public:
       @param v The motion vector in the parent frame to be transformed.
       @return  The motion vector transformed to the current frame.
    */
-//   virtual 
   Vector6 motionFromRef(const Vector6& v) const
   { return motionTo(getRefPosition(), getRefOrientation(), v) - getRefVel(); }
 
@@ -475,7 +465,6 @@ public:
       @param v The motion vector in the current frame to be transformed.
       @return  The motion vector transformed to the parent frame.
    */
-//   virtual 
   Vector6 motionToRef(const Vector6& v) const
   { return motionFrom(getRefPosition(), getRefOrientation(), v + getRefVel()); }
 
@@ -484,46 +473,6 @@ public:
 
   Plane planeToRef(const Plane& plane) const
   { return planeFrom(getRefPosition(), getRefOrientation(), plane); }
-
-  void computePositionDep(void) const
-  {
-    if (hasParent()) {
-      mRefOrient = getParentFrame()->getRefOrientation()*getOrientation();
-      mRefPos = getParentFrame()->posToRef(getPosition());
-      mReferenceFrameId = getParentFrame()->getRefFrameId();
-    } else {
-      mRefOrient = getOrientation();
-      mRefPos = getPosition();
-      mReferenceFrameId = getFrameId();
-    }
-    mDirtyPos = false;
-  }
-
-  void computeVelocityDep(void) const
-  {
-    if (hasParent()) {
-      mParentSpVel = motionFromParent(getParentFrame()->getSpVel());
-      mRefVel = getRelVel() + motionFromParent(getParentFrame()->getRefVel());
-      mReferenceFrameId = getParentFrame()->getRefFrameId();
-    } else {
-      mParentSpVel = Vector6::zeros();
-      mRefVel = Vector6::zeros();
-      mReferenceFrameId = getFrameId();
-    }
-    mDirtySpVel = false;
-  }
-
-  void computeAccelerationDep(void) const
-  {
-    if (hasParent()) {
-      mParentSpAccel = motionFromParent(getParentFrame()->getSpAccel());
-      mReferenceFrameId = getParentFrame()->getRefFrameId();
-    } else {
-      mParentSpAccel = Vector6::zeros();
-      mReferenceFrameId = getFrameId();
-    }
-    mDirtySpAccel = false;
-  }
 
   /** Reference orientation.
    * Returns the reference orientation of this frame wrt the topmost frame 
@@ -605,6 +554,10 @@ protected:
   { mDisableSpAccel = true; }
   void enableAccel(void)
   { mDisableSpAccel = false; }
+
+  void computePositionDep(void) const;
+  void computeVelocityDep(void) const;
+  void computeAccelerationDep(void) const;
 
 protected:
   void setPosDirty(void)
