@@ -201,6 +201,9 @@ public:
       + (2*r*qr)*cross(qimag, v);
   }
 
+  OpenFDM_FORCE_INLINE
+  static Quaternion unit(unsigned i = 1)
+  { return Quaternion(Vector4<T>::unit(i)); }
 
   static Quaternion fromRealImag(value_type r, const Vector3& i)
   { return Quaternion(r, i(1), i(2), i(3)); }
@@ -295,18 +298,9 @@ public:
     return Quaternion::fromRotateToNorm((1/nfrom)*from, (1/nto)*to);
   }
 
-  static Quaternion fromRotateTo(size_type i, const Vector3& v)
-  {
-    value_type nv = norm(v);
-    if (nv < Limits<T>::min())
-      return Quaternion::unit(1);
-    
-    return Quaternion::fromRotateToNorm(v/nv, Vector3::unit(i));
-  }
-
   // FIXME more finegrained error behavour.
-  static Quaternion fromRotateTo(size_type i1, const Vector3& v1,
-                                 size_type i2, const Vector3& v2)
+  static Quaternion fromRotateTo(const Vector3& v1, size_type i1,
+                                 const Vector3& v2, size_type i2)
   {
     value_type nrmv1 = norm(v1);
     value_type nrmv2 = norm(v2);
@@ -319,42 +313,33 @@ public:
     if (fabs(fabs(dv1v2)-1) < Limits<value_type>::epsilon())
       return Quaternion::unit(1);
 
+    // The target vector for the first rotation
+    Vector3 nto1 = Vector3::unit(i1);
+    Vector3 nto2 = Vector3::unit(i2);
+
     // The first rotation can be done with the usual routine.
-    Quaternion q = Quaternion::fromRotateToNorm(Vector3::unit(i1), nv1);
+    Quaternion q = Quaternion::fromRotateToNorm(nv1, nto1);
 
-    // Make nv2 orthogonal to nv1.
-    nv2 = nv2 - dv1v2*nv1;
-    nv2 *= 1/norm(nv2);
+    // The rotation axis for the second rotation is the
+    // target for the first one, so the rotation axis is nto1
+    // We need to get the angle.
 
-    // For rotation of the second axis, we need to preserve the picture
-    // of the first one.
-    Vector3 tui2 = q.transform(Vector3::unit(i2));
+    // Make nv2 exactly orthogonal to nv1.
+    nv2 = normalize(nv2 - dv1v2*nv1);
+
     Vector3 tnv2 = q.transform(nv2);
-
-    // FIXME there is a possibility that copysign is not correct ...
-    // true??
-    value_type cosang = dot(tui2, tnv2);
-
+    value_type cosang = dot(nto2, tnv2);
     value_type cos05ang = max(static_cast<value_type>(0.5+0.5*cosang),
                               static_cast<value_type>(0));
     cos05ang = sqrt(cos05ang);
-
-    value_type sig = dot(nv1, cross(tui2, tnv2));
+    value_type sig = dot(nto1, cross(nto2, tnv2));
     value_type sin05ang = max(static_cast<value_type>(0.5-0.5*cosang),
                               static_cast<value_type>(0));
     sin05ang = copysign(sqrt(sin05ang), sig);
-    q *= Quaternion::fromRealImag(cos05ang, sin05ang*nv1);
+    q *= Quaternion::fromRealImag(cos05ang, sin05ang*nto1);
 
     return q;
   }
-
-
-//   OpenFDM_FORCE_INLINE
-//   static Quaternion zeros(void)
-//   { return Quaternion(Vector4<T>::zeros()); }
-  OpenFDM_FORCE_INLINE
-  static Quaternion unit(unsigned i = 1)
-  { return Quaternion(Vector4<T>::unit(i)); }
 
 
   // Return a quaternion which rotates the vector given by v
@@ -370,13 +355,13 @@ public:
     Vector3 axis;
     if (absv2 < absv1 && absv3 < absv1) {
       value_type quot = v(2)/v(1);
-      axis = (1/sqrt(1+quot*quot))*Vector3(quot, 1, 0);
+      axis = (1/sqrt(1+quot*quot))*Vector3(quot, -1, 0);
     } else if (absv1 < absv2 && absv3 < absv2) {
       value_type quot = v(3)/v(2);
-      axis = (1/sqrt(1+quot*quot))*Vector3(0, quot, 1);
+      axis = (1/sqrt(1+quot*quot))*Vector3(0, quot, -1);
     } else if (absv1 < absv3 && absv2 < absv3) {
       value_type quot = v(1)/v(3);
-      axis = (1/sqrt(1+quot*quot))*Vector3(1, 0, quot);
+      axis = (1/sqrt(1+quot*quot))*Vector3(-1, 0, quot);
     } else {
       // The all zero case.
       return Quaternion::unit(1);
@@ -416,7 +401,7 @@ private:
 
     // Compute the rotation axis, that is
     // sin(angle)*normalized rotation axis
-    Vector3 axis = cross(from, to);
+    Vector3 axis = cross(to, from);
 
     // We need sin(0.5*angle)*normalized rotation axis.
     // So rescale with sin(0.5*x)/sin(x).
@@ -442,11 +427,7 @@ private:
     // For larger rotations. first rotate from to -from.
     // Past that we will have a smaller angle again.
     Quaternion q1 = Quaternion::fromChangeSign(from);
-    Vector3 t2 = q1.transform(to);
-    Vector3 f2 = -from;
-    value_type cosang2 = dot(f2, t2);
-    Quaternion q2 = Quaternion::fromRotateToSmaller90Deg(cosang2, f2, t2);
-
+    Quaternion q2 = Quaternion::fromRotateToSmaller90Deg(-cosang, -from, to);
     return q1*q2;
   }
 };
