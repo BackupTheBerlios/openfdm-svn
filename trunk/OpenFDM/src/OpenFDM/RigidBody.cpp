@@ -73,6 +73,7 @@ RigidBody::computeArtValues(void)
   // 
   Vector6 iv = getSpVel();
   Vector6 Jiv = mArtInertia*iv;
+  Log(ArtBody, Debug3) << "Spatial velocity is " << trans(iv) << endl;
   mArtForce = Vector6(cross(iv.getAngular(), Jiv.getAngular()) +
                       cross(iv.getLinear(), Jiv.getLinear()),
                       cross(iv.getAngular(), Jiv.getLinear()));

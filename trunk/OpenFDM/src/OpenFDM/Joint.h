@@ -107,7 +107,8 @@ public:
     if (!outboardBody)
       return false;
 
-    Log(ArtBody, Debug) << "Contributing articulation through joint \""
+    Log(ArtBody, Debug) << "Contributing articulation from \""
+                        << outboardBody->getName() << "\" through joint \""
                         << getName() << "\"" << endl;
 
     // We need the articulated inertia and force from the outboard body.
@@ -115,7 +116,7 @@ public:
     Vector6 F = outboardBody->getArtForce();
 
     Log(ArtBody, Debug3) << "Outboard Articulated values: Force:\n"
-                         << F << "\nInertia\n" << I << endl;
+                         << trans(F) << "\nInertia\n" << I << endl;
 
     // Apply the joint degrees of freedom to that.
     // If there was an error, (something was singular ???)
@@ -124,7 +125,7 @@ public:
       return false;
 
     Log(ArtBody, Debug3) << "Outboard Articulated values past joint "
-                         << "projection: Force:\n" << F
+                         << "projection: Force:\n" << trans(F)
                          << "\nInertia\n" << I << endl;
 
     // Contribute the transformed values to the parent.

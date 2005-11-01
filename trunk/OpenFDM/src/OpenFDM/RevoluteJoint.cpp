@@ -26,6 +26,12 @@ RevoluteJoint::RevoluteJoint(const std::string& name, bool trackPosition)
   mJointAcceleration = 0;
   mJointAxis = Vector3::unit(1);
   mOrientation = Quaternion::unit();
+  mSpringCoef = 0;
+  mDampCoef = 0;
+
+  setNumOutputPorts(2);
+  setOutputPort(0, "jointPos", Property(this, &RevoluteJoint::getJointPos));
+  setOutputPort(1, "jointVel", Property(this, &RevoluteJoint::getJointVel));
 }
 
 RevoluteJoint::~RevoluteJoint(void)
@@ -80,18 +86,28 @@ RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
 {
   // That projects away tha components where the degrees of freedom
   // of the joint are.
+  RigidBody* out = getOutboardGroup()->toRigidBody();
   real_type tau = getJointForce();
-  return JointT<1>::jointArticulation(artI, artF, tau*getJointAxis(),
-                                      getHdot(), getJointAxis());
+  return JointT<1>::jointArticulation(artI, artF, out->getPAlpha(),
+                                      tau*getJointAxis(),
+                                      getJointAxis());
 }
 
 Vector6
-RevoluteJoint::computeRelAccel(const SpatialInertia& artI,
-                               const Vector6& artF)
+RevoluteJoint::computeRelAccel(const SpatialInertia&,
+                               const Vector6&)
 {
+  RigidBody* out = getOutboardGroup()->toRigidBody();
+  Vector6 parentAccel = out->getParentSpAccel();
+
+  SpatialInertia artI = out->getArtInertia();
+  Vector6 pAlpha = out->getPAlpha();
+
   JointT<1>::VectorN acc;
-  JointT<1>::computeRelAccel(artI, artF, getJointAxis(), acc);
+  JointT<1>::computeRelAccel(artI, parentAccel, pAlpha, getJointAxis(), acc);
   mJointAcceleration = acc(1);
+  Log(ArtBody, Debug) << "Relative acceleration for Joint \""
+                      << getName() << "\" is " << trans(acc) << endl;
   return getJointAxis()*acc;
 }
 

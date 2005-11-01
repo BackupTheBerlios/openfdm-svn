@@ -70,6 +70,11 @@ public:
   const Vector6& getArtForce(void) const
   { return mArtForce; }
 
+  /** HMM
+   */
+  Vector6 getPAlpha(void) const
+  { return mArtForce + mArtInertia*getHdot(); }
+
   /**
    */
   void contributeForce(const Vector6& force)

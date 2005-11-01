@@ -59,9 +59,24 @@ public:
    */
   void setOrientation(const Quaternion& orientation);
 
+  void setSpringConstant(real_type springConstant)
+  { mSpringCoef = springConstant; }
+  real_type getSpringConstant(void) const
+  { return mSpringCoef; }
+  void setDampConstant(real_type dampConstant)
+  { mDampCoef = dampConstant; }
+  real_type getDampConstant(void) const
+  { return mDampCoef; }
+
   virtual real_type getJointForce(void) const
-//   { return 0; }
-  { return -1e1*mJointPosition - 1e2*mJointVelocity; }
+  {
+    Log(ArtBody, Debug) << "RevoluteJoint " << getName()
+                        << " pos " << convertTo(uDegree, mJointPosition)
+                        << " vel " << mJointVelocity
+                        << " torque " << mSpringCoef*mJointPosition + mDampCoef*mJointVelocity
+                        << endl;
+    return mSpringCoef*mJointPosition + mDampCoef*mJointVelocity;
+  }
 
 private:
   /** Computes the inboard articulated inertia and force for
@@ -107,6 +122,11 @@ private:
       only used for animations and thus could be postprocessed.
    */
   bool mTrackPosition;
+
+  /** Well, for now, just to test. Include these here
+   */
+  real_type mSpringCoef;
+  real_type mDampCoef;
 };
 
 } // namespace OpenFDM
