@@ -148,15 +148,14 @@ SimpleGear::computeFrictionForce(real_type normForce, const Vector3& vel,
   // The wheel coordinates x asxis is defined by the forward orientation
   // of the wheel, the z axis points perpandicular to the ground
   // plane downwards.
-  real_type sinsa = sin(mSteeringAngle);
-  real_type cossa = cos(mSteeringAngle);
-  Rotation wheelOrientation
-    = Quaternion::fromRotateTo(1, Vector3(cossa, sinsa, 0),
-                               3, groundNormal);
-  
-  // Compute the wheel velocity in wheel coordinates.
-  Vector3 wheelVel = wheelOrientation.transform(vel);
-  
+  Vector3 forward(cos(mSteeringAngle), sin(mSteeringAngle), 0);
+  Vector3 side = cross(groundNormal, forward);
+  forward = normalize(cross(side, groundNormal));
+  side = normalize(side);
+
+  // Transformed to the ground plane
+  Vector2 wheelVel(dot(forward, vel), dot(side, vel));
+
   // Now we compute something like the JSBSim gear friction model.
   // The x coordinate is in wheel forward direction,
   // the y coordinate points towards right. 
@@ -184,10 +183,9 @@ SimpleGear::computeFrictionForce(real_type normForce, const Vector3& vel,
   
   // The friction force for fast movement.
   Vector2 fricForce = (-friction*mFrictionCoef*normForce)*slip;
-  Vector3 fricForce3(fricForce(1), fricForce(2), 0);
   
   // Transform the friction force back and return
-  return wheelOrientation.backTransform(fricForce3);
+  return fricForce(1)*forward + fricForce(2)*side;
 }
 
 } // namespace OpenFDM
