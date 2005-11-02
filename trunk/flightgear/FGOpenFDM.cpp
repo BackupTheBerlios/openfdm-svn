@@ -6,7 +6,7 @@
 #include <simgear/math/sg_geodesy.hxx>
 #include <simgear/props/props.hxx>
 
-#include <Controls/controls.hxx>
+#include <Aircraft/controls.hxx>
 #include <Main/globals.hxx>
 #include <Main/fg_props.hxx>
 
@@ -161,20 +161,20 @@ public:
   virtual ~StatePrintVisitor(void) {}
   virtual void apply(const MultiBodyModel& node)
   {
-    if (node.getName() != "Aerodynamic force")
-      return;
-    const AeroForce* aeroForce = (const AeroForce*)&node;
-    std::cout << "Alpha " << convertTo(uDegree, aeroForce->getAlpha())
-              << ", Beta " << convertTo(uDegree, aeroForce->getBeta())
-//               << ", Mach " << aeroForce->getMachNumber()
-              << ", speed " << trans(aeroForce->getAirSpeed())
-              << std::endl;
+//     if (node.getName() != "Aerodynamic force")
+//       return;
+//     const AeroForce* aeroForce = (const AeroForce*)&node;
+//     std::cout << "Alpha " << convertTo(uDegree, aeroForce->getAlpha())
+//               << ", Beta " << convertTo(uDegree, aeroForce->getBeta())
+// //               << ", Mach " << aeroForce->getMachNumber()
+//               << ", speed " << trans(aeroForce->getAirSpeed())
+//               << std::endl;
 
-//     Vector v(node.getNumContinousStates());
-//     node.getState(v, 0);
-//     std::cout << std::setw(_indent) << ""
-//               << "\"" << node.getName() << "\", "
-//               << trans(v) << endl;
+    Vector v(node.getNumContinousStates());
+    node.getState(v, 0);
+    std::cout << std::setw(_indent) << ""
+              << "\"" << node.getName() << "\", "
+              << trans(v) << endl;
   }
   virtual void apply(const Frame& group)
   {
@@ -182,12 +182,12 @@ public:
               << "Traversing \""
               << group.getName() << "\" ("
               << trans(group.getRelVel().getLinear())
-              << ", "
-              << trans(group.getSpVel().getLinear())
-              << ", "
-              << trans(group.getRelAccel().getLinear())
-              << ", "
-              << trans(group.getSpAccel().getLinear())
+//               << ", "
+//               << trans(group.getSpVel().getLinear())
+//               << ", "
+//               << trans(group.getRelAccel().getLinear())
+//               << ", "
+//               << trans(group.getSpAccel().getLinear())
               << "), "
               << endl;
     _indent += 3;
