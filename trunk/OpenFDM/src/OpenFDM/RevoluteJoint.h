@@ -15,6 +15,7 @@
 #include "RigidBody.h"
 #include "Joint.h"
 #include "JointT.h"
+#include "LineForce.h"
 
 namespace OpenFDM {
 
@@ -59,23 +60,20 @@ public:
    */
   void setOrientation(const Quaternion& orientation);
 
-  void setSpringConstant(real_type springConstant)
-  { mSpringCoef = springConstant; }
-  real_type getSpringConstant(void) const
-  { return mSpringCoef; }
-  void setDampConstant(real_type dampConstant)
-  { mDampCoef = dampConstant; }
-  real_type getDampConstant(void) const
-  { return mDampCoef; }
+  const LineForce* getLineForce(void) const
+  { return mLineForce; }
+  LineForce* getLineForce(void)
+  { return mLineForce; }
+  void setLineForce(LineForce* lineForce)
+  { mLineForce = lineForce; }
 
-  virtual real_type getJointForce(void) const
+  real_type getJointForce(void)
   {
-    Log(ArtBody, Debug) << "RevoluteJoint " << getName()
-                        << " pos " << convertTo(uDegree, mJointPosition)
-                        << " vel " << mJointVelocity
-                        << " torque " << mSpringCoef*mJointPosition + mDampCoef*mJointVelocity
-                        << endl;
-    return mSpringCoef*mJointPosition + mDampCoef*mJointVelocity;
+    if (!mLineForce)
+      return 0;
+    
+    mLineForce->computeForce(mJointPosition, mJointVelocity);
+    return mLineForce->getForce();
   }
 
 private:
@@ -123,10 +121,9 @@ private:
    */
   bool mTrackPosition;
 
-  /** Well, for now, just to test. Include these here
+  /** The direct joint interaction force
    */
-  real_type mSpringCoef;
-  real_type mDampCoef;
+  shared_ptr<LineForce> mLineForce;
 };
 
 } // namespace OpenFDM

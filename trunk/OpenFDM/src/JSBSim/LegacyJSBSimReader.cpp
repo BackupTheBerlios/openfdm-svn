@@ -21,7 +21,11 @@
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/Input.h>
 #include <OpenFDM/Mass.h>
+#include <OpenFDM/LinearSpring.h>
+#include <OpenFDM/AirSpring.h>
+#include <OpenFDM/PrismaticJoint.h>
 #include <OpenFDM/Product.h>
+#include <OpenFDM/RevoluteJoint.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/Sensor.h>
 #include <OpenFDM/SimpleContact.h>
@@ -681,6 +685,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
     std::string uctype;
     datastr >> uctype;
     
+    std::stringstream sstr;
+    sstr << gearNumber;
+    std::string numStr = sstr.str();
+    // Increment the gear number
+    ++gearNumber;
+
     if (uctype == "AC_GEAR") {
       std::string name, type, brake, retract;
       real_type x, y, z, k, d, fs, fd, rr, sa;
@@ -718,10 +728,6 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         sg->setFrictionCoeficient(fs);
         
         // Connect apprioriate input and output models
-
-        std::stringstream sstr;
-        sstr << gearNumber;
-        std::string numStr = sstr.str();
 
         // FIXME
         // missing output properties are "wow" and "tire-pressure-norm"
@@ -785,6 +791,179 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       std::string d;
       datastr >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d;
 
+    } else if (uctype == "AC_F18MLG") { 
+      /// Well, that here is exactly how it should not be,
+      /// but for initial testing of a new unfinished fdm ...
+      std::string name, brake;
+      Vector3 compressJointPos;
+      real_type pullPress;
+      real_type pushPress;
+      real_type area;
+      real_type minCompr;
+      real_type maxCompr;
+      real_type minDamp;
+      real_type maxDamp;
+      real_type armLength;
+      real_type wheelDiam;
+      real_type tireSpring, tireDamp;
+
+
+      datastr >> name >> brake
+              >> compressJointPos(1)
+              >> compressJointPos(2)
+              >> compressJointPos(3)
+              >> pullPress >> pushPress
+              >> area
+              >> minCompr
+              >> maxCompr
+              >> minDamp
+              >> maxDamp
+              >> armLength
+              >> wheelDiam
+              >> tireSpring >> tireDamp;
+
+
+      RigidBody* arm = new RigidBody(name + " Arm");
+      mVehicle->getTopBody()->addChildFrame(arm);
+      arm->addMultiBodyModel(new Mass(inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
+
+      RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
+      mVehicle->getTopBody()->addMultiBodyModel(rj, 0);
+      arm->addMultiBodyModel(rj, 1);
+      rj->setJointAxis(Vector3(0, 1, 0));
+      rj->setJointPos(0);
+      rj->setJointVel(0);
+      rj->setPosition(structToBody(compressJointPos)
+                      + Vector3(0, 0, 0.5*wheelDiam));
+      rj->setOrientation(Quaternion::unit());
+
+      AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
+      aoDamp->setPullPressure(pullPress);
+      aoDamp->setPushPressure(pushPress);
+      aoDamp->setArea(area);
+      aoDamp->setMinCompression(minCompr);
+      aoDamp->setMaxCompression(maxCompr);
+      aoDamp->setMinDamperConstant(minDamp);
+      aoDamp->setMaxDamperConstant(maxDamp);
+      rj->setLineForce(aoDamp);
+
+      SimpleGear* sg = new SimpleGear(name, mVehicle->getEnvironment());
+      arm->addMultiBodyModel(sg);
+//       sg->setPosition(Vector3(-armLength, 0, 0.5*wheelDiam));
+      sg->setPosition(Vector3(-armLength, 0, 0));
+      sg->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
+      sg->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
+      sg->setFrictionCoeficient(0.9);
+
+      if (brake == "LEFT") {
+        MaxExpressionImpl* mex = new MaxExpressionImpl;
+        Property prop = lookupJSBExpression("/controls/gear/brake-left");
+        mex->addInputProperty(prop);
+        prop = lookupJSBExpression("/controls/gear/copilot-brake-left");
+        mex->addInputProperty(prop);
+        prop = lookupJSBExpression("/controls/gear/brake-parking");
+        mex->addInputProperty(prop);
+        sg->setInputPort("brakeCommand", Property(mex));
+      } else if (brake == "RIGHT") {
+        MaxExpressionImpl* mex = new MaxExpressionImpl;
+        Property prop = lookupJSBExpression("/controls/gear/brake-right");
+        mex->addInputProperty(prop);
+        prop = lookupJSBExpression("/controls/gear/copilot-brake-right");
+        mex->addInputProperty(prop);
+        prop = lookupJSBExpression("/controls/gear/brake-parking");
+        mex->addInputProperty(prop);
+        sg->setInputPort("brakeCommand", Property(mex));
+      }
+
+      Property prop = rj->getOutputPort(0);
+      addOutputModel(prop, "Gear " + numStr + " Compression",
+                     "/gear/gear[" + numStr + "]/compression-rad");
+
+      prop = lookupJSBExpression("gear/gear-pos-norm");
+      addOutputModel(prop, "Gear " + numStr + " Position",
+                     "/gear/gear[" + numStr + "]/position-norm");
+
+    } else if (uctype == "AC_CLG") { 
+      std::string name, brake;
+      Vector3 compressJointPos;
+      real_type pullPress;
+      real_type pushPress;
+      real_type area;
+      real_type minCompr;
+      real_type maxCompr;
+      real_type minDamp;
+      real_type maxDamp;
+      real_type wheelDiam;
+      real_type tireSpring, tireDamp;
+
+      datastr >> name >> brake
+              >> compressJointPos(1)
+              >> compressJointPos(2)
+              >> compressJointPos(3)
+              >> pullPress >> pushPress
+              >> area
+              >> minCompr
+              >> maxCompr
+              >> minDamp
+              >> maxDamp
+              >> wheelDiam
+              >> tireSpring >> tireDamp;
+
+      RigidBody* arm = new RigidBody(name + " Strut");
+      mVehicle->getTopBody()->addChildFrame(arm);
+      arm->addMultiBodyModel(new Mass(inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
+
+      PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
+      mVehicle->getTopBody()->addMultiBodyModel(pj, 0);
+      arm->addMultiBodyModel(pj, 1);
+      pj->setJointAxis(Vector3(0, 0, -1));
+      pj->setPosition(structToBody(compressJointPos) + Vector3(0, 0, 0.5*wheelDiam));
+
+      AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
+      aoDamp->setPullPressure(pullPress);
+      aoDamp->setPushPressure(pushPress);
+      aoDamp->setArea(area);
+      aoDamp->setMinCompression(minCompr);
+      aoDamp->setMaxCompression(maxCompr);
+      aoDamp->setMinDamperConstant(minDamp);
+      aoDamp->setMaxDamperConstant(maxDamp);
+      pj->setLineForce(aoDamp);
+
+      SimpleGear* sg = new SimpleGear(name, mVehicle->getEnvironment());
+      arm->addMultiBodyModel(sg);
+      sg->setPosition(Vector3(0, 0, 0));
+      sg->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
+      sg->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
+      sg->setFrictionCoeficient(0.9);
+
+      if (brake == "LEFT") {
+        MaxExpressionImpl* mex = new MaxExpressionImpl;
+        Property prop = lookupJSBExpression("/controls/gear/brake-left");
+        mex->addInputProperty(prop);
+        prop = lookupJSBExpression("/controls/gear/copilot-brake-left");
+        mex->addInputProperty(prop);
+        prop = lookupJSBExpression("/controls/gear/brake-parking");
+        mex->addInputProperty(prop);
+        sg->setInputPort("brakeCommand", Property(mex));
+      } else if (brake == "RIGHT") {
+        MaxExpressionImpl* mex = new MaxExpressionImpl;
+        Property prop = lookupJSBExpression("/controls/gear/brake-right");
+        mex->addInputProperty(prop);
+        prop = lookupJSBExpression("/controls/gear/copilot-brake-right");
+        mex->addInputProperty(prop);
+        prop = lookupJSBExpression("/controls/gear/brake-parking");
+        mex->addInputProperty(prop);
+        sg->setInputPort("brakeCommand", Property(mex));
+      }
+
+      Property prop = pj->getOutputPort(0);
+      addOutputModel(prop, "Gear " + numStr + " Compression",
+                     "/gear/gear[" + numStr + "]/compression-m");
+
+      prop = lookupJSBExpression("gear/gear-pos-norm");
+      addOutputModel(prop, "Gear " + numStr + " Position",
+                     "/gear/gear[" + numStr + "]/position-norm");
+
     } else if (uctype == "AC_CONTACT") {
       std::string name, type, brake, retract;
       real_type x, y, z, k, d, fs, fd, rr, sa;
@@ -804,9 +983,6 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
       mVehicle->getTopBody()->addMultiBodyModel(sc);
     }
-
-    // Increment the gear number
-    ++gearNumber;
   }
 
   return true;

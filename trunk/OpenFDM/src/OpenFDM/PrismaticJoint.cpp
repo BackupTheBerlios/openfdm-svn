@@ -25,8 +25,6 @@ PrismaticJoint::PrismaticJoint(const std::string& name)
   mJointAcceleration = 0;
   mJointAxis = Vector3::unit(1);
   mPosition = Vector3::zeros();
-  mSpringCoef = 0;
-  mDampCoef = 0;
 
   setNumOutputPorts(2);
   setOutputPort(0, "jointPos", Property(this, &PrismaticJoint::getJointPos));

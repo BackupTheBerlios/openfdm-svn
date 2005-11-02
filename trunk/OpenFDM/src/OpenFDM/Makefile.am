@@ -25,6 +25,7 @@ lib_LTLIBRARIES = libOpenFDM.la
 libOpenFDM_la_LIBADD = -lsgxml -lsgstructure
 nobase_OpenFDMinclude_HEADERS = \
   AeroForce.h \
+  AirSpring.h \
   Assert.h \
   Atmosphere.h \
   AtmosphereSTD1976.h \
@@ -68,6 +69,8 @@ nobase_OpenFDMinclude_HEADERS = \
   LinAlg/IO.h \
   LinAlg/Misc.h \
   LinAlg/Proxy.h \
+  LinearSpring.h \
+  LineForce.h \
   LogStream.h \
   Mass.h \
   Math.h \
@@ -118,6 +121,7 @@ nobase_OpenFDMinclude_HEADERS = \
 
 libOpenFDM_la_SOURCES = \
   AeroForce.cpp \
+  AirSpring.cpp \
   Assert.cpp \
   Atmosphere.cpp \
   AtmosphereSTD1976.cpp \
@@ -148,6 +152,8 @@ libOpenFDM_la_SOURCES = \
   Input.cpp \
   Integrator.cpp \
   ImplicitEuler.cpp \
+  LineForce.cpp \
+  LinearSpring.cpp \
   Logger.cpp \
   Mass.cpp \
   MidpointRule.cpp \

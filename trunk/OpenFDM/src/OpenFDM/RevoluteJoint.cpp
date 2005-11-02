@@ -26,8 +26,6 @@ RevoluteJoint::RevoluteJoint(const std::string& name, bool trackPosition)
   mJointAcceleration = 0;
   mJointAxis = Vector3::unit(1);
   mOrientation = Quaternion::unit();
-  mSpringCoef = 0;
-  mDampCoef = 0;
 
   setNumOutputPorts(2);
   setOutputPort(0, "jointPos", Property(this, &RevoluteJoint::getJointPos));
