@@ -41,9 +41,12 @@ public:
 class AccelerationPropagationVisitor
   : public Visitor {
 public:
-  virtual void apply(Joint& joint)
+  virtual void apply(RigidBody& body)
   {
-    joint.updateAccels();
+    body.computeAccel();
+    // Note the order. First compute the acceleration and than traverse
+    // to the children.
+    traverse(body);
   }
 };
 

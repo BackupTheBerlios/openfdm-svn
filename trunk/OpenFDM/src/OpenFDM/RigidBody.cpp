@@ -113,4 +113,27 @@ RigidBody::computeArtValues(void)
                        << "\nInertia:\n" << mArtInertia << endl;
 }
 
+void
+RigidBody::computeAccel(void)
+{
+  Log(ArtBody, Debug) << "Entry of computeAccel of \"" << getName()
+                      << "\"" << endl;
+
+  unsigned n = getNumMultiBodyModels();
+  for (unsigned i = 0; i < n; ++i) {
+    Joint* joint = getMultiBodyModel(i)->toJoint();
+    if (joint) {
+      Log(ArtBody, Debug) << "Processing joint \"" << joint->getName()
+                          << "\" to body \"" << getName()
+                          << "\" for acceleration update" << endl;
+      // Check if this is an articulated joint and if we are the parent.
+      if (joint->isArticulatedJoint() && this == joint->getOutboardGroup())
+        joint->updateAccels();
+    }
+  }
+  
+  Log(ArtBody, Debug3) << "On exit of computeAccel of \"" << getName()
+                       << "\"" << endl;
+}
+
 } // namespace OpenFDM
