@@ -37,7 +37,7 @@ FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
 
 Vector6
 FreeJoint::computeRelAccel(const SpatialInertia& artI,
-                            const Vector6& artF)
+                           const Vector6& artF)
 {
   RigidBody* topBody = getOutboardGroup()->toRigidBody();
   if (!topBody)

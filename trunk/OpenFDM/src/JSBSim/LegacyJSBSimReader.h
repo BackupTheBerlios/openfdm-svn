@@ -166,6 +166,12 @@ private:
   bool convertDocument(const XMLDocument* jsbDoc);
   /// converts the METRICS data
   bool convertMetrics(const std::string& data);
+  /// Helper for convertUndercarriage
+  void attachWheel(const std::string& name, const Vector3& pos,
+                   const std::string& brake,
+                   const std::string& numStr, real_type wheelDiam,
+                   real_type tireSpring, real_type tireDamp,
+                   RigidBody* parent);
   /// converts the UNDERCARRIAGE data
   bool convertUndercarriage(const std::string& data);
   /// converts the FLIGHT_CONTROL or AUTOPILOT elements

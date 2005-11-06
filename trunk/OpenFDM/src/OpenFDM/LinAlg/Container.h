@@ -1101,11 +1101,11 @@ public:
   }
   OpenFDM_FORCE_INLINE
   SymMatrix6(T S11,
-              T S21, T S22,
-              T S31, T S32, T S33,
-              T S41, T S42, T S43, T S44,
-              T S51, T S52, T S53, T S54, T S55,
-              T S61, T S62, T S63, T S64, T S65, T S66)
+             T S21, T S22,
+             T S31, T S32, T S33,
+             T S41, T S42, T S43, T S44,
+             T S51, T S52, T S53, T S54, T S55,
+             T S61, T S62, T S63, T S64, T S65, T S66)
   {
     (*this)(1,1) = S11;
     (*this)(2,1) = S21; (*this)(2,2) = S22;

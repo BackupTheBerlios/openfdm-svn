@@ -40,6 +40,7 @@ nobase_OpenFDMinclude_HEADERS = \
   DefaultGround.h \
   DefaultPlanet.h \
   DirectForce.h \
+  DiscBrake.h \
   DiscreteIntegrator.h \
   DoPri5.h \
   Environment.h \
@@ -69,6 +70,7 @@ nobase_OpenFDMinclude_HEADERS = \
   LinAlg/IO.h \
   LinAlg/Misc.h \
   LinAlg/Proxy.h \
+  LineActuator.h \
   LinearSpring.h \
   LineForce.h \
   LogStream.h \
@@ -115,6 +117,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Vector.h \
   Vehicle.h \
   Visitor.h \
+  WheelContact.h \
   Wind.h \
   XML/Tablereader.h \
   XML/XMLReader.h
@@ -135,6 +138,7 @@ libOpenFDM_la_SOURCES = \
   DefaultGround.cpp \
   DefaultPlanet.cpp \
   DirectForce.cpp \
+  DiscBrake.cpp \
   DiscreteIntegrator.cpp \
   DoPri5.cpp \
   Environment.cpp \
@@ -152,8 +156,9 @@ libOpenFDM_la_SOURCES = \
   Input.cpp \
   Integrator.cpp \
   ImplicitEuler.cpp \
-  LineForce.cpp \
+  LineActuator.cpp \
   LinearSpring.cpp \
+  LineForce.cpp \
   Logger.cpp \
   Mass.cpp \
   MidpointRule.cpp \
@@ -183,5 +188,6 @@ libOpenFDM_la_SOURCES = \
   Units.cpp \
   Variant.cpp \
   Vehicle.cpp \
+  WheelContact.cpp \
   XML/Tablereader.cpp \
   XML/XMLReader.cpp

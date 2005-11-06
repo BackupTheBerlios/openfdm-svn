@@ -35,6 +35,9 @@
 #include <OpenFDM/UnaryFunctionModel.h>
 #include <OpenFDM/Units.h>
 #include <OpenFDM/Vehicle.h>
+#include <OpenFDM/WheelContact.h>
+#include <OpenFDM/LineActuator.h>
+#include <OpenFDM/DiscBrake.h>
 
 #include <OpenFDM/ReaderWriter.h>
 #include <OpenFDM/XML/Tablereader.h>
@@ -388,6 +391,39 @@ LegacyJSBSimReader::createAndScheduleInput(const std::string& propName)
     } else if (propName == "fdm/jsbsim/gear/gear-pos-norm") {
       return lookupJSBExpression("gear/gear-cmd-norm");
 
+    } else if (propName == "controls/gear/brake-parking") {
+      prop = addInputModel("Parking Brake Input",
+                           "controls/gear/brake-parking");
+
+    } else if (propName == "fdm/jsbsim/gear/right-brake-pos-norm") {
+      Property pilotBr = addInputModel("Right Brake Input",
+                                       "controls/gear/brake-right");
+      Property copilotBr = addInputModel("Right Copilot Brake Input",
+                                         "controls/gear/copilot-brake-right");
+
+      Property parkBr = lookupJSBExpression("/controls/gear/brake-parking");
+
+      // FIXME: we don't have a max model ...
+      MaxExpressionImpl* mex = new MaxExpressionImpl;
+      mex->addInputProperty(pilotBr);
+      mex->addInputProperty(copilotBr);
+      mex->addInputProperty(parkBr);
+      prop = Property(mex);
+
+    } else if (propName == "fdm/jsbsim/gear/left-brake-pos-norm") {
+      Property pilotBr = addInputModel("Left Brake Input",
+                                       "controls/gear/brake-left");
+      Property copilotBr = addInputModel("Left Copilot Brake Input",
+                                         "controls/gear/copilot-brake-left");
+
+      Property parkBr = lookupJSBExpression("/controls/gear/brake-parking");
+
+      // FIXME: we don't have a max model ...
+      MaxExpressionImpl* mex = new MaxExpressionImpl;
+      mex->addInputProperty(pilotBr);
+      mex->addInputProperty(copilotBr);
+      mex->addInputProperty(parkBr);
+      prop = Property(mex);
 
     } else if (propName.substr(0, 19) == "fdm/jsbsim/fcs/mag-") {
       // Special absolute modules for fcs/mag-*
@@ -397,10 +433,6 @@ LegacyJSBSimReader::createAndScheduleInput(const std::string& propName)
       Property in = lookupJSBExpression(name);
       prop = addAbsModel(propName.substr(15), in);
 
-
-
-//     } else if (propName == "fdm/jsbsim/") {
-//       prop = addInputModel(" Input", "");
     }
 
     if (prop.isValid())
@@ -674,6 +706,56 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   return true;
 }
 
+void
+LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
+                                const std::string& brake,
+                                const std::string& numStr, real_type wheelDiam,
+                                real_type tireSpring, real_type tireDamp,
+                                RigidBody* parent)
+{
+  RigidBody* wheel = new RigidBody(name + " Wheel");
+  InertiaMatrix wheelInertia(10, 0, 0, 100, 0, 10);
+  wheel->addMultiBodyModel(new Mass(SpatialInertia(wheelInertia, 50)));
+  parent->addChildFrame(wheel);
+  
+  RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
+  parent->addMultiBodyModel(wj, 0);
+  wheel->addMultiBodyModel(wj, 1);
+  wj->setJointAxis(Vector3(0, 1, 0));
+  wj->setPosition(pos);
+  wj->setOrientation(Quaternion::unit());
+  wj->setJointPos(0);
+  wj->setJointVel(0);
+
+  // Add an brake force
+  DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
+  brakeF->setFrictionConstant(-1e4);
+  if (brake == "LEFT") {
+    Property prop = lookupJSBExpression("gear/left-brake-pos-norm");
+    brakeF->setInputPort(0, prop);
+  } else if (brake == "RIGHT") {
+    Property prop = lookupJSBExpression("gear/right-brake-pos-norm");
+    brakeF->setInputPort(0, prop);
+  }
+  wj->setLineForce(brakeF);
+  
+  WheelContact* wc = new WheelContact(name + " Wheel Contact",
+                                      mVehicle->getEnvironment());
+  wc->setWheelRadius(0.5*wheelDiam);
+  wc->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
+  wc->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
+  wc->setFrictionCoeficient(0.9);
+  wheel->addMultiBodyModel(wc);
+  
+  Property prop = wj->getOutputPort(0);
+  addOutputModel(prop, "Wheel " + numStr + " Position",
+                 "gear/gear[" + numStr + "]/wheel-position-rad");
+  SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uDegree);
+  c->setInputProperty(prop);
+  addOutputModel(Property(c), "Wheel " + numStr + " Position Deg",
+                 "gear/gear[" + numStr + "]/wheel-position-deg");
+}
+
 bool
 LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 {
@@ -761,23 +843,11 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         }
         
         if (brake == "LEFT") {
-          MaxExpressionImpl* mex = new MaxExpressionImpl;
-          Property prop = lookupJSBExpression("/controls/gear/brake-left");
-          mex->addInputProperty(prop);
-          prop = lookupJSBExpression("/controls/gear/copilot-brake-left");
-          mex->addInputProperty(prop);
-          prop = lookupJSBExpression("/controls/gear/brake-parking");
-          mex->addInputProperty(prop);
-          sg->setInputPort("brakeCommand", Property(mex));
+          Property prop = lookupJSBExpression("gear/left-brake-pos-norm");
+          sg->setInputPort("brakeCommand", prop);
         } else if (brake == "RIGHT") {
-          MaxExpressionImpl* mex = new MaxExpressionImpl;
-          Property prop = lookupJSBExpression("/controls/gear/brake-right");
-          mex->addInputProperty(prop);
-          prop = lookupJSBExpression("/controls/gear/copilot-brake-right");
-          mex->addInputProperty(prop);
-          prop = lookupJSBExpression("/controls/gear/brake-parking");
-          mex->addInputProperty(prop);
-          sg->setInputPort("brakeCommand", Property(mex));
+          Property prop = lookupJSBExpression("gear/right-brake-pos-norm");
+          sg->setInputPort("brakeCommand", prop);
         }
         
         mVehicle->getTopBody()->addMultiBodyModel(sg);
@@ -822,21 +892,26 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
               >> wheelDiam
               >> tireSpring >> tireDamp;
 
+      // Well this is come hardcoding, but as a demo built from within the
+      // legacy JSBSim format this is ok :)
 
+      // This is the movable part of the strut, doing the compression
       RigidBody* arm = new RigidBody(name + " Arm");
       mVehicle->getTopBody()->addChildFrame(arm);
       arm->addMultiBodyModel(new Mass(inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
 
+      // Connect that with a revolute joint to the main body
       RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
       mVehicle->getTopBody()->addMultiBodyModel(rj, 0);
       arm->addMultiBodyModel(rj, 1);
       rj->setJointAxis(Vector3(0, 1, 0));
       rj->setJointPos(0);
       rj->setJointVel(0);
-      rj->setPosition(structToBody(compressJointPos)
-                      + Vector3(0, 0, 0.5*wheelDiam));
+      rj->setPosition(structToBody(compressJointPos));
       rj->setOrientation(Quaternion::unit());
 
+      // Well, we use an air spring for that. It is directly in the
+      // revolute joint. That is wring, but at the moment aprioriate.
       AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
       aoDamp->setPullPressure(pullPress);
       aoDamp->setPushPressure(pushPress);
@@ -847,33 +922,9 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       aoDamp->setMaxDamperConstant(maxDamp);
       rj->setLineForce(aoDamp);
 
-      SimpleGear* sg = new SimpleGear(name, mVehicle->getEnvironment());
-      arm->addMultiBodyModel(sg);
-//       sg->setPosition(Vector3(-armLength, 0, 0.5*wheelDiam));
-      sg->setPosition(Vector3(-armLength, 0, 0));
-      sg->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
-      sg->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
-      sg->setFrictionCoeficient(0.9);
-
-      if (brake == "LEFT") {
-        MaxExpressionImpl* mex = new MaxExpressionImpl;
-        Property prop = lookupJSBExpression("/controls/gear/brake-left");
-        mex->addInputProperty(prop);
-        prop = lookupJSBExpression("/controls/gear/copilot-brake-left");
-        mex->addInputProperty(prop);
-        prop = lookupJSBExpression("/controls/gear/brake-parking");
-        mex->addInputProperty(prop);
-        sg->setInputPort("brakeCommand", Property(mex));
-      } else if (brake == "RIGHT") {
-        MaxExpressionImpl* mex = new MaxExpressionImpl;
-        Property prop = lookupJSBExpression("/controls/gear/brake-right");
-        mex->addInputProperty(prop);
-        prop = lookupJSBExpression("/controls/gear/copilot-brake-right");
-        mex->addInputProperty(prop);
-        prop = lookupJSBExpression("/controls/gear/brake-parking");
-        mex->addInputProperty(prop);
-        sg->setInputPort("brakeCommand", Property(mex));
-      }
+      // Attach a wheel to that strut part.
+      attachWheel(name, Vector3(-armLength, 0, 0), brake, numStr, wheelDiam,
+                  tireSpring, tireDamp, arm);
 
       Property prop = rj->getOutputPort(0);
       addOutputModel(prop, "Gear " + numStr + " Compression",
@@ -883,8 +934,8 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       addOutputModel(prop, "Gear " + numStr + " Position",
                      "/gear/gear[" + numStr + "]/position-norm");
 
-    } else if (uctype == "AC_CLG") { 
-      std::string name, brake;
+    } else if (uctype == "AC_CLG") {
+      std::string name, brake, steer;
       Vector3 compressJointPos;
       real_type pullPress;
       real_type pushPress;
@@ -907,18 +958,71 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
               >> minDamp
               >> maxDamp
               >> wheelDiam
-              >> tireSpring >> tireDamp;
+              >> tireSpring >> tireDamp
+              >> steer;
 
+      // Well this is come hardcoding, but as a demo built from within the
+      // legacy JSBSim format this is ok :)
+
+      // Model steering here ...
+      // normally we connect the compressible part to the top level body, but
+      // in case of steering this is no longer true.
+      RigidBody* strutParent = mVehicle->getTopBody();
+      if (steer == "STEERABLE") {
+        // A new part modelling the steering
+        RigidBody* steer = new RigidBody(name + " Steer");
+        strutParent->addChildFrame(steer);
+
+        // connect that via a revolute joint to the toplevel body.
+        // Note the 0.05m below, most steering wheels have some kind of
+        // castering auto line up behavour. That is doe with this 0.05m.
+        RevoluteJoint* sj = new RevoluteJoint(name + " Steer Joint");
+        strutParent->addMultiBodyModel(sj, 0);
+        steer->addMultiBodyModel(sj, 1);
+        sj->setJointAxis(Vector3(0, 0, 1));
+        sj->setJointPos(0);
+        sj->setJointVel(0);
+        sj->setPosition(structToBody(compressJointPos)
+                        + Vector3(0.05, 0, 0));
+        sj->setOrientation(Quaternion::unit());
+
+        // Add an actuator trying to interpret the steering command
+        LineActuator* steerAct = new LineActuator(name + " Steering Actuator");
+        Property prop = lookupJSBExpression("fcs/steer-cmd-norm");
+        steerAct->setInputPort(0, prop);
+        steerAct->setProportionalGain(-1e6);
+        steerAct->setDerivativeGain(-1e3);
+        sj->setLineForce(steerAct);
+        
+        strutParent = steer;
+        
+        // Prepare outputs
+        prop = sj->getOutputPort(0);
+        addOutputModel(prop, "Steering " + numStr + " Position",
+                       "/gear/gear[" + numStr + "]/steering-pos-rad");
+        SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uDegree);
+        c->setInputProperty(prop);
+        addOutputModel(Property(c), "Steering " + numStr + " Position Deg",
+                     "/gear/gear[" + numStr + "]/steering-pos-deg");
+      }
+
+
+      // Now the compressible part of the strut
       RigidBody* arm = new RigidBody(name + " Strut");
-      mVehicle->getTopBody()->addChildFrame(arm);
+      strutParent->addChildFrame(arm);
       arm->addMultiBodyModel(new Mass(inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
 
+      // This time it is a prismatic joint
       PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
-      mVehicle->getTopBody()->addMultiBodyModel(pj, 0);
+      strutParent->addMultiBodyModel(pj, 0);
       arm->addMultiBodyModel(pj, 1);
       pj->setJointAxis(Vector3(0, 0, -1));
-      pj->setPosition(structToBody(compressJointPos) + Vector3(0, 0, 0.5*wheelDiam));
+      if (strutParent == mVehicle->getTopBody())
+        pj->setPosition(structToBody(compressJointPos));
+      else
+        pj->setPosition(Vector3(-0.05, 0, 0));
 
+      // With an air spring
       AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
       aoDamp->setPullPressure(pullPress);
       aoDamp->setPushPressure(pushPress);
@@ -929,33 +1033,11 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       aoDamp->setMaxDamperConstant(maxDamp);
       pj->setLineForce(aoDamp);
 
-      SimpleGear* sg = new SimpleGear(name, mVehicle->getEnvironment());
-      arm->addMultiBodyModel(sg);
-      sg->setPosition(Vector3(0, 0, 0));
-      sg->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
-      sg->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
-      sg->setFrictionCoeficient(0.9);
+      // Attach a wheel to that strut part.
+      attachWheel(name, Vector3::zeros(), brake, numStr, wheelDiam,
+                  tireSpring, tireDamp, arm);
 
-      if (brake == "LEFT") {
-        MaxExpressionImpl* mex = new MaxExpressionImpl;
-        Property prop = lookupJSBExpression("/controls/gear/brake-left");
-        mex->addInputProperty(prop);
-        prop = lookupJSBExpression("/controls/gear/copilot-brake-left");
-        mex->addInputProperty(prop);
-        prop = lookupJSBExpression("/controls/gear/brake-parking");
-        mex->addInputProperty(prop);
-        sg->setInputPort("brakeCommand", Property(mex));
-      } else if (brake == "RIGHT") {
-        MaxExpressionImpl* mex = new MaxExpressionImpl;
-        Property prop = lookupJSBExpression("/controls/gear/brake-right");
-        mex->addInputProperty(prop);
-        prop = lookupJSBExpression("/controls/gear/copilot-brake-right");
-        mex->addInputProperty(prop);
-        prop = lookupJSBExpression("/controls/gear/brake-parking");
-        mex->addInputProperty(prop);
-        sg->setInputPort("brakeCommand", Property(mex));
-      }
-
+      // Prepare some outputs ...
       Property prop = pj->getOutputPort(0);
       addOutputModel(prop, "Gear " + numStr + " Compression",
                      "/gear/gear[" + numStr + "]/compression-m");
@@ -970,6 +1052,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       datastr >> name >> x >> y >> z >> k >> d >> fs >> fd >> rr
               >> type >> brake >> sa >> retract;
 
+      // Very simple contact force. Penalty method.
       SimpleContact* sc = new SimpleContact(name, mVehicle->getEnvironment());
       sc->setPosition(structToBody(Vector3(x, y, z)));
 
