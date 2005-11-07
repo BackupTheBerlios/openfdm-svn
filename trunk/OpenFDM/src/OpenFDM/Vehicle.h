@@ -35,6 +35,8 @@ public:
   void output(void); /// FIXME??
   void update(real_type dt);
 
+  bool trim(void);
+
   /** Set planet callback.
    */
   void setPlanet(Planet* p);

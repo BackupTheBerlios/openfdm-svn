@@ -69,6 +69,7 @@ NewtonTypeMethod(Function& f,
   f.eval(t, x, err);
   Log(NewtonMethod, Debug1) << "err " << trans(err) << endl;
   Vector dx_bar = jacInv.solve(err);
+  Log(NewtonMethod, Debug2) << "dx_bar " << trans(dx_bar) << endl;
   do {
     // Increment the iteration counter. Just statistics ...
     if (itCount)
@@ -108,6 +109,7 @@ NewtonTypeMethod(Function& f,
       // This jacobian evaluation will also be used for the next step if
       // this lambda truns out to be acceptable.
       dx_bar = jacInv.solve(err);
+      Log(NewtonMethod, Debug2) << "dx_bar " << trans(dx_bar) << endl;
 
       // The convergence criterion parameter theta.
       real_type theta = 1.0 - 0.5*lambda;
@@ -149,9 +151,14 @@ NewtonTypeMethod(Function& f,
       x = x_new;
     } else if (0 <= maxjac) {
       --maxjac;
+
+      Log(NewtonMethod, Debug) << "Computing new jacobian" << endl;
+
       // get a new jacobian ...
       f.jac(t, x, jacInv.data());
+      Log(NewtonMethod, Debug2) << jacInv.data() << endl;
       jacInv.factorize();
+      Log(NewtonMethod, Debug2) << "decomposed qr\n" << jacInv.data() << endl;
 
       if (jacInv.singular())
         Log(NewtonMethod, Warning) << "Have singular jacobian!" << endl;
@@ -162,6 +169,9 @@ NewtonTypeMethod(Function& f,
     // Iterate as long as either the iteration converged or the
     // maximum iteration count is reached.
   } while (!converged && converging && 0 < maxit);
+
+  Log(NewtonMethod, Info) << "Newton type method: converged = "
+                          << converged << endl;
   
   // Tell the caller if it worked or not.
   return converged;
@@ -182,6 +192,48 @@ Newton(Function& f,
                       itCount, maxit, maxjac, lambdamin);
 }
 
+static
+Vector
+LineSearch(Function& f, real_type t, const Vector& xk, const Vector& dk,
+           real_type maxWide, real_type thresh)
+{
+  static const real_type vfac = (3-sqrt(5.0))/2;
+  static const real_type wfac = (sqrt(5.0)-1)/2;
+
+  thresh = fabs(maxWide)*thresh;
+
+  Vector v = xk;
+  Vector w = xk + maxWide*dk;
+
+  Vector fx;
+  while (norm1(v - w) > thresh) {
+    f.eval(t, v, fx);
+    real_type fv = dot(fx, fx);
+    f.eval(t, w, fx);
+    real_type fw = dot(fx, fx);
+    Log(NewtonMethod, Debug2) << " Line Search: errv = " << fv
+                             << ", errw = " << fw << endl;
+  
+    // check for isfinite ...
+//   if failv
+//     v = v + vfac*(w-v);
+//   elseif failw
+//     w = v + wfac*(w-v);
+//   elseif fv > fw
+//     v = v + vfac*(w-v);
+//   else
+//     w = v + wfac*(w-v);
+//   end
+
+    if (fv > fw)
+      v = v + vfac*(w-v);
+    else
+      w = v + wfac*(w-v);
+  }
+
+  return 0.5*(v+w);
+}
+
 bool
 GaussNewton(Function& f,
             real_type t,
@@ -192,12 +244,38 @@ GaussNewton(Function& f,
             unsigned maxjac,
             real_type lambdamin)
 {
-  LinAlg::MatrixFactors<real_type,0,0,LinAlg::QRTag> jacFactors;
-  f.jac(t, x, jacFactors.data());
-  
-  jacFactors.factorize();
-  return NewtonTypeMethod(f, jacFactors, t, x, atol, rtol,
-                          itCount, maxit, maxjac, lambdamin);
+  Vector err, dx;
+  Matrix J;
+  LinAlg::MatrixFactors<real_type,0,0,LinAlg::LUTag> jacFactors;
+//   LinAlg::MatrixFactors<real_type,0,0,LinAlg::QRTag> jacFactors;
+
+  bool converged;
+  do {
+    // Compute in each step a new jacobian
+    f.jac(t, x, J);
+    jacFactors = trans(J)*J;
+    
+    // Compute the actual error
+    f.eval(t, x, err);
+
+    // Compute the search direction
+    dx = jacFactors.solve(trans(J)*err);
+
+    // Get a better search guess
+//     if (1 < norm(dx))
+//       dx = normalize(dx);
+    Vector xnew = LineSearch(f, t, x, -dx, 1.0, atol);
+
+    // check convergence
+    converged = norm1(xnew - x) < atol;
+
+    Log(NewtonMethod, Debug) << "Convergence test: |dx| = " << norm(xnew - x)
+                             << ", converged = " << converged << endl;
+    // New guess is the better one
+    x = xnew;
+  } while (!converged);
+
+  return converged;
 }
 
 } // namespace OpenFDM

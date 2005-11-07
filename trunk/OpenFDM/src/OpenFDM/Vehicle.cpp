@@ -80,6 +80,12 @@ Vehicle::update(real_type dt)
   mSystem->simulate(mSystem->getTime() + dt);
 }
 
+bool
+Vehicle::trim(void)
+{
+  return mSystem->trim();
+}
+
 void
 Vehicle::setPlanet(Planet* p)
 {

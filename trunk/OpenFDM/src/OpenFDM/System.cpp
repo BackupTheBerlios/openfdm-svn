@@ -9,6 +9,8 @@
 #include "LogStream.h"
 #include "ODESolver.h"
 #include "ExplicitEuler.h"
+#include "Function.h"
+#include "Newton.h"
 #include "System.h"
 
 namespace OpenFDM {
@@ -214,10 +216,67 @@ System::simulate(real_type tEnd)
   }
 }
 
+class TrimFunction
+  : public Function {
+public:
+  TrimFunction(System& system, const Vector& state)
+    : mSystem(system), mState(state) {}
+  virtual unsigned inSize(void) const
+  { return mSystem.getNumContinousStates(); }
+#if 1
+  virtual unsigned outSize(void) const
+  { return 2*mSystem.getNumContinousStates(); }
+  virtual void eval(real_type t, const Vector& v, Vector& out)
+  {
+    unsigned nStates = mSystem.getNumContinousStates();
+    Vector deriv(nStates);
+    mSystem.evalFunction(t, v, deriv);
+
+    out.resize(2*nStates);
+    out(Range(1, nStates)) = 1e-1*(mState - v);
+    out(Range(nStates + 1, 2*nStates)) = deriv;
+  }
+#else
+  virtual unsigned outSize(void) const
+  { return mSystem.getNumContinousStates(); }
+  virtual void eval(real_type t, const Vector& v, Vector& out)
+  {
+    mSystem.evalFunction(t, v, out);
+  }
+#endif
+private:
+  System& mSystem;
+  Vector mState;
+};
+
 bool
 System::trim(void)
 {
-  /// FIXME
+  // need to prepare the System especially for the per step tasks
+  TaskInfo taskInfo;
+  taskInfo.addSampleTime(SampleTime::Continous);
+  taskInfo.addSampleTime(SampleTime::PerTimestep);
+  output(taskInfo);
+
+  // Get the current state
+  Vector state(getNumContinousStates());
+  getState(state, 0);
+
+  Vector trimState = state;
+  // Buld up the trim function
+  TrimFunction trimFunction(*this, trimState);
+
+  // Try to find a minimum
+  real_type atol = 1e-3;
+  real_type rtol = 1e-8;
+  bool ret = GaussNewton(trimFunction, getTime(), trimState, atol, rtol);
+  if (ret) {
+    setState(getTime(), trimState, 0);
+  } else {
+    setState(getTime(), state, 0);
+  }
+
+  return ret;
 }
 
 void

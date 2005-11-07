@@ -825,12 +825,14 @@ q_substitute(const Matrix<T,dim1,dim2>& A, const Vector<T,dim2>& beta,
   size_type n = A.cols();
   
   size_type j;
-  for (j = 1; j < n; ++j) {
+  for (j = 1; j <= n; ++j) {
     // See Golub, van Loan: Matrix Computations, pp 210
 
-    Vector<T> v(A(Range(j, m), j));
-    v(1) = 1;
-    x(Range(j, m)) -= (beta(j)*dot(v, x(Range(j, m))))*v;
+    if (j < m) {
+      Vector<T> v(A(Range(j, m), j));
+      v(1) = 1;
+      x(Range(j, m)) -= (beta(j)*dot(v, x(Range(j, m))))*v;
+    }
   }
 
   return nonsingular;
