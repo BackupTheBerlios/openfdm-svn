@@ -59,11 +59,14 @@ public:
       fabs((*this)(4)) < Limits<T>::epsilon();
   }
 
+  OpenFDM_FORCE_INLINE
   void setAngleAxis(value_type angle, const Vector3& axis)
   { (*this) = Quaternion::fromAngleAxis(angle, axis); }
+  OpenFDM_FORCE_INLINE
   void setAngleAxisDeg(value_type deg, const Vector3& axis)
   { setAngleAxis(deg*deg2rad, axis); }
 
+  OpenFDM_FORCE_INLINE
   Vector3 getAxis(void) const
   {
     value_type nrm = norm(*this);
@@ -81,13 +84,17 @@ public:
     else
       return 2.0*acos(cosAngle2)*axis;
   }
+  OpenFDM_FORCE_INLINE
   void setAxis(const Vector3& axis)
   { (*this) = Quaternion::fromAxis(axis); }
 
+  OpenFDM_FORCE_INLINE
   void setRotateTo(const Vector3& from, const Vector3& to)
   { (*this) = Quaternion::fromRotateTo(from, to); }
+  OpenFDM_FORCE_INLINE
   void setRotateTo(size_type i, const Vector3& v)
   { (*this) = Quaternion::fromRotateTo(i, v); }
+  OpenFDM_FORCE_INLINE
   void setRotateTo(size_type i1, const Vector3& v1,
                    size_type i2, const Vector3& v2)
   { (*this) = Quaternion::fromRotateTo(i1, v1, i2, v2); }
@@ -151,6 +158,9 @@ public:
   OpenFDM_FORCE_INLINE
   Matrix33 getTransform(void) const
   {
+//  [ 1 - 2y^2 - 2z^2    2xy - 2wz      2xz + 2wy
+//    2xy + 2wz    1 - 2x^2 - 2z^2    2yz - 2wx
+//    2xz - 2wy      2yz + 2wx    1 - 2x^2 - 2y^2 ]
     value_type q1 = (*this)(1);
     value_type q2 = (*this)(2);
     value_type q3 = (*this)(3);
@@ -182,38 +192,50 @@ public:
   Matrix33 getBackTransform(void) const
   { return trans(getTransform()); }
 
+  /// Rotate a vector into a coordinate representation of a frame
+  /// rotated with this quaternion
+  OpenFDM_FORCE_INLINE
   Vector3 transform(const Vector3& v) const
   {
-    value_type r = 1/dot(*this, *this);
+    value_type r = 2/dot(*this, *this);
     Vector3 qimag = imag(*this);
     value_type qr = real(*this);
-    return (2*r*qr*qr - 1)*v
-      + (2*r*dot(qimag, v))*qimag
-      - (2*r*qr)*cross(qimag, v);
+    return (r*qr*qr - 1)*v + (r*dot(qimag, v))*qimag - (r*qr)*cross(qimag, v);
   }
+  /// Rotate a vector from a coordinate representation of a frame
+  /// rotated with this quaternion
+  OpenFDM_FORCE_INLINE
   Vector3 backTransform(const Vector3& v) const
   {
-    value_type r = 1/dot(*this, *this);
+    value_type r = 2/dot(*this, *this);
     Vector3 qimag = imag(*this);
     value_type qr = real(*this);
-    return (2*r*qr*qr - 1)*v
-      + (2*r*dot(qimag, v))*qimag
-      + (2*r*qr)*cross(qimag, v);
+    return (r*qr*qr - 1)*v + (r*dot(qimag, v))*qimag + (r*qr)*cross(qimag, v);
   }
 
+  /// Rotate a vector with the quaternion
+  OpenFDM_FORCE_INLINE
+  Vector3 rotate(const Vector3& v) const
+  { return backTransform(v); }
+  /// Rotate a vector with the inverse quaternion
+  OpenFDM_FORCE_INLINE
+  Vector3 rotateBack(const Vector3& v) const
+  { return transform(v); }
+
+  /// Unit quaternion
   OpenFDM_FORCE_INLINE
   static Quaternion unit(unsigned i = 1)
   { return Quaternion(Vector4<T>::unit(i)); }
 
+  /// Create from real part and imaginary part
+  OpenFDM_FORCE_INLINE
   static Quaternion fromRealImag(value_type r, const Vector3& i)
   { return Quaternion(r, i(1), i(2), i(3)); }
-  static Quaternion fromImag(const Vector3& i)
-  { return Quaternion(0, i(1), i(2), i(3)); }
-  static Quaternion fromReal(value_type r)
-  { return Quaternion(r, 0, 0, 0); }
 
+  OpenFDM_FORCE_INLINE
   static Quaternion fromEulerSeq(unsigned i, value_type angle)
   { return Quaternion::fromAngleAxis(angle, Vector3::unit(i)); }
+  OpenFDM_FORCE_INLINE
   static Quaternion fromEulerSeq(unsigned i1, value_type angle1,
                                  unsigned i2, value_type angle2)
   {
@@ -221,6 +243,7 @@ public:
     Quaternion q2 = Quaternion::fromEulerSeq(i2, angle2);
     return q1*q2;
   }
+  OpenFDM_FORCE_INLINE
   static Quaternion fromEulerSeq(unsigned i1, value_type angle1,
                                  unsigned i2, value_type angle2,
                                  unsigned i3, value_type angle3)
@@ -256,12 +279,15 @@ public:
                        Cxd2Szd2*Cyd2 - Sxd2Czd2*Syd2);
   }
 
+  OpenFDM_FORCE_INLINE
   static Quaternion fromYawPitchRoll(value_type y, value_type p, value_type r)
   { return fromEuler(y, p, r); }
 
+  OpenFDM_FORCE_INLINE
   static Quaternion fromHeadAttBank(value_type h, value_type a, value_type b)
   { return fromEuler(h, a, b); }
 
+  OpenFDM_FORCE_INLINE
   static Quaternion fromLonLat(value_type lon, value_type lat)
   {
     value_type zd2 = 0.5*lon;
@@ -276,18 +302,22 @@ public:
     return Quaternion( Czd2*Cyd2, -Szd2*Syd2, Czd2*Syd2, Szd2*Cyd2);
   }
 
+  OpenFDM_FORCE_INLINE
   static Quaternion fromAngleAxis(value_type angle, const Vector3& axis)
   {
     value_type angle2 = 0.5*angle;
     return Quaternion::fromRealImag(cos(angle2), sin(angle2)*axis);
   }
 
+  OpenFDM_FORCE_INLINE
   static Quaternion fromAngleAxisDeg(value_type deg, const Vector3& axis)
   { return Quaternion::fromAngleAxis(deg*deg2rad, axis); }
 
+  OpenFDM_FORCE_INLINE
   static Quaternion fromAxis(const Vector3& axis)
   { return Quaternion::fromAngleAxis(norm(axis), normalize(axis)); }
 
+  OpenFDM_FORCE_INLINE
   static Quaternion fromRotateTo(const Vector3& from, const Vector3& to)
   {
     value_type nfrom = norm(from);
@@ -444,6 +474,10 @@ Quaternion<T>
 operator*(const Quaternion<T>& q1, const Quaternion<T>& q2)
 {
   Quaternion<T> q;
+/*  w = w1w2 - x1x2 - y1y2 - z1z2 */
+/*  x = w1x2 + x1w2 + y1z2 - z1y2 */
+/*  y = w1y2 - x1z2 + y1w2 + z1x2 */
+/*  z = w1z2 + x1y2 - y1x2 + z1w2 */
 
   q(1) = q1(1)*q2(1) - q1(2)*q2(2) - q1(3)*q2(3) - q1(4)*q2(4);
   q(2) = q1(1)*q2(2) + q1(2)*q2(1) + q1(3)*q2(4) - q1(4)*q2(3);
