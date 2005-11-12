@@ -16,7 +16,8 @@
 namespace OpenFDM {
 
 System::System(const std::string& name) :
-  ModelGroup(name)
+  ModelGroup(name),
+  mTime(0)
 {
   setTimestepper(new ExplicitEuler);
 }
