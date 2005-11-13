@@ -42,7 +42,7 @@ private:
   enum { MaxAvailOrder = 4 };
 
   unsigned index(unsigned backidx) const
-  { return backidx%mOrder; }
+  { return backidx % MaxAvailOrder; }
  
   unsigned mOrder;
   unsigned mStepNumber;
