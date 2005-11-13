@@ -110,7 +110,7 @@ RevoluteJoint::computeRelAccel(const SpatialInertia&,
 }
 
 void
-RevoluteJoint::setState(real_type t, const Vector& state, unsigned offset)
+RevoluteJoint::setState(const Vector& state, unsigned offset)
 {
   if (mTrackPosition) {
     setJointPos(state(offset+1));

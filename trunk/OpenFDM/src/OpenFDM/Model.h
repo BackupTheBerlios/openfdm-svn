@@ -184,8 +184,14 @@ class TaskInfo {
 public:
   TaskInfo(void) :
     mSliceSize(0),
+    mTime(0),
     mNumBasicSteps(0)
   {}
+
+  void setTime(real_type t)
+  { mTime = t; }
+  real_type getTime(void) const
+  { return mTime; }
   
   void addSampleTime(const SampleTime& sampleTime)
   { mSampleTimeSet.addSampleTime(sampleTime); }
@@ -209,6 +215,7 @@ public:
 private:
   SampleTimeSet mSampleTimeSet;
   real_type mSliceSize;
+  real_type mTime;
   unsigned mNumBasicSteps;
 };
 
@@ -235,7 +242,7 @@ public:
   /// Called whenever discrete states need to be updated.
   virtual void update(const TaskInfo& taskInfo);
 
-  virtual void setState(real_type t, const Vector& state, unsigned offset);
+  virtual void setState(const Vector& state, unsigned offset);
   virtual void getState(Vector& state, unsigned offset) const;
   virtual void getStateDeriv(Vector& stateDeriv, unsigned offset);
 

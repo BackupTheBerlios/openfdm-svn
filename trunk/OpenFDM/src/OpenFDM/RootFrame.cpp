@@ -53,13 +53,13 @@ public:
 class SetStateVisitor
   : public Visitor {
 public:
-  SetStateVisitor(const Vector& state, real_type t)
-    : mState(state), mTime(t), mOffset(0u)
+  SetStateVisitor(const Vector& state)
+    : mState(state), mOffset(0u)
   { }
   virtual void apply(MultiBodyModel& abNode)
   {
     OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mState.size());
-    abNode.setState(mTime, mState, mOffset);
+    abNode.setState(mState, mOffset);
     mOffset += abNode.getNumContinousStates();
   }
 private:
@@ -172,10 +172,10 @@ MultiBodySystem::~MultiBodySystem(void)
 }
 
 void
-MultiBodySystem::setEvalState(real_type t, const Vector& state)
+MultiBodySystem::setEvalState(const Vector& state)
 {
   // First we need to inject the current state into the tree of parts.
-  setState(t, state, 0);
+  setState(state, 0);
 
   // Compute the external and interaction forces.
   ForceComputationVisitor forceVisitor;
@@ -193,7 +193,7 @@ MultiBodySystem::setEvalState(real_type t, const Vector& state)
 void
 MultiBodySystem::computeStateDeriv(real_type t, const Vector& state, Vector& deriv)
 {
-  setEvalState(t, state);
+  setEvalState(state);
 
   // And finally extract the derivative vector from the tree.
   GetStateDerivVisitor gsdv(getNumContinousStates());
@@ -202,9 +202,9 @@ MultiBodySystem::computeStateDeriv(real_type t, const Vector& state, Vector& der
 }
 
 void
-MultiBodySystem::setState(real_type t, const Vector& state, unsigned offset)
+MultiBodySystem::setState(const Vector& state, unsigned offset)
 {
-  SetStateVisitor ssv(state(Range(offset+1, offset+getNumContinousStates())), t);
+  SetStateVisitor ssv(state(Range(offset+1, offset+getNumContinousStates())));
   mRootFrame->accept(ssv);
 }
 

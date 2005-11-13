@@ -66,9 +66,6 @@ public:
     topBody->setRefOrientation(o);
   }
 
-  /** Sets the state of this multibody system from the state vector state.
-   */
-  void setEvalState(real_type t, const Vector& state);
   /** Sets the state of this multibody system from the state vector state
       and returns the time derivative in deriv.
    */
@@ -86,7 +83,7 @@ private:
 
   /** Plugin function for the state propagation.
    */
-  virtual void setState(real_type t, const Vector& state, unsigned offset);
+  virtual void setState(const Vector& state, unsigned offset);
   /** Plugin function for the state propagation.
    */
   virtual void getState(Vector& state, unsigned offset) const;

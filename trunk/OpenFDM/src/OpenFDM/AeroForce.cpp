@@ -19,7 +19,7 @@ AeroForce::AeroForce(Environment* env, const std::string& name)
   mEnvironment = env;
 
   // Initialize all the expression nodes we will need.
-  for (int i = 0; i < 6; ++i) {
+  for (unsigned i = 0; i < 6; ++i) {
     mStabilityAxisSummers[i] = new SumExpressionImpl;
     mBodyAxisSummers[i] = new SumExpressionImpl;
   }
@@ -115,6 +115,18 @@ AeroForce::AeroForce(Environment* env, const std::string& name)
 
 AeroForce::~AeroForce(void)
 {
+}
+
+void
+AeroForce::output(const TaskInfo& taskInfo)
+{
+  if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
+                          SampleTime::PerTimestep)) {
+    Log(Model, Debug) << "AeroForce::output(): \"" << getName()
+                      << "\" computing ground plane below" << endl;
+    real_type t = taskInfo.getTime();
+    mGroundVal = mEnvironment->getGround()->getGroundPlane(t, getRefPosition());
+  }
 }
 
 void
@@ -560,11 +572,8 @@ AeroForce::getLocalGroundPlane(void) const
 }
 
 void
-AeroForce::setState(real_type t, const Vector& state, unsigned offset)
+AeroForce::setState(const Vector& state, unsigned offset)
 {
-  // First determine the intersection depth with the ground.
-  mGroundVal = mEnvironment->getGround()->getGroundPlane(t, getRefPosition());
-
   // Dirty everything.
   mDirtyRefPosition = true;
   mDirtyUnitDown = true;

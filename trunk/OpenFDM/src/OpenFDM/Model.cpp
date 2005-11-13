@@ -85,7 +85,7 @@ Model::update(const TaskInfo&)
 }
 
 void
-Model::setState(real_type t, const Vector& state, unsigned offset)
+Model::setState(const Vector& state, unsigned offset)
 {
 }
 
@@ -113,8 +113,9 @@ void
 Model::evalFunction(real_type t, const Vector& v, Vector& out)
 {
   /// FIXME Hmm, may be different ...
-  setState(t, v, 0);
+  setState(v, 0);
   TaskInfo taskInfo;
+  taskInfo.setTime(t);
   taskInfo.addSampleTime(SampleTime::Continous);
   output(taskInfo);
   out.resize(getNumContinousStates());

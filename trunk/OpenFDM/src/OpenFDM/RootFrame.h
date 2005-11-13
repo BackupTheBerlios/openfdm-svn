@@ -32,13 +32,13 @@ public:
 
   /** Sets the state of this multibody system from the state vector state.
    */
-  void setEvalState(real_type t, const Vector& state);
+  void setEvalState(const Vector& state);
   /** Sets the state of this multibody system from the state vector state
       and returns the time derivative in deriv.
    */
   void computeStateDeriv(real_type t, const Vector& state, Vector& deriv);
   
-  virtual void setState(real_type t, const Vector& state, unsigned offset);
+  virtual void setState(const Vector& state, unsigned offset);
   virtual void getState(Vector& state, unsigned offset) const;
   virtual void getStateDeriv(Vector& stateDeriv, unsigned offset);
 

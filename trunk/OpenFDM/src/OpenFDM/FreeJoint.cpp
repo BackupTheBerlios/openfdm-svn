@@ -64,7 +64,7 @@ FreeJoint::computeRelAccel(const SpatialInertia& artI,
 }
 
 void
-FreeJoint::setState(real_type t, const Vector& state, unsigned offset)
+FreeJoint::setState(const Vector& state, unsigned offset)
 {
   setOutboardOrientation(Vector4(state(offset+1), state(offset+2),
                          state(offset+3), state(offset+4)));

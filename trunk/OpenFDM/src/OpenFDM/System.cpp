@@ -162,7 +162,8 @@ System::simulate(real_type tEnd)
       loopTEnd = tEnd;
     } else {
       // need that  ...
-      const TaskInfo& taskInfo = mDiscreteTaskList[mCurrentTaskNum];
+      TaskInfo taskInfo = mDiscreteTaskList[mCurrentTaskNum];
+      taskInfo.setTime(getTime());
       
       if (mCurrentSliceTime == 0) {
         Log(Model, Info) << "Computing discrete output for Task # "
@@ -198,6 +199,7 @@ System::simulate(real_type tEnd)
       TaskInfo taskInfo;
       taskInfo.addSampleTime(SampleTime::Continous);
       taskInfo.addSampleTime(SampleTime::PerTimestep);
+      taskInfo.setTime(getTime());
       output(taskInfo);
 
       Log(Model, Info) << "Integration: from time " << mTimestepper->getTime()
@@ -272,9 +274,9 @@ System::trim(void)
   real_type rtol = 1e-8;
   bool ret = GaussNewton(trimFunction, getTime(), trimState, atol, rtol);
   if (ret) {
-    setState(getTime(), trimState, 0);
+    setState(trimState, 0);
   } else {
-    setState(getTime(), state, 0);
+    setState(state, 0);
   }
 
   return ret;

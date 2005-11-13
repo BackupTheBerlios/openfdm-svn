@@ -90,7 +90,7 @@ private:
 
   /** Methods for the OpenFDM::Part.
    */
-  virtual void setState(real_type t, const Vector& state, unsigned offset);
+  virtual void setState(const Vector& state, unsigned offset);
   virtual void getState(Vector& state, unsigned offset) const;
   virtual void getStateDeriv(Vector& state, unsigned offset);
 

@@ -221,7 +221,7 @@ ModelGroup::update(const TaskInfo& taskInfo)
 }
 
 void
-ModelGroup::setState(real_type t, const Vector& state, unsigned offset)
+ModelGroup::setState(const Vector& state, unsigned offset)
 {
   OpenFDMAssert(offset + getNumContinousStates() <= rows(state));
 
@@ -230,7 +230,7 @@ ModelGroup::setState(real_type t, const Vector& state, unsigned offset)
     unsigned nStates = (*it)->getNumContinousStates();
     if (0 < nStates) {
       OpenFDMAssert(offset + nStates <= rows(state));
-      (*it)->setState(t, state, offset);
+      (*it)->setState(state, offset);
       offset += nStates;
     }
   }

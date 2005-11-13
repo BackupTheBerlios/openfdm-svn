@@ -33,6 +33,8 @@ public:
   AeroForce(Environment* env, const std::string&);
   virtual ~AeroForce(void);
 
+  virtual void output(const TaskInfo&);
+
   void setPosition(const Vector3& p);
   const Vector3& getPosition(void) const;
 
@@ -113,7 +115,7 @@ public:
   }
 
   virtual void
-  setState(real_type t, const Vector& state, unsigned offset);
+  setState(const Vector& state, unsigned offset);
 
   // The interface to the mechanical system.
   virtual void computeForce(void);

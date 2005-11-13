@@ -105,7 +105,7 @@ PrismaticJoint::computeRelAccel(const SpatialInertia&,
 }
 
 void
-PrismaticJoint::setState(real_type t, const Vector& state, unsigned offset)
+PrismaticJoint::setState(const Vector& state, unsigned offset)
 {
   setJointPos(state(offset+1));
   setJointVel(state(offset+2));

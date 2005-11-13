@@ -55,7 +55,7 @@ Integrator::output(const TaskInfo&)
 }
 
 void
-Integrator::setState(real_type, const Vector& state, unsigned offset)
+Integrator::setState(const Vector& state, unsigned offset)
 {
   // FIXME reshape ...
   for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
