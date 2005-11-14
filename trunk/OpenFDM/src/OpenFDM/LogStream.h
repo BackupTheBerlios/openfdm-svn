@@ -21,6 +21,7 @@ enum Category {
   NewtonMethod = 1 << 6,
   Misc = 1 << 7,
   Model = 1 << 8,
+  Schedule = 1 << 9,
   Assert = ~0
 };
 
@@ -105,7 +106,10 @@ public:
   static void setPriority(Priority priority);
 
   bool enabled(Category category, Priority priority) const
-  { return (category & mCategory) && (priority <= mPriority); }
+  {
+    return ((category & mCategory) && (priority <= mPriority))
+      || (priority == Error);
+  }
 
   std::basic_ostream<char>* getStream(void)
   { return mStream; }
