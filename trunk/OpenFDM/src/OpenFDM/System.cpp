@@ -33,7 +33,7 @@ System::init(void)
   // and collects sample time information.
   // If it fails to initialize, the system cannot be initialized.
   if (!ModelGroup::init()) {
-    Log(Model, Error) << "Error initializing submodels.\nAborting!" << endl;
+    Log(Schedule, Error) << "Error initializing submodels.\nAborting!" << endl;
     return false;
   }
 
@@ -66,9 +66,9 @@ System::init(void)
   }
 
   // Now that we know the basic sample time, build the job schedules
-  Log(Model, Info) << "Basic time is: " << gcd << endl;
+  Log(Schedule, Info) << "Basic time is: " << gcd << endl;
   if (100*gcd < minSampleTime)
-    Log(Model, Warning) << "Basic sample time is less than 100 times smaller "
+    Log(Schedule, Warning) << "Basic sample time is less than 100 times smaller "
       "than the smalles submodels sample time" << endl;
 
   // We do not have any discrete sample time, just do continous scheduling
@@ -80,7 +80,7 @@ System::init(void)
   // simulations anyway
   real_type stepsPerCycle = floor(scm/gcd + 0.5);
   if (Limits<unsigned>::max() <= stepsPerCycle) {
-    Log(Model, Error) << "Too many basic steps for our datatypes.\n"
+    Log(Schedule, Error) << "Too many basic steps for our datatypes.\n"
       "You propably want to use sample times fitting together.\n"
       "Aborting!" << endl;
     return false;
@@ -108,10 +108,10 @@ System::init(void)
   mDiscreteTaskList.swap(cTL);
 
   // Just a verbose print here ...
-  Log(Model, Info) << "gcd of sample times is: " << gcd
+  Log(Schedule, Info) << "gcd of sample times is: " << gcd
                    << ", scm of sample times is: " << scm << endl;
   for (unsigned i = 0; i < mDiscreteTaskList.size(); ++i)
-    Log(Model, Info) << "Task # " << i << ": # basicSteps "
+    Log(Schedule, Info) << "Task # " << i << ": # basicSteps "
                      << mDiscreteTaskList[i].getNumBasicSteps()
                      << ", sliceSize "
                      << mDiscreteTaskList[i].getSliceSize()
@@ -121,7 +121,7 @@ System::init(void)
   // At the moment we need a timestepper, else the time does not get
   // incremented
   if (!mTimestepper) {
-    Log(Model, Error) << "Timestepping method is unset.\nAborting!" << endl;
+    Log(Schedule, Error) << "Timestepping method is unset.\nAborting!" << endl;
     return false;
   }
 
@@ -166,7 +166,7 @@ System::simulate(real_type tEnd)
       taskInfo.setTime(getTime());
       
       if (mCurrentSliceTime == 0) {
-        Log(Model, Info) << "Computing discrete output for Task # "
+        Log(Schedule, Info) << "Computing discrete output for Task # "
                          << mCurrentTaskNum << ": # basicSteps "
                          << taskInfo.getNumBasicSteps() << ", sliceSize "
                          << taskInfo.getSliceSize() << ", sample times "
@@ -195,14 +195,14 @@ System::simulate(real_type tEnd)
       mTime = loopTEnd;
     } else {
       // Do the pre integration output round
-      Log(Model, Info) << "Preparing Models: pre integration step" << endl;
+      Log(Schedule, Info) << "Preparing Models: pre integration step" << endl;
       TaskInfo taskInfo;
       taskInfo.addSampleTime(SampleTime::Continous);
       taskInfo.addSampleTime(SampleTime::PerTimestep);
       taskInfo.setTime(getTime());
       output(taskInfo);
 
-      Log(Model, Info) << "Integration: from time " << mTimestepper->getTime()
+      Log(Schedule, Info) << "Integration: from time " << mTimestepper->getTime()
                        << " up to time " << loopTEnd
                        << " dt = " << loopTEnd - mTimestepper->getTime()
                        << endl;
@@ -210,7 +210,7 @@ System::simulate(real_type tEnd)
       mTime = mTimestepper->getTime();
       // It set's the current state into the models and computes the
       // accelerations for the mechanical system
-      Log(Model, Info) << "Integration: finished" << endl;
+      Log(Schedule, Info) << "Integration: finished" << endl;
       evalFunction(mTimestepper->getTime(), mTimestepper->getState(), state);
     }
 
