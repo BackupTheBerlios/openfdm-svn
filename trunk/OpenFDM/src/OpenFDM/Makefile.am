@@ -99,6 +99,7 @@ nobase_OpenFDMinclude_HEADERS = \
   RigidBody.h \
   Rotation.h \
   RootFrame.h \
+  SampleTime.h \
   Saturation.h \
   Sensor.h \
   SimpleContact.h \
@@ -106,6 +107,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Summer.h \
   System.h \
   Table.h \
+  TaskInfo.h \
   TimeDerivative.h \
   TransferFunction.h \
   Transform.h \
