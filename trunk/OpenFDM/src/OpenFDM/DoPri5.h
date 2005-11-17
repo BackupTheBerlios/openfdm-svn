@@ -38,8 +38,17 @@ public:
   virtual ~DoPri5(void);
 
   virtual bool integrate(real_type toTEnd);
+  virtual bool denseOutput(real_type t, Vector& out);
 
 private:
+  /// For dense output
+  Vector mRCont[5];
+
+  /// actually only used in integrate, but for performance reasons
+  Vector k1, k2, k3, k4, k5, k6, k7;
+  Vector y2, y3, y4, y5, y6, y7;
+  Vector err;
+
   // The coefficients of the method.
   static const real_type c2, c3, c4, c5;
   static const real_type d1, d3, d4, d5, d6, d7;

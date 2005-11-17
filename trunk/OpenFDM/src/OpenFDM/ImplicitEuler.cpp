@@ -23,6 +23,12 @@ ImplicitEuler::~ImplicitEuler(void)
 {
 }
 
+void
+ImplicitEuler::invalidateHistory(void)
+{
+  mJacStepsize = 0;
+}
+
 bool
 ImplicitEuler::integrate(real_type toTEnd)
 {
@@ -33,8 +39,9 @@ ImplicitEuler::integrate(real_type toTEnd)
 
   unsigned dim = mModel->getNumContinousStates();
 
+  real_type h = 0;
   while (!reached(toTEnd)) {
-    real_type h = maxStepsize(toTEnd);
+    h = maxStepsize(toTEnd);
 
     mCurrentStepsize = h;
     if (mJacStepsize != mCurrentStepsize) {
@@ -52,13 +59,22 @@ ImplicitEuler::integrate(real_type toTEnd)
     mState += fState;
     mTime += h;
   }
+
+  // Save that for dense output
+  if (h == 0)
+    mDeriv.clear();
+  else
+    mDeriv = 1/h*fState;
+
   return true;
 }
 
-void
-ImplicitEuler::invalidateHistory(void)
+bool
+ImplicitEuler::denseOutput(real_type t, Vector& out)
 {
-  mJacStepsize = 0;
+  // Do linear interpolation
+  out = mState - (mTime - t)*mDeriv;
+  return true;
 }
 
 } // namespace OpenFDM

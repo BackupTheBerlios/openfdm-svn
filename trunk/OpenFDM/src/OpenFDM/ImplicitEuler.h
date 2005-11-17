@@ -18,11 +18,11 @@ public:
   ImplicitEuler(void);
   virtual ~ImplicitEuler(void);
 
-  virtual bool integrate(real_type toTEnd);
   virtual void invalidateHistory(void);
+  virtual bool integrate(real_type toTEnd);
+  virtual bool denseOutput(real_type t, Vector& out);
 
 private:
-
   class IEFunction
     : public Function {
   public:
@@ -54,6 +54,10 @@ private:
   real_type mJacStepsize;
   Matrix mJac;
   MatrixFactors mJacDecomp;
+
+  /// Vector storing the derivative of that step. That is used for
+  /// dense output.
+  Vector mDeriv;
 };
 
 } // namespace OpenFDM

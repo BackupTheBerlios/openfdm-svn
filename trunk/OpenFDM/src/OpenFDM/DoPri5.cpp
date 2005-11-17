@@ -21,13 +21,10 @@ DoPri5::~DoPri5(void)
 bool
 DoPri5::integrate(real_type toTEnd)
 {
-  Vector k1, k2, k3, k4, k5, k6, k7;
-  Vector y2, y3, y4, y5, y6, y7;
-  Vector err;
-
+  real_type h = 0;
   while (!reached(toTEnd)) {
     real_type t = getTime();
-    real_type h = maxStepsize(toTEnd);
+    h = maxStepsize(toTEnd);
 
     // Compute the inner stages k1, ..., k7
     evalFunction(t, mState, k1);
@@ -52,12 +49,6 @@ DoPri5::integrate(real_type toTEnd)
       + (h*a75)*k5 + (h*a76)*k6;
     evalFunction(t+h, y7, k7);
     
-    // Dense output ...
-    // We do not support this one ...
-//     rcont = (h*d1)*k1
-//       + (h*d3)*k3 + (h*d4)*k4 + (h*d5)*k5
-//       + (h*d6)*k6 + (h*d7)*k7;
- 
     // The error estimate. Is the error to a 4-th order embedded scheme.
     err = (h*e1)*k1 + (h*e3)*k3 + (h*e4)*k4 + (h*e5)*k5
       + (h*e6)*k6 + (h*e7)*k7;
@@ -66,15 +57,43 @@ DoPri5::integrate(real_type toTEnd)
     real_type rtol = 1e-14;
     real_type en = scaledErr(y7, err, atol, rtol);
 
-    if ( 1.0 < en )
+    if (1.0 < en)
       Log(TimeStep, Warning) << "DOPRI5: error too big: " << en << endl;
     else
       Log(TimeStep, Info) << "DOPRI5: local error: " << en << endl;
+
+    // Need to save that here
+    mRCont[0] = mState;
 
     // We do unconditionally accept all steps, y7 is the new mState value.
     mState = y7;
     mTime += h;
   }
+
+  // Dense output ...
+  mRCont[1] = mState - mRCont[0];
+  mRCont[2] = h*k1 - mRCont[1];
+  mRCont[3] = (-h)*k2 + mRCont[1] - mRCont[2];
+  mRCont[4] = (h*d1)*k1 + (h*d3)*k3 + (h*d4)*k4 + (h*d5)*k5
+    + (h*d6)*k6 + (h*d7)*k2;
+
+  return true;
+}
+
+bool
+DoPri5::denseOutput(real_type t, Vector& out)
+{
+  if (t < mTime - mStepsize || mTime < t) {
+    Log(TimeStep, Error) << "Request for dense output at t = " << t
+                         << " out of range [" << mTime - mStepsize
+                         << "," << mTime << "]" << endl;
+//     return false;
+  }
+
+  /// Compute dense output. That is
+  real_type theta = (t - (mTime - mStepsize))/mStepsize;
+  real_type theta1 = 1 - theta;
+  out = mRCont[0] + theta*(mRCont[1] + theta1*(mRCont[2] + theta*(mRCont[3] + theta1*mRCont[4])));
   return true;
 }
 

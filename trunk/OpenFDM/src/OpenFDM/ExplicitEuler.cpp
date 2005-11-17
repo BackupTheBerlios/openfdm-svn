@@ -20,15 +20,22 @@ ExplicitEuler::~ExplicitEuler(void)
 bool
 ExplicitEuler::integrate(real_type toTEnd)
 {
-  Vector deriv;
   while (!reached(toTEnd)) {
     real_type t = getTime();
     real_type h = maxStepsize(toTEnd);
 
-    evalFunction(t, getState(), deriv);
-    mState += h*deriv;
+    evalFunction(t, getState(), mDeriv);
+    mState += h*mDeriv;
     mTime += h;
   }
+  return true;
+}
+
+bool
+ExplicitEuler::denseOutput(real_type t, Vector& out)
+{
+  // Do linear interpolation
+  out = mState - (mTime - t)*mDeriv;
   return true;
 }
 

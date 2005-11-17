@@ -41,4 +41,12 @@ ODESolver::invalidateHistory(void)
 {
 }
 
+bool
+ODESolver::denseOutput(real_type t, Vector& out)
+{
+  // Simplest dense output you can imagine ...
+  out = mState;
+  return true;
+}
+
 } // namespace OpenFDM

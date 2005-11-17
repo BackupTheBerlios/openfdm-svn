@@ -29,6 +29,7 @@ public:
 
   virtual void invalidateHistory(void);
   virtual bool integrate(real_type toTEnd) = 0;
+  virtual bool denseOutput(real_type t, Vector& out);
 
   bool reached(real_type tEnd);
   real_type maxStepsize(real_type tEnd);

@@ -49,10 +49,14 @@ public:
 
   virtual void invalidateHistory(void);
   virtual bool integrate(real_type toTEnd);
+  virtual bool denseOutput(real_type t, Vector& out);
 
 private:
   bool mCollocationPolynomialValid;
   Vector old_dy;
+  /// Vector storing the derivative of that step. That is used for
+  /// dense output.
+  Vector mDeriv;
 };
 
 } // namespace OpenFDM

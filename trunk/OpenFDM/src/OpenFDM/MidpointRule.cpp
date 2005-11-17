@@ -32,7 +32,6 @@ MidpointRule::integrate(real_type toTEnd)
   real_type atol = 1e-10;
 
   Vector dy(mState.size());
-  Vector f;
   while (!reached(toTEnd)) {
     real_type t = getTime();
     real_type h = maxStepsize(toTEnd);
@@ -66,10 +65,10 @@ MidpointRule::integrate(real_type toTEnd)
       Vector y = mState + 0.5*dy;
 
       // Compute new approximations to the state derivatives
-      evalFunction(t+h2, y, f);
+      evalFunction(t+h2, y, mDeriv);
 
       // Check if the increment is small enough ...
-      real_type err = scaledDiff(y, mState + h2*f, atol, rtol);
+      real_type err = scaledDiff(y, mState + h2*mDeriv, atol, rtol);
       converged = err < 1;
 
       // Check if we do converge in any way.
@@ -77,7 +76,7 @@ MidpointRule::integrate(real_type toTEnd)
       prev_err = err;
 
       // Use the new approximation
-      dy = h*f;
+      dy = h*mDeriv;
 
       ++mStats.numIter;
     } while (!converged && 0 < --maxit && converging);
@@ -98,8 +97,8 @@ MidpointRule::integrate(real_type toTEnd)
 
       Log(TimeStep, Warning) << "MidpointRule did not converge" << endl;
 
-      evalFunction(t, mState, f);
-      mState += h*f;
+      evalFunction(t, mState, mDeriv);
+      mState += h*mDeriv;
 
       ++mStats.numFailed;
       ++mStats.numSteps;
@@ -108,6 +107,14 @@ MidpointRule::integrate(real_type toTEnd)
     // Increment the simulation time ...
     mTime += h;
   }
+  return true;
+}
+
+bool
+MidpointRule::denseOutput(real_type t, Vector& out)
+{
+  // Use the collocation polynomials
+  out = mState - (mTime - t)*mDeriv;
   return true;
 }
 
