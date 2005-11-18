@@ -1133,6 +1133,42 @@ public:
   static SymMatrix6 zeros(void)
   { return SymMatrix6(Zeros<T,6,6>(6,6)); }
 
+  // Compute the inertia of a solid cylinder aligned along the z axis with
+  // tha given radius length and mass.
+  OpenFDM_FORCE_INLINE
+  static SymMatrix6
+  cylinderInertia(real_type mass, real_type length, real_type radius)
+  {
+    real_type r2 = radius*radius;
+    real_type Ixx = 0.25*mass*(r2 + real_type(1)/3*length*length);
+    real_type Izz = 0.5*mass*r2;
+    SymMatrix<T,3> I(Ixx, 0, 0, Ixx, 0, Izz);
+    return SymMatrix6(I, mass);
+  }
+  
+  // Compute the inertia of a solid quad with the given lengths and mass.
+  OpenFDM_FORCE_INLINE
+  static SymMatrix6
+  quadInertia(real_type mass, real_type x, real_type y, real_type z)
+  {
+    real_type x2 = (1.0/12.0)*mass*x*x;
+    real_type y2 = (1.0/12.0)*mass*y*y;
+    real_type z2 = (1.0/12.0)*mass*z*z;
+    SymMatrix<T,3> I(y2+z2, 0, 0, x2+z2, 0, x2+y2);
+    return SymMatrix6(I, mass);
+  }
+
+  // Compute the inertia of a solid ellipsoid with the given semiaxis and mass.
+  OpenFDM_FORCE_INLINE
+  static SymMatrix6
+  ellipsoidInertia(real_type mass, real_type x, real_type y, real_type z)
+  {
+    real_type x2 = (1.0/5.0)*mass*x*x;
+    real_type y2 = (1.0/5.0)*mass*y*y;
+    real_type z2 = (1.0/5.0)*mass*z*z;
+    SymMatrix<T,3> I(y2+z2, 0, 0, x2+z2, 0, x2+y2);
+    return SymMatrix6(I, mass);
+  }
 };
 
 } // namespace LinAlg
