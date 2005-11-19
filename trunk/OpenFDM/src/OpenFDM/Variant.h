@@ -108,8 +108,8 @@ private:
     virtual const IntegerVariantData* toIntegerVariant(void) const
     { return this; }
   };
-  struct UnsignedVariantData : VariantDataImpl<int> {
-    UnsignedVariantData(const int& data) { mData = data; }
+  struct UnsignedVariantData : VariantDataImpl<unsigned> {
+    UnsignedVariantData(const unsigned& data) { mData = data; }
     virtual const UnsignedVariantData* toUnsignedVariant(void) const
     { return this; }
   };
