@@ -74,18 +74,10 @@ DiscreteIntegrator::update(const TaskInfo& taskInfo)
 
   // Hmm, should that be done on state setting too???
   if (size(mMaxSaturation) == size(mInitialValue)) {
-    for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
-      for (unsigned i = 1; i <= rows(mIntegralState); ++i) {
-        mIntegralState(i, j) = min(mIntegralState(i, j), mMaxSaturation(i, j));
-      }
-    }
+    mIntegralState = LinAlg::min(mIntegralState, mMaxSaturation);
   }
   if (size(mMinSaturation) == size(mInitialValue)) {
-    for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
-      for (unsigned i = 1; i <= rows(mIntegralState); ++i) {
-        mIntegralState(i, j) = max(mIntegralState(i, j), mMinSaturation(i, j));
-      }
-    }
+    mIntegralState = LinAlg::max(mIntegralState, mMinSaturation);
   }
 }
 

@@ -60,14 +60,10 @@ Saturation::output(const TaskInfo&)
   unsigned r = rows(mOutput);
   unsigned c = cols(mOutput);
   if (0 < rows(mMaxSaturation) && 0 < cols(mMaxSaturation)) {
-    for (unsigned i = 1; i <= r; ++i)
-      for (unsigned j = 1; j <= c; ++j)
-        mOutput(i, j) = min(mOutput(i, j), mMaxSaturation(i, j));
+    mOutput = LinAlg::min(mOutput, mMaxSaturation);
   }
   if (0 < rows(mMinSaturation) && 0 < cols(mMinSaturation)) {
-    for (unsigned i = 1; i <= r; ++i)
-      for (unsigned j = 1; j <= c; ++j)
-        mOutput(i, j) = max(mOutput(i, j), mMinSaturation(i, j));
+    mOutput = LinAlg::max(mOutput, mMinSaturation);
   }
 }
 

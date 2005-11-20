@@ -9,6 +9,14 @@ namespace OpenFDM {
 
 namespace LinAlg {
 
+OpenFDM_FORCE_INLINE
+real_type min(real_type a, real_type b)
+{ return a < b ? a : b; }
+
+OpenFDM_FORCE_INLINE
+real_type max(real_type a, real_type b)
+{ return a < b ? b : a; }
+
 #ifdef USE_EXPRESSIONS
 
 template<typename Impl, size_type m, size_type n>
@@ -688,6 +696,54 @@ operator*(const SymMatrix<T,6>& A1,
   ret(5) += v6*sptr[19];
 
   ret(6) += v6*sptr[20];
+
+  return ret;
+}
+
+template<typename Impl1, size_type m1, size_type n1,
+         typename Impl2, size_type m2, size_type n2>
+OpenFDM_FORCE_INLINE
+Matrix<typename Impl1::value_type,m1,n1>
+max(const MatrixRValue<Impl1,m1,n1>& A1,
+    const MatrixRValue<Impl2,m2,n2>& A2)
+{
+  const Impl1& A1i = A1.asImpl();
+  const Impl2& A2i = A2.asImpl();
+
+  size_type rows = A1i.rows();
+  size_type cols = A1i.cols();
+  SizeCheck<m1,m2>::Equal(rows, A2i.rows());
+  SizeCheck<n1,n2>::Equal(cols, A2i.cols());
+
+  Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
+  size_type i, j;
+  for (j = 1; j <= cols; ++j)
+    for (i = 1; i <= rows; ++i)
+      ret(i, j) = max(A1i(i, j), A2i(i, j));
+
+  return ret;
+}
+
+template<typename Impl1, size_type m1, size_type n1,
+         typename Impl2, size_type m2, size_type n2>
+OpenFDM_FORCE_INLINE
+Matrix<typename Impl1::value_type,m1,n1>
+min(const MatrixRValue<Impl1,m1,n1>& A1,
+    const MatrixRValue<Impl2,m2,n2>& A2)
+{
+  const Impl1& A1i = A1.asImpl();
+  const Impl2& A2i = A2.asImpl();
+
+  size_type rows = A1i.rows();
+  size_type cols = A1i.cols();
+  SizeCheck<m1,m2>::Equal(rows, A2i.rows());
+  SizeCheck<n1,n2>::Equal(cols, A2i.cols());
+
+  Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
+  size_type i, j;
+  for (j = 1; j <= cols; ++j)
+    for (i = 1; i <= rows; ++i)
+      ret(i, j) = min(A1i(i, j), A2i(i, j));
 
   return ret;
 }
