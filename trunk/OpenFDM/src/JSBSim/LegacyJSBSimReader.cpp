@@ -207,92 +207,94 @@ LegacyJSBSimReader::normalizeComponentName(const std::string& name)
   return ret;
 }
 
-Property
+Port*
 LegacyJSBSimReader::lookupJSBExpression(const std::string& name)
 {
   // Convert to something being able to look up
   std::string propName = propNameFromJSBSim(name);
   
-  Property prop;
+  Port* port;
   if (mExpressionTable.count(propName) <= 0) {
     // Not yet available, so look and see if it is an input
-    prop = createAndScheduleInput(propName);
+    port = createAndScheduleInput(propName);
 
     // Ok, still not available, create a constant zero thing and bail out ...
-    if (!prop.isValid()) {
+    if (!port || !port->isConnected()) {
       std::cerr << "Creating expression \"" << propName << "\"" << std::endl;
-      return Property(new ConstExpressionPropertyImpl<real_type>(0));
+      port = new Port;
+      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(0)));
+      return port;
     }
     
   } else {
     // Just get that one, if we already have it
-    prop = mExpressionTable[propName];
+    port = mExpressionTable[propName];
   }
 
   // If we need the negative input, just multiply with a negative gain
   if (propMinusFromJSBSim(name))
-    return addInverterModel(name.substr(name.rfind('/')+1), prop);
+    return addInverterModel(name.substr(name.rfind('/')+1), port);
   else
-    return prop;
+    return port;
 }
 
 void
-LegacyJSBSimReader::registerExpression(const std::string& name, Property expr)
+LegacyJSBSimReader::registerExpression(const std::string& name, Port* port)
 {
   if (name.size() <= 0)
     return;
-  if (!expr.isValid())
+  if (!port || !port->isConnected())
     return;
   if (0 < mExpressionTable.count(name)) {
     std::cerr << "Already have an expression for " << name << std::endl;
     return;
   }
 
-  mExpressionTable[name] = expr;
+  mExpressionTable[name] = port;
 }
 
 void
 LegacyJSBSimReader::registerJSBExpression(const std::string& name,
-                                          Property expr)
+                                          Port* port)
 {
   if (name.size() <= 0)
     return;
-  if (!expr.isValid())
+  if (!port || !port->isConnected())
     return;
   if (name[0] == '/')
-    registerExpression(name.substr(1), expr);
+    registerExpression(name.substr(1), port);
   else
-    registerExpression("fdm/jsbsim/" + name, expr);
+    registerExpression("fdm/jsbsim/" + name, port);
 
   // Well, just an other kind of black magic ...
   if (0 < name.size() && name[0] == '/') {
-    addOutputModel(expr, name.substr(name.rfind('/')+1), name.substr(1));
+    addOutputModel(port, name.substr(name.rfind('/')+1), name.substr(1));
   } else if (name == "fcs/elevator-pos-norm") {
-    addOutputModel(expr, name.substr(4),
+    addOutputModel(port, name.substr(4),
                    "surface-positions/elevator-pos-norm");
   } else if (name == "fcs/left-aileron-pos-norm" ||
              name == "fcs/aileron-pos-norm") {
-    addOutputModel(expr, name.substr(4),
+    addOutputModel(port, name.substr(4),
                    "surface-positions/left-aileron-pos-norm");
   } else if (name == "fcs/right-aileron-pos-norm") {
-    addOutputModel(expr, name.substr(4),
+    addOutputModel(port, name.substr(4),
                    "surface-positions/right-aileron-pos-norm");
   } else if (name == "fcs/rudder-pos-norm") {
-    addOutputModel(expr, name.substr(4),
+    addOutputModel(port, name.substr(4),
                    "surface-positions/rudder-pos-norm");
   } else if (name == "fcs/speedbrake-pos-norm") {
-    addOutputModel(expr, name.substr(4),
+    addOutputModel(port, name.substr(4),
                    "surface-positions/speedbrake-pos-norm");
   } else if (name == "fcs/spoiler-pos-norm") {
-    addOutputModel(expr, name.substr(4),
+    addOutputModel(port, name.substr(4),
                    "surface-positions/spoiler-pos-norm");
   } else if (name == "fcs/flap-pos-norm") {
-    addOutputModel(expr, name.substr(4),
+    addOutputModel(port, name.substr(4),
                    "surface-positions/flap-pos-norm");
   }
 }
 
-Property
+Port*
 LegacyJSBSimReader::createAndScheduleInput(const std::string& propName)
 {
   // This routine checks if the given propName is a special JSBSim
@@ -304,59 +306,59 @@ LegacyJSBSimReader::createAndScheduleInput(const std::string& propName)
     std::string inputName = propName;
     return addInputModel("Control Input " + inputName, propName);
   } else {
-    Property prop;
+    Port* port = 0;
     if (propName == "fdm/jsbsim/fcs/aileron-cmd-norm") {
-      prop = addInputModel("Aileron Input",
+      port = addInputModel("Aileron Input",
                            "controls/flight/aileron");
 
     } else if (propName == "fdm/jsbsim/fcs/roll-trim-cmd-norm") {
-      prop = addInputModel("Aileron Trim Input",
+      port = addInputModel("Aileron Trim Input",
                            "controls/flight/aileron-trim");
 
     } else if (propName == "fdm/jsbsim/fcs/elevator-cmd-norm") {
-      prop = addInputModel("Elevator Input",
+      port = addInputModel("Elevator Input",
                            "controls/flight/elevator");
 
     } else if (propName == "fdm/jsbsim/fcs/pitch-trim-cmd-norm") {
-      prop = addInputModel("Elevator Trim Input",
+      port = addInputModel("Elevator Trim Input",
                            "controls/flight/elevator-trim");
 
     } else if (propName == "fdm/jsbsim/fcs/rudder-cmd-norm") {
       // FIXME is inverted in JSBSim ...
-      prop = addInputModel("Rudder Input",
+      port = addInputModel("Rudder Input",
                            "controls/flight/rudder");
 
     } else if (propName == "fdm/jsbsim/fcs/yaw-trim-cmd-norm") {
       // FIXME also with a minus
-      prop = addInputModel("Yaw Trim Input",
+      port = addInputModel("Yaw Trim Input",
                            "controls/flight/rudder-trim");
 
     } else if (propName == "fdm/jsbsim/fcs/steer-cmd-norm") {
       // FIXME is seperate in flightgear ???
-      // prop = addInputModel("Steering Input", "controls/gear/steering");
-      prop = addInputModel("Steering Input",
+      // port = addInputModel("Steering Input", "controls/gear/steering");
+      port = addInputModel("Steering Input",
                            "controls/flight/rudder");
 
     } else if (propName.substr(0, 28) == "fdm/jsbsim/fcs/steer-pos-deg") {
       return lookupJSBExpression("fcs/steer-cmd-norm");
 
     } else if (propName == "fdm/jsbsim/fcs/flap-cmd-norm") {
-      prop = addInputModel("Flaps Input",
+      port = addInputModel("Flaps Input",
                            "controls/flight/flaps");
 
     } else if (propName == "fdm/jsbsim/fcs/speedbrake-cmd-norm") {
-      prop = addInputModel("Speedbrake Input",
+      port = addInputModel("Speedbrake Input",
                            "controls/flight/speedbrake");
 
     } else if (propName == "fdm/jsbsim/fcs/spoiler-cmd-norm") {
-      prop = addInputModel("Spoiler Input",
+      port = addInputModel("Spoiler Input",
                            "controls/flight/spoiler");
 
 
     } else if (propName.substr(0, 32) == "fdm/jsbsim/fcs/throttle-cmd-norm") {
       std::string control = "controls/engines/engine" +
         propName.substr(32) + "/throttle";
-      prop = addInputModel("Throttle Input " + propName.substr(33, 1),
+      port = addInputModel("Throttle Input " + propName.substr(33, 1),
                            control);
 
     } else if (propName.substr(0, 32) == "fdm/jsbsim/fcs/throttle-pos-norm") {
@@ -367,7 +369,7 @@ LegacyJSBSimReader::createAndScheduleInput(const std::string& propName)
     } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/mixture-cmd-norm") {
       std::string control = "controls/engines/engine" + 
         propName.substr(31) + "/mixture";
-      prop = addInputModel("Mixture Input " + propName.substr(32, 1), control);
+      port = addInputModel("Mixture Input " + propName.substr(32, 1), control);
 
     } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/mixture-pos-norm") {
       std::string cmd = "fcs/mixture-cmd-norm" + propName.substr(31);
@@ -377,7 +379,7 @@ LegacyJSBSimReader::createAndScheduleInput(const std::string& propName)
     } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/advance-cmd-norm") {
       std::string control = "controls/engines/engine" + 
         propName.substr(31) + "/propeller-pitch";
-      prop = addInputModel("Propeller Pitch Input " + propName.substr(32, 1),
+      port = addInputModel("Propeller Pitch Input " + propName.substr(32, 1),
                            control);
 
     } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/advance-pos-norm") {
@@ -385,66 +387,68 @@ LegacyJSBSimReader::createAndScheduleInput(const std::string& propName)
       return lookupJSBExpression(cmd);
 
     } else if (propName == "fdm/jsbsim/gear/gear-cmd-norm") {
-      prop = addInputModel("Gear Retract Input",
+      port = addInputModel("Gear Retract Input",
                            "controls/gear/gear-down");
 
     } else if (propName == "fdm/jsbsim/gear/gear-pos-norm") {
       return lookupJSBExpression("gear/gear-cmd-norm");
 
     } else if (propName == "controls/gear/brake-parking") {
-      prop = addInputModel("Parking Brake Input",
+      port = addInputModel("Parking Brake Input",
                            "controls/gear/brake-parking");
 
     } else if (propName == "fdm/jsbsim/gear/right-brake-pos-norm") {
-      Property pilotBr = addInputModel("Right Brake Input",
-                                       "controls/gear/brake-right");
-      Property copilotBr = addInputModel("Right Copilot Brake Input",
-                                         "controls/gear/copilot-brake-right");
+      Port* pilotBr = addInputModel("Right Brake Input",
+                                    "controls/gear/brake-right");
+      Port* copilotBr = addInputModel("Right Copilot Brake Input",
+                                      "controls/gear/copilot-brake-right");
 
-      Property parkBr = lookupJSBExpression("/controls/gear/brake-parking");
+      Port* parkBr = lookupJSBExpression("/controls/gear/brake-parking");
 
       // FIXME: we don't have a max model ...
       MaxExpressionImpl* mex = new MaxExpressionImpl;
-      mex->addInputProperty(pilotBr);
-      mex->addInputProperty(copilotBr);
-      mex->addInputProperty(parkBr);
-      prop = Property(mex);
+      mex->addInputProperty(pilotBr->getProperty());
+      mex->addInputProperty(copilotBr->getProperty());
+      mex->addInputProperty(parkBr->getProperty());
+      port = new Port;
+      port->setProperty(Property(mex));
 
     } else if (propName == "fdm/jsbsim/gear/left-brake-pos-norm") {
-      Property pilotBr = addInputModel("Left Brake Input",
-                                       "controls/gear/brake-left");
-      Property copilotBr = addInputModel("Left Copilot Brake Input",
-                                         "controls/gear/copilot-brake-left");
-
-      Property parkBr = lookupJSBExpression("/controls/gear/brake-parking");
+      Port* pilotBr = addInputModel("Left Brake Input",
+                                    "controls/gear/brake-left");
+      Port* copilotBr = addInputModel("Left Copilot Brake Input",
+                                      "controls/gear/copilot-brake-left");
+      
+      Port* parkBr = lookupJSBExpression("/controls/gear/brake-parking");
 
       // FIXME: we don't have a max model ...
       MaxExpressionImpl* mex = new MaxExpressionImpl;
-      mex->addInputProperty(pilotBr);
-      mex->addInputProperty(copilotBr);
-      mex->addInputProperty(parkBr);
-      prop = Property(mex);
+      mex->addInputProperty(pilotBr->getProperty());
+      mex->addInputProperty(copilotBr->getProperty());
+      mex->addInputProperty(parkBr->getProperty());
+      port = new Port;
+      port->setProperty(Property(mex));
 
     } else if (propName.substr(0, 19) == "fdm/jsbsim/fcs/mag-") {
       // Special absolute modules for fcs/mag-*
       // remove the 'mag-' substring here and use that as input for the
       // Abs block
       std::string name = "fcs/" + propName.substr(19);
-      Property in = lookupJSBExpression(name);
-      prop = addAbsModel(propName.substr(15), in);
+      Port* in = lookupJSBExpression(name);
+      port = addAbsModel(propName.substr(15), in);
 
     }
 
-    if (prop.isValid())
-      registerExpression(propName, prop);
+    if (port && port->isConnected())
+      registerExpression(propName, port);
 
-    return prop;
+    return port;
   }
 
-  return Property();
+  return 0;
 }
 
-Property
+Port*
 LegacyJSBSimReader::addInputModel(const std::string& name,
                                   const std::string& propName, real_type gain)
 {
@@ -452,41 +456,41 @@ LegacyJSBSimReader::addInputModel(const std::string& name,
   input->setInputName(propName);
   input->setInputGain(gain);
   addFCSModel(input);
-  Property prop = input->getOutputPort(0)->getProperty();
-  registerExpression(propName, prop);
-  return prop;
+  Port* port = input->getOutputPort(0);
+  registerExpression(propName, port);
+  return port;
 }
 
 void
-LegacyJSBSimReader::addOutputModel(const Property& out,
+LegacyJSBSimReader::addOutputModel(Port* out,
                                    const std::string& name,
                                    const std::string& propName, real_type gain)
 {
   Output* output = new Output(std::string(name) + " output");
-  output->setInputPort(0, out);
+  output->getInputPort(0)->connect(out);
   output->setOutputName(propName);
   output->setOutputGain(gain);
   addFCSModel(output);
 }
 
-Property
-LegacyJSBSimReader::addInverterModel(const std::string& name, Property& in)
+Port*
+LegacyJSBSimReader::addInverterModel(const std::string& name, Port* in)
 {
   Gain *gain = new Gain(name + " Inverter");
-  gain->setInputPort(0, in);
+  gain->getInputPort(0)->connect(in);
   gain->setGain(-1);
   addFCSModel(gain);
-  return gain->getOutputPort(0)->getProperty();
+  return gain->getOutputPort(0);
 }
 
-Property
-LegacyJSBSimReader::addAbsModel(const std::string& name, Property& in)
+Port*
+LegacyJSBSimReader::addAbsModel(const std::string& name, Port* in)
 {
   UnaryFunctionModel *unary
     = new UnaryFunctionModel(name + " Abs", new AbsExpressionImpl);
-  unary->setInputPort(0, in);
+  unary->getInputPort(0)->connect(in);
   addFCSModel(unary);
-  return unary->getOutputPort(0)->getProperty();
+  return unary->getOutputPort(0);
 }
 
 void
@@ -595,8 +599,9 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
     } else if (name == "AC_WINGINCIDENCE") {
       real_type value;
       datastr >> value;
-      registerJSBExpression("metrics/iw-deg",
-                            Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = new Port;
+      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      registerJSBExpression("metrics/iw-deg", port);
     } else if (name == "AC_CHORD") {
       real_type value;
       datastr >> value;
@@ -604,23 +609,27 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
     } else if (name == "AC_HTAILAREA") {
       real_type value;
       datastr >> value;
-      registerJSBExpression("metrics/Sh-sqft",
-                            Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = new Port;
+      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      registerJSBExpression("metrics/Sh-sqft", port);
     } else if (name == "AC_HTAILARM") {
       real_type value;
       datastr >> value;
-      registerJSBExpression("metrics/lh-ft",
-                            Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = new Port;
+      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      registerJSBExpression("metrics/lh-ft", port);
     } else if (name == "AC_VTAILAREA") {
       real_type value;
       datastr >> value;
-      registerJSBExpression("metrics/Sv-sqft",
-                            Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = new Port;
+      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      registerJSBExpression("metrics/Sv-sqft", port);
     } else if (name == "AC_VTAILARM") {
       real_type value;
       datastr >> value;
-      registerJSBExpression("metrics/lv-ft",
-                            Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = new Port;
+      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      registerJSBExpression("metrics/lv-ft", port);
     } else if (name == "AC_IXX") {
       real_type value;
       datastr >> value;
@@ -693,12 +702,12 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   epFrame->setRelAccel(Vector6::zeros());
   Sensor* accelSensor = new Sensor("Acceleration Sensor");
   accelSensor->addSampleTime(SampleTime(1.0/120));
-  Property prop = accelSensor->getOutputPort("nz")->getProperty();
-  registerJSBExpression("accelerations/n-pilot-z-norm", prop);
+  Port* port = accelSensor->getOutputPort("nz");
+  registerJSBExpression("accelerations/n-pilot-z-norm", port);
 //   epFrame->addMultiBodyModel(accelSensor);
   mVehicle->getTopBody()->addMultiBodyModel(accelSensor);
   mVehicle->getTopBody()->addChildFrame(epFrame);
-  addOutputModel(prop, "Normalized load value", "/accelerations/nlf");
+  addOutputModel(port, "Normalized load value", "/accelerations/nlf");
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
@@ -731,11 +740,11 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
   brakeF->setFrictionConstant(-1e4);
   if (brake == "LEFT") {
-    Property prop = lookupJSBExpression("gear/left-brake-pos-norm");
-    brakeF->setInputPort(0, prop);
+    Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
+    brakeF->getInputPort(0)->connect(port);
   } else if (brake == "RIGHT") {
-    Property prop = lookupJSBExpression("gear/right-brake-pos-norm");
-    brakeF->setInputPort(0, prop);
+    Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
+    brakeF->getInputPort(0)->connect(port);
   }
   wj->setLineForce(brakeF);
   
@@ -747,12 +756,14 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   wc->setFrictionCoeficient(0.9);
   wheel->addMultiBodyModel(wc);
   
-  Property prop = wj->getOutputPort(0)->getProperty();
-  addOutputModel(prop, "Wheel " + numStr + " Position",
+  Port* port = wj->getOutputPort(0);
+  addOutputModel(port, "Wheel " + numStr + " Position",
                  "gear/gear[" + numStr + "]/wheel-position-rad");
   SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uDegree);
-  c->setInputProperty(prop);
-  addOutputModel(Property(c), "Wheel " + numStr + " Position Deg",
+  c->setInputProperty(port->getProperty());
+  port = new Port;
+  port->setProperty(Property(c));
+  addOutputModel(port, "Wheel " + numStr + " Position Deg",
                  "gear/gear[" + numStr + "]/wheel-position-deg");
 }
 
@@ -815,39 +826,39 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         // missing output properties are "wow" and "tire-pressure-norm"
 
         if (retract == "RETRACT") {
-          Property prop = lookupJSBExpression("gear/gear-pos-norm");
-          sg->setInputPort("enabled", prop);
+          Port* port = lookupJSBExpression("gear/gear-pos-norm");
+          sg->getInputPort("enabled")->connect(port);
           // Well, connect that directly to the input
-          addOutputModel(prop, "Gear " + numStr + " Position",
+          addOutputModel(port, "Gear " + numStr + " Position",
                          "/gear/gear[" + numStr + "]/position-norm");
         }
 
         if (type == "STEERABLE") {
           // FIXME: FCS might later define something for that gain ...
 //           prop = lookupJSBExpression("fcs/steer-pos-deg[" + numStr + "]");
-          Property prop = lookupJSBExpression("fcs/steer-cmd-norm");
+          Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
           Gain* gain = new Gain(name + " Steer Gain");
           gain->setGain(sa);
-          gain->setInputPort(0, prop);
+          gain->getInputPort(0)->connect(port);
           addFCSModel(gain);
-          addOutputModel(prop, "Gear " + numStr + " Steering Output",
+          addOutputModel(port, "Gear " + numStr + " Steering Output",
                          "/gear/gear[" + numStr + "]/steering-norm");
 
           UnaryFunctionModel *unary
             = new UnaryFunctionModel(name + " Degree Conversion",
                                      new UnitToSiExpressionImpl(uDegree));
-          unary->setInputPort(0, gain->getOutputPort(0)->getProperty());
+          unary->getInputPort(0)->connect(gain->getOutputPort(0));
           addFCSModel(unary);
 
-          sg->setInputPort("steeringAngle", unary->getOutputPort(0)->getProperty());
+          sg->getInputPort("steeringAngle")->connect(unary->getOutputPort(0));
         }
         
         if (brake == "LEFT") {
-          Property prop = lookupJSBExpression("gear/left-brake-pos-norm");
-          sg->setInputPort("brakeCommand", prop);
+          Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
+          sg->getInputPort("brakeCommand")->connect(port);
         } else if (brake == "RIGHT") {
-          Property prop = lookupJSBExpression("gear/right-brake-pos-norm");
-          sg->setInputPort("brakeCommand", prop);
+          Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
+          sg->getInputPort("brakeCommand")->connect(port);
         }
         
         mVehicle->getTopBody()->addMultiBodyModel(sg);
@@ -926,12 +937,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       attachWheel(name, Vector3(-armLength, 0, 0), brake, numStr, wheelDiam,
                   tireSpring, tireDamp, arm);
 
-      Property prop = rj->getOutputPort(0)->getProperty();
-      addOutputModel(prop, "Gear " + numStr + " Compression",
+      Port* port = rj->getOutputPort(0);
+      addOutputModel(port, "Gear " + numStr + " Compression",
                      "/gear/gear[" + numStr + "]/compression-rad");
 
-      prop = lookupJSBExpression("gear/gear-pos-norm");
-      addOutputModel(prop, "Gear " + numStr + " Position",
+      port = lookupJSBExpression("gear/gear-pos-norm");
+      addOutputModel(port, "Gear " + numStr + " Position",
                      "/gear/gear[" + numStr + "]/position-norm");
 
     } else if (uctype == "AC_CLG") {
@@ -988,8 +999,8 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
         // Add an actuator trying to interpret the steering command
         LineActuator* steerAct = new LineActuator(name + " Steering Actuator");
-        Property prop = lookupJSBExpression("fcs/steer-cmd-norm");
-        steerAct->setInputPort(0, prop);
+        Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
+        steerAct->getInputPort(0)->connect(port);
         steerAct->setProportionalGain(-1e6);
         steerAct->setDerivativeGain(-1e3);
         sj->setLineForce(steerAct);
@@ -997,13 +1008,15 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         strutParent = steer;
         
         // Prepare outputs
-        prop = sj->getOutputPort(0)->getProperty();
-        addOutputModel(prop, "Steering " + numStr + " Position",
+        port = sj->getOutputPort(0);
+        addOutputModel(port, "Steering " + numStr + " Position",
                        "/gear/gear[" + numStr + "]/steering-pos-rad");
         SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uDegree);
-        c->setInputProperty(prop);
-        addOutputModel(Property(c), "Steering " + numStr + " Position Deg",
-                     "/gear/gear[" + numStr + "]/steering-pos-deg");
+        c->setInputProperty(port->getProperty());
+        port = new Port(); // FIXME add unit convert model
+        port->setProperty(Property(c));
+        addOutputModel(port, "Steering " + numStr + " Position Deg",
+                       "/gear/gear[" + numStr + "]/steering-pos-deg");
       }
 
 
@@ -1038,12 +1051,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
                   tireSpring, tireDamp, arm);
 
       // Prepare some outputs ...
-      Property prop = pj->getOutputPort(0)->getProperty();
-      addOutputModel(prop, "Gear " + numStr + " Compression",
+      Port* port = pj->getOutputPort(0);
+      addOutputModel(port, "Gear " + numStr + " Compression",
                      "/gear/gear[" + numStr + "]/compression-m");
 
-      prop = lookupJSBExpression("gear/gear-pos-norm");
-      addOutputModel(prop, "Gear " + numStr + " Position",
+      port = lookupJSBExpression("gear/gear-pos-norm");
+      addOutputModel(port, "Gear " + numStr + " Position",
                      "/gear/gear[" + numStr + "]/position-norm");
 
     } else if (uctype == "AC_CONTACT") {
@@ -1077,7 +1090,7 @@ LegacyJSBSimReader::convertFCSList(const XMLElement* fcsElem)
   // JSBSim has a very strange way to define default input values for FCS
   // components. The output of the prevous component is the default input
   // value. This one is stored here.
-  mPrevousFCSOutput = Property();
+  mPrevousFCSOutput = 0;
   
   std::list<shared_ptr<const XMLElement> > comps
     = fcsElem->getElements("COMPONENT");
@@ -1091,7 +1104,7 @@ LegacyJSBSimReader::convertFCSList(const XMLElement* fcsElem)
   }
 
   // Make shure it is not set when we exit here.
-  mPrevousFCSOutput = Property();
+  mPrevousFCSOutput = 0;
 
   return true;
 }
@@ -1114,8 +1127,8 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   shared_ptr<Saturation> inputSaturation;
 
   // The final output property.
-  Property out;
-  Property normOut;
+  shared_ptr<Port> out;
+  shared_ptr<Port> normOut;
 
   // JSBSim FCS output values contain some implicit rules.
   // From the component name a default output property is formed.
@@ -1130,18 +1143,18 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     summer->setNumSummands(0);
     model = summer;
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else if (type == "DEADBAND") {
     deadband = new DeadBand(name);
     model = deadband;
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else if (type == "GRADIENT") {
     model = new TimeDerivative(name);
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else if (type == "SWITCH") {
     std::cout << "Ignoring SWITCH" << std::endl;
@@ -1158,44 +1171,44 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
 
     inputSaturation = new Saturation(name + " Input Saturation");
     addFCSModel(inputSaturation);
-    inputSaturation->setInputPort(0, gain->getOutputPort(0)->getProperty());
+    inputSaturation->getInputPort(0)->connect(gain->getOutputPort(0));
 
     Summer* inputError = new Summer(name + " Input Sum");
     addFCSModel(inputError);
-    inputError->setInputPort(0, inputSaturation->getOutputPort(0)->getProperty());
+    inputError->getInputPort(0)->connect(inputSaturation->getOutputPort(0));
     inputError->setNumSummands(2);
 
     Gain* errorGain = new Gain(name + " Error Gain");
     addFCSModel(errorGain);
     errorGain->setGain(100);
-    errorGain->setInputPort(0, inputError->getOutputPort(0)->getProperty());
+    errorGain->getInputPort(0)->connect(inputError->getOutputPort(0));
 
     kinematRateLimit = new Saturation(name + " Rate Limit");
     addFCSModel(kinematRateLimit);
-    kinematRateLimit->setInputPort(0, errorGain->getOutputPort(0)->getProperty());
+    kinematRateLimit->getInputPort(0)->connect(errorGain->getOutputPort(0));
 
     DiscreteIntegrator* integrator
       = new DiscreteIntegrator(name + " Integrator");
     addFCSModel(integrator);
-    integrator->setInputPort(0, kinematRateLimit->getOutputPort(0)->getProperty());
+    integrator->getInputPort(0)->connect(kinematRateLimit->getOutputPort(0));
     Matrix tmp(1, 1);
     tmp(1, 1) = 1;
 //     tmp.clear();
     integrator->setInitialValue(tmp);
-    out = integrator->getOutputPort(0)->getProperty();
+    out = integrator->getOutputPort(0);
 
     Gain* feedbackGain = new Gain(name + " Feedback Gain");
     addFCSModel(feedbackGain);
     feedbackGain->setGain(-1);
-    feedbackGain->setInputPort(0, integrator->getOutputPort(0)->getProperty());
-    inputError->setInputPort(1, feedbackGain->getOutputPort(0)->getProperty());
+    feedbackGain->getInputPort(0)->connect(integrator->getOutputPort(0));
+    inputError->getInputPort(1)->connect(feedbackGain->getOutputPort(0));
 
   } else if (type == "PURE_GAIN") {
     gain = new Gain(name);
     gain->setGain(1);
     model = gain;
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else if (type == "AEROSURFACE_SCALE") {
     // An AEROSURFACE_SCALE component is done with n input saturation clipping
@@ -1206,7 +1219,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     inputSaturation = new Saturation(name + "Input Saturation");
     model = inputSaturation;
     addFCSModel(inputSaturation);
-    normOut = inputSaturation->getOutputPort(0)->getProperty();
+    normOut = inputSaturation->getOutputPort(0);
     Matrix tmp(1, 1);
     tmp(1, 1) = -1;
     inputSaturation->setMinSaturation(tmp);
@@ -1230,24 +1243,24 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     iv(1) = 3;
     tableData(iv) = 1;
     table1D->setTableData(tableData);
-    table1D->setInputPort(0, inputSaturation->getOutputPort(0)->getProperty());
+    table1D->getInputPort(0)->connect(inputSaturation->getOutputPort(0));
 
     addFCSModel(table1D);
-    out = table1D->getOutputPort(0)->getProperty();
+    out = table1D->getOutputPort(0);
 
   } else if (type == "SCHEDULED_GAIN") {
     Product* prod = new Product(name);
     prod->setNumFactors(2);
     table1D = new Table1D(std::string("Lookup table for ") + name);
     addFCSModel(table1D);
-    prod->setInputPort(1, table1D->getOutputPort(0)->getProperty());
+    prod->getInputPort(1)->connect(table1D->getOutputPort(0));
     model = prod;
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else if (type == "INTEGRATOR") {
     model = new DiscreteIntegrator(name);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
     addFCSModel(model);
 
   } else if (type == "LAG_FILTER") {
@@ -1262,7 +1275,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     discreteTransfFunc->setDenominator(v);
     model = discreteTransfFunc;
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else if (type == "LEAD_LAG_FILTER") {
     // C1*s + C2
@@ -1273,7 +1286,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     discreteTransfFunc->setDenominator(Vector(2));
     model = discreteTransfFunc;
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else if (type == "WASHOUT_FILTER") {
     //   s
@@ -1287,7 +1300,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     discreteTransfFunc->setDenominator(v);
     model = discreteTransfFunc;
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else if (type == "SECOND_ORDER_FILTER") {
     // C1*s + C2*s + C3
@@ -1298,17 +1311,17 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     discreteTransfFunc->setDenominator(Vector(3));
     model = discreteTransfFunc;
     addFCSModel(model);
-    out = model->getOutputPort(0)->getProperty();
+    out = model->getOutputPort(0);
 
   } else
     return error("Unknown FCS COMPONENT type: \"" + type
                  + "\". Ignoring whole FCS component \"" + name + "\"" );
 
-  OpenFDMAssert(out.isValid());
+  OpenFDMAssert(out->isConnected());
 
   // The output expression from the prevous FCS block.
   // This is the default input value for this FCS block.
-  std::list<Property> inputs;
+  std::list<shared_ptr<Port> > inputs;
 
   // Collect any expressions for the output chain here.
   shared_ptr<Saturation> saturation;
@@ -1629,7 +1642,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       datastr >> token;
       
       if (table1D) {
-        table1D->setInputPort(0, lookupJSBExpression(token));
+        table1D->getInputPort(0)->connect(lookupJSBExpression(token));
       } else
         return error("SCHEDULED_BY without table ??");
       
@@ -1654,16 +1667,16 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     inputs.push_back(mPrevousFCSOutput);
 
   unsigned idx = 0;
-  for (std::list<Property>::iterator it = inputs.begin();
+  for (std::list<shared_ptr<Port> >::iterator it = inputs.begin();
        it != inputs.end(); ++it) {
     // FIXME!!!!!!
     if (summer && summer->getNumInputPorts() <= idx)
       summer->setNumSummands(idx+1);
-    model->setInputPort(idx++, *it);
+    model->getInputPort(idx++)->connect(*it);
   }
 
   // Sanity check, if the first FCS component does not have an input defined.
-  if (!inputs.front().isValid()) {
+  if (!inputs.front()->isConnected()) {
     return error("No input value defined for FCS COMPONENT. "
                  "Ignoring whole FCS component \"" + name + "\"");
   }
@@ -1671,16 +1684,16 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   // Now put the expressions for the output chain together.
   // Doing that now will put them together in a well defined order.
   if (outbias) {
-    outbias->setInputPort(0, out);
-    out = outbias->getOutputPort(0)->getProperty();
+    outbias->getInputPort(0)->connect(out);
+    out = outbias->getOutputPort(0);
   }
   if (outgain) {
-    outgain->setInputPort(0, out);
-    out = outgain->getOutputPort(0)->getProperty();
+    outgain->getInputPort(0)->connect(out);
+    out = outgain->getOutputPort(0);
   }
   if (saturation) {
-    saturation->setInputPort(0, out);
-    out = saturation->getOutputPort(0)->getProperty();
+    saturation->getInputPort(0)->connect(out);
+    out = saturation->getOutputPort(0);
   }
   if (outInvert) {
     out = addInverterModel(name, out);
@@ -1697,12 +1710,12 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       Gain* normGain = new Gain(name + " Normalize Gain");
       normGain->setGain(1/gain->getGain());
       addFCSModel(normGain);
-      normGain->setInputPort(0, out);
-      normOut = normGain->getOutputPort(0)->getProperty();
+      normGain->getInputPort(0)->connect(out);
+      normOut = normGain->getOutputPort(0);
     }
   }
 
-  if (!normOut.isValid())
+  if (!normOut || !normOut->isConnected())
     normOut = inputs.front();
 
   // Register all output property names.
@@ -1913,7 +1926,7 @@ LegacyJSBSimReader::convertEngine(const std::string& data,
   engineForce->setOrientation(Quaternion::fromHeadAttBank(pitch, 0, yaw));
 
   std::string throttlename = "fcs/throttle-cmd-norm[" + number + "]";
-  engineForce->setInputPort(0, lookupJSBExpression(throttlename));
+  engineForce->getInputPort(0)->connect(lookupJSBExpression(throttlename));
 
   mVehicle->getTopBody()->addMultiBodyModel(engineForce);
 
@@ -2045,7 +2058,7 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
   Property inVal[3];
   for (unsigned i = 0; i < ndims; ++i) {
     datastr >> token;
-    inVal[i] = lookupJSBExpression(token);
+    inVal[i] = lookupJSBExpression(token)->getProperty();
   }
 
   // The other factors in this product.
@@ -2060,7 +2073,7 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
   while (linestream >> token) {
     if (token.empty() || token == "none")
       break;
-    prod->addInputProperty(lookupJSBExpression(token));
+    prod->addInputProperty(lookupJSBExpression(token)->getProperty());
   }
  
   // The lookup table values.
@@ -2126,148 +2139,236 @@ void
 LegacyJSBSimReader::makeAeroprops(void)
 {
   Property e = mAeroForce->getProperty("trueSpeed");
-  registerJSBExpression("velocities/vt-mps", e);
+  Port* port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/vt-mps", port);
   SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uFeetPSecond);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/vt-fps", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/vt-fps", port);
   c = new SiToUnitExpressionImpl(uKnots);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/vt-kts", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/vt-kts", port);
 
   // Mach numbers, are unitless.
   e = mAeroForce->getProperty("machNumber");
-  registerJSBExpression("velocities/mach-norm", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/mach-norm", port);
 
   // Rotational rates wrt air.
   e = mAeroForce->getProperty("p");
-  registerJSBExpression("velocities/p-rad_sec", e);
-  registerJSBExpression("velocities/p-aero-rad_sec", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/p-rad_sec", port);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/p-aero-rad_sec", port);
   c = new SiToUnitExpressionImpl(uDegree);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/p-aero-deg_sec", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/p-aero-deg_sec", port);
   e = mAeroForce->getProperty("q");
-  registerJSBExpression("velocities/q-rad_sec", e);
-  registerJSBExpression("velocities/q-aero-rad_sec", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/q-rad_sec", port);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/q-aero-rad_sec", port);
   c = new SiToUnitExpressionImpl(uDegree);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/q-aero-deg_sec", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/q-aero-deg_sec", port);
   e = mAeroForce->getProperty("r");
-  registerJSBExpression("velocities/r-rad_sec", e);
-  registerJSBExpression("velocities/r-aero-rad_sec", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/r-rad_sec", port);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/r-aero-rad_sec", port);
   c = new SiToUnitExpressionImpl(uDegree);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/r-aero-deg_sec", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/r-aero-deg_sec", port);
 
 
   e = mAeroForce->getProperty("u");
-  registerJSBExpression("velocities/u-aero-mps", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/u-aero-mps", port);
   c = new SiToUnitExpressionImpl(uFeetPSecond);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/u-aero-fps", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/u-aero-fps", port);
   e = mAeroForce->getProperty("v");
-  registerJSBExpression("velocities/v-aero-mps", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/v-aero-mps", port);
   c = new SiToUnitExpressionImpl(uFeetPSecond);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/v-aero-fps", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/v-aero-fps", port);
   e = mAeroForce->getProperty("w");
-  registerJSBExpression("velocities/w-aero-mps", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/w-aero-mps", port);
   c = new SiToUnitExpressionImpl(uFeetPSecond);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/w-aero-fps", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/w-aero-fps", port);
 
 
   // Dynamic pressure values.
   e = mAeroForce->getProperty("dynamicPressure");
-  registerJSBExpression("aero/qbar-pa", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("aero/qbar-pa", port);
   c = new SiToUnitExpressionImpl(uPoundPFt2);
   c->setInputProperty(e);
-  registerJSBExpression("aero/qbar-psf", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("aero/qbar-psf", port);
 
   // Temperature.
   e = mAeroForce->getProperty("temperature");
   c = new SiToUnitExpressionImpl(uRankine);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/tat-r", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/tat-r", port);
   c = new SiToUnitExpressionImpl(uFahrenheit);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/tat-f", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/tat-f", port);
 
   // Braindead: a pressure value in velocities ...
   e = mAeroForce->getProperty("pressure");
-  registerJSBExpression("velocities/pt-pascal", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("velocities/pt-pascal", port);
   c = new SiToUnitExpressionImpl(uPoundPFt2);
   c->setInputProperty(e);
-  registerJSBExpression("velocities/pt-lbs_sqft", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("velocities/pt-lbs_sqft", port);
 
 
 
   e = mAeroForce->getProperty("wingSpan");
   c = new SiToUnitExpressionImpl(uFoot);
   c->setInputProperty(e);
-  registerJSBExpression("metrics/bw-ft", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("metrics/bw-ft", port);
 
   e = mAeroForce->getProperty("wingArea");
   c = new SiToUnitExpressionImpl(uFoot2);
   c->setInputProperty(e);
-  registerJSBExpression("metrics/Sw-sqft", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("metrics/Sw-sqft", port);
 
   e = mAeroForce->getProperty("coord");
   c = new SiToUnitExpressionImpl(uFoot);
   c->setInputProperty(e);
-  registerJSBExpression("metrics/cbarw-ft", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("metrics/cbarw-ft", port);
 
   e = mAeroForce->getProperty("wingSpanOver2Speed");
-  registerJSBExpression("aero/bi2vel", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("aero/bi2vel", port);
   e = mAeroForce->getProperty("coordOver2Speed");
-  registerJSBExpression("aero/ci2vel", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("aero/ci2vel", port);
 
   // Angle of attack.
   e = mAeroForce->getProperty("alpha");
-  registerJSBExpression("aero/alpha-rad", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("aero/alpha-rad", port);
   AbsExpressionImpl* a = new AbsExpressionImpl();
   a->setInputProperty(e);
-  registerJSBExpression("aero/mag-alpha-rad", Property(a));
+  port = new Port;
+  port->setProperty(Property(a));
+  registerJSBExpression("aero/mag-alpha-rad", port);
   c = new SiToUnitExpressionImpl(uDegree);
   c->setInputProperty(e);
-  registerJSBExpression("aero/alpha-deg", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("aero/alpha-deg", port);
   a = new AbsExpressionImpl();
   a->setInputProperty(Property(c));
-  registerJSBExpression("aero/mag-alpha-deg", Property(a));
+  port = new Port;
+  port->setProperty(Property(a));
+  registerJSBExpression("aero/mag-alpha-deg", port);
 
   // Angle of sideslip.
   e = mAeroForce->getProperty("beta");
-  registerJSBExpression("aero/beta-rad", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("aero/beta-rad", port);
   a = new AbsExpressionImpl();
   a->setInputProperty(e);
-  registerJSBExpression("aero/mag-beta-rad", Property(a));
+  port = new Port;
+  port->setProperty(Property(a));
+  registerJSBExpression("aero/mag-beta-rad", port);
   c = new SiToUnitExpressionImpl(uDegree);
   c->setInputProperty(e);
-  registerJSBExpression("aero/beta-deg", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("aero/beta-deg", port);
   a = new AbsExpressionImpl();
   a->setInputProperty(Property(c));
-  registerJSBExpression("aero/mag-beta-deg", Property(a));
+  port = new Port;
+  port->setProperty(Property(a));
+  registerJSBExpression("aero/mag-beta-deg", port);
 
 
   // Time derivative of alpha.
   e = mAeroForce->getProperty("alphaDot");
-  registerJSBExpression("aero/alphadot-rad_sec", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("aero/alphadot-rad_sec", port);
   c = new SiToUnitExpressionImpl(uDegree);
   c->setInputProperty(e);
-  registerJSBExpression("aero/alphadot-deg", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("aero/alphadot-deg", port);
 
   // Time derivative of beta.
   e = mAeroForce->getProperty("betaDot");
-  registerJSBExpression("aero/betadot-rad_sec", e);
+  port = new Port;
+  port->setProperty(e);
+  registerJSBExpression("aero/betadot-rad_sec", port);
   c = new SiToUnitExpressionImpl(uDegree);
   c->setInputProperty(e);
-  registerJSBExpression("aero/betadot-deg", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("aero/betadot-deg", port);
 
   // The quotient agl/wingspan
   e = mAeroForce->getProperty("hOverWingSpan");
   c = new SiToUnitExpressionImpl(uFoot);
   c->setInputProperty(e);
-  registerJSBExpression("aero/h_b-cg-ft", Property(c));
-  registerJSBExpression("aero/h_b-mac-ft", Property(c));
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("aero/h_b-cg-ft", port);
+  port = new Port;
+  port->setProperty(Property(c));
+  registerJSBExpression("aero/h_b-mac-ft", port);
 }
 
 
