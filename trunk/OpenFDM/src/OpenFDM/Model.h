@@ -231,10 +231,6 @@ protected:
   /// Sets the name of the i-th input property.
   void setInputPortName(unsigned i, const std::string& name);
 
-  /// Gets called whenever an input property is changed.
-  /// Lets a Model implementation catch up changes to the model.
-  virtual void inputPortChanged(unsigned i);
-
   /// Sets the number of output properties.
   void setNumOutputPorts(unsigned num);
 

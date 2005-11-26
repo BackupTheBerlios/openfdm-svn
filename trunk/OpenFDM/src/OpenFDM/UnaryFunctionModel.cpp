@@ -31,6 +31,8 @@ UnaryFunctionModel::~UnaryFunctionModel(void)
 bool
 UnaryFunctionModel::init(void)
 {
+  OpenFDMAssert(mUnaryExpression);
+  mUnaryExpression->setInputProperty(getInputPort(0)->getProperty());
   OpenFDMAssert(mUnaryExpression->isValid());
   return mUnaryExpression->isValid();
 }
@@ -46,14 +48,6 @@ const real_type&
 UnaryFunctionModel::getFunctionValue(void) const
 {
   return mFunctionValue;
-}
-
-void
-UnaryFunctionModel::inputPortChanged(unsigned i)
-{
-  if (getNumInputPorts() <= i)
-    return;
-  mUnaryExpression->setInputProperty(getInputPort(0)->getProperty());
 }
 
 } // namespace OpenFDM

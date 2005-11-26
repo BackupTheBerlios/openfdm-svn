@@ -29,8 +29,6 @@ public:
   const real_type& getFunctionValue(void) const;
 
 private:
-  virtual void inputPortChanged(unsigned i);
-
   shared_ptr<UnaryExpressionImpl<real_type> > mUnaryExpression;
 
   real_type mFunctionValue;

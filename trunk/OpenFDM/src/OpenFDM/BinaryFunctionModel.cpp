@@ -31,6 +31,9 @@ BinaryFunctionModel::~BinaryFunctionModel(void)
 bool
 BinaryFunctionModel::init(void)
 {
+  OpenFDMAssert(mBinaryExpression);
+  mBinaryExpression->setInputProperty(0, getInputPort(0)->getProperty());
+  mBinaryExpression->setInputProperty(1, getInputPort(1)->getProperty());
   OpenFDMAssert(mBinaryExpression->isValid());
   return mBinaryExpression->isValid();
 }
@@ -46,14 +49,6 @@ const real_type&
 BinaryFunctionModel::getFunctionValue(void) const
 {
   return mFunctionValue;
-}
-
-void
-BinaryFunctionModel::inputPortChanged(unsigned i)
-{
-  if (getNumInputPorts() <= i)
-    return;
-  mBinaryExpression->setInputProperty(i, getInputPort(i)->getProperty());
 }
 
 } // namespace OpenFDM

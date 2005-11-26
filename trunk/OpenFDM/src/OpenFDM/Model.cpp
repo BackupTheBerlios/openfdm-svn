@@ -170,7 +170,6 @@ Model::setInputPort(unsigned i, const Property& prop)
   }
 
   mInputPorts[i]->setProperty(prop);
-  inputPortChanged(i);
   return true;
 }
 
@@ -262,7 +261,6 @@ Model::setNumInputPorts(unsigned num)
   mInputPorts.resize(num);
   for (; oldSize < mInputPorts.size(); ++oldSize)
     mInputPorts[oldSize] = new Port;
-  inputPortChanged(num);
 }
 
 void
@@ -270,12 +268,6 @@ Model::setInputPortName(unsigned i, const std::string& name)
 {
   OpenFDMAssert(i < mInputPorts.size());
   mInputPorts[i]->setName(name);
-  inputPortChanged(i);
-}
-
-void
-Model::inputPortChanged(unsigned)
-{
 }
 
 void
