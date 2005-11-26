@@ -217,9 +217,6 @@ public:
   Port* getOutputPort(const std::string& name);
   const std::string& getOutputPortName(unsigned i) const;
 
-  Property getOutputProperty(unsigned i) const; /* OBSOLETE */
-  Property getOutputProperty(const std::string& name) const; /* OBSOLETE */
-
   bool dependsDirectOn(const Model* const model) const;
 
 protected:

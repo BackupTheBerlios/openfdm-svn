@@ -452,7 +452,7 @@ LegacyJSBSimReader::addInputModel(const std::string& name,
   input->setInputName(propName);
   input->setInputGain(gain);
   addFCSModel(input);
-  Property prop = input->getOutputProperty(0);
+  Property prop = input->getOutputPort(0)->getProperty();
   registerExpression(propName, prop);
   return prop;
 }
@@ -476,7 +476,7 @@ LegacyJSBSimReader::addInverterModel(const std::string& name, Property& in)
   gain->setInputPort(0, in);
   gain->setGain(-1);
   addFCSModel(gain);
-  return gain->getOutputProperty(0);
+  return gain->getOutputPort(0)->getProperty();
 }
 
 Property
@@ -486,7 +486,7 @@ LegacyJSBSimReader::addAbsModel(const std::string& name, Property& in)
     = new UnaryFunctionModel(name + " Abs", new AbsExpressionImpl);
   unary->setInputPort(0, in);
   addFCSModel(unary);
-  return unary->getOutputProperty(0);
+  return unary->getOutputPort(0)->getProperty();
 }
 
 void
@@ -693,7 +693,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   epFrame->setRelAccel(Vector6::zeros());
   Sensor* accelSensor = new Sensor("Acceleration Sensor");
   accelSensor->addSampleTime(SampleTime(1.0/120));
-  Property prop = accelSensor->getOutputProperty("nz");
+  Property prop = accelSensor->getOutputPort("nz")->getProperty();
   registerJSBExpression("accelerations/n-pilot-z-norm", prop);
 //   epFrame->addMultiBodyModel(accelSensor);
   mVehicle->getTopBody()->addMultiBodyModel(accelSensor);
@@ -747,7 +747,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   wc->setFrictionCoeficient(0.9);
   wheel->addMultiBodyModel(wc);
   
-  Property prop = wj->getOutputProperty(0);
+  Property prop = wj->getOutputPort(0)->getProperty();
   addOutputModel(prop, "Wheel " + numStr + " Position",
                  "gear/gear[" + numStr + "]/wheel-position-rad");
   SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uDegree);
@@ -836,10 +836,10 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
           UnaryFunctionModel *unary
             = new UnaryFunctionModel(name + " Degree Conversion",
                                      new UnitToSiExpressionImpl(uDegree));
-          unary->setInputPort(0, gain->getOutputProperty(0));
+          unary->setInputPort(0, gain->getOutputPort(0)->getProperty());
           addFCSModel(unary);
 
-          sg->setInputPort("steeringAngle", unary->getOutputProperty(0));
+          sg->setInputPort("steeringAngle", unary->getOutputPort(0)->getProperty());
         }
         
         if (brake == "LEFT") {
@@ -926,7 +926,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       attachWheel(name, Vector3(-armLength, 0, 0), brake, numStr, wheelDiam,
                   tireSpring, tireDamp, arm);
 
-      Property prop = rj->getOutputProperty(0);
+      Property prop = rj->getOutputPort(0)->getProperty();
       addOutputModel(prop, "Gear " + numStr + " Compression",
                      "/gear/gear[" + numStr + "]/compression-rad");
 
@@ -997,7 +997,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         strutParent = steer;
         
         // Prepare outputs
-        prop = sj->getOutputProperty(0);
+        prop = sj->getOutputPort(0)->getProperty();
         addOutputModel(prop, "Steering " + numStr + " Position",
                        "/gear/gear[" + numStr + "]/steering-pos-rad");
         SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uDegree);
@@ -1038,7 +1038,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
                   tireSpring, tireDamp, arm);
 
       // Prepare some outputs ...
-      Property prop = pj->getOutputProperty(0);
+      Property prop = pj->getOutputPort(0)->getProperty();
       addOutputModel(prop, "Gear " + numStr + " Compression",
                      "/gear/gear[" + numStr + "]/compression-m");
 
@@ -1130,18 +1130,18 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     summer->setNumSummands(0);
     model = summer;
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else if (type == "DEADBAND") {
     deadband = new DeadBand(name);
     model = deadband;
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else if (type == "GRADIENT") {
     model = new TimeDerivative(name);
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else if (type == "SWITCH") {
     std::cout << "Ignoring SWITCH" << std::endl;
@@ -1158,44 +1158,44 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
 
     inputSaturation = new Saturation(name + " Input Saturation");
     addFCSModel(inputSaturation);
-    inputSaturation->setInputPort(0, gain->getOutputProperty(0));
+    inputSaturation->setInputPort(0, gain->getOutputPort(0)->getProperty());
 
     Summer* inputError = new Summer(name + " Input Sum");
     addFCSModel(inputError);
-    inputError->setInputPort(0, inputSaturation->getOutputProperty(0));
+    inputError->setInputPort(0, inputSaturation->getOutputPort(0)->getProperty());
     inputError->setNumSummands(2);
 
     Gain* errorGain = new Gain(name + " Error Gain");
     addFCSModel(errorGain);
     errorGain->setGain(100);
-    errorGain->setInputPort(0, inputError->getOutputProperty(0));
+    errorGain->setInputPort(0, inputError->getOutputPort(0)->getProperty());
 
     kinematRateLimit = new Saturation(name + " Rate Limit");
     addFCSModel(kinematRateLimit);
-    kinematRateLimit->setInputPort(0, errorGain->getOutputProperty(0));
+    kinematRateLimit->setInputPort(0, errorGain->getOutputPort(0)->getProperty());
 
     DiscreteIntegrator* integrator
       = new DiscreteIntegrator(name + " Integrator");
     addFCSModel(integrator);
-    integrator->setInputPort(0, kinematRateLimit->getOutputProperty(0));
+    integrator->setInputPort(0, kinematRateLimit->getOutputPort(0)->getProperty());
     Matrix tmp(1, 1);
     tmp(1, 1) = 1;
 //     tmp.clear();
     integrator->setInitialValue(tmp);
-    out = integrator->getOutputProperty(0);
+    out = integrator->getOutputPort(0)->getProperty();
 
     Gain* feedbackGain = new Gain(name + " Feedback Gain");
     addFCSModel(feedbackGain);
     feedbackGain->setGain(-1);
-    feedbackGain->setInputPort(0, integrator->getOutputProperty(0));
-    inputError->setInputPort(1, feedbackGain->getOutputProperty(0));
+    feedbackGain->setInputPort(0, integrator->getOutputPort(0)->getProperty());
+    inputError->setInputPort(1, feedbackGain->getOutputPort(0)->getProperty());
 
   } else if (type == "PURE_GAIN") {
     gain = new Gain(name);
     gain->setGain(1);
     model = gain;
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else if (type == "AEROSURFACE_SCALE") {
     // An AEROSURFACE_SCALE component is done with n input saturation clipping
@@ -1206,7 +1206,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     inputSaturation = new Saturation(name + "Input Saturation");
     model = inputSaturation;
     addFCSModel(inputSaturation);
-    normOut = inputSaturation->getOutputProperty(0);
+    normOut = inputSaturation->getOutputPort(0)->getProperty();
     Matrix tmp(1, 1);
     tmp(1, 1) = -1;
     inputSaturation->setMinSaturation(tmp);
@@ -1230,24 +1230,24 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     iv(1) = 3;
     tableData(iv) = 1;
     table1D->setTableData(tableData);
-    table1D->setInputPort(0, inputSaturation->getOutputProperty(0));
+    table1D->setInputPort(0, inputSaturation->getOutputPort(0)->getProperty());
 
     addFCSModel(table1D);
-    out = table1D->getOutputProperty(0);
+    out = table1D->getOutputPort(0)->getProperty();
 
   } else if (type == "SCHEDULED_GAIN") {
     Product* prod = new Product(name);
     prod->setNumFactors(2);
     table1D = new Table1D(std::string("Lookup table for ") + name);
     addFCSModel(table1D);
-    prod->setInputPort(1, table1D->getOutputProperty(0));
+    prod->setInputPort(1, table1D->getOutputPort(0)->getProperty());
     model = prod;
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else if (type == "INTEGRATOR") {
     model = new DiscreteIntegrator(name);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
     addFCSModel(model);
 
   } else if (type == "LAG_FILTER") {
@@ -1262,7 +1262,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     discreteTransfFunc->setDenominator(v);
     model = discreteTransfFunc;
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else if (type == "LEAD_LAG_FILTER") {
     // C1*s + C2
@@ -1273,7 +1273,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     discreteTransfFunc->setDenominator(Vector(2));
     model = discreteTransfFunc;
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else if (type == "WASHOUT_FILTER") {
     //   s
@@ -1287,7 +1287,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     discreteTransfFunc->setDenominator(v);
     model = discreteTransfFunc;
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else if (type == "SECOND_ORDER_FILTER") {
     // C1*s + C2*s + C3
@@ -1298,7 +1298,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     discreteTransfFunc->setDenominator(Vector(3));
     model = discreteTransfFunc;
     addFCSModel(model);
-    out = model->getOutputProperty(0);
+    out = model->getOutputPort(0)->getProperty();
 
   } else
     return error("Unknown FCS COMPONENT type: \"" + type
@@ -1672,15 +1672,15 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   // Doing that now will put them together in a well defined order.
   if (outbias) {
     outbias->setInputPort(0, out);
-    out = outbias->getOutputProperty(0);
+    out = outbias->getOutputPort(0)->getProperty();
   }
   if (outgain) {
     outgain->setInputPort(0, out);
-    out = outgain->getOutputProperty(0);
+    out = outgain->getOutputPort(0)->getProperty();
   }
   if (saturation) {
     saturation->setInputPort(0, out);
-    out = saturation->getOutputProperty(0);
+    out = saturation->getOutputPort(0)->getProperty();
   }
   if (outInvert) {
     out = addInverterModel(name, out);
@@ -1698,7 +1698,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       normGain->setGain(1/gain->getGain());
       addFCSModel(normGain);
       normGain->setInputPort(0, out);
-      normOut = normGain->getOutputProperty(0);
+      normOut = normGain->getOutputPort(0)->getProperty();
     }
   }
 

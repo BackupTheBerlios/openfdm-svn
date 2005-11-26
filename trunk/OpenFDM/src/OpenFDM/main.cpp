@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
     system->simulate(j*0.01);
 
     for (unsigned i = 0; i < modelGroup->getNumModels(); ++i)
-      cout << modelGroup->getModel(i)->getOutputProperty("output").getValue().toMatrix() << " ";
+      cout << modelGroup->getModel(i)->getOutputPort("output")->getValue().toMatrix() << " ";
 
     cout << endl;
   }

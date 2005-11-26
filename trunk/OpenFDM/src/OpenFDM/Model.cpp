@@ -230,39 +230,11 @@ Model::getOutputPort(const std::string& name)
   return 0;
 }
 
-Property
-Model::getOutputProperty(unsigned i) const
-{
-  if (mOutputPorts.size() <= i) {
-    Log(Model, Error) << "Output port index " << i << "out of range in \""
-                      << getName() << "\"" << endl;
-    return Property();
-  }
-
-  return mOutputPorts[i]->getProperty();
-}
-
 const std::string&
 Model::getOutputPortName(unsigned i) const
 {
   OpenFDMAssert(i < mOutputPorts.size());
   return mOutputPorts[i]->getName();
-}
-
-Property
-Model::getOutputProperty(const std::string& name) const
-{
-  // Check if this one exists and return its value.
-  std::vector<shared_ptr<Port> >::const_iterator it = mOutputPorts.begin();
-  while (it != mOutputPorts.end()) {
-    if ((*it)->getName() == name)
-      return (*it)->getProperty();
-    ++it;
-  }
-
-  Log(Model, Error) << "Output port name " << name << "not found in \""
-                    << getName() << "\"" << endl;
-  return Property();
 }
 
 bool
