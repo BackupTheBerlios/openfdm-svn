@@ -186,15 +186,15 @@ public:
 
   virtual bool init(void)
   {
-    OpenFDMAssert(getInputPort(0).isValid());
-    return getInputPort(0).isValid();
+    OpenFDMAssert(getInputPort(0)->isConnected());
+    return getInputPort(0)->isConnected();
   }
 
   virtual void output(void)
   {
-    OpenFDMAssert(getInputPort(0).isValid());
+    OpenFDMAssert(getInputPort(0)->isConnected());
     if (mPropertyNode.valid())
-      mPropertyNode->setDoubleValue(getInputPort(0).getValue().toReal());
+      mPropertyNode->setDoubleValue(getInputPort(0)->getValue().toReal());
   }
 
 private:
