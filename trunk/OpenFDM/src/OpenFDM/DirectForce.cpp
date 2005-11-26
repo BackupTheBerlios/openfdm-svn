@@ -90,7 +90,7 @@ DirectForce::init(void)
 void
 DirectForce::output(const TaskInfo&)
 {
-  mMagnitude = getInputPort(0).getValue().toReal();
+  mMagnitude = getInputPort(0)->getValue().toReal();
   mForce = mMagnitude*mDirection;
 }
 

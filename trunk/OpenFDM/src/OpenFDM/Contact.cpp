@@ -43,8 +43,8 @@ Contact::output(const TaskInfo& taskInfo)
     getGround(taskInfo.getTime());
 
     // FIXME
-    if (getInputPort("enabled").isValid())
-      mEnabled = 0.5 < getInputPort("enabled").getValue().toReal();
+    if (getInputPort("enabled")->isConnected())
+      mEnabled = 0.5 < getInputPort("enabled")->getValue().toReal();
   }
 }
 

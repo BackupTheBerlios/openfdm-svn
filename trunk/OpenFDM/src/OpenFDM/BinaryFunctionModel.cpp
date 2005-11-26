@@ -51,7 +51,9 @@ BinaryFunctionModel::getFunctionValue(void) const
 void
 BinaryFunctionModel::inputPortChanged(unsigned i)
 {
-  mBinaryExpression->setInputProperty(i, getInputPort(i));
+  if (getNumInputPorts() <= i)
+    return;
+  mBinaryExpression->setInputProperty(i, getInputPort(i)->getProperty());
 }
 
 } // namespace OpenFDM

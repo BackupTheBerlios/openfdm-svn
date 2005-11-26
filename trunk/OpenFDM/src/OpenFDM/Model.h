@@ -10,8 +10,10 @@
 #include <algorithm>
 
 #include "Assert.h"
+#include "LogStream.h"
 #include "Object.h"
 #include "Property.h"
+#include "Variant.h"
 #include "Vector.h"
 #include "SampleTime.h"
 #include "TaskInfo.h"
@@ -21,6 +23,110 @@ namespace OpenFDM {
 class ModelGroup;
 class Input;
 class Output;
+
+class Port :
+    public Object {
+public:
+  virtual ~Port(void) {}
+
+  /// Returns the systems name.
+  const std::string& getName(void) const
+  { return mName; }
+  void setName(const std::string& name)
+  { mName = name; }
+
+  /// Just use the Properties for now. In this phase it might be a good idea.
+  void setProperty(const Property& property)
+  {
+    mProperty = property;
+    std::vector<shared_ptr<Port> >::iterator it;
+    for (it = mChainPorts.begin(); it != mChainPorts.end(); ++it) {
+      (*it)->setProperty(property);
+    }
+  }
+  /// Just use the Properties for now. In this phase it might be a good idea.
+  const Property& getProperty(void) const
+  { return mProperty; }
+  Property& getProperty(void)
+  { return mProperty; }
+
+  /// returns true if this port has a source port connected to it
+  bool isConnected() const
+  { return mProperty.isValid(); }
+
+  /// Retrieve the value of this port
+  /// Note that we don't need a setValue method since we attach a getter of a
+  /// Model to a port.
+
+  /// This might be the place where it is possible to implement
+  /// TaskInfo dependent output ports ...
+  /// Hmm, may be we should otoh 'dirty' some getters?
+  Variant getValue(void) const
+  { return mProperty.getValue(); }
+
+  /// Connect this port to the given source port
+  void connect(Port* sourcePort)
+  {
+    if (!sourcePort) {
+      Log(Model, Warning) << "Part argument to Port::connect is zero!"
+        "Ignoring!" << endl;
+      return;
+    }
+    // disconnect from other source if we are already connected
+    // FIXME: should this be explicit ??
+    if (mSourcePort) {
+      Log(Model, Warning) << "Connecting already connected port!"
+        "Disconnecting from old port now." << endl;
+      disconnect(mSourcePort);
+    }
+
+    // If we have a source port, propagate its context.
+    setProperty(sourcePort->getProperty());
+    sourcePort->mChainPorts.push_back(this);
+    mSourcePort = sourcePort;
+  }
+
+  /// Disconnect this port from the given source port
+  void disconnect(Port* sourcePort)
+  {
+    if (sourcePort != mSourcePort) {
+      Log(Model, Error) << "Try to disconnect from source port we are not "
+        "currently connected to!" << endl;
+      return;
+    }
+
+    if (!mSourcePort)
+      return;
+
+    // Remove ourselves from the consumer list of the sourcePort to
+    // disconnect us from
+    std::vector<shared_ptr<Port> >::iterator it, beginPort, endPort;
+    beginPort = sourcePort->mChainPorts.begin();
+    endPort = sourcePort->mChainPorts.end();
+    it = std::find(beginPort, endPort, this);
+    if (it != endPort)
+      sourcePort->mChainPorts.erase(it);
+
+    // Reset our source
+    mSourcePort = 0;
+
+    // Invalidate all our listeners
+    setProperty(Property());
+  }
+
+  /// Just disconnect from whoever we are connected to
+  void disconnect(void)
+  { disconnect(mSourcePort); }
+
+private:
+  mutable/*FIXME*/ Property mProperty;
+  /// The list of readers for this port
+  std::vector<shared_ptr<Port> > mChainPorts;
+  /// The source of the current port connection
+  managed_ptr<Port> mSourcePort;
+  /// The current ports name FIXME does this belong here?
+  std::string mName;
+};
 
 class Model
   : public Object {
@@ -97,30 +203,22 @@ public:
   /// Sets the input with the given name property.
   bool setInputPort(const std::string& name, const Property& prop);
 
-  const Property& getInputPort(const std::string& name) const;
-  Property& getInputPort(const std::string& name);
-
-  /// Returns the i-th input property.
-  const Property& getInputPort(unsigned i) const
+  Port* getInputPort(const std::string& name);
+  Port* getInputPort(unsigned i)
   {
     OpenFDMAssert(i < mInputPorts.size());
-    return mInputPorts[i].property;
-  }
-  /// Returns the i-th input property.
-  Property& getInputPort(unsigned i)
-  {
-    OpenFDMAssert(i < mInputPorts.size());
-    return mInputPorts[i].property;
+    return mInputPorts[i];
   }
 
   unsigned getNumOutputPorts(void) const
   { return mOutputPorts.size(); }
 
-  Property getOutputPort(unsigned i) const;
+  Port* getOutputPort(unsigned i);
+  Port* getOutputPort(const std::string& name);
   const std::string& getOutputPortName(unsigned i) const;
 
-  /// Returns the systems output property with the given name.
-  Property getOutputPort(const std::string& name) const;
+  Property getOutputProperty(unsigned i) const; /* OBSOLETE */
+  Property getOutputProperty(const std::string& name) const; /* OBSOLETE */
 
   bool dependsDirectOn(const Model* const model) const;
 
@@ -156,19 +254,14 @@ private:
   void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
   void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);
 
-  /// Holds the single input property.
-  struct Port {
-    Property    property;
-    std::string name;
-  };
-  std::vector<Port> mInputPorts;
-  managed_ptr<ModelGroup> mParentModel;
   std::string mName;
+  managed_ptr<ModelGroup> mParentModel;
   unsigned mNumContinousStates;
   unsigned mNumDiscreteStates;
   bool mDirectFeedThrough;
-  std::vector<Port> mOutputPorts;
   SampleTimeSet mSampleTimeSet;
+  std::vector<shared_ptr<Port> > mInputPorts;
+  std::vector<shared_ptr<Port> > mOutputPorts;
 
   // FIXME
   friend class ModelGroup;

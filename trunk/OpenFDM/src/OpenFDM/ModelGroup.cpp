@@ -310,7 +310,7 @@ ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& 
   // Check, all inputs for dependencies.
   unsigned numInputs = model->getNumInputPorts();
   for (unsigned i = 0; i < numInputs; ++i) {
-    Property prop = model->getInputPort(i);
+    Property prop = model->getInputPort(i)->getProperty();
     // might happen if some inputs are disabled
     if (!prop.isValid())
       continue;

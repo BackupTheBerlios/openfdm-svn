@@ -138,7 +138,7 @@ Output::toOutput(void)
 void
 Output::output(const TaskInfo&)
 {
-  mValue = mOutputGain*getInputPort(0).getValue().toReal();
+  mValue = mOutputGain*getInputPort(0)->getValue().toReal();
 }
 
 const real_type&

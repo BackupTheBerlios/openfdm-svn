@@ -30,11 +30,11 @@ DiscreteIntegrator::~DiscreteIntegrator(void)
 bool
 DiscreteIntegrator::init(void)
 {
-  OpenFDMAssert(getInputPort(0).isValid());
+  OpenFDMAssert(getInputPort(0)->isConnected());
 
   // The initial value defaults to zero
   if (rows(mInitialValue) == 0 || cols(mInitialValue) == 0) {
-    mInitialValue.resize(getInputPort(0).getValue().toMatrix());
+    mInitialValue.resize(getInputPort(0)->getValue().toMatrix());
     mInitialValue.clear();
   }
 
@@ -62,12 +62,12 @@ DiscreteIntegrator::output(const TaskInfo&)
 void
 DiscreteIntegrator::update(const TaskInfo& taskInfo)
 {
-  OpenFDMAssert(getInputPort(0).isValid());
+  OpenFDMAssert(getInputPort(0)->isConnected());
 
   // Just compute the integral.
   // FIXME: make sure this is the only dt ...
   real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
-  Matrix input = getInputPort(0).getValue().toMatrix();
+  Matrix input = getInputPort(0)->getValue().toMatrix();
   OpenFDMAssert(size(input) == size(mIntegralState));
   if (size(input) == size(mIntegralState))
     mIntegralState += dt*input;

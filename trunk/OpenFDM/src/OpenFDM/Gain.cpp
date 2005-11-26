@@ -36,18 +36,18 @@ Gain::~Gain(void)
 bool
 Gain::init(void)
 {
-  OpenFDMAssert(getInputPort(0).isValid());
+  OpenFDMAssert(getInputPort(0)->isConnected());
   
   // Make sure it is invalid if sizes do not match.
-  mOutput.resize(getInputPort(0).getValue().toMatrix());
+  mOutput.resize(getInputPort(0)->getValue().toMatrix());
 
   return true;
 }
 
 void Gain::output(const TaskInfo&)
 {
-  OpenFDMAssert(getInputPort(0).isValid());
-  mOutput = getInputPort(0).getValue().toMatrix();
+  OpenFDMAssert(getInputPort(0)->isConnected());
+  mOutput = getInputPort(0)->getValue().toMatrix();
   mOutput *= mGain;
 }
 

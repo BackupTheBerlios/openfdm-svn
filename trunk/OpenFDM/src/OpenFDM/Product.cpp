@@ -35,27 +35,27 @@ bool
 Product::init(void)
 {
   for (unsigned i = 0; i < getNumInputPorts(); ++i)
-    OpenFDMAssert(getInputPort(i).isValid());
+    OpenFDMAssert(getInputPort(i)->isConnected());
   
   // Make sure it is invalid if sizes do not match.
   mProduct.resize(0, 0);
   // Check if the sizes match.
   for (unsigned i = 0; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i).getValue().toMatrix();
+    Matrix a = getInputPort(i)->getValue().toMatrix();
     if (Size(1,1) != size(a))
       return false;
   }
   mProduct.resize(1, 1);
-  mProduct.resize(getInputPort(0).getValue().toMatrix());
+  mProduct.resize(getInputPort(0)->getValue().toMatrix());
   return true;
 }
 
 void
 Product::output(const TaskInfo&)
 {
-  mProduct = getInputPort(0).getValue().toMatrix();
+  mProduct = getInputPort(0)->getValue().toMatrix();
   for (unsigned i = 1; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i).getValue().toMatrix();
+    Matrix a = getInputPort(i)->getValue().toMatrix();
     if (getInputPortName(i) == "*")
       mProduct(1,1) *= a(1,1);
     else

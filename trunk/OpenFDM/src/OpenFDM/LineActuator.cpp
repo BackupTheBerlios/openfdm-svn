@@ -24,7 +24,7 @@ LineActuator::~LineActuator(void)
 void
 LineActuator::output(const TaskInfo& taskInfo)
 {
-  real_type posInput = getInputPort(0).getValue().toReal();
+  real_type posInput = getInputPort(0)->getValue().toReal();
   real_type displacement = getPosition() - posInput;
   setForce(mProportionalGain*displacement + getVel()*mDerivativeGain);
 }

@@ -59,10 +59,10 @@ SimpleGear::output(const TaskInfo& taskInfo)
 {
   if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
                           SampleTime::PerTimestep)) {
-    if (getInputPort("brakeCommand").isValid())
-      mBrake = getInputPort("brakeCommand").getValue().toReal();
-    if (getInputPort("steeringAngle").isValid())
-      mSteeringAngle = getInputPort("steeringAngle").getValue().toReal();
+    if (getInputPort("brakeCommand")->isConnected())
+      mBrake = getInputPort("brakeCommand")->getValue().toReal();
+    if (getInputPort("steeringAngle")->isConnected())
+      mSteeringAngle = getInputPort("steeringAngle")->getValue().toReal();
   }
 
   Contact::output(taskInfo);

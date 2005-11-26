@@ -279,16 +279,16 @@ public:
   
   virtual bool init(void)
   {
-    OpenFDMAssert(getInputPort(0).isValid());
+    OpenFDMAssert(getInputPort(0)->isConnected());
   
-    return getInputPort(0).isValid();
+    return getInputPort(0)->isConnected();
   }
 
   virtual void output(const TaskInfo&)
   {
-    OpenFDMAssert(getInputPort(0).isValid());
+    OpenFDMAssert(getInputPort(0)->isConnected());
     TableData<1>::InterpVector interpVec;
-    real_type iv = getInputPort(0).getValue().toReal();
+    real_type iv = getInputPort(0)->getValue().toReal();
     interpVec(1) = mTableLookup.lookup(iv);
     mOutput = mTableData.interpolate(interpVec);
   }

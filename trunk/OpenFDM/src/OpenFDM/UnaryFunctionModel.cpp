@@ -51,7 +51,9 @@ UnaryFunctionModel::getFunctionValue(void) const
 void
 UnaryFunctionModel::inputPortChanged(unsigned i)
 {
-  mUnaryExpression->setInputProperty(getInputPort(0));
+  if (getNumInputPorts() <= i)
+    return;
+  mUnaryExpression->setInputProperty(getInputPort(0)->getProperty());
 }
 
 } // namespace OpenFDM

@@ -23,7 +23,7 @@ DiscBrake::~DiscBrake(void)
 void
 DiscBrake::output(const TaskInfo& taskInfo)
 {
-  real_type brakeInput = getInputPort(0).getValue().toReal();
+  real_type brakeInput = getInputPort(0)->getValue().toReal();
   setForce(getVel()*(-1e1 + brakeInput*mFrictionConstant));
 }
 

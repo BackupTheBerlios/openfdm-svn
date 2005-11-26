@@ -368,8 +368,8 @@ public:
         return error("Can not find src model named \"" + name + "\" !");
       if (srcModel->getNumOutputPorts() <= number)
         return error("Model \"" + name + "\" has not enough output ports!");
-      Property prop = srcModel->getOutputPort(number);
-      if (!prop.isValid())
+      Port* srcPort = srcModel->getOutputPort(number);
+      if (!srcPort)
         return error("Model \"" + name + "\" returns invalid output port!");
 
       if (1 != (*it)->getNumElements("dst"))
@@ -383,7 +383,10 @@ public:
       if (dstModel->getNumInputPorts() <= number)
         return error("Model \"" + name + "\" has not enough input ports!");
 
-      dstModel->setInputPort(number, prop);
+      Port* dstPort = dstModel->getInputPort(number);
+      if (!dstPort)
+        return error("Model \"" + name + "\" returns invalid input port!");
+      dstPort->connect(srcPort);
 
       // FIXME
       ++it;
@@ -629,7 +632,7 @@ int main(int argc, char *argv[])
     system->simulate(j*0.01);
 
     for (unsigned i = 0; i < modelGroup->getNumModels(); ++i)
-      cout << modelGroup->getModel(i)->getOutputPort("output").getValue().toMatrix() << " ";
+      cout << modelGroup->getModel(i)->getOutputProperty("output").getValue().toMatrix() << " ";
 
     cout << endl;
   }

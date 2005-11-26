@@ -37,9 +37,9 @@ Saturation::~Saturation(void)
 bool
 Saturation::init(void)
 {
-  OpenFDMAssert(getInputPort(0).isValid());
+  OpenFDMAssert(getInputPort(0)->isConnected());
   
-  Matrix inputMatrix = getInputPort(0).getValue().toMatrix();
+  Matrix inputMatrix = getInputPort(0)->getValue().toMatrix();
   if (0 < rows(mMaxSaturation) && 0 < cols(mMaxSaturation) &&
       size(mMaxSaturation) != size(inputMatrix))
     mOutput.resize(0, 0);
@@ -54,9 +54,9 @@ Saturation::init(void)
 void
 Saturation::output(const TaskInfo&)
 {
-  OpenFDMAssert(getInputPort(0).isValid());
+  OpenFDMAssert(getInputPort(0)->isConnected());
   
-  mOutput = getInputPort(0).getValue().toMatrix();
+  mOutput = getInputPort(0)->getValue().toMatrix();
   unsigned r = rows(mOutput);
   unsigned c = cols(mOutput);
   if (0 < rows(mMaxSaturation) && 0 < cols(mMaxSaturation)) {

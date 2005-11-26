@@ -157,7 +157,7 @@ const std::string&
 Model::getInputPortName(unsigned i) const
 {
   OpenFDMAssert(i < mInputPorts.size());
-  return mInputPorts[i].name;
+  return mInputPorts[i]->getName();
 }
 
 bool
@@ -169,7 +169,7 @@ Model::setInputPort(unsigned i, const Property& prop)
     return false;
   }
 
-  mInputPorts[i].property = prop;
+  mInputPorts[i]->setProperty(prop);
   inputPortChanged(i);
   return true;
 }
@@ -178,7 +178,7 @@ bool
 Model::setInputPort(const std::string& name, const Property& prop)
 {
   for (unsigned i = 0; i < mInputPorts.size(); ++i) {
-    if (mInputPorts[i].name == name) {
+    if (mInputPorts[i]->getName() == name) {
       setInputPort(i, prop);
       return true;
     }
@@ -189,36 +189,49 @@ Model::setInputPort(const std::string& name, const Property& prop)
   return false;
 }
 
-const Property&
-Model::getInputPort(const std::string& name) const
-{
-  // Check if this one exists and return its value.
-  std::vector<Port>::const_iterator it = mInputPorts.begin();
-  while (it != mInputPorts.end()) {
-    if ((*it).name == name)
-      return (*it).property;
-    ++it;
-  }
-  // FIXME
-  return mInputPorts.front().property;
-}
-
-Property&
+Port*
 Model::getInputPort(const std::string& name)
 {
   // Check if this one exists and return its value.
-  std::vector<Port>::iterator it = mInputPorts.begin();
+  std::vector<shared_ptr<Port> >::iterator it = mInputPorts.begin();
   while (it != mInputPorts.end()) {
-    if ((*it).name == name)
-      return (*it).property;
+    if ((*it)->getName() == name)
+      return *it;
     ++it;
   }
-  // FIXME
-  return mInputPorts.front().property;
+  return 0;
+}
+
+Port*
+Model::getOutputPort(unsigned i)
+{
+  if (mOutputPorts.size() <= i) {
+    Log(Model, Error) << "Output port index " << i << "out of range in \""
+                      << getName() << "\"" << endl;
+    return 0;
+  }
+
+  return mOutputPorts[i];
+}
+
+Port*
+Model::getOutputPort(const std::string& name)
+{
+  // Check if this one exists and return its value.
+  std::vector<shared_ptr<Port> >::iterator it = mOutputPorts.begin();
+  while (it != mOutputPorts.end()) {
+    if ((*it)->getName() == name)
+      return *it;
+    ++it;
+  }
+
+  Log(Model, Error) << "Output port name " << name << "not found in \""
+                    << getName() << "\"" << endl;
+  return 0;
 }
 
 Property
-Model::getOutputPort(unsigned i) const
+Model::getOutputProperty(unsigned i) const
 {
   if (mOutputPorts.size() <= i) {
     Log(Model, Error) << "Output port index " << i << "out of range in \""
@@ -226,24 +239,24 @@ Model::getOutputPort(unsigned i) const
     return Property();
   }
 
-  return mOutputPorts[i].property;
+  return mOutputPorts[i]->getProperty();
 }
 
 const std::string&
 Model::getOutputPortName(unsigned i) const
 {
   OpenFDMAssert(i < mOutputPorts.size());
-  return mOutputPorts[i].name;
+  return mOutputPorts[i]->getName();
 }
 
 Property
-Model::getOutputPort(const std::string& name) const
+Model::getOutputProperty(const std::string& name) const
 {
   // Check if this one exists and return its value.
-  std::vector<Port>::const_iterator it = mOutputPorts.begin();
+  std::vector<shared_ptr<Port> >::const_iterator it = mOutputPorts.begin();
   while (it != mOutputPorts.end()) {
-    if ((*it).name == name)
-      return (*it).property;
+    if ((*it)->getName() == name)
+      return (*it)->getProperty();
     ++it;
   }
 
@@ -260,9 +273,9 @@ Model::dependsDirectOn(const Model* const model) const
   if (!getDirectFeedThrough())
     return false;
   // Check if the given model is the source of any input property.
-  std::vector<Port>::const_iterator it = mInputPorts.begin();
+  std::vector<shared_ptr<Port> >::const_iterator it = mInputPorts.begin();
   while (it != mInputPorts.end()) {
-    if (model == (*it).property.getObject())
+    if (model == (*it)->getProperty().getObject())
       return true;
     ++it;
   }
@@ -272,7 +285,11 @@ Model::dependsDirectOn(const Model* const model) const
 void
 Model::setNumInputPorts(unsigned num)
 {
+  // Ok, strange, but required ...
+  unsigned oldSize = mInputPorts.size();
   mInputPorts.resize(num);
+  for (; oldSize < mInputPorts.size(); ++oldSize)
+    mInputPorts[oldSize] = new Port;
   inputPortChanged(num);
 }
 
@@ -280,7 +297,7 @@ void
 Model::setInputPortName(unsigned i, const std::string& name)
 {
   OpenFDMAssert(i < mInputPorts.size());
-  mInputPorts[i].name = name;
+  mInputPorts[i]->setName(name);
   inputPortChanged(i);
 }
 
@@ -292,15 +309,21 @@ Model::inputPortChanged(unsigned)
 void
 Model::setNumOutputPorts(unsigned num)
 {
+  // Ok, strange, but required ...
+  unsigned oldSize = mOutputPorts.size();
   mOutputPorts.resize(num);
+  for (; oldSize < mOutputPorts.size(); ++oldSize)
+    mOutputPorts[oldSize] = new Port;
 }
 
 void
 Model::setOutputPort(unsigned i, const std::string& name, const Property& prop)
 {
   OpenFDMAssert(i < mOutputPorts.size());
-  mOutputPorts[i].property = prop;
-  mOutputPorts[i].name = name;
+  Port* port = new Port;
+  port->setProperty(prop);
+  port->setName(name);
+  mOutputPorts[i] = port;
 }
 
 void

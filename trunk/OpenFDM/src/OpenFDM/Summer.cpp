@@ -36,14 +36,14 @@ bool
 Summer::init(void)
 {
   for (unsigned i = 0; i < getNumInputPorts(); ++i)
-    OpenFDMAssert(getInputPort(i).isValid());
+    OpenFDMAssert(getInputPort(i)->isConnected());
   
   // Make sure it is invalid if sizes do not match.
   mSum.resize(0, 0);
   // Check if the sizes match.
-  Matrix a0 = getInputPort(0).getValue().toMatrix();
+  Matrix a0 = getInputPort(0)->getValue().toMatrix();
   for (unsigned i = 1; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i).getValue().toMatrix();
+    Matrix a = getInputPort(i)->getValue().toMatrix();
     if (size(a0) != size(a))
       return false;
   }
@@ -56,7 +56,7 @@ Summer::output(const TaskInfo&)
 {
   mSum.clear();
   for (unsigned i = 0; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i).getValue().toMatrix();
+    Matrix a = getInputPort(i)->getValue().toMatrix();
     if (getInputPortName(i) == "-")
       mSum -= a;
     else

@@ -34,16 +34,16 @@ DeadBand::~DeadBand(void)
 bool
 DeadBand::init(void)
 {
-  OpenFDMAssert(getInputPort(0).isValid());
-  return getInputPort(0).isValid();
+  OpenFDMAssert(getInputPort(0)->isConnected());
+  return getInputPort(0)->isConnected();
 }
 
 void
 DeadBand::output(const TaskInfo&)
 {
-  OpenFDMAssert(getInputPort(0).isValid());
+  OpenFDMAssert(getInputPort(0)->isConnected());
   
-  mOutput = getInputPort(0).getValue().toReal();
+  mOutput = getInputPort(0)->getValue().toReal();
   if (mOutput < -mWidth)
     mOutput += mWidth;
   else if (mWidth < mOutput)
