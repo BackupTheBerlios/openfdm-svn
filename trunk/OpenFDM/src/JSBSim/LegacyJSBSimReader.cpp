@@ -164,7 +164,7 @@ LegacyJSBSimReader::propNameFromJSBSim(const std::string& jsbSymbol)
   if (jsbSymbol.empty())
     return jsbSymbol;
 
-  string propName = jsbSymbol;
+  std::string propName = jsbSymbol;
 
   // Strip the minus sign
   if (propName[0] == '-')
