@@ -197,7 +197,9 @@ ModelGroup::init(void)
 void
 ModelGroup::output(const TaskInfo& taskInfo)
 {
-  if (!nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
+  // FIXME empty means inherited somehow ...
+  if (!getSampleTimeSet().empty() &&
+      !nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
     return;
 
   // Just do output on all children.
@@ -210,7 +212,9 @@ ModelGroup::output(const TaskInfo& taskInfo)
 void
 ModelGroup::update(const TaskInfo& taskInfo)
 {
-  if (!nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
+  // FIXME empty means inherited somehow ...
+  if (!getSampleTimeSet().empty() &&
+      !nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
     return;
 
   // Just update all children.
