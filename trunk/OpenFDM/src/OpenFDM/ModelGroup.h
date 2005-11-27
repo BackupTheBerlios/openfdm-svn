@@ -49,6 +49,10 @@ public:
   virtual void setDiscreteState(const Vector& state, unsigned offset);
   virtual void getDiscreteState(Vector& state, unsigned offset) const;
 
+  /// make them public
+  using Model::setNumInputPorts;
+  using Model::setNumOutputPorts;
+
 private:
   typedef std::vector<shared_ptr<Model> > ModelList;
 

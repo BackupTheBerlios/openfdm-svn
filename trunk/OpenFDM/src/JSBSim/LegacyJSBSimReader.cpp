@@ -44,7 +44,8 @@
 #include <OpenFDM/XML/Tablereader.h>
 #include <OpenFDM/XML/XMLReader.h>
 
-#include "LegacyKinemat.h"
+#include "JSBSimAerosurfaceScale.h"
+#include "JSBSimKinemat.h"
 
 #include "LegacyJSBSimReader.h"
 
@@ -1130,8 +1131,9 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   shared_ptr<Gain> gain;
   shared_ptr<DiscreteTransferFunction> discreteTransfFunc;
   shared_ptr<Table1D> table1D;
-  shared_ptr<LegacyKinemat> kinemat;
   shared_ptr<Saturation> inputSaturation;
+  shared_ptr<JSBSimAerosurfaceScale> asScale;
+  shared_ptr<JSBSimKinemat> kinemat;
 
   // The final output property.
   shared_ptr<Port> out;
@@ -1169,10 +1171,11 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   } else if (type == "KINEMAT") {
 
     // Use that special proxy class
-    kinemat = new LegacyKinemat(name);
-    model = kinemat;
+    kinemat = new JSBSimKinemat(name);
+    model = kinemat->getModelGroup();
     addFCSModel(model);
-    out = kinemat->getOutputPort(0);
+    out = kinemat->getOutputPort();
+    normOut = kinemat->getOutputNormPort();
 
   } else if (type == "PURE_GAIN") {
     gain = new Gain(name);
@@ -1186,39 +1189,11 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     // the input from -1 to 1. This is the one which is magically mapped to
     // an output property in /surface-positions/...
     // This one's output is directly connected to a lookup table
-
-    inputSaturation = new Saturation(name + "Input Saturation");
-    model = inputSaturation;
-    addFCSModel(inputSaturation);
-    normOut = inputSaturation->getOutputPort(0);
-    Matrix tmp(1, 1);
-    tmp(1, 1) = -1;
-    inputSaturation->setMinSaturation(tmp);
-    tmp(1, 1) = 1;
-    inputSaturation->setMaxSaturation(tmp);
-
-    table1D = new Table1D(name);
-    TableLookup tl;
-    tl.setAtIndex(1, -1);
-    tl.setAtIndex(2, 0);
-    tl.setAtIndex(3, 1);
-    table1D->setTableLookup(tl);
-    TableData<1>::SizeVector sv;
-    sv(1) = 3;
-    TableData<1> tableData(sv);
-    TableData<1>::Index iv;
-    iv(1) = 1;
-    tableData(iv) = -1;
-    iv(1) = 2;
-    tableData(iv) = 0;
-    iv(1) = 3;
-    tableData(iv) = 1;
-    table1D->setTableData(tableData);
-    table1D->getInputPort(0)->connect(inputSaturation->getOutputPort(0));
-
-    addFCSModel(table1D);
-    out = table1D->getOutputPort(0);
-
+    asScale = new JSBSimAerosurfaceScale(name);
+    model = asScale->getModelGroup();
+    addFCSModel(model);
+    out = asScale->getOutputPort();
+    normOut = asScale->getOutputNormPort();
   } else if (type == "SCHEDULED_GAIN") {
     Product* prod = new Product(name);
     prod->setNumFactors(2);
@@ -1532,11 +1507,8 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       datastr >> clipmax;
       
       if (type == "AEROSURFACE_SCALE") {
-        TableData<1> tableData = table1D->getTableData();
-        TableData<1>::Index iv;
-        iv(1) = 3;
-        tableData(iv) = clipmax;
-        table1D->setTableData(tableData);
+        asScale->setMaxValue(clipmax);
+
       } else {
         if (!saturation) {
           std::string modelName = std::string(name) + " OSat";
@@ -1554,11 +1526,8 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       datastr >> clipmin;
       
       if (type == "AEROSURFACE_SCALE") {
-        TableData<1> tableData = table1D->getTableData();
-        TableData<1>::Index iv;
-        iv(1) = 1;
-        tableData(iv) = clipmin;
-        table1D->setTableData(tableData);
+        asScale->setMinValue(clipmin);
+
       } else {
         if (!saturation) {
           std::string modelName = std::string(name) + " OSat";

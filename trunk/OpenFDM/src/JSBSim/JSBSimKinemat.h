@@ -2,20 +2,20 @@
  *
  */
 
-#ifndef OpenFDM_LegacyKinemat_H
-#define OpenFDM_LegacyKinemat_H
+#ifndef OpenFDM_JSBSimKinemat_H
+#define OpenFDM_JSBSimKinemat_H
 
-#include <OpenFDM/ModelGroup.h>
+#include "JSBSimFCSComponent.h"
 
 namespace OpenFDM {
 
 /// Just a small container mapping the JSBSim Kinemat parameters to
 /// the OpenFDM models.
-class LegacyKinemat :
-    public ModelGroup {
+class JSBSimKinemat :
+    public JSBSimFCSComponent {
 public:
-  LegacyKinemat(const std::string& name);
-  virtual ~LegacyKinemat(void);
+  JSBSimKinemat(const std::string& name);
+  virtual ~JSBSimKinemat(void);
 
   void setRateLimit(real_type rateLimit);
   void setMinValue(real_type minValue);
@@ -27,7 +27,7 @@ private:
   shared_ptr<Gain> mInputGain;
   shared_ptr<Saturation> mInputSaturation;
   shared_ptr<Saturation> mKinematRateLimit;
-  shared_ptr<Gain> mOutputGain;
+  shared_ptr<Gain> mOutputNormGain;
 };
 
 } //namespace OpenFDM
