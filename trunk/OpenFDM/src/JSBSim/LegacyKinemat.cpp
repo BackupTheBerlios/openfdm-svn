@@ -19,6 +19,15 @@ LegacyKinemat::LegacyKinemat(const std::string& name) :
   // The derivative is limited to match the avarage movement speed of the
   // KINEMAT. This is not exactly like JSBSim does that, but it is
   // sufficient for now.
+  //
+  // -|InputGain|-|InputSaturation|-|
+  //                                |
+  //  -------------------------------
+  //  |
+  //  +-|ErrorGain|-|RateLimit|-|Integrator|-o-|Outgain|-
+  //  |                                      |
+  //  -----------|FeedbackGain|---------------
+  //
   // FIXME: simplify
   // FIXME: implement tables
   // FIXME: implement triggers for initialization of the integrator at the
