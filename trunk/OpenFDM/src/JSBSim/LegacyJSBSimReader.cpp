@@ -43,6 +43,8 @@
 #include <OpenFDM/XML/Tablereader.h>
 #include <OpenFDM/XML/XMLReader.h>
 
+#include "LegacyKinemat.h"
+
 #include "LegacyJSBSimReader.h"
 
 namespace OpenFDM {
@@ -1123,7 +1125,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   shared_ptr<Gain> gain;
   shared_ptr<DiscreteTransferFunction> discreteTransfFunc;
   shared_ptr<Table1D> table1D;
-  shared_ptr<Saturation> kinematRateLimit;
+  shared_ptr<LegacyKinemat> kinemat;
   shared_ptr<Saturation> inputSaturation;
 
   // The final output property.
@@ -1160,48 +1162,12 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     std::cout << "Ignoring SWITCH" << std::endl;
 
   } else if (type == "KINEMAT") {
-    // A KINEMAT is done as a first order ODE packed into a discrete system
-    // The derivative is limited to match the avarage movement speed of the
-    // KINEMAT. This is not exactly like JSBSim does that, but it is
-    // sufficient for now.
-    gain = new Gain(name + " Input Gain");
-    addFCSModel(gain);
-    gain->setGain(1);
-    model = gain;
 
-    inputSaturation = new Saturation(name + " Input Saturation");
-    addFCSModel(inputSaturation);
-    inputSaturation->getInputPort(0)->connect(gain->getOutputPort(0));
-
-    Summer* inputError = new Summer(name + " Input Sum");
-    addFCSModel(inputError);
-    inputError->getInputPort(0)->connect(inputSaturation->getOutputPort(0));
-    inputError->setNumSummands(2);
-
-    Gain* errorGain = new Gain(name + " Error Gain");
-    addFCSModel(errorGain);
-    errorGain->setGain(100);
-    errorGain->getInputPort(0)->connect(inputError->getOutputPort(0));
-
-    kinematRateLimit = new Saturation(name + " Rate Limit");
-    addFCSModel(kinematRateLimit);
-    kinematRateLimit->getInputPort(0)->connect(errorGain->getOutputPort(0));
-
-    DiscreteIntegrator* integrator
-      = new DiscreteIntegrator(name + " Integrator");
-    addFCSModel(integrator);
-    integrator->getInputPort(0)->connect(kinematRateLimit->getOutputPort(0));
-    Matrix tmp(1, 1);
-    tmp(1, 1) = 1;
-//     tmp.clear();
-    integrator->setInitialValue(tmp);
-    out = integrator->getOutputPort(0);
-
-    Gain* feedbackGain = new Gain(name + " Feedback Gain");
-    addFCSModel(feedbackGain);
-    feedbackGain->setGain(-1);
-    feedbackGain->getInputPort(0)->connect(integrator->getOutputPort(0));
-    inputError->getInputPort(1)->connect(feedbackGain->getOutputPort(0));
+    // Use that special proxy class
+    kinemat = new LegacyKinemat(name);
+    model = kinemat;
+    addFCSModel(model);
+    out = kinemat->getOutputPort(0);
 
   } else if (type == "PURE_GAIN") {
     gain = new Gain(name);
@@ -1328,7 +1294,6 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   shared_ptr<Bias> outbias;
   shared_ptr<Gain> outgain;
   bool outInvert = false;
-  bool noScale = false;
 
   for (;;) {
     std::string token;
@@ -1526,20 +1491,13 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
           minVal = min(minVal, val);
           maxVal = max(maxVal, val);
         }
-        Matrix tmp(1, 1);
-        if (allTime != 0) {
-          real_type avgTransRate = abs((maxVal-minVal)/allTime);
-          tmp(1, 1) = -avgTransRate;
-          kinematRateLimit->setMinSaturation(tmp);
-          tmp(1, 1) = avgTransRate;
-          kinematRateLimit->setMaxSaturation(tmp);
-        }
-        tmp(1, 1) = minVal;
-        inputSaturation->setMinSaturation(tmp);
-        tmp(1, 1) = maxVal;
-        inputSaturation->setMaxSaturation(tmp);
+        if (allTime != 0)
+          kinemat->setRateLimit(fabs((maxVal-minVal)/allTime));
+        else
+          kinemat->setRateLimit(Limits<real_type>::max());
+        kinemat->setMinValue(minVal);
+        kinemat->setMaxValue(maxVal);
 
-        gain->setGain(maxVal);
       } else
         return error("No DETENTS parameter allowed for \"" + type + "\"");
 
@@ -1611,7 +1569,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     } else if (token == "NOSCALE") {
 
       if (type == "KINEMAT") {
-        noScale = true;
+        kinemat->setNoScale(true);
       } else
         return error("No NOSCALE parameter allowed for \"" + type + "\"");
       
@@ -1700,20 +1658,6 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   }
   // FIXME put in here a normalized out property, or at least a gain to
   // normalize
-
-  // For KINEMATS ...
-  if (type == "KINEMAT") {
-    if (noScale) {
-      gain->setGain(1);
-      normOut = out;
-    } else {
-      Gain* normGain = new Gain(name + " Normalize Gain");
-      normGain->setGain(1/gain->getGain());
-      addFCSModel(normGain);
-      normGain->getInputPort(0)->connect(out);
-      normOut = normGain->getOutputPort(0);
-    }
-  }
 
   if (!normOut || !normOut->isConnected())
     normOut = inputs.front();
