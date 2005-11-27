@@ -77,7 +77,9 @@ nobase_OpenFDMinclude_HEADERS = \
   Mass.h \
   Math.h \
   Matrix.h \
+  MaxModel.h \
   MidpointRule.h \
+  MinModel.h \
   Model.h \
   ModelGroup.h \
   MultiBodyModel.h \
@@ -163,7 +165,9 @@ libOpenFDM_la_SOURCES = \
   LineForce.cpp \
   Logger.cpp \
   Mass.cpp \
+  MaxModel.cpp \
   MidpointRule.cpp \
+  MinModel.cpp \
   Model.cpp \
   ModelGroup.cpp \
   MultiBodyModel.cpp \

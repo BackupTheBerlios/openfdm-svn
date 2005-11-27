@@ -22,6 +22,7 @@
 #include <OpenFDM/Input.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/LinearSpring.h>
+#include <OpenFDM/MaxModel.h>
 #include <OpenFDM/AirSpring.h>
 #include <OpenFDM/PrismaticJoint.h>
 #include <OpenFDM/Product.h>
@@ -400,36 +401,40 @@ LegacyJSBSimReader::createAndScheduleInput(const std::string& propName)
                            "controls/gear/brake-parking");
 
     } else if (propName == "fdm/jsbsim/gear/right-brake-pos-norm") {
+      MaxModel* maxModel = new MaxModel("Right Brake Max");
+      maxModel->setNumMaxInputs(3);
+
       Port* pilotBr = addInputModel("Right Brake Input",
                                     "controls/gear/brake-right");
+      maxModel->getInputPort(0)->connect(pilotBr);
+
       Port* copilotBr = addInputModel("Right Copilot Brake Input",
                                       "controls/gear/copilot-brake-right");
+      maxModel->getInputPort(1)->connect(copilotBr);
 
       Port* parkBr = lookupJSBExpression("/controls/gear/brake-parking");
+      maxModel->getInputPort(2)->connect(parkBr);
 
-      // FIXME: we don't have a max model ...
-      MaxExpressionImpl* mex = new MaxExpressionImpl;
-      mex->addInputProperty(pilotBr->getProperty());
-      mex->addInputProperty(copilotBr->getProperty());
-      mex->addInputProperty(parkBr->getProperty());
-      port = new Port;
-      port->setProperty(Property(mex));
+      addFCSModel(maxModel);
+      port = maxModel->getOutputPort(0);
 
     } else if (propName == "fdm/jsbsim/gear/left-brake-pos-norm") {
+      MaxModel* maxModel = new MaxModel("Left Brake Max");
+      maxModel->setNumMaxInputs(3);
+
       Port* pilotBr = addInputModel("Left Brake Input",
                                     "controls/gear/brake-left");
+      maxModel->getInputPort(0)->connect(pilotBr);
+
       Port* copilotBr = addInputModel("Left Copilot Brake Input",
                                       "controls/gear/copilot-brake-left");
+      maxModel->getInputPort(1)->connect(copilotBr);
       
       Port* parkBr = lookupJSBExpression("/controls/gear/brake-parking");
+      maxModel->getInputPort(2)->connect(parkBr);
 
-      // FIXME: we don't have a max model ...
-      MaxExpressionImpl* mex = new MaxExpressionImpl;
-      mex->addInputProperty(pilotBr->getProperty());
-      mex->addInputProperty(copilotBr->getProperty());
-      mex->addInputProperty(parkBr->getProperty());
-      port = new Port;
-      port->setProperty(Property(mex));
+      addFCSModel(maxModel);
+      port = maxModel->getOutputPort(0);
 
     } else if (propName.substr(0, 19) == "fdm/jsbsim/fcs/mag-") {
       // Special absolute modules for fcs/mag-*
