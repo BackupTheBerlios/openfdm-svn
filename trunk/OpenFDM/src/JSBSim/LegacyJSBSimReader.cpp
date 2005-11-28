@@ -46,6 +46,7 @@
 
 #include "JSBSimAerosurfaceScale.h"
 #include "JSBSimKinemat.h"
+#include "JSBSimScheduledGain.h"
 
 #include "LegacyJSBSimReader.h"
 
@@ -1130,10 +1131,9 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   shared_ptr<Summer> summer;
   shared_ptr<Gain> gain;
   shared_ptr<DiscreteTransferFunction> discreteTransfFunc;
-  shared_ptr<Table1D> table1D;
-  shared_ptr<Saturation> inputSaturation;
   shared_ptr<JSBSimAerosurfaceScale> asScale;
   shared_ptr<JSBSimKinemat> kinemat;
+  shared_ptr<JSBSimScheduledGain> sGain;
 
   // The final output property.
   shared_ptr<Port> out;
@@ -1194,13 +1194,10 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     addFCSModel(model);
     out = asScale->getOutputPort();
     normOut = asScale->getOutputNormPort();
+
   } else if (type == "SCHEDULED_GAIN") {
-    Product* prod = new Product(name);
-    prod->setNumFactors(2);
-    table1D = new Table1D(std::string("Lookup table for ") + name);
-    addFCSModel(table1D);
-    prod->getInputPort(1)->connect(table1D->getOutputPort(0));
-    model = prod;
+    sGain = new JSBSimScheduledGain(name);
+    model = sGain->getModelGroup();
     addFCSModel(model);
     out = model->getOutputPort(0);
 
@@ -1565,16 +1562,13 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
       if (!parseTable1D(datastr, tableData, lookup))
         return error("Cannot parse lookup table for \"" + type + "\"");
 
-      if (table1D) {
-        table1D->setTableData(tableData);
-        table1D->setTableLookup(lookup);
-      }
+      sGain->setTableData(tableData, lookup);
 
     } else if (token == "SCHEDULED_BY") {
       datastr >> token;
       
-      if (table1D) {
-        table1D->getInputPort(0)->connect(lookupJSBExpression(token));
+      if (sGain) {
+        model->getInputPort(1)->connect(lookupJSBExpression(token));
       } else
         return error("SCHEDULED_BY without table ??");
       

@@ -24,6 +24,11 @@ class ModelGroup;
 class Input;
 class Output;
 
+/// Class for an inout or output port of a Model.
+/// Ports can be connected together. This means in effect that the reader
+/// gains access to value at the source model.
+/// Additional information must be carried through that class.
+/// ...
 class Port :
     public Object {
 public:
