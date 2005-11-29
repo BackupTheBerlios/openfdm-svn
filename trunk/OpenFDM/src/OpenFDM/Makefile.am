@@ -35,6 +35,7 @@ nobase_OpenFDMinclude_HEADERS = \
   ConstantForce.h \
   ConstSystem.h \
   ConstVisitor.h \
+  CowPtr.h \
   DeadBand.h \
   DefaultGravity.h \
   DefaultGround.h \
