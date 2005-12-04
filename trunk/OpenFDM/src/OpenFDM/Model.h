@@ -24,7 +24,105 @@ class ModelGroup;
 class Input;
 class Output;
 
-/// Class for an inout or output port of a Model.
+class RealPortInterface;
+class MatrixPortInterface;
+
+class PortInterface : public Referenced {
+public:
+  virtual ~PortInterface(void) {}
+  virtual RealPortInterface* toRealPortInterface(void) { return 0; }
+  virtual MatrixPortInterface* toMatrixPortInterface(void) { return 0; }
+
+  virtual bool isConnected(void) const = 0;
+  virtual void evaluate(void) = 0;
+};
+
+class RealPortInterface : public PortInterface {
+public:
+  RealPortInterface(unsigned m = 1, unsigned n = 1) : mValue(m, n) {}
+  virtual RealPortInterface* toRealPortInterface(void)
+  {
+    if (Size(1, 1) == size(mValue))
+      return this;
+    else
+      return 0;
+  }
+  // FIXME, should not be a virtual function
+  virtual real_type getRealValue(void)
+  { evaluate(); return mValue(1, 1); }
+protected:
+  Matrix mValue;
+};
+
+class MatrixPortInterface : public RealPortInterface {
+public:
+  virtual MatrixPortInterface* toMatrixPortInterface(void) { return this; }
+  // FIXME, should not be a virtual function
+  virtual const Matrix& getMatrixValue(void)
+  { evaluate(); return mValue; }
+};
+
+
+/// FIXME adapter to be somehow backwards compatible
+/// Should vanish
+class PropertyPortInterface : public MatrixPortInterface {
+public:
+  PropertyPortInterface(const Property& property) : mProperty(property)
+  { }
+  virtual void evaluate(void)
+  {
+    mValue = mProperty.getValue().toMatrix();
+  }
+  virtual bool isConnected(void) const
+  { return mProperty.isValid(); }
+private:
+  mutable Property mProperty;
+};
+
+class RealPortHandle {
+public:
+  RealPortHandle(RealPortInterface* realPortInterface) :
+    mRealPortInterface(realPortInterface)
+  { }
+  real_type getRealValue(void)
+  { return mRealPortInterface->getRealValue(); }
+  bool isConnected(void) const
+  { return mRealPortInterface && mRealPortInterface->isConnected(); }
+private:
+  shared_ptr<RealPortInterface> mRealPortInterface;
+};
+
+class MatrixPortHandle {
+public:
+  MatrixPortHandle(MatrixPortInterface* matrixPortInterface) :
+    mMatrixPortInterface(matrixPortInterface)
+  { }
+  const Matrix& getMatrixValue(void)
+  { return mMatrixPortInterface->getMatrixValue(); }
+  bool isConnected(void) const
+  { return mMatrixPortInterface && mMatrixPortInterface->isConnected(); }
+private:
+  shared_ptr<MatrixPortInterface> mMatrixPortInterface;
+};
+
+// should vanish, just an adaptor for smoother migration
+class RealPortExpression : public PropertyImpl<real_type> {
+public:
+  RealPortExpression(const RealPortHandle& rph) :
+    mRealPortHandle(rph)
+  { }
+  real_type getValue(void) const
+  { return mRealPortHandle.getRealValue(); }
+  void setValue(const real_type&)
+  {  }
+  bool isValid(void) const { return mRealPortHandle.isConnected(); }
+  const Object* getObject(void) const { return 0; }
+  Object* getObject(void) { return 0; }
+private:
+  mutable RealPortHandle mRealPortHandle;
+};
+
+/// Class for an input or output port of a Model.
 /// Ports can be connected together. This means in effect that the reader
 /// gains access to value at the source model.
 /// Additional information must be carried through that class.
@@ -43,21 +141,30 @@ public:
   /// Just use the Properties for now. In this phase it might be a good idea.
   void setProperty(const Property& property)
   {
-    mProperty = property;
+    setPortInterface(new PropertyPortInterface(property));
+  }
+  void setPortInterface(PortInterface* portInterface)
+  {
+    mPortInterface = portInterface;
     std::vector<shared_ptr<Port> >::iterator it;
     for (it = mChainPorts.begin(); it != mChainPorts.end(); ++it) {
-      (*it)->setProperty(property);
+      (*it)->setPortInterface(mPortInterface);
     }
   }
+
   /// Just use the Properties for now. In this phase it might be a good idea.
-  const Property& getProperty(void) const
-  { return mProperty; }
-  Property& getProperty(void)
-  { return mProperty; }
+  Property getProperty(void) const
+  { return Property(new RealPortExpression(((Port*)(this))->toRealPortHandle())); }
+
 
   /// returns true if this port has a source port connected to it
   bool isConnected() const
-  { return mProperty.isValid(); }
+  { return mPortInterface->isConnected(); }
+
+  RealPortHandle toRealPortHandle(void)
+  { return RealPortHandle(mPortInterface->toRealPortInterface()); }
+  MatrixPortHandle toMatrixPortHandle(void)
+  { return MatrixPortHandle(mPortInterface->toMatrixPortInterface()); }
 
   /// Retrieve the value of this port
   /// Note that we don't need a setValue method since we attach a getter of a
@@ -66,8 +173,19 @@ public:
   /// This might be the place where it is possible to implement
   /// TaskInfo dependent output ports ...
   /// Hmm, may be we should otoh 'dirty' some getters?
-  Variant getValue(void) const
-  { return mProperty.getValue(); }
+  /// Generic thing. Don't use if you don't have to
+  Variant getValue(void)
+  {
+    RealPortInterface* realPortInterface
+      = mPortInterface->toRealPortInterface();
+    if (realPortInterface)
+      return Variant(realPortInterface->getRealValue());
+    MatrixPortInterface* matrixPortInterface
+      = mPortInterface->toMatrixPortInterface();
+    if (matrixPortInterface)
+      return Variant(matrixPortInterface->getMatrixValue());
+    return Variant();
+  }
 
   /// Connect this port to the given source port
   void connect(Port* sourcePort)
@@ -124,7 +242,10 @@ public:
   { disconnect(mSourcePort); }
 
 private:
-  mutable/*FIXME*/ Property mProperty;
+  /// For now the untyped input port
+  /// On Model::init() it is expected to be specialized
+  /// to a typed port handle
+  shared_ptr<PortInterface> mPortInterface;
   /// The list of readers for this port
   std::vector<shared_ptr<Port> > mChainPorts;
   /// The source of the current port connection
