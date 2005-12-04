@@ -204,7 +204,7 @@ public:
     }
 
     // If we have a source port, propagate its context.
-    setProperty(sourcePort->getProperty());
+    setPortInterface(sourcePort->mPortInterface);
     sourcePort->mChainPorts.push_back(this);
     mSourcePort = sourcePort;
   }
@@ -234,7 +234,7 @@ public:
     mSourcePort = 0;
 
     // Invalidate all our listeners
-    setProperty(Property());
+    setPortInterface(0);
   }
 
   /// Just disconnect from whoever we are connected to
