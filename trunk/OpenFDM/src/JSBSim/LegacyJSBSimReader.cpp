@@ -506,7 +506,7 @@ void
 LegacyJSBSimReader::addFCSModel(Model* model)
 {
   // FIXME
-  while (!mVehicle->getModelGroup()->addModel(model)) {
+  while (mVehicle->getModelGroup()->addModel(model) == ~0u) {
     model->setName(model->getName() + "x");
   }
 }
