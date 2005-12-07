@@ -272,7 +272,8 @@ public:
     setInputPortName(0, "input");
     
     setNumOutputPorts(1);
-    setOutputPort(0, "output", Property(this, &Table1D::getOutput));
+    setOutputPort(0, "output", this, &Table1D::getOutput);
+
     addProperty("output", Property(this, &Table1D::getOutput));
   }
   virtual ~Table1D(void) {}

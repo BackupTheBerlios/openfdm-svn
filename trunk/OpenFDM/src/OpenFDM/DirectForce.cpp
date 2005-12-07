@@ -25,8 +25,8 @@ DirectForce::DirectForce(const std::string& name, const Vector6& direction) :
 
   setNumInputPorts(1);
   setInputPortName(0, "magnitude");
-  setNumOutputPorts(1);
-  setOutputPort(0, "force", Property(this, &DirectForce::getForce));
+//   setNumOutputPorts(1);
+//   setOutputPort(0, "force", this, &DirectForce::getForce);
 }
 
 DirectForce::~DirectForce(void)

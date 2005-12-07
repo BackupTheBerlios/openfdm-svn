@@ -158,34 +158,6 @@ Model::getInputPortName(unsigned i) const
   return mInputPorts[i]->getName();
 }
 
-bool
-Model::setInputPort(unsigned i, const Property& prop)
-{
-  if (mInputPorts.size() <= i) {
-    Log(Model, Error) << "Input port index " << i << "out of range in \""
-                      << getName() << "\"" << endl;
-    return false;
-  }
-
-  mInputPorts[i]->setProperty(prop);
-  return true;
-}
-
-bool
-Model::setInputPort(const std::string& name, const Property& prop)
-{
-  for (unsigned i = 0; i < mInputPorts.size(); ++i) {
-    if (mInputPorts[i]->getName() == name) {
-      setInputPort(i, prop);
-      return true;
-    }
-  }
-
-  Log(Model, Error) << "Input port name " << name << "not found in \""
-                    << getName() << "\"" << endl;
-  return false;
-}
-
 Port*
 Model::getInputPort(const std::string& name)
 {
@@ -276,16 +248,6 @@ Model::setNumOutputPorts(unsigned num)
   mOutputPorts.resize(num);
   for (; oldSize < mOutputPorts.size(); ++oldSize)
     mOutputPorts[oldSize] = new Port;
-}
-
-void
-Model::setOutputPort(unsigned i, const std::string& name, const Property& prop)
-{
-  OpenFDMAssert(i < mOutputPorts.size());
-  Port* port = new Port;
-  port->setProperty(prop);
-  port->setName(name);
-  mOutputPorts[i] = port;
 }
 
 void

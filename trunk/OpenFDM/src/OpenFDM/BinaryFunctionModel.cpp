@@ -21,7 +21,7 @@ BinaryFunctionModel::BinaryFunctionModel(const std::string& name,
   setNumInputPorts(1);
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(expression));
+  setOutputPort(0, "output", this, &BinaryFunctionModel::getFunctionValue);
 }
 
 BinaryFunctionModel::~BinaryFunctionModel(void)

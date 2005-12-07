@@ -16,8 +16,7 @@ Integrator::Integrator(const std::string& name) :
   setInputPortName(0, "derivatirve");
 
   setNumOutputPorts(1);
-  setOutputPort(0, "output",
-                Property(this, &Integrator::getIntegralOutput));
+  setOutputPort(0, "output", this, &Integrator::getIntegralOutput);
 
   addProperty("initialValue",
               Property(this, &Integrator::getInitialValue,

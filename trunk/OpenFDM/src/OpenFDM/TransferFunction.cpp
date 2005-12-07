@@ -24,7 +24,7 @@ DiscreteTransferFunction::DiscreteTransferFunction(const std::string& name) :
 
   setNumInputPorts(1);
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &DiscreteTransferFunction::getOutput));
+  setOutputPort(0, "output", this, &DiscreteTransferFunction::getOutput);
 }
 
 DiscreteTransferFunction::~DiscreteTransferFunction(void)

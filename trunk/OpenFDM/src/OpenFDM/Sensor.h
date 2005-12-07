@@ -24,7 +24,7 @@ public:
   {
     mAccel.resize(6, 1);
     setNumOutputPorts(1);
-    setOutputPort(0, "nz", Property(this, &Sensor::getNZ));
+    setOutputPort(0, "nz", this, &Sensor::getNZ);
   }
   virtual ~Sensor(void)
   { }
@@ -45,17 +45,17 @@ public:
       return;
     }
     mAccel = frame->getClassicAccel();
+    mNz = mAccel(6, 1)/9.81;
   }
 
-  real_type getNZ(void) const
-  {
-    return mAccel(6, 1)/9.81;
-  }
+  const real_type& getNZ(void) const
+  { return mNz; }
 
 private:
   OpenFDM_NodeImplementation(1);
 
   Matrix mAccel;
+  real_type mNz;
 };
 
 } // namespace OpenFDM

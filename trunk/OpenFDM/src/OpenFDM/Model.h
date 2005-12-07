@@ -363,11 +363,6 @@ public:
   const std::string& getInputPortName(unsigned i) const;
 
   /// Sets the i-th input property.
-  bool setInputPort(unsigned i, const Property& prop);
-
-  /// Sets the input with the given name property.
-  bool setInputPort(const std::string& name, const Property& prop);
-
   Port* getInputPort(const std::string& name);
   Port* getInputPort(unsigned i)
   {
@@ -400,10 +395,6 @@ protected:
   void setNumOutputPorts(unsigned num);
 
   /// Sets the name of the i-th output property.
-  /// obsolete ...
-  void setOutputPort(unsigned i, const std::string& name,
-                     const Property& prop);
-  /// might be private ...
   void setOutputPort(unsigned i, const std::string& name,
                      PortInterface* portInterface);
   /// the real used interface
