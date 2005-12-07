@@ -7,8 +7,10 @@
 
 namespace OpenFDM {
 
-Object::Object(void)
+Object::Object(const std::string& name) :
+  mName(name)
 {
+  addProperty("name", Property(this, &Object::getName, &Object::setName));
 }
 
 Object::~Object(void)

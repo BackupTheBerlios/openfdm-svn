@@ -65,13 +65,6 @@ public:
   /// Cast to a const RigidBody Object if it is one.
   virtual const RigidBody* toRigidBody(void) const;
 
-  /// Set the name of the Frame FIXME: move into Object ...
-  void setName(const std::string& name)
-  { mName = name; }
-  /// The name of the Frame FIXME: move into Object ...
-  const std::string& getName(void) const
-  { return mName; }
-
   /// Return the parent frame.
   Frame* getParentFrame(void)
   { return mParentFrame; }
@@ -639,9 +632,6 @@ private:
   managed_ptr<Frame> mParentFrame;
   // The list of child frames.
   ChildFrameList mChildFrames;
-
-  /// The frame's name. Might move into Object
-  std::string mName;
 };
 
 class FreeFrame

@@ -23,7 +23,13 @@ class TypeInfo;
 class Object
   : public Referenced {
 public:
-  Object(void);
+  Object(const std::string& name = std::string());
+
+  /// Returns the systems name.
+  const std::string& getName(void) const
+  { return mName; }
+  void setName(const std::string& name)
+  { mName = name; }
 
   /// Return the typeinfo for that Object.
   virtual const TypeInfo* const getTypeInfo(void) const;
@@ -64,6 +70,9 @@ private:
   /// Register and deregister a managed reference to this object.
   void reg(Object** mp);
   void dereg(Object** mp);
+
+  /// The objects name
+  std::string mName;
 
   /// The map of all properties of this object.
   PropertyMap mProperties;

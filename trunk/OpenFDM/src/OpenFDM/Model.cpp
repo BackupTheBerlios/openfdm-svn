@@ -13,13 +13,11 @@ const SampleTime SampleTime::Inherited(-1);
 const SampleTime SampleTime::Continous(0);
 
 Model::Model(const std::string& name) :
+  Object(name),
   mNumContinousStates(0l),
   mNumDiscreteStates(0l),
-  mDirectFeedThrough(false),
-  mName(name)
+  mDirectFeedThrough(false)
 {
-  addProperty("name",
-              Property(this, &Model::getName, &Model::setName));
   addProperty("numContinousStates",
               Property(this, &Model::getNumContinousStates));
   addProperty("numDiscreteStates",

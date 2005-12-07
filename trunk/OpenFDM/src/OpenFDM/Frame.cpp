@@ -15,7 +15,7 @@
 namespace OpenFDM {
 
 Frame::Frame(const std::string& name) :
-  mName(name),
+  Object(name),
   mDirtyPos(true),
   mDirtySpVel(true),
   mDirtySpAccel(true),
@@ -27,7 +27,6 @@ Frame::Frame(const std::string& name) :
   setRelVel(Vector6::zeros());
   setRelAccel(Vector6::zeros());
 
-  addProperty("name", Property(this, &Frame::getName, &Frame::setName));
   addProperty("position", Property(this, &Frame::getPosition));
   addProperty("orienatation", Property(this, &Frame::getOrientation));
   addProperty("relVel", Property(this, &Frame::getRelVel));

@@ -355,12 +355,6 @@ public:
   { return mSampleTimeSet; }
   
 
-  /// Returns the systems name.
-  const std::string& getName(void) const
-  { return mName; }
-  void setName(const std::string& name)
-  { mName = name; }
-
   /// Returns the number of input properties.
   unsigned getNumInputPorts(void) const
   { return mInputPorts.size(); }
@@ -430,7 +424,6 @@ private:
   void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
   void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);
 
-  std::string mName;
   managed_ptr<ModelGroup> mParentModel;
   unsigned mNumContinousStates;
   unsigned mNumDiscreteStates;
