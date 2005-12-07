@@ -26,7 +26,7 @@ public:
   const real_type& getWidth(void) const;
   void setWidth(const real_type& width);
 
-  real_type getOutput(void) const;
+  const real_type& getOutput(void) const;
 
 private:
   real_type mWidth;

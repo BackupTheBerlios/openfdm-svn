@@ -36,7 +36,7 @@ public:
 
   /** Returns the joint position.
    */
-  real_type getJointPos(void) const
+  const real_type& getJointPos(void) const
   { return mJointPosition; }
 
   /** Sets the joint position.
@@ -45,7 +45,7 @@ public:
 
   /** Returns the joint velocity.
    */
-  real_type getJointVel(void) const
+  const real_type& getJointVel(void) const
   { return mJointVelocity; }
 
   /** Sets the joint velocity.

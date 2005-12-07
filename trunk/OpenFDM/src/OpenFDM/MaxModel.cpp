@@ -22,7 +22,8 @@ MaxModel::MaxModel(const std::string& name) :
   setInputPortName(1, "Input 1");
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &MaxModel::getMax));
+  setOutputPort(0, "output", this, &MaxModel::getMax);
+
   addProperty("output", Property(this, &MaxModel::getMax));
 
   addProperty("numMaxInputs", Property(this, &MaxModel::getNumMaxInputs, &MaxModel::setNumMaxInputs));
@@ -54,9 +55,12 @@ MaxModel::init(void)
 void
 MaxModel::output(const TaskInfo&)
 {
-  mMax = getInputPort(0)->getValue().toMatrix();
-  for (unsigned i = 1; i < getNumInputPorts(); ++i)
-    mMax = LinAlg::max(mMax, getInputPort(i)->getValue().toMatrix());
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  mMax = mh.getMatrixValue();
+  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
+    MatrixPortHandle mh = getInputPort(i)->toMatrixPortHandle();
+    mMax = LinAlg::max(mMax, mh.getMatrixValue());
+  }
 }
 
 const Matrix&

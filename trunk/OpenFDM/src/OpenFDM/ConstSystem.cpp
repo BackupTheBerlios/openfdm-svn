@@ -12,7 +12,7 @@ ConstSystem::ConstSystem(const std::string& name, const Matrix& value) :
   addProperty("value", Property(this, &ConstSystem::getValue, &ConstSystem::setValue));
 
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &ConstSystem::getValue));
+  setOutputPort(0, "output", this, &ConstSystem::getValue);
 }
 
 ConstSystem::~ConstSystem(void)

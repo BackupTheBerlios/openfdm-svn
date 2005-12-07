@@ -172,8 +172,11 @@ ModelGroup::init(void)
 {
   // Try to resolve direct feedthrough dependencies.
   // Bail out if not possible.
-  if (!sortModels())
+  if (!sortModels()) {
+    Log(Model, Error) << "Could not sort models of ModelGroup \"" << getName()
+                      << "\"!"<< endl;
     return false;
+  }
   // Just init all children.
   ModelList::iterator it;
   for (it = mModels.begin(); it != mModels.end(); ++it) {
@@ -304,6 +307,17 @@ ModelGroup::getDiscreteState(Vector& state, unsigned offset) const
   }
 }
 
+/// Returns true if the given Model is the source for the input port inputPort
+bool
+ModelGroup::dependsOn(Port* inputPort, Model* model)
+{
+  for (unsigned k = 0; k < model->getNumOutputPorts(); ++k) {
+    if (inputPort->isConnectedTo(model->getOutputPort(k)))
+      return true;
+  }
+  return false;
+}
+
 bool
 ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& newList)
 {
@@ -314,18 +328,13 @@ ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& 
   // Check, all inputs for dependencies.
   unsigned numInputs = model->getNumInputPorts();
   for (unsigned i = 0; i < numInputs; ++i) {
-    Property prop = model->getInputPort(i)->getProperty();
-    // might happen if some inputs are disabled
-    if (!prop.isValid())
-      continue;
-
-    // Get the dependent model.
-    Object* object = prop.getObject();
+    // Determine the model which is the source for this port
+    Port* port = model->getInputPort(i);
 
     // Check if it is still in the list to be scheduled.
     ModelList::iterator it = mModels.begin();
     while (it != mModels.end()) {
-      if (*it == object)
+      if (dependsOn(port, *it))
         break;
       ++it;
     }
@@ -353,6 +362,8 @@ ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& 
     // push that one in question.
     newList.push_back(tmpModel);
   }
+
+  return true;
 }
 
 bool

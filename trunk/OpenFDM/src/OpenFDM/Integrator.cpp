@@ -82,7 +82,8 @@ Integrator::getStateDeriv(Vector& stateDeriv, unsigned offset)
   OpenFDMAssert(getInputPort(0)->isConnected());
 
   // Just compute the integral.
-  Matrix input = getInputPort(0)->getValue().toMatrix();
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  const Matrix& input = mh.getMatrixValue();
   OpenFDMAssert(size(input) == size(mIntegralState));
 
   // FIXME reshape ...

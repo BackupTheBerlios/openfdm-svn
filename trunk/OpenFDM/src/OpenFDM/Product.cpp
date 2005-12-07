@@ -21,7 +21,8 @@ Product::Product(const std::string& name) :
   setInputPortName(1, "*");
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &Product::getProduct));
+  setOutputPort(0, "output", this, &Product::getProduct);
+
   addProperty("output", Property(this, &Product::getProduct));
 
   addProperty("numFactors", Property(this, &Product::getNumFactors, &Product::setNumFactors));
@@ -45,7 +46,6 @@ Product::init(void)
     if (Size(1,1) != size(a))
       return false;
   }
-  mProduct.resize(1, 1);
   mProduct.resize(getInputPort(0)->getValue().toMatrix());
   return true;
 }
@@ -53,13 +53,14 @@ Product::init(void)
 void
 Product::output(const TaskInfo&)
 {
-  mProduct = getInputPort(0)->getValue().toMatrix();
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  mProduct = mh.getMatrixValue();
   for (unsigned i = 1; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i)->getValue().toMatrix();
+    RealPortHandle rh = getInputPort(i)->toRealPortHandle();
     if (getInputPortName(i) == "*")
-      mProduct(1,1) *= a(1,1);
+      mProduct *= rh.getRealValue();
     else
-      mProduct(1,1) /= a(1,1);
+      mProduct *= 1/rh.getRealValue();
   }
 }
 

@@ -128,7 +128,8 @@ void
 DiscreteTransferFunction::output(const TaskInfo&)
 {
   // Compute the output ...
-  real_type input = getInputPort(0)->getValue().toReal();
+  RealPortHandle rh = getInputPort(0)->toRealPortHandle();
+  real_type input = rh.getRealValue();
   mOutput = dot(mNumNorm, mState) + mD*input;
 }
 
@@ -141,7 +142,8 @@ DiscreteTransferFunction::update(const TaskInfo& taskInfo)
   if (0 < rows(mState)) {
     // FIXME: use exponential integration scheme here ...
     // looks very benificial, since it is exact here!
-    real_type input = getInputPort(0)->getValue().toReal();
+    RealPortHandle rh = getInputPort(0)->toRealPortHandle();
+    real_type input = rh.getRealValue();
     if (mState.size() == 1) {
       /// On dimensional exponetial integrator ...
       real_type z = -dt*dot(mDenNorm, mState);

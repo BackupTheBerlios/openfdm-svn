@@ -22,7 +22,7 @@ DeadBand::DeadBand(const std::string& name) : Model(name)
   setInputPortName(0, "input");
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &DeadBand::getOutput));
+  setOutputPort(0, "output", this, &DeadBand::getOutput);
   
   addProperty("width", Property(this, &DeadBand::getWidth, &DeadBand::setWidth));
 }
@@ -43,7 +43,8 @@ DeadBand::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0)->isConnected());
   
-  mOutput = getInputPort(0)->getValue().toReal();
+  RealPortHandle rh = getInputPort(0)->toRealPortHandle();
+  mOutput = rh.getRealValue();
   if (mOutput < -mWidth)
     mOutput += mWidth;
   else if (mWidth < mOutput)
@@ -64,7 +65,7 @@ DeadBand::setWidth(const real_type& width)
   mWidth = width;
 }
 
-real_type
+const real_type&
 DeadBand::getOutput(void) const
 {
   return mOutput;

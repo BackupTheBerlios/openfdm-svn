@@ -11,7 +11,7 @@ Input::Input(const std::string& name) :
   mInputGain(1)
 {
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &Input::getOutputValue));
+  setOutputPort(0, "output", this, &Input::getOutputValue);
 
   addProperty("inputValue",
               Property(this, &Input::getInputValue, &Input::setInputValue));
@@ -138,7 +138,8 @@ Output::toOutput(void)
 void
 Output::output(const TaskInfo&)
 {
-  mValue = mOutputGain*getInputPort(0)->getValue().toReal();
+  RealPortHandle rh = getInputPort(0)->toRealPortHandle();
+  mValue = rh.getRealValue();
 }
 
 const real_type&

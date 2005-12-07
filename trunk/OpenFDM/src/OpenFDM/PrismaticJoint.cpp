@@ -27,8 +27,8 @@ PrismaticJoint::PrismaticJoint(const std::string& name)
   mPosition = Vector3::zeros();
 
   setNumOutputPorts(2);
-  setOutputPort(0, "jointPos", Property(this, &PrismaticJoint::getJointPos));
-  setOutputPort(1, "jointVel", Property(this, &PrismaticJoint::getJointVel));
+  setOutputPort(0, "jointPos", this, &PrismaticJoint::getJointPos);
+  setOutputPort(1, "jointVel", this, &PrismaticJoint::getJointVel);
 }
 
 PrismaticJoint::~PrismaticJoint(void)

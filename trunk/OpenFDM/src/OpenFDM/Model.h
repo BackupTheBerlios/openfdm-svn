@@ -47,8 +47,8 @@ public:
     else
       return 0;
   }
-  // FIXME, should not be a virtual function
-  virtual real_type getRealValue(void)
+  // FIXME, move evaluate into seperate method
+  real_type getRealValue(void)
   { evaluate(); return mValue(1, 1); }
 protected:
   Matrix mValue;
@@ -57,8 +57,8 @@ protected:
 class MatrixPortInterface : public RealPortInterface {
 public:
   virtual MatrixPortInterface* toMatrixPortInterface(void) { return this; }
-  // FIXME, should not be a virtual function
-  virtual const Matrix& getMatrixValue(void)
+  // FIXME, move evaluate into seperate method
+  const Matrix& getMatrixValue(void)
   { evaluate(); return mValue; }
 };
 
@@ -70,13 +70,42 @@ public:
   PropertyPortInterface(const Property& property) : mProperty(property)
   { }
   virtual void evaluate(void)
-  {
-    mValue = mProperty.getValue().toMatrix();
-  }
+  { mValue = mProperty.getValue().toMatrix(); }
   virtual bool isConnected(void) const
   { return mProperty.isValid(); }
 private:
   mutable Property mProperty;
+};
+/// Just a getter used for now
+template<typename M>
+class RealGetterPortInterface : public MatrixPortInterface {
+public:
+  typedef const real_type& (M::*Getter) () const;
+  RealGetterPortInterface(M* sourceModel, Getter getter) :
+    mSourceModel(sourceModel), mGetter(getter)
+  { }
+  virtual void evaluate(void)
+  { mValue(1, 1) = (mSourceModel->*mGetter)(); }
+  virtual bool isConnected(void) const
+  { return mSourceModel && mGetter; }
+private:
+  managed_ptr<M> mSourceModel;
+  Getter mGetter;
+};
+template<typename M>
+class MatrixGetterPortInterface : public MatrixPortInterface {
+public:
+  typedef const Matrix& (M::*Getter) () const;
+  MatrixGetterPortInterface(M* sourceModel, Getter getter) :
+    mSourceModel(sourceModel), mGetter(getter)
+  { }
+  virtual void evaluate(void)
+  { mValue = (mSourceModel->*mGetter)(); }
+  virtual bool isConnected(void) const
+  { return mSourceModel && mGetter; }
+private:
+  managed_ptr<M> mSourceModel;
+  Getter mGetter;
 };
 
 class RealPortHandle {
@@ -159,7 +188,21 @@ public:
 
   /// returns true if this port has a source port connected to it
   bool isConnected() const
-  { return mPortInterface->isConnected(); }
+  { return mPortInterface && mPortInterface->isConnected(); }
+
+  /// returns true if the source port sourcePort is the value source for the
+  /// current port
+  bool isConnectedTo(const Port* sourcePort) const
+  {
+    const Port* port = mSourcePort;
+    while (port) {
+      if (sourcePort == port)
+        return true;
+      port = port->mSourcePort;
+    }
+
+    return false;
+  }
 
   RealPortHandle toRealPortHandle(void)
   { return RealPortHandle(mPortInterface->toRealPortInterface()); }
@@ -176,14 +219,16 @@ public:
   /// Generic thing. Don't use if you don't have to
   Variant getValue(void)
   {
-    RealPortInterface* realPortInterface
-      = mPortInterface->toRealPortInterface();
-    if (realPortInterface)
-      return Variant(realPortInterface->getRealValue());
-    MatrixPortInterface* matrixPortInterface
-      = mPortInterface->toMatrixPortInterface();
-    if (matrixPortInterface)
-      return Variant(matrixPortInterface->getMatrixValue());
+    if (mPortInterface) {
+      RealPortInterface* realPortInterface
+        = mPortInterface->toRealPortInterface();
+      if (realPortInterface)
+        return Variant(realPortInterface->getRealValue());
+      MatrixPortInterface* matrixPortInterface
+        = mPortInterface->toMatrixPortInterface();
+      if (matrixPortInterface)
+        return Variant(matrixPortInterface->getMatrixValue());
+    }
     return Variant();
   }
 
@@ -361,9 +406,21 @@ protected:
   void setNumOutputPorts(unsigned num);
 
   /// Sets the name of the i-th output property.
+  /// obsolete ...
   void setOutputPort(unsigned i, const std::string& name,
                      const Property& prop);
-
+  /// might be private ...
+  void setOutputPort(unsigned i, const std::string& name,
+                     PortInterface* portInterface);
+  /// the real used interface
+  template<typename M>
+  void setOutputPort(unsigned i, const std::string& name, M* model,
+                     const real_type& (M::*getter)(void) const)
+  { setOutputPort(i, name, new RealGetterPortInterface<M>(model, getter)); }
+  template<typename M>
+  void setOutputPort(unsigned i, const std::string& name, M* model,
+                     const Matrix& (M::*getter)(void) const)
+  { setOutputPort(i, name, new MatrixGetterPortInterface<M>(model, getter)); }
 private:
   // Sets the parent model.
   // That is the one which is informed if the number of states changes.

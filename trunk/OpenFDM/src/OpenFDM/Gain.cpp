@@ -23,7 +23,8 @@ Gain::Gain(const std::string& name) :
   setInputPortName(0, "input");
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &Gain::getOutput));
+  setOutputPort(0, "output", this, &Gain::getOutput);
+
   addProperty("output", Property(this, &Gain::getOutput));
   
   addProperty("gain", Property(this, &Gain::getGain, &Gain::setGain));
@@ -47,7 +48,8 @@ Gain::init(void)
 void Gain::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0)->isConnected());
-  mOutput = getInputPort(0)->getValue().toMatrix();
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  mOutput = mh.getMatrixValue();
   mOutput *= mGain;
 }
 

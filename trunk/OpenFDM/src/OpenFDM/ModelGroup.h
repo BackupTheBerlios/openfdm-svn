@@ -56,7 +56,8 @@ public:
 private:
   typedef std::vector<shared_ptr<Model> > ModelList;
 
-  /// Helper function to sort the models according their dependencies
+  /// Helper functions to sort the models according their dependencies
+  static bool dependsOn(Port* inputPort, Model* model);
   bool appendDependecies(const Model* firstModel, Model* model,
                          ModelList& newList);
   /// Sorts the models depending their dependencies

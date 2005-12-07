@@ -23,7 +23,8 @@ Saturation::Saturation(const std::string& name) : Model(name)
   setInputPortName(0, "input");
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &Saturation::getOutput));
+  setOutputPort(0, "output", this, &Saturation::getOutput);
+
   addProperty("output", Property(this, &Saturation::getOutput));
 
   addProperty("minSaturation", Property(this, &Saturation::getMinSaturation, &Saturation::setMinSaturation));
@@ -55,16 +56,12 @@ void
 Saturation::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0)->isConnected());
-  
-  mOutput = getInputPort(0)->getValue().toMatrix();
-  unsigned r = rows(mOutput);
-  unsigned c = cols(mOutput);
-  if (0 < rows(mMaxSaturation) && 0 < cols(mMaxSaturation)) {
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  mOutput = mh.getMatrixValue();
+  if (0 < rows(mMaxSaturation) && 0 < cols(mMaxSaturation))
     mOutput = LinAlg::min(mOutput, mMaxSaturation);
-  }
-  if (0 < rows(mMinSaturation) && 0 < cols(mMinSaturation)) {
+  if (0 < rows(mMinSaturation) && 0 < cols(mMinSaturation))
     mOutput = LinAlg::max(mOutput, mMinSaturation);
-  }
 }
 
 const Matrix&

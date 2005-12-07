@@ -22,7 +22,8 @@ MinModel::MinModel(const std::string& name) :
   setInputPortName(1, "Input 1");
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &MinModel::getMin));
+  setOutputPort(0, "output", this, &MinModel::getMin);
+
   addProperty("output", Property(this, &MinModel::getMin));
 
   addProperty("numMinInputs", Property(this, &MinModel::getNumMinInputs, &MinModel::setNumMinInputs));
@@ -54,9 +55,12 @@ MinModel::init(void)
 void
 MinModel::output(const TaskInfo&)
 {
-  mMin = getInputPort(0)->getValue().toMatrix();
-  for (unsigned i = 1; i < getNumInputPorts(); ++i)
-    mMin = LinAlg::min(mMin, getInputPort(i)->getValue().toMatrix());
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  mMin = mh.getMatrixValue();
+  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
+    MatrixPortHandle mh = getInputPort(i)->toMatrixPortHandle();
+    mMin = LinAlg::min(mMin, mh.getMatrixValue());
+  }
 }
 
 const Matrix&

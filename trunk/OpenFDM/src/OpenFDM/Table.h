@@ -288,8 +288,8 @@ public:
   {
     OpenFDMAssert(getInputPort(0)->isConnected());
     TableData<1>::InterpVector interpVec;
-    real_type iv = getInputPort(0)->getValue().toReal();
-    interpVec(1) = mTableLookup.lookup(iv);
+    RealPortHandle rh = getInputPort(0)->toRealPortHandle();
+    interpVec(1) = mTableLookup.lookup(rh.getRealValue());
     mOutput = mTableData.interpolate(interpVec);
   }
 

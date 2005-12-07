@@ -23,7 +23,12 @@ DiscBrake::~DiscBrake(void)
 void
 DiscBrake::output(const TaskInfo& taskInfo)
 {
-  real_type brakeInput = getInputPort(0)->getValue().toReal();
+  Port* port = getInputPort(0);
+  real_type brakeInput = 0;
+  if (port->isConnected()) {
+    RealPortHandle rh = port->toRealPortHandle();
+    brakeInput = rh.getRealValue();
+  }
   setForce(getVel()*(-1e1 + brakeInput*mFrictionConstant));
 }
 

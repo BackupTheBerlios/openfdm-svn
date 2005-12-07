@@ -28,8 +28,8 @@ RevoluteJoint::RevoluteJoint(const std::string& name, bool trackPosition)
   mOrientation = Quaternion::unit();
 
   setNumOutputPorts(2);
-  setOutputPort(0, "jointPos", Property(this, &RevoluteJoint::getJointPos));
-  setOutputPort(1, "jointVel", Property(this, &RevoluteJoint::getJointVel));
+  setOutputPort(0, "jointPos", this, &RevoluteJoint::getJointPos);
+  setOutputPort(1, "jointVel", this, &RevoluteJoint::getJointVel);
 }
 
 RevoluteJoint::~RevoluteJoint(void)

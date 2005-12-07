@@ -23,9 +23,9 @@ Bias::Bias(const std::string& name) : Model(name)
   setInputPortName(0, "input");
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &Bias::getOutput));
+  setOutputPort(0, "output", this, &Bias::getOutput);
+
   addProperty("output", Property(this, &Bias::getOutput));
-  
   addProperty("bias", Property(this, &Bias::getBias, &Bias::setBias));
 }
 
@@ -62,8 +62,9 @@ void
 Bias::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0)->isConnected());
-  OpenFDMAssert(size(getInputPort(0)->getValue().toMatrix()) == size(mBias));
-  mOutput = mBias + getInputPort(0)->getValue().toMatrix();
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  mOutput = mh.getMatrixValue();
+  mOutput += mBias;
 }
 
 const Matrix&

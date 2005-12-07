@@ -291,6 +291,17 @@ Model::setOutputPort(unsigned i, const std::string& name, const Property& prop)
 }
 
 void
+Model::setOutputPort(unsigned i, const std::string& name,
+                     PortInterface* portInterface)
+{
+  OpenFDMAssert(i < mOutputPorts.size());
+  Port* port = new Port;
+  port->setPortInterface(portInterface);
+  port->setName(name);
+  mOutputPorts[i] = port;
+}
+
+void
 Model::setParent(ModelGroup* modelGroup)
 {
   if (mParentModel) {

@@ -22,7 +22,8 @@ Summer::Summer(const std::string& name) :
   setInputPortName(1, "+");
   
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &Summer::getSum));
+  setOutputPort(0, "output", this, &Summer::getSum);
+
   addProperty("output", Property(this, &Summer::getSum));
 
   addProperty("numSummands", Property(this, &Summer::getNumSummands, &Summer::setNumSummands));
@@ -56,11 +57,12 @@ Summer::output(const TaskInfo&)
 {
   mSum.clear();
   for (unsigned i = 0; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i)->getValue().toMatrix();
+    /// FIXME could be preevaluated
+    MatrixPortHandle ph = getInputPort(i)->toMatrixPortHandle();
     if (getInputPortName(i) == "-")
-      mSum -= a;
+      mSum -= ph.getMatrixValue();
     else
-      mSum += a;
+      mSum += ph.getMatrixValue();
   }
 }
 

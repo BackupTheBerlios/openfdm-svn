@@ -14,7 +14,8 @@ TimeDerivative::TimeDerivative(const std::string& name) :
   setNumInputPorts(1);
 
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &TimeDerivative::getDerivativeOutput));
+  setOutputPort(0, "output", this, &TimeDerivative::getDerivativeOutput);
+
   addProperty("output", Property(this, &TimeDerivative::getDerivativeOutput));
 }
 
@@ -39,19 +40,18 @@ void
 TimeDerivative::output(const TaskInfo&)
 {
   OpenFDMAssert(getInputPort(0)->isConnected());
-
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
   // If we are here at the first time, dt is set to zero.
   // So, computing a derivative is not possible in the first step.
   // Prepare zero output in this case.
   if (mDt != 0.0) {
-    Matrix input = getInputPort(0)->getValue().toMatrix();
-    OpenFDMAssert(size(input) == size(mPastInput));
-    if (size(input) == size(mPastInput)) {
-      mDerivativeOutput = input - mPastInput;
+    OpenFDMAssert(size(mh.getMatrixValue()) == size(mPastInput));
+    if (size(mh.getMatrixValue()) == size(mPastInput)) {
+      mDerivativeOutput = mh.getMatrixValue() - mPastInput;
       mDerivativeOutput *= 1/mDt;
     }
   } else {
-    mDerivativeOutput.resize(getInputPort(0)->getValue().toMatrix());
+    mDerivativeOutput.resize(mh.getMatrixValue());
     mDerivativeOutput.clear();
   }
 }
@@ -64,7 +64,8 @@ TimeDerivative::update(const TaskInfo& taskInfo)
   // FIXME
   real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
   // Updating is just storing required information for the next output step.
-  mPastInput = getInputPort(0)->getValue().toMatrix();
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  mPastInput = mh.getMatrixValue();
   mDt = dt;
 }
 

@@ -14,7 +14,7 @@ DiscreteIntegrator::DiscreteIntegrator(const std::string& name) :
   setInputPortName(0, "derivatirve");
 
   setNumOutputPorts(1);
-  setOutputPort(0, "output", Property(this, &DiscreteIntegrator::getIntegralOutput));
+  setOutputPort(0, "output", this, &DiscreteIntegrator::getIntegralOutput);
 
   addProperty("initialValue", Property(this, &DiscreteIntegrator::getInitialValue, &DiscreteIntegrator::setInitialValue));
   addProperty("minSaturation", Property(this, &DiscreteIntegrator::getMinSaturation, &DiscreteIntegrator::setMinSaturation));
@@ -67,18 +67,15 @@ DiscreteIntegrator::update(const TaskInfo& taskInfo)
   // Just compute the integral.
   // FIXME: make sure this is the only dt ...
   real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
-  Matrix input = getInputPort(0)->getValue().toMatrix();
-  OpenFDMAssert(size(input) == size(mIntegralState));
-  if (size(input) == size(mIntegralState))
-    mIntegralState += dt*input;
+  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
+  if (size(mh.getMatrixValue()) == size(mIntegralState))
+    mIntegralState += dt*mh.getMatrixValue();
 
   // Hmm, should that be done on state setting too???
-  if (size(mMaxSaturation) == size(mInitialValue)) {
+  if (size(mMaxSaturation) == size(mInitialValue))
     mIntegralState = LinAlg::min(mIntegralState, mMaxSaturation);
-  }
-  if (size(mMinSaturation) == size(mInitialValue)) {
+  if (size(mMinSaturation) == size(mInitialValue))
     mIntegralState = LinAlg::max(mIntegralState, mMinSaturation);
-  }
 }
 
 void
