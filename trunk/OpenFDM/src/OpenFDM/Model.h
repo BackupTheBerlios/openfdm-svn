@@ -70,7 +70,16 @@ public:
   PropertyPortInterface(const Property& property) : mProperty(property)
   { }
   virtual void evaluate(void)
-  { mValue = mProperty.getValue().toMatrix(); }
+  {
+    if (mProperty.isRealProperty()) {
+      RealProperty rp = mProperty.toRealProperty();
+      mValue.resize(1, 1);
+      mValue(1, 1) = rp.getValue();
+    } else if (mProperty.isMatrixProperty()) {
+      MatrixProperty mp = mProperty.toMatrixProperty();
+      mValue = mp.getValue();
+    }
+  }
   virtual bool isConnected(void) const
   { return mProperty.isValid(); }
 private:
