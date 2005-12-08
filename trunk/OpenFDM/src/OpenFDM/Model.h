@@ -119,6 +119,8 @@ private:
 
 class RealPortHandle {
 public:
+  RealPortHandle(void)
+  { }
   RealPortHandle(RealPortInterface* realPortInterface) :
     mRealPortInterface(realPortInterface)
   { }
@@ -132,6 +134,8 @@ private:
 
 class MatrixPortHandle {
 public:
+  MatrixPortHandle(void)
+  { }
   MatrixPortHandle(MatrixPortInterface* matrixPortInterface) :
     mMatrixPortInterface(matrixPortInterface)
   { }

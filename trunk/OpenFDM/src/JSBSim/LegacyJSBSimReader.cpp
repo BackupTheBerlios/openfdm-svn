@@ -485,18 +485,18 @@ LegacyJSBSimReader::addOutputModel(Port* out,
 Port*
 LegacyJSBSimReader::addInverterModel(const std::string& name, Port* in)
 {
-  Gain *gain = new Gain(name + " Inverter");
-  gain->getInputPort(0)->connect(in);
-  gain->setGain(-1);
-  addFCSModel(gain);
-  return gain->getOutputPort(0);
+  UnaryFunctionModel *unary
+    = new UnaryFunctionModel(name + " Inverter", UnaryFunctionModel::Minus);
+  unary->getInputPort(0)->connect(in);
+  addFCSModel(unary);
+  return unary->getOutputPort(0);
 }
 
 Port*
 LegacyJSBSimReader::addAbsModel(const std::string& name, Port* in)
 {
   UnaryFunctionModel *unary
-    = new UnaryFunctionModel(name + " Abs", new AbsExpressionImpl);
+    = new UnaryFunctionModel(name + " Abs", UnaryFunctionModel::Abs);
   unary->getInputPort(0)->connect(in);
   addFCSModel(unary);
   return unary->getOutputPort(0);
@@ -853,13 +853,15 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
           addOutputModel(port, "Gear " + numStr + " Steering Output",
                          "/gear/gear[" + numStr + "]/steering-norm");
 
-          UnaryFunctionModel *unary
-            = new UnaryFunctionModel(name + " Degree Conversion",
-                                     new UnitToSiExpressionImpl(uDegree));
-          unary->getInputPort(0)->connect(gain->getOutputPort(0));
-          addFCSModel(unary);
 
-          sg->getInputPort("steeringAngle")->connect(unary->getOutputPort(0));
+          UnitConversionModel* unitConv
+            = new UnitConversionModel(name + " Degree Conversion",
+                                      UnitConversionModel::UnitToSi,
+                                      uDegree);
+          unitConv->getInputPort(0)->connect(gain->getOutputPort(0));
+          addFCSModel(unitConv);
+
+          sg->getInputPort("steeringAngle")->connect(unitConv->getOutputPort(0));
         }
         
         if (brake == "LEFT") {

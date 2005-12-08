@@ -15,12 +15,30 @@
 
 namespace OpenFDM {
 
+class UnaryFunctionModelImpl;
+
 /// Class representing a model with exactly one input.
 class UnaryFunctionModel :
     public Model {
 public:
-  UnaryFunctionModel(const std::string& name,
-                     UnaryExpressionImpl<real_type>* expression);
+  enum Type {
+    Abs,
+    Acos,
+    Asin,
+    Atan,
+    Ceil,
+    Cos,
+    Exp,
+    Floor,
+    Log,
+    Log10,
+    Minus,
+    Sqr,
+    Sqrt,
+    Tan
+  };
+
+  UnaryFunctionModel(const std::string& name, Type type);
   virtual ~UnaryFunctionModel(void);
 
   virtual bool init(void);
@@ -28,10 +46,41 @@ public:
 
   const real_type& getFunctionValue(void) const;
 
-private:
-  shared_ptr<UnaryExpressionImpl<real_type> > mUnaryExpression;
+  void setType(Type type);
+  Type getType(void) const;
 
+private:
+  shared_ptr<UnaryFunctionModelImpl> mImpl;
+  Type mType;
   real_type mFunctionValue;
+};
+
+class UnitConversionModel :
+    public Model {
+public:
+  enum Type {
+    UnitToSi,
+    SiToUnit
+  };
+
+  UnitConversionModel(const std::string& name, Type type, Unit unit);
+  virtual ~UnitConversionModel(void);
+
+  virtual bool init(void);
+  virtual void output(const TaskInfo&);
+
+  const real_type& getFunctionValue(void) const;
+
+  void setType(Type type);
+  Type getType(void) const;
+
+  void setUnit(Unit unit);
+  Unit getUnit(void) const;
+
+private:
+  Type mType;
+  Unit mUnit;
+  real_type mValue;
 };
 
 } // namespace OpenFDM
