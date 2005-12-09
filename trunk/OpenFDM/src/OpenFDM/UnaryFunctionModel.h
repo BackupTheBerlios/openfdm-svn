@@ -8,9 +8,6 @@
 #include <string>
 
 #include "Types.h"
-#include "Matrix.h"
-#include "Property.h"
-#include "Expression.h"
 #include "Model.h"
 
 namespace OpenFDM {

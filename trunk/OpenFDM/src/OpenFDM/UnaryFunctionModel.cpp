@@ -5,7 +5,6 @@
 #include <string>
 
 #include "Types.h"
-#include "Matrix.h"
 #include "Property.h"
 #include "UnaryFunctionModel.h"
 
@@ -14,9 +13,9 @@ namespace OpenFDM {
 class UnaryFunctionModelImpl :
     public Referenced {
 public:
+  virtual ~UnaryFunctionModelImpl(void) {}
   void setRealPortHandle(const RealPortHandle& realPortHandle)
   { mRealPortHandle = realPortHandle; }
-  virtual ~UnaryFunctionModelImpl(void) {}
   virtual real_type getValue(void) = 0;
 protected:
   RealPortHandle mRealPortHandle;
@@ -165,6 +164,7 @@ UnaryFunctionModel::getFunctionValue(void) const
 void
 UnaryFunctionModel::setType(UnaryFunctionModel::Type type)
 {
+  mType = type;
   switch (type) {
   case Abs:
     mImpl = new AbsUnaryFunctionModelImpl;
@@ -216,6 +216,7 @@ UnaryFunctionModel::setType(UnaryFunctionModel::Type type)
 UnaryFunctionModel::Type
 UnaryFunctionModel::getType(void) const
 {
+  return mType;
 }
 
 

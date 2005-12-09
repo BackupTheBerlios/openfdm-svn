@@ -8,19 +8,24 @@
 #include <string>
 
 #include "Types.h"
-#include "Matrix.h"
 #include "Property.h"
-#include "Expression.h"
 #include "Model.h"
 
 namespace OpenFDM {
+
+class BinaryFunctionModelImpl;
 
 /// Class representing a model with exactly two inputs.
 class BinaryFunctionModel :
     public Model {
 public:
-  BinaryFunctionModel(const std::string& name,
-                      BinaryExpressionImpl<real_type>* expression);
+  enum Type {
+    Atan2,
+    Pow,
+    Div
+  };
+
+  BinaryFunctionModel(const std::string& name, Type type);
   virtual ~BinaryFunctionModel(void);
 
   virtual bool init(void);
@@ -28,9 +33,12 @@ public:
 
   const real_type& getFunctionValue(void) const;
 
-private:
-  shared_ptr<BinaryExpressionImpl<real_type> > mBinaryExpression;
+  void setType(Type type);
+  Type getType(void) const;
 
+private:
+  shared_ptr<BinaryFunctionModelImpl> mImpl;
+  Type mType;
   real_type mFunctionValue;
 };
 

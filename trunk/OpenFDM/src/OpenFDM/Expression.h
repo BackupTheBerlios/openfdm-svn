@@ -87,95 +87,11 @@ private:
   { return fabs(mInput.getValue()); }
 };
 
-class AcosExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return acos(mInput.getValue()); }
-};
-
-class AsinExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return asin(mInput.getValue()); }
-};
-
-class AtanExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return atan(mInput.getValue()); }
-};
-
-class CeilExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return ceil(mInput.getValue()); }
-};
-
-class CosExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return cos(mInput.getValue()); }
-};
-
-class ExpExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return exp(mInput.getValue()); }
-};
-
-class FloorExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return floor(mInput.getValue()); }
-};
-
-class LogExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return log(mInput.getValue()); }
-};
-
-class Log10ExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return log10(mInput.getValue()); }
-};
-
 class MinusExpressionImpl :
     public UnaryExpressionImpl<real_type> {
 private:
   virtual real_type getValue(void) const
   { return -mInput.getValue(); }
-};
-
-class SqrExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { real_type v = mInput.getValue(); return v*v; }
-};
-
-class SqrtExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return sqrt(mInput.getValue()); }
-};
-
-class TanExpressionImpl :
-    public UnaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return tan(mInput.getValue()); }
 };
 
 class UnitToSiExpressionImpl :
@@ -196,76 +112,6 @@ private:
   virtual real_type getValue(void) const
   { return convertTo(mUnit, mInput.getValue()); }
   Unit mUnit;
-};
-
-template<typename T>
-class BinaryExpressionImpl :
-    public ExpressionPropertyImpl<T> {
-public:
-  BinaryExpressionImpl(void) {}
-  virtual ~BinaryExpressionImpl(void) {}
-
-  virtual bool isValid(void) const
-  { return mInput[0].isValid() && mInput[1].isValid(); }
-
-  void setInputProperty(unsigned idx, const Property& prop)
-  {
-    Property tmpHack(prop);
-    TypedProperty<T> tProp = tmpHack.toTypedProperty<T>();
-    if (tProp.isValid())
-      setInputProperty(idx, tProp);
-    else {
-      Property prop2(new RealCastExpressionPropertyImpl(tmpHack));
-      setInputProperty(idx, prop2.toTypedProperty<T>());
-    }
-  }
-  void setInputProperty(unsigned idx, const TypedProperty<T>& prop)
-  { mInput[idx%2] = prop; }
-
-protected:
-  mutable TypedProperty<T> mInput[2];
-};
-
-class Atan2ExpressionImpl :
-    public BinaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return atan2(mInput[0].getValue(), mInput[1].getValue()); }
-};
-
-class PowExpressionImpl :
-    public BinaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return pow(mInput[0].getValue(), mInput[1].getValue()); }
-};
-
-class AddExpressionImpl :
-    public BinaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return mInput[0].getValue() + mInput[1].getValue(); }
-};
-
-class SubExpressionImpl :
-    public BinaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return mInput[0].getValue() - mInput[1].getValue(); }
-};
-
-class MulExpressionImpl :
-    public BinaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return mInput[0].getValue() * mInput[1].getValue(); }
-};
-
-class DivExpressionImpl :
-    public BinaryExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  { return mInput[0].getValue() / mInput[1].getValue(); }
 };
 
 template<typename T>
@@ -341,30 +187,6 @@ public:
     for (unsigned i = 0; i < mInputs.size(); ++i)
       prod *= mInputs[i].getValue();
     return prod;
-  }
-};
-
-class MinExpressionImpl :
-    public MultiExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  {
-    real_type ret = Limits<real_type>::max();
-    for (unsigned i = 0; i < mInputs.size(); ++i)
-      ret = min(ret, mInputs[i].getValue());
-    return ret;
-  }
-};
-
-class MaxExpressionImpl :
-    public MultiExpressionImpl<real_type> {
-private:
-  virtual real_type getValue(void) const
-  {
-    real_type ret = -Limits<real_type>::max();
-    for (unsigned i = 0; i < mInputs.size(); ++i)
-      ret = max(ret, mInputs[i].getValue());
-    return ret;
   }
 };
 
