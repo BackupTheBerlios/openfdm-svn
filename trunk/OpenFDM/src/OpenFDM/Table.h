@@ -297,29 +297,135 @@ public:
   const real_type& getOutput(void) const
   { return mOutput; }
 
-  void setTable(const TableData<1>& table)
-  { mTableData = table; }
   void setTableData(const TableData<1>& table)
   { mTableData = table; }
-
-  const TableData<1>& getTable(void) const 
-  { return mTableData; }
   const TableData<1>& getTableData(void) const 
-  { return mTableData; }
-  TableData<1>& getTable(void)
   { return mTableData; }
   TableData<1>& getTableData(void)
   { return mTableData; }
 
   void setTableLookup(const TableLookup& tl)
-  {
-    mTableLookup = tl;
-  }
+  { mTableLookup = tl; }
 
 private:
   real_type mOutput;
   TableData<1> mTableData;
   TableLookup mTableLookup;
+};
+
+class Table2D : public Model {
+public:
+  Table2D(const std::string& name) :
+    Model(name)
+  {
+    setDirectFeedThrough(true);
+    
+    setNumInputPorts(2);
+    setInputPortName(0, "input 0");
+    setInputPortName(1, "input 1");
+    
+    setNumOutputPorts(1);
+    setOutputPort(0, "output", this, &Table2D::getOutput);
+
+    addProperty("output", Property(this, &Table2D::getOutput));
+  }
+  virtual ~Table2D(void) {}
+  
+  virtual bool init(void)
+  {
+    OpenFDMAssert(getInputPort(0)->isConnected());
+    OpenFDMAssert(getInputPort(1)->isConnected());
+    return getInputPort(0)->isConnected() && getInputPort(1)->isConnected();
+  }
+
+  virtual void output(const TaskInfo&)
+  {
+    OpenFDMAssert(getInputPort(0)->isConnected());
+    TableData<2>::InterpVector interpVec;
+    RealPortHandle rh = getInputPort(0)->toRealPortHandle();
+    interpVec(1) = mTableLookup[0].lookup(rh.getRealValue());
+    rh = getInputPort(1)->toRealPortHandle();
+    interpVec(2) = mTableLookup[1].lookup(rh.getRealValue());
+    mOutput = mTableData.interpolate(interpVec);
+  }
+
+  const real_type& getOutput(void) const
+  { return mOutput; }
+
+  void setTableData(const TableData<2>& table)
+  { mTableData = table; }
+  const TableData<2>& getTableData(void) const 
+  { return mTableData; }
+  TableData<2>& getTableData(void)
+  { return mTableData; }
+
+  void setTableLookup(unsigned idx, const TableLookup& tl)
+  { mTableLookup[idx] = tl; }
+
+private:
+  real_type mOutput;
+  TableData<2> mTableData;
+  TableLookup mTableLookup[2];
+};
+
+class Table3D : public Model {
+public:
+  Table3D(const std::string& name) :
+    Model(name)
+  {
+    setDirectFeedThrough(true);
+    
+    setNumInputPorts(3);
+    setInputPortName(0, "input 0");
+    setInputPortName(1, "input 1");
+    setInputPortName(2, "input 2");
+    
+    setNumOutputPorts(1);
+    setOutputPort(0, "output", this, &Table3D::getOutput);
+
+    addProperty("output", Property(this, &Table3D::getOutput));
+  }
+  virtual ~Table3D(void) {}
+  
+  virtual bool init(void)
+  {
+    OpenFDMAssert(getInputPort(0)->isConnected());
+    OpenFDMAssert(getInputPort(1)->isConnected());
+    OpenFDMAssert(getInputPort(3)->isConnected());
+    return getInputPort(0)->isConnected() && getInputPort(1)->isConnected()
+      && getInputPort(2)->isConnected();
+  }
+
+  virtual void output(const TaskInfo&)
+  {
+    OpenFDMAssert(getInputPort(0)->isConnected());
+    TableData<3>::InterpVector interpVec;
+    RealPortHandle rh = getInputPort(0)->toRealPortHandle();
+    interpVec(1) = mTableLookup[0].lookup(rh.getRealValue());
+    rh = getInputPort(1)->toRealPortHandle();
+    interpVec(2) = mTableLookup[1].lookup(rh.getRealValue());
+    rh = getInputPort(2)->toRealPortHandle();
+    interpVec(3) = mTableLookup[2].lookup(rh.getRealValue());
+    mOutput = mTableData.interpolate(interpVec);
+  }
+
+  const real_type& getOutput(void) const
+  { return mOutput; }
+
+  void setTableData(const TableData<3>& table)
+  { mTableData = table; }
+  const TableData<3>& getTableData(void) const 
+  { return mTableData; }
+  TableData<3>& getTableData(void)
+  { return mTableData; }
+
+  void setTableLookup(unsigned idx, const TableLookup& tl)
+  { mTableLookup[idx] = tl; }
+
+private:
+  real_type mOutput;
+  TableData<3> mTableData;
+  TableLookup mTableLookup[3];
 };
 
 } // namespace OpenFDM
