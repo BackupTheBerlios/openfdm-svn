@@ -35,63 +35,73 @@ public:
 
   bool isArticulatedJoint(void) const
   {
-    if (!getParentFrame(0))
+    const Frame* parent0 = getParentFrame(0);
+    if (!parent0)
       return false;
-    if (!getParentFrame(1))
+    const Frame* parent1 = getParentFrame(1);
+    if (!parent1)
       return false;
-    if (getParentFrame(1)->isParentFrame(getParentFrame(0)))
+    if (parent1->isParentFrame(parent0))
       return true;
-    if (getParentFrame(0)->isParentFrame(getParentFrame(1)))
+    if (parent0->isParentFrame(parent1))
       return true;
     return false;
   }
 
   Frame* getInboardGroup(void)
   {
-    if (!getParentFrame(0))
+    Frame* parent0 = getParentFrame(0);
+    if (!parent0)
       return 0;
-    if (!getParentFrame(1))
+    Frame* parent1 = getParentFrame(1);
+    if (!parent1)
       return 0;
-    if (getParentFrame(1)->isParentFrame(getParentFrame(0)))
-      return getParentFrame(0);
-    if (getParentFrame(0)->isParentFrame(getParentFrame(1)))
-      return getParentFrame(1);
+    if (parent1->isParentFrame(parent0))
+      return parent0;
+    if (parent0->isParentFrame(parent1))
+      return parent1;
     return 0;
   }
   const Frame* getInboardGroup(void) const
   {
-    if (!getParentFrame(0))
+    const Frame* parent0 = getParentFrame(0);
+    if (!parent0)
       return 0;
-    if (!getParentFrame(1))
+    const Frame* parent1 = getParentFrame(1);
+    if (!parent1)
       return 0;
-    if (getParentFrame(1)->isParentFrame(getParentFrame(0)))
-      return getParentFrame(0);
-    if (getParentFrame(0)->isParentFrame(getParentFrame(1)))
-      return getParentFrame(1);
+    if (parent1->isParentFrame(parent0))
+      return parent0;
+    if (parent0->isParentFrame(parent1))
+      return parent1;
     return 0;
   }
   Frame* getOutboardGroup(void)
   {
-    if (!getParentFrame(0))
+    Frame* parent0 = getParentFrame(0);
+    if (!parent0)
       return 0;
-    if (!getParentFrame(1))
+    Frame* parent1 = getParentFrame(1);
+    if (!parent1)
       return 0;
-    if (getParentFrame(1)->isParentFrame(getParentFrame(0)))
-      return getParentFrame(1);
-    if (getParentFrame(0)->isParentFrame(getParentFrame(1)))
-      return getParentFrame(0);
+    if (parent1->isParentFrame(parent0))
+      return parent1;
+    if (parent0->isParentFrame(parent1))
+      return parent0;
     return 0;
   }
   const Frame* getOutboardGroup(void) const
   {
-    if (!getParentFrame(0))
+    const Frame* parent0 = getParentFrame(0);
+    if (!parent0)
       return 0;
-    if (!getParentFrame(1))
+    const Frame* parent1 = getParentFrame(1);
+    if (!parent1)
       return 0;
-    if (getParentFrame(1)->isParentFrame(getParentFrame(0)))
-      return getParentFrame(1);
-    if (getParentFrame(0)->isParentFrame(getParentFrame(1)))
-      return getParentFrame(0);
+    if (parent1->isParentFrame(parent0))
+      return parent1;
+    if (parent0->isParentFrame(parent1))
+      return parent0;
     return 0;
   }
 
