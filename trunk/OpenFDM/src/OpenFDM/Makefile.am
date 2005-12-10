@@ -90,6 +90,7 @@ nobase_OpenFDMinclude_HEADERS = \
   OpenFDMConfig.h \
   Plane.h \
   Planet.h \
+  Port.h \
   Property.h \
   Product.h \
   PrismaticJoint.h \
@@ -176,6 +177,7 @@ libOpenFDM_la_SOURCES = \
   Object.cpp \
   ODESolver.cpp \
   Planet.cpp \
+  Port.cpp \
   PrismaticJoint.cpp \
   Product.cpp \
   Property.cpp \
