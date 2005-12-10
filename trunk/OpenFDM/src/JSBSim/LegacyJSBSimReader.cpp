@@ -13,6 +13,7 @@
 
 #include <OpenFDM/AeroForce.h>
 #include <OpenFDM/Bias.h>
+#include <OpenFDM/ConstSystem.h>
 #include <OpenFDM/DeadBand.h>
 #include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/Expression.h>
@@ -226,9 +227,8 @@ LegacyJSBSimReader::lookupJSBExpression(const std::string& name)
     // Ok, still not available, create a constant zero thing and bail out ...
     if (!port || !port->isConnected()) {
       std::cerr << "Creating expression \"" << propName << "\"" << std::endl;
-      port = new Port;
-      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(0)));
-      return port;
+
+      return addConstModel(propName + " constant", 0);
     }
     
   } else {
@@ -502,6 +502,16 @@ LegacyJSBSimReader::addAbsModel(const std::string& name, Port* in)
   return unary->getOutputPort(0);
 }
 
+Port*
+LegacyJSBSimReader::addConstModel(const std::string& name, real_type value)
+{
+  Matrix m(1, 1);
+  m(1, 1) = 0;
+  ConstSystem* cModel = new ConstSystem(name, m);
+  addFCSModel(cModel);
+  return cModel->getOutputPort(0);
+}
+
 void
 LegacyJSBSimReader::addFCSModel(Model* model)
 {
@@ -608,8 +618,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
     } else if (name == "AC_WINGINCIDENCE") {
       real_type value;
       datastr >> value;
-      Port* port = new Port;
-      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = addConstModel("metrics/iw-deg constant", value);
       registerJSBExpression("metrics/iw-deg", port);
     } else if (name == "AC_CHORD") {
       real_type value;
@@ -618,26 +627,22 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
     } else if (name == "AC_HTAILAREA") {
       real_type value;
       datastr >> value;
-      Port* port = new Port;
-      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = addConstModel("metrics/Sh-sqft constant", value);
       registerJSBExpression("metrics/Sh-sqft", port);
     } else if (name == "AC_HTAILARM") {
       real_type value;
       datastr >> value;
-      Port* port = new Port;
-      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = addConstModel("metrics/lh-ft constant", value);
       registerJSBExpression("metrics/lh-ft", port);
     } else if (name == "AC_VTAILAREA") {
       real_type value;
       datastr >> value;
-      Port* port = new Port;
-      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = addConstModel("metrics/Sv-sqft constant", value);
       registerJSBExpression("metrics/Sv-sqft", port);
     } else if (name == "AC_VTAILARM") {
       real_type value;
       datastr >> value;
-      Port* port = new Port;
-      port->setProperty(Property(new ConstExpressionPropertyImpl<real_type>(value)));
+      Port* port = addConstModel("metrics/lv-ft constant", value);
       registerJSBExpression("metrics/lv-ft", port);
     } else if (name == "AC_IXX") {
       real_type value;
@@ -766,13 +771,15 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   wheel->addMultiBodyModel(wc);
   
   Port* port = wj->getOutputPort(0);
-  addOutputModel(port, "Wheel " + numStr + " Position",
+  std::string nameBase = "Wheel " + numStr + " Position";
+  addOutputModel(port, nameBase,
                  "gear/gear[" + numStr + "]/wheel-position-rad");
-  SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uDegree);
-  c->setInputProperty(port->getProperty());
-  port = new Port;
-  port->setProperty(Property(c));
-  addOutputModel(port, "Wheel " + numStr + " Position Deg",
+  UnitConversionModel* unitModel
+    = new UnitConversionModel(nameBase + " converter",
+                              UnitConversionModel::SiToUnit, uDegree);
+  unitModel->getInputPort(0)->connect(port);
+  addFCSModel(unitModel);
+  addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
                  "gear/gear[" + numStr + "]/wheel-position-deg");
 }
 
@@ -1020,13 +1027,15 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         
         // Prepare outputs
         port = sj->getOutputPort(0);
-        addOutputModel(port, "Steering " + numStr + " Position",
+        std::string nameBase = "Steering " + numStr + " Position";
+        addOutputModel(port, nameBase,
                        "/gear/gear[" + numStr + "]/steering-pos-rad");
-        SiToUnitExpressionImpl* c = new SiToUnitExpressionImpl(uDegree);
-        c->setInputProperty(port->getProperty());
-        port = new Port(); // FIXME add unit convert model
-        port->setProperty(Property(c));
-        addOutputModel(port, "Steering " + numStr + " Position Deg",
+        UnitConversionModel* unitModel
+          = new UnitConversionModel(nameBase + " converter",
+                                    UnitConversionModel::SiToUnit, uDegree);
+        unitModel->getInputPort(0)->connect(port);
+        addFCSModel(unitModel);
+        addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
                        "/gear/gear[" + numStr + "]/steering-pos-deg");
       }
 

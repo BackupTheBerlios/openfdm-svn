@@ -250,9 +250,9 @@ UnitConversionModel::output(const TaskInfo&)
 {
   real_type value = getInputPort(0)->toRealPortHandle().getRealValue();
   if (mType == UnitToSi) {
-    mValue = convertTo(mUnit, value);
-  } else {
     mValue = convertFrom(mUnit, value);
+  } else {
+    mValue = convertTo(mUnit, value);
   }
 }
 

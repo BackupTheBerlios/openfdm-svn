@@ -157,6 +157,7 @@ private:
 
   Port* addInverterModel(const std::string& name, Port* in);
   Port* addAbsModel(const std::string& name, Port* in);
+  Port* addConstModel(const std::string& name, real_type value);
 
   void addFCSModel(Model* model);
   /// </FIXME> document and rethink
