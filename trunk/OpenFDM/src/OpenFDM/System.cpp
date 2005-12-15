@@ -202,21 +202,34 @@ System::simulate(real_type tEnd)
       taskInfo.setTime(getTime());
       output(taskInfo);
 
-      Log(Schedule, Info) << "Integration: from time " << mTimestepper->getTime()
-                       << " up to time " << loopTEnd
-                       << " dt = " << loopTEnd - mTimestepper->getTime()
-                       << endl;
+      Log(Schedule, Info) << "Integration: from time "
+                          << mTimestepper->getTime()
+                          << " up to time " << loopTEnd
+                          << " dt = " << loopTEnd - mTimestepper->getTime()
+                          << endl;
+      // FIXME: check for errors
       mTimestepper->integrate(loopTEnd);
       mTime = mTimestepper->getTime();
+      Log(Schedule, Info) << "Integration: finished" << endl;
+      // Croase end check when it is too late, we might do stiffness
+      // detection at least within dopri in an other way ...
+      if (!isFinite(mTimestepper->getState())) {
+        Log(TimeStep, Warning) << "Found infinite values in continous state "
+          "vector. Consider using an other timestepping method or make your "
+          "model less stiff. Aborting!" << endl;
+        return false;
+      }
+
       // It set's the current state into the models and computes the
       // accelerations for the mechanical system
-      Log(Schedule, Info) << "Integration: finished" << endl;
       evalFunction(mTimestepper->getTime(), mTimestepper->getState(), state);
     }
 
     if (equal(mTime, tEnd, 10))
       mTime = tEnd;
   }
+
+  return true;
 }
 
 class TrimFunction

@@ -447,6 +447,30 @@ equal(const MatrixRValue<Impl1,m1,1>& u,
   return equal(u, v, 8*eps);
 }
 
+/** inf check.
+
+    @param v vector.
+
+    Returns true if all entries are finite.
+*/
+template<typename Impl, size_type m>
+OpenFDM_FORCE_INLINE
+bool
+isFinite(const MatrixRValue<Impl,m,1>& v)
+{
+  typedef typename Impl::value_type value_type;
+  const Impl& vi = v.asImpl();
+
+  size_type rows = vi.rows();
+  for (size_type i = 1; i <= rows; ++i) {
+    value_type val = vi(i, 1);
+    if (!isfinite(val))
+      return false;
+  }
+
+  return true;
+}
+
 /** Cross product multiplication.
 
     @param u vector to multiply.
