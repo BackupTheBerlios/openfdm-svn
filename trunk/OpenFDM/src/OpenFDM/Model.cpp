@@ -4,6 +4,7 @@
 
 #include "LogStream.h"
 #include "ModelGroup.h"
+#include "ModelVisitor.h"
 #include "Model.h"
 
 namespace OpenFDM {
@@ -28,6 +29,19 @@ Model::Model(const std::string& name) :
 
 Model::~Model(void)
 {
+}
+
+void
+Model::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
+}
+
+void
+Model::ascend(ModelVisitor& visitor)
+{
+  if (mParentModel)
+    mParentModel->accept(visitor);
 }
 
 const ModelGroup*

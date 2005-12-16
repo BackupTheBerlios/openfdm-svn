@@ -83,6 +83,7 @@ nobase_OpenFDMinclude_HEADERS = \
   MinModel.h \
   Model.h \
   ModelGroup.h \
+  ModelVisitor.h \
   MultiBodyModel.h \
   Newton.h \
   Object.h \

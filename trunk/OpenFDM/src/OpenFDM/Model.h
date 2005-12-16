@@ -25,11 +25,21 @@ class ModelGroup;
 class Input;
 class Output;
 
+class ModelVisitor;
+
 class Model
   : public Object {
 public:
   Model(const std::string& name);
   virtual ~Model(void);
+
+  /// Double dispatch helper for the multibody system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the multibody system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
+
+  /// Hmm ...
+  void ascend(ModelVisitor& visitor);
 
   virtual const ModelGroup* toModelGroup(void) const;
   virtual ModelGroup* toModelGroup(void);

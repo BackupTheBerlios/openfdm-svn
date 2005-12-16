@@ -20,6 +20,18 @@ public:
   ModelGroup(const std::string& name);
   virtual ~ModelGroup(void);
 
+  /// Double dispatch helper for the multibody system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the multibody system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
+
+  void traverse(ModelVisitor& visitor)
+  {
+    for (ModelList::iterator it = mModels.begin(); it != mModels.end(); ++it)
+      (*it)->accept(visitor);
+  }
+
+
   virtual const ModelGroup* toModelGroup(void) const;
   virtual ModelGroup* toModelGroup(void);
 

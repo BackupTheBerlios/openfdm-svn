@@ -7,6 +7,7 @@
 #include "Property.h"
 #include "Vector.h"
 #include "LogStream.h"
+#include "ModelVisitor.h"
 #include "ModelGroup.h"
 
 namespace OpenFDM {
@@ -24,6 +25,12 @@ ModelGroup::~ModelGroup(void)
   // Make sure we can count right ...
   OpenFDMAssert(getNumDiscreteStates() == 0u);
   OpenFDMAssert(getNumContinousStates() == 0u);
+}
+
+void
+ModelGroup::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
 }
 
 const ModelGroup*
