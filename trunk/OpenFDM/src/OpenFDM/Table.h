@@ -233,33 +233,36 @@ private:
     real_type ridx = interp(indexNum);
 
     // Check for an out of range index
-    unsigned i0 = unsigned(floor(ridx));
-    if (i0 < 1) {
+    // Note that this negated check also catches NaNs
+    if (!(1 <= ridx)) {
       curIndex(indexNum) = 1;
       return interpolator(indexNum-1, curIndex, interp);
     }
 
     // Check for an out of range index
     unsigned sz = mSize(indexNum);
-    unsigned i1 = unsigned(ceil(ridx));
-    if (sz < i1) {
+    if (sz < ridx) {
       curIndex(indexNum) = sz;
       return interpolator(indexNum-1, curIndex, interp);
-    } else if (i0 == i1) {
+    }
+
+    unsigned i0 = unsigned(floor(ridx));
+    unsigned i1 = unsigned(ceil(ridx));
+    if (i0 == i1) {
       // Exactly hit an integer valued index
       curIndex(indexNum) = i0;
       return interpolator(indexNum-1, curIndex, interp);
-    } else {
-      // Need interpolation in this dimension
-      curIndex(indexNum) = i0;
-      real_type value;
-      value = (i1 - ridx) * interpolator(indexNum-1, curIndex, interp);
-
-      curIndex(indexNum) = i1;
-      value += (ridx - i0) * interpolator(indexNum-1, curIndex, interp);
-
-      return value;
     }
+
+    // Need interpolation in this dimension
+    curIndex(indexNum) = i0;
+    real_type value;
+    value = (i1 - ridx) * interpolator(indexNum-1, curIndex, interp);
+    
+    curIndex(indexNum) = i1;
+    value += (ridx - i0) * interpolator(indexNum-1, curIndex, interp);
+    
+    return value;
   }
 
   real_type* mData;
