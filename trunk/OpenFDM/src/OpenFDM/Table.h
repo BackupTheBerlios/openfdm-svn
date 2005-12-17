@@ -13,24 +13,10 @@
 
 namespace OpenFDM {
 
-struct InterploationData {
-  InterploationData(void) {}
-  InterploationData(unsigned index0, unsigned index1, real_type _theta)
-  {
-    weight[0] = 1 - _theta;
-    weight[1] = _theta;
-    index[0] = index0;
-    index[1] = index1;
-  }
-  real_type weight[2];
-  unsigned index[2];
-};
-
 class TableLookup {
   typedef std::map<real_type, unsigned> Table;
   typedef std::pair<real_type, unsigned> Pair;
-  
-  
+ 
 public:
   TableLookup(void)
   {}
@@ -129,12 +115,12 @@ public:
     return true;
   }
 
-  InterploationData lookup(real_type input) const
+  real_type lookup(real_type input) const
   {
     // Empty table??
     // FIXME
     if (mTable.empty())
-      return InterploationData(1, 1, 0);
+      return 1;
 
     // Find the table bounds for the requested input.
     Table::const_iterator upBoundIt = mTable.upper_bound(input);
@@ -143,10 +129,10 @@ public:
 
     Table::const_iterator beg = mTable.begin();
     if (upBoundIt == beg)
-      return InterploationData(1, 1, 0);
+      return 1;
     if (upBoundIt == mTable.end()) {
       unsigned last = mTable.rbegin()->second;
-      return InterploationData(last, last, 0);
+      return last;
     }
 
     // Just do linear interpolation.
@@ -154,10 +140,10 @@ public:
     real_type upBound = upBoundIt->first;
     unsigned loIdx = loBoundIt->second;
     if (loBound == upBound)
-      return InterploationData(loIdx, loIdx, 0);
+      return loIdx;
     unsigned upIdx = upBoundIt->second;
     real_type theta = (input - loBound)/(upBound-loBound);
-    return InterploationData(loIdx, upIdx, theta);
+    return loIdx + theta;
   }
 
 private:
@@ -169,7 +155,7 @@ class TableData {
 public:
   typedef LinAlg::Vector<unsigned,numDims>  Index;
   typedef LinAlg::Vector<unsigned,numDims>  SizeVector;
-  typedef LinAlg::Vector<InterploationData,numDims> InterpVector;
+  typedef LinAlg::Vector<real_type,numDims> InterpVector;
 
   TableData(void) :
     mData(0)
@@ -244,17 +230,36 @@ private:
     if (indexNum == 0)
       return at(curIndex);
 
-    real_type value = 0;
+    real_type ridx = interp(indexNum);
 
-    curIndex(indexNum) = interp(indexNum).index[0];
-    value += interp(indexNum).weight[0] *
-      interpolator(indexNum-1, curIndex, interp);
+    // Check for an out of range index
+    unsigned i0 = unsigned(floor(ridx));
+    if (i0 < 1) {
+      curIndex(indexNum) = 1;
+      return interpolator(indexNum-1, curIndex, interp);
+    }
 
-    curIndex(indexNum) = interp(indexNum).index[1];
-    value += interp(indexNum).weight[1] *
-      interpolator(indexNum-1, curIndex, interp);
+    // Check for an out of range index
+    unsigned sz = mSize(indexNum);
+    unsigned i1 = unsigned(ceil(ridx));
+    if (sz < i1) {
+      curIndex(indexNum) = sz;
+      return interpolator(indexNum-1, curIndex, interp);
+    } else if (i0 == i1) {
+      // Exactly hit an integer valued index
+      curIndex(indexNum) = i0;
+      return interpolator(indexNum-1, curIndex, interp);
+    } else {
+      // Need interpolation in this dimension
+      curIndex(indexNum) = i0;
+      real_type value;
+      value = (i1 - ridx) * interpolator(indexNum-1, curIndex, interp);
 
-    return value;
+      curIndex(indexNum) = i1;
+      value += (ridx - i0) * interpolator(indexNum-1, curIndex, interp);
+
+      return value;
+    }
   }
 
   real_type* mData;
