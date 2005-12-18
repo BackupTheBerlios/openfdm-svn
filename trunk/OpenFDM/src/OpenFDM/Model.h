@@ -39,7 +39,8 @@ public:
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
   /// Hmm ...
-  void ascend(ModelVisitor& visitor);
+  void ascend(ModelVisitor& visitor)
+  { if (mParentModel) mParentModel->accept(visitor); }
 
   virtual const ModelGroup* toModelGroup(void) const;
   virtual ModelGroup* toModelGroup(void);
@@ -142,16 +143,17 @@ protected:
   void setOutputPort(unsigned i, const std::string& name, M* model,
                      const Matrix& (M::*getter)(void) const)
   { setOutputPort(i, name, new MatrixGetterPortInterface<M>(model, getter)); }
+
 private:
   // Sets the parent model.
   // That is the one which is informed if the number of states changes.
-  void setParent(ModelGroup* modelGroup);
-  const ModelGroup* getParent(void) const { return mParentModel; }
-  ModelGroup* getParent(void) { return mParentModel; }
+  const Model* getParent(void) const { return mParentModel; }
+  Model* getParent(void) { return mParentModel; }
+  void setParent(Model* model);
   void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
   void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);
 
-  managed_ptr<ModelGroup> mParentModel;
+  managed_ptr<Model> mParentModel;
   unsigned mNumContinousStates;
   unsigned mNumDiscreteStates;
   bool mDirectFeedThrough;

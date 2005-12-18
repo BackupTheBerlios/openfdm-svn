@@ -3,7 +3,6 @@
  */
 
 #include "LogStream.h"
-#include "ModelGroup.h"
 #include "ModelVisitor.h"
 #include "Model.h"
 
@@ -35,13 +34,6 @@ void
 Model::accept(ModelVisitor& visitor)
 {
   visitor.apply(*this);
-}
-
-void
-Model::ascend(ModelVisitor& visitor)
-{
-  if (mParentModel)
-    mParentModel->accept(visitor);
 }
 
 const ModelGroup*
@@ -276,13 +268,13 @@ Model::setOutputPort(unsigned i, const std::string& name,
 }
 
 void
-Model::setParent(ModelGroup* modelGroup)
+Model::setParent(Model* model)
 {
   if (mParentModel) {
     mParentModel->adjustNumDiscreteStates(0, getNumDiscreteStates());
     mParentModel->adjustNumContinousStates(0, getNumContinousStates());
   }
-  mParentModel = modelGroup;
+  mParentModel = model;
   if (mParentModel) {
     mParentModel->adjustNumDiscreteStates(getNumDiscreteStates(), 0);
     mParentModel->adjustNumContinousStates(getNumContinousStates(), 0);
