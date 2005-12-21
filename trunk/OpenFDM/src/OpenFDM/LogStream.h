@@ -13,26 +13,27 @@ namespace OpenFDM {
 namespace Log {
 
 enum Category {
-  ArtBody = 1,
-  TimeStep = 1 << 2,
-  BoundCheck = 1 << 3,
-  Environment = 1 << 4,
-  Initialization = 1 << 5,
-  NewtonMethod = 1 << 6,
-  Misc = 1 << 7,
-  Model = 1 << 8,
-  Schedule = 1 << 9,
-  Assert = ~0
+  ArtBody          = 1,
+  MultiBody        = ArtBody << 1,
+  TimeStep         = MultiBody << 1,
+  BoundCheck       = TimeStep << 1,
+  Environment      = BoundCheck << 1,
+  Initialization   = Environment << 1,
+  NewtonMethod     = Initialization << 1,
+  Misc             = NewtonMethod << 1,
+  Model            = Misc << 1,
+  Schedule         = Model << 1,
+  Assert           = ~0
 };
 
 enum Priority {
-  Error = 0,
-  Warning = 1,
-  Info = 2,
-  Debug = 3,
-  Debug1 = 4,
-  Debug2 = 5,
-  Debug3 = 6
+  Error            = 0,
+  Warning          = Error + 1,
+  Info             = Warning + 1,
+  Debug            = Info + 1,
+  Debug1           = Debug + 1,
+  Debug2           = Debug1 + 1,
+  Debug3           = Debug2 + 1
 };
 
 template<Category category, Priority priority>
