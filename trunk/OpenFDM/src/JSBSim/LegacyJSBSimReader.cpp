@@ -90,7 +90,7 @@ LegacyJSBSimReader::loadAircraft(const std::string& acFileName)
   // Allocate a new vehicle
   mVehicle = new Vehicle;
   mAeroForce = new AeroForce(mVehicle->getEnvironment(), "Aerodynamic force");
-  mVehicle->getTopBody()->addMultiBodyModel(mAeroForce);
+  mVehicle->getTopBody()->addInteract2(mAeroForce);
   // Default discrete stepsize of JSBSim
   mVehicle->getModelGroup()->addSampleTime(SampleTime(1.0/120));
 
@@ -768,7 +768,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   wc->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
   wc->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
   wc->setFrictionCoeficient(0.9);
-  wheel->addMultiBodyModel(wc);
+  wheel->addInteract2(wc);
   
   Port* port = wj->getOutputPort(0);
   std::string nameBase = "Wheel " + numStr + " Position";
@@ -821,7 +821,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         sc->setSpringDamping(convertFrom(uPoundForcePFt, d));
         sc->setFrictionCoeficient(0.1*fs);
         
-        mVehicle->getTopBody()->addMultiBodyModel(sc);
+        mVehicle->getTopBody()->addInteract2(sc);
 
       } else {
         // For jsbsim use simple gears
@@ -879,7 +879,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
           sg->getInputPort("brakeCommand")->connect(port);
         }
         
-        mVehicle->getTopBody()->addMultiBodyModel(sg);
+        mVehicle->getTopBody()->addInteract2(sg);
       }
       
     } else if (uctype == "AC_LAUNCHBAR") {
@@ -1097,7 +1097,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       sc->setSpringDamping(convertFrom(uPoundForcePFt, d));
       sc->setFrictionCoeficient(fs);
 
-      mVehicle->getTopBody()->addMultiBodyModel(sc);
+      mVehicle->getTopBody()->addInteract2(sc);
     }
   }
 
@@ -1851,7 +1851,7 @@ LegacyJSBSimReader::convertEngine(const std::string& data,
   std::string throttlename = "fcs/throttle-cmd-norm[" + number + "]";
   engineForce->getInputPort(0)->connect(lookupJSBExpression(throttlename));
 
-  mVehicle->getTopBody()->addMultiBodyModel(engineForce);
+  mVehicle->getTopBody()->addInteract2(engineForce);
 
   return true;
 }

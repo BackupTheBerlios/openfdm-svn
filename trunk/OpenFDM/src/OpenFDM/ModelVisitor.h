@@ -7,7 +7,7 @@
 
 #include "Model.h"
 #include "ModelGroup.h"
-// #include "MultiBodyModel.h"
+#include "RigidBody.h"
 
 namespace OpenFDM {
 
@@ -19,25 +19,17 @@ public:
   { }
   virtual void apply(ModelGroup& modelGroup)
   { apply((Model&)modelGroup); }
-//   virtual void apply(MultiBodyModel& multiBodyModel)
-//   { apply((Model&)multiBodyModel); }
+  virtual void apply(Interact& interact)
+  { apply((Model&)interact); }
 protected:
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse downward
   inline void traverse(ModelGroup& modelGroup)
   { modelGroup.traverse(*this); }
-  /// Call this in the apply(MultiBodyModel&) method if you want to
-  /// traverse downward
-//   inline void traverse(MultiBodyModel& multiBodyModel)
-//   { multiBodyModel.traverse(*this); }
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse upward
   inline void ascend(Model& model)
   { model.ascend(*this); }
-  /// Call this in the apply(MultiBodyModel&) method if you want to
-  /// traverse upward
-//   inline void ascend(MultiBodyModel& multiBodyModel)
-//   { multiBodyModel.ascend(*this); }
 };
 
 } // namespace OpenFDM

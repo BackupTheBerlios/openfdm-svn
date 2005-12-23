@@ -51,6 +51,31 @@ RigidBody::accept(ConstVisitor& visitor) const
 }
 
 void
+RigidBody::traverse(Visitor& visitor)
+{
+  InteractList::iterator it;
+  for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
+    (*it)->accept(visitor);
+//     MassList::iterator it;
+//     for (it = mMasses.begin(); it != mMasses.end(); ++it)
+//       (*it)->accept(visitor);
+  
+  Frame::traverse(visitor);
+}
+
+void
+RigidBody::traverse(ConstVisitor& visitor) const
+{
+  InteractList::const_iterator it;
+  for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
+    (*it)->accept(visitor);
+//     MassList::const_iterator it;
+//     for (it = mMasses.begin(); it != mMasses.end(); ++it)
+//       (*it)->accept(visitor);
+  Frame::traverse(visitor);
+}
+
+void
 RigidBody::computeArtValues(void)
 {
   Log(ArtBody, Debug) << "Entry of computeArtValues of \"" << getName()
@@ -79,18 +104,18 @@ RigidBody::computeArtValues(void)
                       cross(iv.getAngular(), Jiv.getLinear()));
 
   // Collect all forces acting directly on that body.
-  n = getNumMultiBodyModels();
-  for (unsigned i = 0; i < n; ++i) {
-    Force* child = getMultiBodyModel(i)->toForce();
-    if (child) {
-      Log(ArtBody, Debug) << "Adding local force \"" << child->getName()
-                          << "\" to body \"" << getName() << "\"" << endl;
+//   n = getNumMultiBodyModels();
+//   for (unsigned i = 0; i < n; ++i) {
+//     Force* child = getMultiBodyModel(i)->toForce();
+//     if (child) {
+//       Log(ArtBody, Debug) << "Adding local force \"" << child->getName()
+//                           << "\" to body \"" << getName() << "\"" << endl;
      
-      // FIXME: why is this - sign ???
-      // Ok, because of the minus in MobileRoot ...
-      mArtForce -= child->getForce(this);
-    }
-  }
+//       // FIXME: why is this - sign ???
+//       // Ok, because of the minus in MobileRoot ...
+//       mArtForce -= child->getForce(this);
+//     }
+//   }
 
   // Now collect all articulated forces and all articulated inertias.
   for (unsigned i = 0; i < n; ++i) {
@@ -107,6 +132,11 @@ RigidBody::computeArtValues(void)
         ;
     }
   }
+
+  // Collect all articulated forces and inertias
+  InteractList::iterator it;
+  for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
+    (*it)->interactWith(this);
   
   Log(ArtBody, Debug3) << "On exit of computeArtValues of \"" << getName()
                        << "\" Force is:\n" << trans(mArtForce)
@@ -134,6 +164,44 @@ RigidBody::computeAccel(void)
   
   Log(ArtBody, Debug3) << "On exit of computeAccel of \"" << getName()
                        << "\"" << endl;
+}
+
+void
+RigidBody::addInteract(Interact* interact)
+{
+  mInteracts.push_back(interact);
+}
+
+bool
+RigidBody::removeInteract(Interact* interact)
+{
+  InteractList::iterator it;
+  for (it = mInteracts.begin(); it != mInteracts.end(); ++it) {
+    if ((*it) == interact) {
+      mInteracts.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool
+RigidBody::addInteract2(Interact* child, unsigned parentNum)
+{
+  child->attachTo(this);
+}
+
+/// FIXME does not belong here
+void
+Interact::accept(Visitor& visitor)
+{
+  visitor.apply(*this);
+}
+
+void
+Interact::accept(ConstVisitor& visitor) const
+{
+  visitor.apply(*this);
 }
 
 } // namespace OpenFDM

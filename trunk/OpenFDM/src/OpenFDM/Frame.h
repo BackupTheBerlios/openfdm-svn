@@ -23,6 +23,7 @@
 namespace OpenFDM {
 
 class RigidBody;
+class Interact;
 
 /** 
 The \ref Frame class is the basic tool to model a tree of moving and
@@ -37,6 +38,8 @@ respect to that global coordinate system too.
 Each frame can have a linear and angular velocity with respect to its
 parent frame.
 */
+
+/// FIXME: RelAccel->VelDot ...
 
 class Frame :
     public Object {
@@ -156,6 +159,9 @@ public:
 
   unsigned getNumMultiBodyModels(void) const
   { return _children.size(); }
+
+  virtual bool addInteract2(Interact* child, unsigned parentNum = 0)
+  { return false; }
 
   //////////////////
 
@@ -665,6 +671,148 @@ public:
   { Frame::setRefPosition(p); }
   void setRefOrientation(const Quaternion& o)
   { Frame::setRefOrientation(o); }
+};
+
+class PrismaticJointFrame :
+    public Frame {
+public:
+  PrismaticJointFrame(const std::string& name) :
+    Frame(name) { /*FIXME zero out members ...*/ }
+  virtual ~PrismaticJointFrame(void) {}
+
+  /// Gets the joint axis where this joint is allowed to rotate around.
+  const Vector3& getJointAxis(void) const
+  { return mJointAxis; }
+
+  /// Sets the joint axis where this joint is allowed to rotate around.
+  void setJointAxis(const Vector3& axis)
+  {
+    mJointAxis = axis;
+    setPosition(mZeroPos + mJointPos*mJointAxis);
+    setLinearRelVel(mJointVel*mJointAxis);
+    setLinearRelAccel(mJointVelDot*mJointAxis);
+  }
+
+  /// Returns the joint position.
+  const real_type& getJointPos(void) const
+  { return mJointPos; }
+
+  /// Sets the joint position.
+  void setJointPos(real_type pos)
+  { mJointPos = pos; setPosition(mZeroPos + mJointPos*mJointAxis); }
+
+  /// Returns the joint velocity.
+  const real_type& getJointVel(void) const
+  { return mJointVel; }
+
+  /// Sets the joint velocity.
+  void setJointVel(real_type vel)
+  { mJointVel = vel; setLinearRelVel(mJointVel*mJointAxis); }
+
+  /// Returns the derivative of the relative velocity
+  const real_type& getJointVelDot(void) const
+  { return mJointVelDot; }
+
+  /// Returns the derivative of the relative velocity
+  void setJointVelDot(real_type velDot)
+  { mJointVelDot = velDot; setLinearRelAccel(mJointVelDot*mJointAxis); }
+
+  /// Sets the zero position of the joint.
+  void setZeroPos(const Vector3& zeroPos)
+  { mZeroPos = zeroPos; setPosition(mZeroPos + mJointPos*mJointAxis); }
+  const Vector3& getZeroPos(void) const
+  { return mZeroPos; }
+
+  /// FIXME Hdot
+
+private:
+  /// The zero position with respect to the parent frame.
+  Vector3 mZeroPos;
+  /// The joint rotation axis.
+  Vector3 mJointAxis;
+
+  /// The relative joint translation along the joint axis
+  real_type mJointPos;
+
+  /// The realtive linear velocity along the joint axis
+  real_type mJointVel;
+
+  /// The realtive linear velocity derivative along the joint axis
+  real_type mJointVelDot;
+};
+
+class RevoluteJointFrame :
+    public Frame {
+public:
+  RevoluteJointFrame(const std::string& name) :
+    Frame(name) { /*FIXME zero out members ...*/ }
+  virtual ~RevoluteJointFrame(void) {}
+
+  /// Gets the joint axis where this joint is allowed to rotate around.
+  const Vector3& getJointAxis(void) const
+  { return mJointAxis; }
+
+  /// Sets the joint axis where this joint is allowed to rotate around.
+  void setJointAxis(const Vector3& axis)
+  {
+    mJointAxis = axis;
+    setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
+    setAngularRelVel(mJointVel*mJointAxis);
+    setAngularRelAccel(mJointVelDot*mJointAxis);
+  }
+
+  /// Returns the joint position.
+  const real_type& getJointPos(void) const
+  { return mJointPos; }
+
+  /// Sets the joint position.
+  void setJointPos(real_type pos)
+  {
+    mJointPos = pos;
+    setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
+  }
+
+  /// Returns the joint velocity.
+  const real_type& getJointVel(void) const
+  { return mJointVel; }
+
+  /// Sets the joint velocity.
+  void setJointVel(real_type vel)
+  { mJointVel = vel; setAngularRelVel(mJointVel*mJointAxis); }
+
+  /// Returns the derivative of the relative velocity
+  const real_type& getJointVelDot(void) const
+  { return mJointVelDot; }
+
+  /// Returns the derivative of the relative velocity
+  void setJointVelDot(real_type velDot)
+  { mJointVelDot = velDot; setAngularRelAccel(mJointVelDot*mJointAxis); }
+
+  /// Sets the zero position of the joint.
+  void setZeroOrient(const Quaternion& zeroOrient)
+  {
+    mZeroOrient = zeroOrient;
+    setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
+  }
+  const Quaternion& getZeroOrient(void) const
+  { return mZeroOrient; }
+
+  /// FIXME Hdot
+
+private:
+  /// The zero orientation with respect to the parent frame.
+  Quaternion mZeroOrient;
+  /// The joint rotation axis.
+  Vector3 mJointAxis;
+
+  /// The relative joint rotation with respect to the zero orientation.
+  real_type mJointPos;
+
+  /// The rotational velocity with respect to the rotation axis.
+  real_type mJointVel;
+
+  /// The rotational velocity derivative with respect to the rotation axis.
+  real_type mJointVelDot;
 };
 
 } // namespace OpenFDM

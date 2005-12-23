@@ -15,40 +15,31 @@
 
 namespace OpenFDM {
 
-class Force
-  : public MultiBodyModel {
+class Force :
+    public Interact {
 public:
-  Force(const std::string& name);
+  Force(const std::string& name, unsigned numParents);
   virtual ~Force(void);
 
-  virtual void accept(Visitor& visitor);
-  virtual void accept(ConstVisitor& visitor) const;
-
-  virtual Force* toForce(void);
-  virtual const Force* toForce(void) const;
-
-  /**
-   */
-  virtual const Vector6& getForce(Frame *parent) const = 0;
-
-  // Needs to call applyForce once ...
-  virtual void computeForce(void) = 0;
 };
 
 class ExternalForce
   : public Force {
-  OpenFDM_NodeImplementation(1);
 public:
   ExternalForce(const std::string& name)
-    : Force(name)
+    : Force(name, 1), mForce(0, 0, 0, 0, 0, 0)
   {}
   virtual ~ExternalForce(void) {}
 
-  virtual const Vector6& getForce(Frame *parent) const
+  // Needs to call applyForce once ...
+  virtual void interactWith(RigidBody* rigidBody)
   {
-    OpenFDMAssert(parent == getParentFrame(0));
-    return mForce;
+    computeForce();
+    rigidBody->contributeForce(-mForce);
   }
+
+  /// FIXME here for compatibility
+  virtual void computeForce(void) = 0;
 
 protected:
   /** Sets the force contribution of this force element.

@@ -17,15 +17,6 @@
 
 namespace OpenFDM {
 
-class ForceComputationVisitor
-  : public Visitor {
-public:
-  virtual void apply(Force& force)
-  {
-    force.computeForce();
-  }
-};
-
 class ForwardDynamicsVisitor
   : public Visitor {
 public:
@@ -62,6 +53,12 @@ public:
     abNode.setState(mState, mOffset);
     mOffset += abNode.getNumContinousStates();
   }
+  virtual void apply(Interact& abNode)
+  {
+    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mState.size());
+    abNode.setState(mState, mOffset);
+    mOffset += abNode.getNumContinousStates();
+  }
 private:
   Vector mState;
   unsigned mOffset;
@@ -75,6 +72,12 @@ public:
     : mState(size), mOffset(0u)
   { }
   virtual void apply(const MultiBodyModel& abNode)
+  {
+    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mState.size());
+    abNode.getState(mState, mOffset);
+    mOffset += abNode.getNumContinousStates();
+  }
+  virtual void apply(const Interact& abNode)
   {
     OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mState.size());
     abNode.getState(mState, mOffset);
@@ -99,6 +102,12 @@ public:
     abNode.getStateDeriv(mStateDeriv, mOffset);
     mOffset += abNode.getNumContinousStates();
   }
+  virtual void apply(Interact& abNode)
+  {
+    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mStateDeriv.size());
+    abNode.getStateDeriv(mStateDeriv, mOffset);
+    mOffset += abNode.getNumContinousStates();
+  }
   const Vector& getStateDeriv(void) const
   { return mStateDeriv; }
 private:
@@ -115,6 +124,10 @@ public:
   {
     abNode.output(mTaskInfo);
   }
+  virtual void apply(Interact& abNode)
+  {
+    abNode.output(mTaskInfo);
+  }
 private:
   const TaskInfo& mTaskInfo;
 };
@@ -125,6 +138,10 @@ public:
   UpdateVisitor(const TaskInfo& taskInfo) : mTaskInfo(taskInfo)
   { }
   virtual void apply(MultiBodyModel& abNode)
+  {
+    abNode.update(mTaskInfo);
+  }
+  virtual void apply(Interact& abNode)
   {
     abNode.update(mTaskInfo);
   }
@@ -139,6 +156,10 @@ public:
     : mOffset(0u)
   { }
   virtual void apply(const MultiBodyModel& abNode)
+  {
+    mOffset += abNode.getNumContinousStates();
+  }
+  virtual void apply(const Interact& abNode)
   {
     mOffset += abNode.getNumContinousStates();
   }
@@ -178,8 +199,7 @@ MultiBodySystem::setEvalState(const Vector& state)
   setState(state, 0);
 
   // Compute the external and interaction forces.
-  ForceComputationVisitor forceVisitor;
-  mRootFrame->accept(forceVisitor);
+  // FIXME:Output->continous states ...
 
   // Compute forward dynamics, that is the articulated forces and inertia.
   ForwardDynamicsVisitor fwdVisitor;
@@ -220,8 +240,7 @@ void
 MultiBodySystem::getStateDeriv(Vector& stateDeriv, unsigned offset)
 {
   // Compute the external and interaction forces.
-  ForceComputationVisitor forceVisitor;
-  mRootFrame->accept(forceVisitor);
+  // FIXME:Output->continous states ...
 
   // Compute forward dynamics, that is the articulated forces and inertia.
   ForwardDynamicsVisitor fwdVisitor;

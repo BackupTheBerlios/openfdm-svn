@@ -14,6 +14,7 @@ class RigidBody;
 class Mass;
 class Force;
 class Joint;
+class Interact;
 
 class ConstVisitor {
 public:
@@ -27,10 +28,12 @@ public:
   { traverse(abNode); }
   virtual void apply(const Mass& mass)
   { apply((const MultiBodyModel&)mass); }
-  virtual void apply(const Force& force)
-  { apply((const MultiBodyModel&)force); }
+//   virtual void apply(const Force& force)
+//   { apply((const MultiBodyModel&)force); }
   virtual void apply(const Joint& joint)
   { apply((const MultiBodyModel&)joint); }
+  virtual void apply(const Interact& interact)
+  { }
   inline void traverse(const Frame& frame)
   { frame.traverse(*this); }
   inline void traverse(const MultiBodyModel& multiBodyModel)
