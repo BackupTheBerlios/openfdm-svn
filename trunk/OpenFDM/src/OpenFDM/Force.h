@@ -27,16 +27,6 @@ public:
   virtual Force* toForce(void);
   virtual const Force* toForce(void) const;
 
-  void applyForce(RigidBody& body) const
-  {
-    // What about that??
-    if (&body == getParentFrame(0)) {
-    } else if (&body == getParentFrame(1)) {
-    } else {
-      // error
-    }
-  }
-
   /**
    */
   virtual const Vector6& getForce(Frame *parent) const = 0;
