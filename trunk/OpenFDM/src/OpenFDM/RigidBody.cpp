@@ -103,20 +103,6 @@ RigidBody::computeArtValues(void)
                       cross(iv.getLinear(), Jiv.getLinear()),
                       cross(iv.getAngular(), Jiv.getLinear()));
 
-  // Collect all forces acting directly on that body.
-//   n = getNumMultiBodyModels();
-//   for (unsigned i = 0; i < n; ++i) {
-//     Force* child = getMultiBodyModel(i)->toForce();
-//     if (child) {
-//       Log(ArtBody, Debug) << "Adding local force \"" << child->getName()
-//                           << "\" to body \"" << getName() << "\"" << endl;
-     
-//       // FIXME: why is this - sign ???
-//       // Ok, because of the minus in MobileRoot ...
-//       mArtForce -= child->getForce(this);
-//     }
-//   }
-
   // Now collect all articulated forces and all articulated inertias.
   for (unsigned i = 0; i < n; ++i) {
     Joint* joint = getMultiBodyModel(i)->toJoint();
@@ -189,19 +175,6 @@ bool
 RigidBody::addInteract2(Interact* child, unsigned parentNum)
 {
   child->attachTo(this);
-}
-
-/// FIXME does not belong here
-void
-Interact::accept(Visitor& visitor)
-{
-  visitor.apply(*this);
-}
-
-void
-Interact::accept(ConstVisitor& visitor) const
-{
-  visitor.apply(*this);
 }
 
 } // namespace OpenFDM

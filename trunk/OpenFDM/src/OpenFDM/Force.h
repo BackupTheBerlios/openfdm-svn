@@ -10,6 +10,7 @@
 #include "Vector.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "Interact.h"
 #include "Visitor.h"
 #include "ConstVisitor.h"
 

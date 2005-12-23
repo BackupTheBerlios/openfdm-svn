@@ -122,101 +122,10 @@ private:
   InteractList mInteracts;
 
   /// FIXME: is interact too???
-  typedef std::vector<SharedPtr<Mass> > MassList;
-  MassList mMasses;
+//   typedef std::vector<SharedPtr<Mass> > MassList;
+//   MassList mMasses;
 
   friend class Interact;
-};
-
-class Interact :
-    public Model {
-public:
-  Interact(const std::string& name, unsigned numParents) :
-    Model(name), mParents(numParents) { }
-  virtual ~Interact(void) { }
-
-
-  /// Double dispatch helper for the multibody system visitor
-  virtual void accept(Visitor& visitor);
-  /// Double dispatch helper for the multibody system visitor
-  virtual void traverse(Visitor& visitor)
-  { }
-  /// Double dispatch helper for the multibody system visitor
-  virtual void accept(ConstVisitor& visitor) const;
-  /// Double dispatch helper for the multibody system visitor
-  virtual void traverse(ConstVisitor& visitor) const
-  { }
-
-
-  bool attachTo(RigidBody* rigidBody)
-  {
-    if (!rigidBody) {
-      Log(MultiBody,Error) << "Got 0 RigidBody pointer to attach to." << endl;
-      return false;
-    }
-    ParentList::iterator it;
-    for (it = mParents.begin(); it != mParents.end(); ++it) {
-      if (!(*it)) {
-        (*it) = rigidBody;
-        (*it)->addInteract(this);
-        return true;
-      }
-    }
-
-    Log(MultiBody,Error) << "Cannot attach Interact \"" << getName()
-                         << "\" to RigidBody \"" << rigidBody->getName()
-                         << "\": Already attached to 2 Rigid bodies."
-                         << endl;
-    return false;
-  }
-  bool detachFrom(RigidBody* rigidBody)
-  {
-    if (!rigidBody) {
-      Log(MultiBody,Error) << "Got 0 RigidBody pointer to attach to." << endl;
-      return false;
-    }
-    ParentList::iterator it;
-    for (it = mParents.begin(); it != mParents.end(); ++it) {
-      if ((*it) == rigidBody) {
-        (*it)->removeInteract(this);
-        (*it) = 0;
-        return true;
-      }
-    }
-
-    Log(MultiBody,Error) << "Cannot detatach Interact \"" << getName()
-                         << "\" from RigidBody \"" << rigidBody->getName()
-                         << "\": Interact is not attached to that RigidBody."
-                         << endl;
-    return false;
-  }
-
-  virtual void interactWith(RigidBody* rigidBody) = 0;
-
-  /// FIXME remove
-  const Frame* getParentFrame(unsigned id = 0) const
-  {
-    OpenFDMAssert(id < mParents.size() && mParents[id]);
-    return mParents[id]->getFrame();
-  }
-  /// FIXME remove
-  Frame* getParentFrame(unsigned id = 0)
-  {
-    OpenFDMAssert(id < mParents.size() && mParents[id]);
-    return mParents[id]->getFrame();
-  }
-
-private:
-  typedef std::vector<WeakPtr<RigidBody> > ParentList;
-  ParentList mParents;
-};
-
-class Joint2 :
-    public Interact {
-public:
-  Joint2(const std::string& name) : Interact(name, 2) { }
-  virtual ~Joint2(void) { }
-
 };
 
 } // namespace OpenFDM

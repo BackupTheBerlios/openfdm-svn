@@ -58,6 +58,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Ground.h \
   Input.h \
   Integrator.h \
+  Interact.h \
   ImplicitEuler.h \
   Inertia.h \
   Joint.h \
@@ -163,6 +164,7 @@ libOpenFDM_la_SOURCES = \
   Ground.cpp \
   Input.cpp \
   Integrator.cpp \
+  Interact.cpp \
   ImplicitEuler.cpp \
   LineActuator.cpp \
   LinearSpring.cpp \

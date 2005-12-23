@@ -13,8 +13,6 @@ namespace OpenFDM {
 
 class Frame;
 class Mass;
-// class Interact;
-class Force;
 class Joint;
 class Visitor;
 class ConstVisitor;
@@ -33,13 +31,6 @@ public:
 
   virtual Mass* toMass(void);
   virtual const Mass* toMass(void) const;
-
-  /// FIXME, hmm ...
-//   virtual Interact* toInteract(void) { return 0; }
-//   virtual const Interact* toInteract(void) const { return 0; }
-
-  virtual Force* toForce(void);
-  virtual const Force* toForce(void) const;
 
   virtual Joint* toJoint(void);
   virtual const Joint* toJoint(void) const;

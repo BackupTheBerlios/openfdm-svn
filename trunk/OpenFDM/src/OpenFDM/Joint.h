@@ -13,12 +13,21 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
+#include "Interact.h"
 #include "Visitor.h"
 #include "ConstVisitor.h"
 #include "Frame.h"
 #include "LogStream.h"
 
 namespace OpenFDM {
+
+class Joint2 :
+    public Interact {
+public:
+  Joint2(const std::string& name) : Interact(name, 2) { }
+  virtual ~Joint2(void) { }
+
+};
 
 class Joint
   : public MultiBodyModel {

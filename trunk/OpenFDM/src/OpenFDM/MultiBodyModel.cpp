@@ -52,18 +52,6 @@ MultiBodyModel::toMass(void) const
   return 0;
 }
 
-Force*
-MultiBodyModel::toForce(void)
-{
-  return 0;
-}
-
-const Force*
-MultiBodyModel::toForce(void) const
-{
-  return 0;
-}
-
 Joint*
 MultiBodyModel::toJoint(void)
 {
