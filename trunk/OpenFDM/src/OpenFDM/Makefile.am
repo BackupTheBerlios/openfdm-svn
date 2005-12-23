@@ -98,7 +98,6 @@ nobase_OpenFDMinclude_HEADERS = \
   Quaternion.h \
   ReaderWriter.h \
   Referenced.h \
-  RefPtr.h \
   RevoluteActuator.h \
   RevoluteJoint.h \
   RigidBody.h \
@@ -106,6 +105,7 @@ nobase_OpenFDMinclude_HEADERS = \
   RootFrame.h \
   SampleTime.h \
   Saturation.h \
+  SharedPtr.h \
   Sensor.h \
   SimpleContact.h \
   SimpleGear.h \

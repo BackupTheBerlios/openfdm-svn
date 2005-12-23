@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_RefPtr_H
-#define OpenFDM_RefPtr_H
+#ifndef OpenFDM_SharedPtr_H
+#define OpenFDM_SharedPtr_H
 
 #include "Referenced.h"
 

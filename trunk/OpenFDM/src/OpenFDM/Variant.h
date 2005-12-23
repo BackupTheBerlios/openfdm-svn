@@ -9,7 +9,7 @@
 
 #include "Types.h"
 #include "Referenced.h"
-#include "RefPtr.h"
+#include "SharedPtr.h"
 #include "Matrix.h"
 
 namespace OpenFDM {

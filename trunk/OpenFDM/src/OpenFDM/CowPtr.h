@@ -7,7 +7,7 @@
 
 #include "Assert.h"
 #include "Referenced.h"
-#include "RefPtr.h"
+#include "SharedPtr.h"
 
 namespace OpenFDM {
 

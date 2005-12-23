@@ -7,7 +7,7 @@
 
 #include <string>
 #include <OpenFDM/Referenced.h>
-#include <OpenFDM/RefPtr.h>
+#include <OpenFDM/SharedPtr.h>
 
 namespace OpenFDM {
 
