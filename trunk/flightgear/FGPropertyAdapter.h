@@ -40,7 +40,7 @@ protected:
 
 private:
   std::string mPropertyName;
-  managed_ptr<Object> mObject;
+  WeakPtr<Object> mObject;
 };
 
 
@@ -151,9 +151,9 @@ public:
   }
 private:
   // Holds the input model where it should write the value
-  // Note that this shal not be a shared_ptr, since we get a recursive
+  // Note that this shal not be a SharedPtr, since we get a recursive
   // ref count loop in that case.
-  managed_ptr<Input> mInputModel;
+  WeakPtr<Input> mInputModel;
 };
 
 // That class just takes care that the listeners to a specific Input are

@@ -213,8 +213,8 @@ void printVehicle(Vehicle* vehicle)
 // Our local storage covers the pointer to our vehicle.
 // A list of the property to expression adaptors.
 struct FGOpenFDMData {
-  OpenFDM::shared_ptr<OpenFDM::Vehicle> vehicle;
-  OpenFDM::shared_ptr<OpenFDM::FGGround> ground;
+  OpenFDM::SharedPtr<OpenFDM::Vehicle> vehicle;
+  OpenFDM::SharedPtr<OpenFDM::FGGround> ground;
 };
 
 FGOpenFDM::FGOpenFDM(SGPropertyNode* fdmRootNode) :
