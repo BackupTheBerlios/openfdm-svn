@@ -10,8 +10,6 @@
 namespace OpenFDM {
 
 class RigidBody;
-class Mass;
-class Force;
 class Joint;
 class MultiBodyModel;
 class Interact;
@@ -26,10 +24,6 @@ public:
   { apply((Frame&)body); }
   virtual void apply(MultiBodyModel& abNode)
   { traverse(abNode); }
-  virtual void apply(Mass& mass)
-  { apply((MultiBodyModel&)mass); }
-//   virtual void apply(Force& force)
-//   { apply((MultiBodyModel&)force); }
   virtual void apply(Joint& joint)
   { apply((MultiBodyModel&)joint); }
   virtual void apply(Interact& interact)

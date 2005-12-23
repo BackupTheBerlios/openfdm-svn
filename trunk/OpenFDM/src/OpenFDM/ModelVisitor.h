@@ -29,6 +29,10 @@ protected:
   /// traverse downward
   inline void traverse(ModelGroup& modelGroup)
   { modelGroup.traverse(*this); }
+  /// Call this in the apply(MultiBodyModel&) method if you want to
+  /// traverse downward
+  inline void traverse(MultiBodySystem& multiBodySystem)
+  { multiBodySystem.traverse(*this); }
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse upward
   inline void ascend(Model& model)

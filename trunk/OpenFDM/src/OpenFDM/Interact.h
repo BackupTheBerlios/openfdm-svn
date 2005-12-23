@@ -36,6 +36,11 @@ public:
   virtual void traverse(ConstVisitor& visitor) const;
 
 
+  /// Double dispatch helper for the multibody system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the multibody system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
+
 
 
   bool attachTo(RigidBody* rigidBody);

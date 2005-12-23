@@ -280,7 +280,56 @@ MultiBodySystem::update(const TaskInfo& taskInfo)
 void
 MultiBodySystem::addRigidBody(RigidBody* rigidBody)
 {
+  if (!rigidBody)
+    return;
+  RigidBodyList::iterator it = mRigidBodies.begin();
+  while (it != mRigidBodies.end()) {
+    if ((*it) == rigidBody)
+      return;
+    ++it;
+  }
   mRigidBodies.push_back(rigidBody);
+}
+
+void
+MultiBodySystem::removeRigidBody(RigidBody* rigidBody)
+{
+  RigidBodyList::iterator it = mRigidBodies.begin();
+  while (it != mRigidBodies.end()) {
+    if ((*it) == rigidBody)
+      it = mRigidBodies.erase(it);
+    else
+      ++it;
+  }
+}
+
+void
+MultiBodySystem::addInteract(Interact* interact)
+{
+  if (!interact)
+    return;
+  /// Already in the list, might be already attached to an other rigid body
+  if (this == interact->getParent())
+    return;
+  mInteracts.push_back(interact);
+  interact->setParent(this);
+}
+
+void
+MultiBodySystem::removeInteract(Interact* interact)
+{
+  if (!interact)
+    return;
+  if (this != interact->getParent())
+    return;
+  interact->setParent(0);
+  InteractList::iterator it = mInteracts.begin();
+  while (it != mInteracts.end()) {
+    if ((*it) == interact)
+      it = mInteracts.erase(it);
+    else
+      ++it;
+  }
 }
 
 } // namespace OpenFDM

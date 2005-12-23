@@ -29,6 +29,15 @@ public:
   /// Double dispatch helper for the multibody system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
+  void traverse(ModelVisitor& visitor)
+  {
+    InteractList::iterator it = mInteracts.begin();
+    while (it != mInteracts.end()) {
+      (*it)->accept(visitor);
+      ++it;
+    }
+  }
+
   /** Sets the state of this multibody system from the state vector state.
    */
   void setEvalState(const Vector& state);
@@ -45,16 +54,25 @@ public:
   virtual void output(const TaskInfo& taskInfo);
   virtual void update(const TaskInfo& taskInfo);
 
-  /// Add a RigidBody to that MultiBodySystem FIXME missing other api functions
+  /// Add a RigidBody to that MultiBodySystem
   void addRigidBody(RigidBody* rigidBody);
+  void removeRigidBody(RigidBody* rigidBody);
+
+  /// Add an Interact to that MultiBodySystem
+  void addInteract(Interact* interact);
+  void removeInteract(Interact* interact);
 private:
   /// At the moment each MultiBodySystem has its own root frame,
   /// In the future just store the root joint and reference a common root frame
   SharedPtr<RootFrame> mRootFrame;
 
   /// A list of RigidBody objects in this MultiBodySystem
-  typedef std::vector<SharedPtr<RigidBody> > BodyList;
-  BodyList mRigidBodies;
+  typedef std::vector<SharedPtr<RigidBody> > RigidBodyList;
+  RigidBodyList mRigidBodies;
+
+  /// A list of Interact objects in this MultiBodySystem
+  typedef std::vector<SharedPtr<Interact> > InteractList;
+  InteractList mInteracts;
 };
 
 } // namespace OpenFDM

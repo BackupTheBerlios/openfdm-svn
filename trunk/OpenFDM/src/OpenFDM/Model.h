@@ -22,6 +22,7 @@
 namespace OpenFDM {
 
 class ModelGroup;
+class MultiBodySystem;
 class Input;
 class Output;
 
@@ -163,6 +164,7 @@ private:
 
   // FIXME
   friend class ModelGroup;
+  friend class MultiBodySystem;
 };
 
 } // namespace OpenFDM

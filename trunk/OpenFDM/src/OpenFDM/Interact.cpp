@@ -14,6 +14,7 @@
 #include "Inertia.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "ModelVisitor.h"
 #include "Visitor.h"
 #include "ConstVisitor.h"
 #include "Interact.h"
@@ -50,6 +51,12 @@ Interact::accept(ConstVisitor& visitor) const
 void
 Interact::traverse(ConstVisitor& visitor) const
 {
+}
+
+void
+Interact::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
 }
 
 bool
