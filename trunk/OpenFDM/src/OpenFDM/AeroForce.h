@@ -125,15 +125,15 @@ private:
   void computeSLAtmosphere(void) const;
   void computeCalEquAirspeed(void) const;
 
-  shared_ptr<SumExpressionImpl> mStabilityAxisSummers[6];
-  shared_ptr<SumExpressionImpl> mBodyAxisSummers[6];
+  SharedPtr<SumExpressionImpl> mStabilityAxisSummers[6];
+  SharedPtr<SumExpressionImpl> mBodyAxisSummers[6];
 
   const Atmosphere* getAtmosphere(void) const
   { return mEnvironment->getAtmosphere(); }
   const Planet* getPlanet(void) const
   { return mEnvironment->getPlanet(); }
 
-  shared_ptr<Environment> mEnvironment;
+  SharedPtr<Environment> mEnvironment;
 
   Vector3 mPosition;
   Rotation mOrientation;

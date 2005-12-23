@@ -92,7 +92,7 @@ protected:
   private:
     // The parent node.
     // FIXME: May be we should store a list of all parents ???
-    managed_ptr<Frame> _parent[numParents];
+    WeakPtr<Frame> _parent[numParents];
   };
 
 #define OpenFDM_NodeImplementation(nParents)            \

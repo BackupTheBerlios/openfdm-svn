@@ -93,7 +93,7 @@ private:
 
   /** Reference to the vehicles environment.
    */
-  shared_ptr<Environment> mEnvironment;
+  SharedPtr<Environment> mEnvironment;
 };
 
 } // namespace OpenFDM

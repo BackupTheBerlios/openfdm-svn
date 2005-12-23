@@ -90,7 +90,7 @@ public:
   virtual bool isConnected(void) const
   { return mSourceModel && mGetter; }
 private:
-  managed_ptr<M> mSourceModel;
+  WeakPtr<M> mSourceModel;
   Getter mGetter;
 };
 template<typename M>
@@ -105,7 +105,7 @@ public:
   virtual bool isConnected(void) const
   { return mSourceModel && mGetter; }
 private:
-  managed_ptr<M> mSourceModel;
+  WeakPtr<M> mSourceModel;
   Getter mGetter;
 };
 
@@ -121,7 +121,7 @@ public:
   bool isConnected(void) const
   { return mRealPortInterface && mRealPortInterface->isConnected(); }
 private:
-  shared_ptr<RealPortInterface> mRealPortInterface;
+  SharedPtr<RealPortInterface> mRealPortInterface;
 };
 
 class MatrixPortHandle {
@@ -136,7 +136,7 @@ public:
   bool isConnected(void) const
   { return mMatrixPortInterface && mMatrixPortInterface->isConnected(); }
 private:
-  shared_ptr<MatrixPortInterface> mMatrixPortInterface;
+  SharedPtr<MatrixPortInterface> mMatrixPortInterface;
 };
 
 // should vanish, just an adaptor for smoother migration
@@ -212,11 +212,11 @@ private:
   /// For now the untyped input port
   /// On Model::init() it is expected to be specialized
   /// to a typed port handle
-  shared_ptr<PortInterface> mPortInterface;
+  SharedPtr<PortInterface> mPortInterface;
   /// The list of readers for this port
-  std::vector<shared_ptr<Port> > mChainPorts;
+  std::vector<SharedPtr<Port> > mChainPorts;
   /// The source of the current port connection
-  managed_ptr<Port> mSourcePort;
+  WeakPtr<Port> mSourcePort;
 };
 
 } // namespace OpenFDM

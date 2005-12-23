@@ -52,7 +52,7 @@ public:
 private:
   /// The timestepper used to get time discrete approximate solutions to the
   /// continous system
-  shared_ptr<ODESolver> mTimestepper;
+  SharedPtr<ODESolver> mTimestepper;
 
   /// Hmm, need to think about this...
   typedef std::vector<TaskInfo> TaskList;

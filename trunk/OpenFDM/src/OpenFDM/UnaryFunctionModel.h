@@ -47,7 +47,7 @@ public:
   Type getType(void) const;
 
 private:
-  shared_ptr<UnaryFunctionModelImpl> mImpl;
+  SharedPtr<UnaryFunctionModelImpl> mImpl;
   Type mType;
   real_type mFunctionValue;
 };

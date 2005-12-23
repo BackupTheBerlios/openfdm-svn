@@ -38,7 +38,7 @@ public:
   ModelGroup* getModelGroup(void)
   { return mModelGroup; }
 private:
-  shared_ptr<ModelGroup> mModelGroup;
+  SharedPtr<ModelGroup> mModelGroup;
 };
 
 } //namespace OpenFDM

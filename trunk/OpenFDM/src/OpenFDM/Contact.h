@@ -45,7 +45,7 @@ private:
 
   bool mEnabled;
   GroundValues mGroundVal;
-  shared_ptr<Environment> mEnvironment;
+  SharedPtr<Environment> mEnvironment;
 };
 
 } // namespace OpenFDM

@@ -37,7 +37,7 @@ public:
   Type getType(void) const;
 
 private:
-  shared_ptr<BinaryFunctionModelImpl> mImpl;
+  SharedPtr<BinaryFunctionModelImpl> mImpl;
   Type mType;
   real_type mFunctionValue;
 };

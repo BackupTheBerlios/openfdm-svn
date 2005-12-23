@@ -116,7 +116,7 @@ private:
 
   /** The direct joint interaction force
    */
-  shared_ptr<LineForce> mLineForce;
+  SharedPtr<LineForce> mLineForce;
 };
 
 } // namespace OpenFDM

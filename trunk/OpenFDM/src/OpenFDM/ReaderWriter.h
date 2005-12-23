@@ -65,7 +65,7 @@ protected:
 
   /** The Vehicle handle.
    */
-  shared_ptr<Vehicle> mVehicle;
+  SharedPtr<Vehicle> mVehicle;
 
 private:
   /** A list of errors during import.

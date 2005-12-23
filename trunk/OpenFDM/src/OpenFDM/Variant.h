@@ -131,7 +131,7 @@ private:
     { return this; }
   };
   
-  shared_ptr<VariantData> mData;
+  SharedPtr<VariantData> mData;
 };
 
 inline Variant&

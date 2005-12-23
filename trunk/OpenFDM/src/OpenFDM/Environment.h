@@ -82,12 +82,12 @@ private:
   void attachEnvironmentObject(EnvironmentObject* environmentObject);
   void detachEnvironmentObject(EnvironmentObject* environmentObject);
 
-  shared_ptr<Atmosphere> mAtmosphere;
-  shared_ptr<Gravity> mGravity;
-  shared_ptr<Ground> mGround;
-  shared_ptr<Planet> mPlanet;
-  shared_ptr<Turbulence> mTurbulence;
-  shared_ptr<Wind> mWind;
+  SharedPtr<Atmosphere> mAtmosphere;
+  SharedPtr<Gravity> mGravity;
+  SharedPtr<Ground> mGround;
+  SharedPtr<Planet> mPlanet;
+  SharedPtr<Turbulence> mTurbulence;
+  SharedPtr<Wind> mWind;
 };
 
 } // namespace OpenFDM

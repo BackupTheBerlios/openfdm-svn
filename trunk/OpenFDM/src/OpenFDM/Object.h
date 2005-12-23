@@ -14,9 +14,9 @@
 namespace OpenFDM {
 
 template<typename T>
-class shared_ptr;
+class SharedPtr;
 template<typename T>
-class managed_ptr;
+class WeakPtr;
 
 class TypeInfo;
 
@@ -77,47 +77,46 @@ private:
   /// The map of all properties of this object.
   PropertyMap mProperties;
 
-  shared_ptr<Object> mUserData;
+  SharedPtr<Object> mUserData;
 
   mutable std::list<Object**> _ptrList;
 
   template<typename T>
-  friend class shared_ptr;
+  friend class SharedPtr;
   template<typename T>
-  friend class managed_ptr;
+  friend class WeakPtr;
 };
 
 
-/// FIXME: remove the direct accessors, only copy to a shared_ptr
-/// Where you can access then, may be similar to the std::tr2::weak_ptr::lock()
-/// function. That is to avoid deletioin of a currently used object
-// FIXME: rename to WeakPtr in the spirit of OpenFDM's naming and not to
-// collide with std::tr2's shared_ptr ...
+/// FIXME: remove the direct accessors, only copy to a SharedPtr
+/// where you can access then, may be similar to the std::tr2::weak_ptr::lock()
+/// function. That is to avoid deletion of a currently used object
+/// FIXME make const correct ...
 template<typename T>
-class managed_ptr {
+class WeakPtr {
 public:
-  managed_ptr(void) : _ptr(0)
+  WeakPtr(void) : _ptr(0)
   {}
-  managed_ptr(T* ptr) : _ptr(ptr)
+  WeakPtr(T* ptr) : _ptr(ptr)
   { reg(); }
-  managed_ptr(const managed_ptr& p) : _ptr(p._ptr)
+  WeakPtr(const WeakPtr& p) : _ptr(p._ptr)
   { reg(); }
   template<typename U>
-  managed_ptr(const shared_ptr<U>& p) : _ptr(p._ptr)
+  WeakPtr(const SharedPtr<U>& p) : _ptr(p._ptr)
   { reg(); }
-  ~managed_ptr(void)
+  ~WeakPtr(void)
   { dereg(); }
   
   template<typename U>
-  managed_ptr& operator=(const shared_ptr<U>& p)
+  WeakPtr& operator=(const SharedPtr<U>& p)
   { assign(p._ptr); return *this; }
   template<typename U>
-  managed_ptr& operator=(U* p)
+  WeakPtr& operator=(U* p)
   { assign(p); return *this; }
-  managed_ptr& operator=(const managed_ptr& p)
+  WeakPtr& operator=(const WeakPtr& p)
   { assign(p._ptr); return *this; }
   template<typename U>
-  managed_ptr& operator=(const managed_ptr<U>& p)
+  WeakPtr& operator=(const WeakPtr<U>& p)
   { assign(p._ptr); return *this; }
 
   T* operator->(void)
@@ -149,9 +148,9 @@ private:
   Object* _ptr;
 
   template<typename U>
-  friend class shared_ptr;
+  friend class SharedPtr;
   template<typename U>
-  friend class managed_ptr;
+  friend class WeakPtr;
 };
 
 } // namespace OpenFDM

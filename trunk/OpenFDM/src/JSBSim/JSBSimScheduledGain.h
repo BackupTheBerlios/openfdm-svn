@@ -25,7 +25,7 @@ public:
   void setTableData(const TableData<1>& tableData, const TableLookup& lookup);
 
 private:
-  shared_ptr<Table1D> mTable;
+  SharedPtr<Table1D> mTable;
 };
 
 } //namespace OpenFDM

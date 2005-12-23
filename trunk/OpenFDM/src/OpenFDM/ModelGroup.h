@@ -66,7 +66,7 @@ public:
   using Model::setNumOutputPorts;
 
 private:
-  typedef std::vector<shared_ptr<Model> > ModelList;
+  typedef std::vector<SharedPtr<Model> > ModelList;
 
   /// Helper functions to sort the models according their dependencies
   static bool dependsOn(Port* inputPort, Model* model);

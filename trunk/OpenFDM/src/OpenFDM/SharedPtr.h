@@ -10,40 +10,39 @@
 namespace OpenFDM {
 
 template<typename T>
-class shared_ptr;
+class SharedPtr;
 template<typename T>
-class managed_ptr;
+class WeakPtr;
 
-// FIXME: rename to SharedPtr in the spirit of OpenFDM's naming and not to
-// collide with std::tr2's shared_ptr ...
+/// FIXME make const correct ...
 template<typename T>
-class shared_ptr {
+class SharedPtr {
 public:
-  shared_ptr(void) : _ptr(0)
+  SharedPtr(void) : _ptr(0)
   {}
-  shared_ptr(T* ptr) : _ptr(ptr)
+  SharedPtr(T* ptr) : _ptr(ptr)
   { get(_ptr); }
-  shared_ptr(const shared_ptr& p) : _ptr(p._ptr)
-  { get(_ptr); }
-  template<typename U>
-  shared_ptr(const shared_ptr<U>& p) : _ptr(p._ptr)
+  SharedPtr(const SharedPtr& p) : _ptr(p._ptr)
   { get(_ptr); }
   template<typename U>
-  shared_ptr(const managed_ptr<U>& p) : _ptr(p._ptr)
+  SharedPtr(const SharedPtr<U>& p) : _ptr(p._ptr)
   { get(_ptr); }
-  ~shared_ptr(void)
+  template<typename U>
+  SharedPtr(const WeakPtr<U>& p) : _ptr(p._ptr)
+  { get(_ptr); }
+  ~SharedPtr(void)
   { put(); }
   
-  shared_ptr& operator=(const shared_ptr& p)
+  SharedPtr& operator=(const SharedPtr& p)
   { assign(p._ptr); return *this; }
   template<typename U>
-  shared_ptr& operator=(const shared_ptr<U>& p)
+  SharedPtr& operator=(const SharedPtr<U>& p)
   { assign(p._ptr); return *this; }
   template<typename U>
-  shared_ptr& operator=(U* p)
+  SharedPtr& operator=(U* p)
   { assign(p); return *this; }
   template<typename U>
-  shared_ptr& operator=(const managed_ptr<U>& p)
+  SharedPtr& operator=(const WeakPtr<U>& p)
   { assign(p._ptr); return *this; }
 
   T* operator->(void)
@@ -80,9 +79,9 @@ private:
   T* _ptr;
 
   template<typename U>
-  friend class shared_ptr;
+  friend class SharedPtr;
   template<typename U>
-  friend class managed_ptr;
+  friend class WeakPtr;
 };
 
 } // namespace OpenFDM

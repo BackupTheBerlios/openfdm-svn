@@ -153,13 +153,13 @@ private:
   void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
   void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);
 
-  managed_ptr<Model> mParentModel;
+  WeakPtr<Model> mParentModel;
   unsigned mNumContinousStates;
   unsigned mNumDiscreteStates;
   bool mDirectFeedThrough;
   SampleTimeSet mSampleTimeSet;
-  std::vector<shared_ptr<Port> > mInputPorts;
-  std::vector<shared_ptr<Port> > mOutputPorts;
+  std::vector<SharedPtr<Port> > mInputPorts;
+  std::vector<SharedPtr<Port> > mOutputPorts;
 
   // FIXME
   friend class ModelGroup;

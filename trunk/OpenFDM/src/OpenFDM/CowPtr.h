@@ -36,7 +36,7 @@ protected:
   { return mPtr; }
 
 private:
-  shared_ptr<T> mPtr;
+  SharedPtr<T> mPtr;
 };
 
 } // namespace OpenFDM

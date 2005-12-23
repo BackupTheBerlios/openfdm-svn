@@ -168,7 +168,7 @@ Port*
 Model::getInputPort(const std::string& name)
 {
   // Check if this one exists and return its value.
-  std::vector<shared_ptr<Port> >::iterator it = mInputPorts.begin();
+  std::vector<SharedPtr<Port> >::iterator it = mInputPorts.begin();
   while (it != mInputPorts.end()) {
     if ((*it)->getName() == name)
       return *it;
@@ -193,7 +193,7 @@ Port*
 Model::getOutputPort(const std::string& name)
 {
   // Check if this one exists and return its value.
-  std::vector<shared_ptr<Port> >::iterator it = mOutputPorts.begin();
+  std::vector<SharedPtr<Port> >::iterator it = mOutputPorts.begin();
   while (it != mOutputPorts.end()) {
     if ((*it)->getName() == name)
       return *it;
@@ -220,7 +220,7 @@ Model::dependsDirectOn(const Model* const model) const
   if (!getDirectFeedThrough())
     return false;
   // Check if the given model is the source of any input property.
-  std::vector<shared_ptr<Port> >::const_iterator it = mInputPorts.begin();
+  std::vector<SharedPtr<Port> >::const_iterator it = mInputPorts.begin();
   while (it != mInputPorts.end()) {
     if (model == (*it)->getProperty().getObject())
       return true;

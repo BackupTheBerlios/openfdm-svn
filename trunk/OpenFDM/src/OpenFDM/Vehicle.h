@@ -139,21 +139,21 @@ public:
 
 private:
   // Environment ...
-  shared_ptr<Environment> mEnvironment;
+  SharedPtr<Environment> mEnvironment;
 
-  shared_ptr<RigidBody> mTopBody;
-  shared_ptr<FreeJoint> mFreeJoint;
-  shared_ptr<RootFrame> mRootFrame;
-  shared_ptr<MultiBodySystem> mMultiBodySystem;
+  SharedPtr<RigidBody> mTopBody;
+  SharedPtr<FreeJoint> mFreeJoint;
+  SharedPtr<RootFrame> mRootFrame;
+  SharedPtr<MultiBodySystem> mMultiBodySystem;
 
-  shared_ptr<ModelGroup> mModelGroup;
+  SharedPtr<ModelGroup> mModelGroup;
 
-  shared_ptr<System> mSystem;
+  SharedPtr<System> mSystem;
 
-  std::map<std::string, shared_ptr<Frame> > mFrameIdMap;
-  std::map<std::string, shared_ptr<Joint> > mJointIdMap;
-  std::map<std::string, shared_ptr<RigidBody> > mRigidBodyIdMap;
-  std::map<std::string, shared_ptr<Force> > mForceIdMap;
+  std::map<std::string, SharedPtr<Frame> > mFrameIdMap;
+  std::map<std::string, SharedPtr<Joint> > mJointIdMap;
+  std::map<std::string, SharedPtr<RigidBody> > mRigidBodyIdMap;
+  std::map<std::string, SharedPtr<Force> > mForceIdMap;
 
   // FIXME make a attach blub at id ...
   friend class JSBReader;

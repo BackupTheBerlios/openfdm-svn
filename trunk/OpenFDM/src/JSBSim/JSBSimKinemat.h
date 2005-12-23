@@ -24,10 +24,10 @@ public:
 
 private:
   bool mNoScale;
-  shared_ptr<Gain> mInputGain;
-  shared_ptr<Saturation> mInputSaturation;
-  shared_ptr<Saturation> mKinematRateLimit;
-  shared_ptr<Gain> mOutputNormGain;
+  SharedPtr<Gain> mInputGain;
+  SharedPtr<Saturation> mInputSaturation;
+  SharedPtr<Saturation> mKinematRateLimit;
+  SharedPtr<Gain> mOutputNormGain;
 };
 
 } //namespace OpenFDM

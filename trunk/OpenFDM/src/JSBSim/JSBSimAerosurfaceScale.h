@@ -23,7 +23,7 @@ public:
   void setMaxValue(real_type maxValue);
 
 private:
-  shared_ptr<Table1D> mTable;
+  SharedPtr<Table1D> mTable;
 };
 
 } //namespace OpenFDM

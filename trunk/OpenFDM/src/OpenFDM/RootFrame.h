@@ -46,7 +46,7 @@ public:
   virtual void output(const TaskInfo& taskInfo);
   virtual void update(const TaskInfo& taskInfo);
 private:
-  shared_ptr<RootFrame> mRootFrame;
+  SharedPtr<RootFrame> mRootFrame;
 };
 
 } // namespace OpenFDM

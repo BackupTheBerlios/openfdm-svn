@@ -1112,9 +1112,9 @@ LegacyJSBSimReader::convertFCSList(const XMLElement* fcsElem)
   // value. This one is stored here.
   mPrevousFCSOutput = 0;
   
-  std::list<shared_ptr<const XMLElement> > comps
+  std::list<SharedPtr<const XMLElement> > comps
     = fcsElem->getElements("COMPONENT");
-  std::list<shared_ptr<const XMLElement> >::const_iterator it;
+  std::list<SharedPtr<const XMLElement> >::const_iterator it;
   for (it = comps.begin(); it != comps.end(); ++it) {
     if (!convertFCSComponent((*it)->getAttribute("TYPE"),
                              (*it)->getAttribute("NAME"),
@@ -1137,18 +1137,18 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
   std::stringstream datastr(data);
 
   // The model we put into the fcs group in the end ...
-  shared_ptr<Model> model;
-  shared_ptr<DeadBand> deadband;
-  shared_ptr<Summer> summer;
-  shared_ptr<Gain> gain;
-  shared_ptr<DiscreteTransferFunction> discreteTransfFunc;
-  shared_ptr<JSBSimAerosurfaceScale> asScale;
-  shared_ptr<JSBSimKinemat> kinemat;
-  shared_ptr<JSBSimScheduledGain> sGain;
+  SharedPtr<Model> model;
+  SharedPtr<DeadBand> deadband;
+  SharedPtr<Summer> summer;
+  SharedPtr<Gain> gain;
+  SharedPtr<DiscreteTransferFunction> discreteTransfFunc;
+  SharedPtr<JSBSimAerosurfaceScale> asScale;
+  SharedPtr<JSBSimKinemat> kinemat;
+  SharedPtr<JSBSimScheduledGain> sGain;
 
   // The final output property.
-  shared_ptr<Port> out;
-  shared_ptr<Port> normOut;
+  SharedPtr<Port> out;
+  SharedPtr<Port> normOut;
 
   // JSBSim FCS output values contain some implicit rules.
   // From the component name a default output property is formed.
@@ -1275,12 +1275,12 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
 
   // The output expression from the prevous FCS block.
   // This is the default input value for this FCS block.
-  std::list<shared_ptr<Port> > inputs;
+  std::list<SharedPtr<Port> > inputs;
 
   // Collect any expressions for the output chain here.
-  shared_ptr<Saturation> saturation;
-  shared_ptr<Bias> outbias;
-  shared_ptr<Gain> outgain;
+  SharedPtr<Saturation> saturation;
+  SharedPtr<Bias> outbias;
+  SharedPtr<Gain> outgain;
   bool outInvert = false;
 
   for (;;) {
@@ -1604,7 +1604,7 @@ LegacyJSBSimReader::convertFCSComponent(const std::string& type,
     inputs.push_back(mPrevousFCSOutput);
 
   unsigned idx = 0;
-  for (std::list<shared_ptr<Port> >::iterator it = inputs.begin();
+  for (std::list<SharedPtr<Port> >::iterator it = inputs.begin();
        it != inputs.end(); ++it) {
     // FIXME!!!!!!
     if (summer && summer->getNumInputPorts() <= idx)
@@ -1679,8 +1679,8 @@ LegacyJSBSimReader::convertPropulsion(const XMLElement* pElem)
   unsigned engineNumber = 0;
   unsigned tankNumber = 0;
 
-  std::list<shared_ptr<XMLElement> > elems = pElem->getElements();
-  std::list<shared_ptr<XMLElement> >::const_iterator it;
+  std::list<SharedPtr<XMLElement> > elems = pElem->getElements();
+  std::list<SharedPtr<XMLElement> >::const_iterator it;
   for (it = elems.begin(); it != elems.end(); ++it) {
     if ((*it)->getName() == "AC_ENGINE") {
 //       std::string engineFile = mEnginePath+(*it)->getAttribute("FILE")+".xml";
@@ -1859,26 +1859,26 @@ LegacyJSBSimReader::convertEngine(const std::string& data,
 bool
 LegacyJSBSimReader::convertAerodynamics(const XMLElement* aerodynamics)
 {
-  std::list<shared_ptr<XMLElement> > elems = aerodynamics->getElements();
-  std::list<shared_ptr<XMLElement> >::const_iterator it;
+  std::list<SharedPtr<XMLElement> > elems = aerodynamics->getElements();
+  std::list<SharedPtr<XMLElement> >::const_iterator it;
   for (it = elems.begin(); it != elems.end(); ++it) {
     std::string axisname = (*it)->getAttribute("NAME");
 
-    shared_ptr<UnitToSiExpressionImpl> toNewton
+    SharedPtr<UnitToSiExpressionImpl> toNewton
       = new UnitToSiExpressionImpl(uPoundForce);
-    shared_ptr<UnitToSiExpressionImpl> toNewtonMeter
+    SharedPtr<UnitToSiExpressionImpl> toNewtonMeter
       = new UnitToSiExpressionImpl(uPoundForceFt);
-    shared_ptr<SumExpressionImpl> sum = new SumExpressionImpl;
+    SharedPtr<SumExpressionImpl> sum = new SumExpressionImpl;
     toNewtonMeter->setInputProperty(TypedProperty<real_type>(sum));
     toNewton->setInputProperty(TypedProperty<real_type>(sum));
     if (axisname == "LIFT") {
-      shared_ptr<MinusExpressionImpl> minus = new MinusExpressionImpl;
+      SharedPtr<MinusExpressionImpl> minus = new MinusExpressionImpl;
       minus->setInputProperty(TypedProperty<real_type>(toNewton));
       mAeroForce->addStabilityAxisSummand(AeroForce::LiftAxis,
                                           TypedProperty<real_type>(minus));
     }
     else if (axisname == "DRAG") {
-      shared_ptr<MinusExpressionImpl> minus = new MinusExpressionImpl;
+      SharedPtr<MinusExpressionImpl> minus = new MinusExpressionImpl;
       minus->setInputProperty(TypedProperty<real_type>(toNewton));
       mAeroForce->addStabilityAxisSummand(AeroForce::DragAxis,
                                           TypedProperty<real_type>(minus));
@@ -1912,14 +1912,14 @@ LegacyJSBSimReader::convertAEROSummands(const XMLElement* aeroSummands,
                                         SumExpressionImpl* sum,
                                         ProductExpressionImpl* prod)
 {
-  std::list<shared_ptr<XMLElement> > elems = aeroSummands->getElements();
-  std::list<shared_ptr<XMLElement> >::const_iterator it;
+  std::list<SharedPtr<XMLElement> > elems = aeroSummands->getElements();
+  std::list<SharedPtr<XMLElement> >::const_iterator it;
   for (it = elems.begin(); it != elems.end(); ++it) {
     if ((*it)->getName() == "GROUP") {
      
-      shared_ptr<ProductExpressionImpl> newProd = new ProductExpressionImpl;
+      SharedPtr<ProductExpressionImpl> newProd = new ProductExpressionImpl;
       sum->addInputProperty(TypedProperty<real_type>(newProd));
-      shared_ptr<SumExpressionImpl> newSum = new SumExpressionImpl;
+      SharedPtr<SumExpressionImpl> newSum = new SumExpressionImpl;
       newProd->addInputProperty(TypedProperty<real_type>(newSum));
 
       if (!convertAEROSummands(*it, newSum, newProd))

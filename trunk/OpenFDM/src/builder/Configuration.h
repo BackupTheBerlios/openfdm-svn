@@ -30,7 +30,7 @@ private:
   Configuration& operator= (const Configuration&);
 
   // The only single instance.
-//   static shared_ptr<Configuration> mConfiguration;
+//   static SharedPtr<Configuration> mConfiguration;
   static Configuration* mConfiguration;
 };
 

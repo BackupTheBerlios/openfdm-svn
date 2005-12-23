@@ -6,7 +6,7 @@
 
 namespace OpenFDM {
 
-// shared_ptr<Configuration> Configuration::mConfiguration;
+// SharedPtr<Configuration> Configuration::mConfiguration;
 Configuration* Configuration::mConfiguration = 0;
 
 Configuration::Configuration(void)

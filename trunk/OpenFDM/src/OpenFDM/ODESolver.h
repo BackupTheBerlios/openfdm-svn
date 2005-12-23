@@ -65,8 +65,8 @@ protected:
   real_type mTime;
   Vector mState;
 
-  /// managed_ptr ???
-  managed_ptr<Model> mModel;
+  /// WeakPtr ???
+  WeakPtr<Model> mModel;
 
   Stats mStats;
 };

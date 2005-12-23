@@ -170,7 +170,7 @@ public:
   virtual Object* getObject(void) { return mObject; }
 
 private:
-  managed_ptr<O> mObject;
+  WeakPtr<O> mObject;
   GetMethod mGetMethod;
   GetRefMethod mGetRefMethod;
   SetMethod mSetMethod;
@@ -230,7 +230,7 @@ public:
   }
 
 private:
-  shared_ptr<implementation_t> mPropertyImpl;
+  SharedPtr<implementation_t> mPropertyImpl;
 };
 
 typedef TypedProperty<int> IntegerProperty;
@@ -355,7 +355,7 @@ public:
   }
 
 private:
-  shared_ptr<UntypedPropertyImpl> mPropertyImpl;
+  SharedPtr<UntypedPropertyImpl> mPropertyImpl;
 };
 
 } // namespace OpenFDM

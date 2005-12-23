@@ -358,7 +358,7 @@ ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& 
 
     // We need to store that one here since the iterator possibly invalidates
     // during the next append dependency call
-    shared_ptr<Model> tmpModel = *it;
+    SharedPtr<Model> tmpModel = *it;
     mModels.erase(it);
 
     // Now recurse into that model.

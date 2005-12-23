@@ -25,7 +25,7 @@ public:
 private:
   void attachToEnvironment(Environment* environment);
 
-  managed_ptr<Environment> mEnvironment;
+  WeakPtr<Environment> mEnvironment;
 
   friend class Environment;
 };

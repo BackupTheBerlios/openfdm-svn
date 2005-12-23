@@ -22,8 +22,8 @@ class XMLDomParser;
 class XMLElement
   : public Object {
 public:
-  typedef shared_ptr<XMLElement> pointer;
-  typedef shared_ptr<const XMLElement> const_pointer;
+  typedef SharedPtr<XMLElement> pointer;
+  typedef SharedPtr<const XMLElement> const_pointer;
 
   XMLElement(const std::string& name);
   virtual ~XMLElement(void);
@@ -66,15 +66,15 @@ private:
 class XMLDocument
   : public Object {
 public:
-  typedef shared_ptr<XMLDocument> pointer;
-  typedef shared_ptr<const XMLDocument> const_pointer;
+  typedef SharedPtr<XMLDocument> pointer;
+  typedef SharedPtr<const XMLDocument> const_pointer;
 
   XMLElement* getElement(void);
   const XMLElement* getElement(void) const;
   void setElement(XMLElement* top);
 
 private:
-  shared_ptr<XMLElement> mTop;
+  SharedPtr<XMLElement> mTop;
 
   friend class XMLDomParser;
 };
@@ -97,7 +97,7 @@ public:
   const std::string& getErrorMessage(void) const;
 
 private:
-  shared_ptr<XMLDocument> mDoc;
+  SharedPtr<XMLDocument> mDoc;
   std::stack<XMLElement::pointer> mElementStack;
 
   std::string mErrorMessage;

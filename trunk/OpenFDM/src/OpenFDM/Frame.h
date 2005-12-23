@@ -46,7 +46,7 @@ public:
   typedef const void* frameid_type;
 
   /// Container for the child frames.
-  typedef std::vector<shared_ptr<Frame> > ChildFrameList;
+  typedef std::vector<SharedPtr<Frame> > ChildFrameList;
 
   Frame(const std::string& name);
   virtual ~Frame(void);
@@ -98,7 +98,7 @@ public:
 
 
   /////////////////////////////////////////
-  typedef std::vector<shared_ptr<MultiBodyModel> > abchild_list;
+  typedef std::vector<SharedPtr<MultiBodyModel> > abchild_list;
   typedef abchild_list::iterator           abchild_iterator;
   typedef abchild_list::const_iterator     const_abchild_iterator;
   abchild_list _children;
@@ -629,7 +629,7 @@ private:
 
   // The parent frame.
   // FIXME: May be we should store a list of all parents ???
-  managed_ptr<Frame> mParentFrame;
+  WeakPtr<Frame> mParentFrame;
   // The list of child frames.
   ChildFrameList mChildFrames;
 };

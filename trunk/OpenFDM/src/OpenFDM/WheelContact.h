@@ -57,7 +57,7 @@ private:
   void getGround(real_type t);
 
   GroundValues mGroundVal;
-  shared_ptr<Environment> mEnvironment;
+  SharedPtr<Environment> mEnvironment;
 
   real_type mWheelRadius;
   real_type mSpringConstant;

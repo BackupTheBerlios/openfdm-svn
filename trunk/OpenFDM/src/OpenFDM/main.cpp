@@ -305,7 +305,7 @@ public:
       return error("Error loading Models: Empty name!");
 
     std::string type = modelElement->getAttribute("type");
-    shared_ptr<Model> model;
+    SharedPtr<Model> model;
     if (type == "Bias") {
       model = new Bias(name);
     } else if (type == "Const") {
@@ -598,7 +598,7 @@ int main(int argc, char *argv[])
   
   OpenFDMReader reader;
   reader.loadVehicle(argv[1]);
-  shared_ptr<Vehicle> vehicle = reader.getVehicle();
+  SharedPtr<Vehicle> vehicle = reader.getVehicle();
 
   if (reader.getErrorState()) {
     std::cerr << "Could not read vehicle:" << std::endl;
@@ -638,7 +638,7 @@ int main(int argc, char *argv[])
   }
 
 #else
-  shared_ptr<Vehicle> vehicle = new Vehicle();
+  SharedPtr<Vehicle> vehicle = new Vehicle();
 
   Geodetic geod;
   geod.longitude = -81.636*deg2rad;

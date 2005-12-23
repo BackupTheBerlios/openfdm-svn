@@ -30,7 +30,7 @@ class XMLElement;
 // 
 /// FIXME!!!!!!!!
 class PropertyMap
-  : public std::map<std::string,shared_ptr<Port> > {
+  : public std::map<std::string,SharedPtr<Port> > {
 public:
   static std::string simplyfy(std::string path)
   {
@@ -43,61 +43,61 @@ public:
 
   mapped_type&
   operator[](const key_type& key)
-  { return std::map<std::string,shared_ptr<Port> >::operator[](simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::operator[](simplyfy(key)); }
 
   size_type
   erase(const key_type& key)
-  { return std::map<std::string,shared_ptr<Port> >::erase(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::erase(simplyfy(key)); }
 
   iterator
   find(const key_type& key)
-  { return std::map<std::string,shared_ptr<Port> >::find(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::find(simplyfy(key)); }
 
   const_iterator
   find(const key_type& key) const
-  { return std::map<std::string,shared_ptr<Port> >::find(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::find(simplyfy(key)); }
 
   size_type
   count(const key_type& key) const
-  { return std::map<std::string,shared_ptr<Port> >::count(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::count(simplyfy(key)); }
 
   iterator
   lower_bound(const key_type& key)
-  { return std::map<std::string,shared_ptr<Port> >::lower_bound(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::lower_bound(simplyfy(key)); }
 
   const_iterator
   lower_bound(const key_type& key) const
-  { return std::map<std::string,shared_ptr<Port> >::lower_bound(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::lower_bound(simplyfy(key)); }
 
   iterator
   upper_bound(const key_type& key)
-  { return std::map<std::string,shared_ptr<Port> >::upper_bound(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::upper_bound(simplyfy(key)); }
 
   const_iterator
   upper_bound(const key_type& key) const
-  { return std::map<std::string,shared_ptr<Port> >::upper_bound(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::upper_bound(simplyfy(key)); }
 
   std::pair<iterator,iterator>
   equal_range(const key_type& key)
-  { return std::map<std::string,shared_ptr<Port> >::equal_range(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::equal_range(simplyfy(key)); }
 
   std::pair<const_iterator,const_iterator>
   equal_range(const key_type& key) const
-  { return std::map<std::string,shared_ptr<Port> >::equal_range(simplyfy(key)); }
+  { return std::map<std::string,SharedPtr<Port> >::equal_range(simplyfy(key)); }
 
 
   std::pair<iterator,bool>
   insert(const value_type& val)
   {
     value_type sval(simplyfy(val.first), val.second);
-    return std::map<std::string,shared_ptr<Port> >::insert(sval);
+    return std::map<std::string,SharedPtr<Port> >::insert(sval);
   }
 
   iterator
   insert(iterator position, const value_type& val)
   {
     value_type sval(simplyfy(val.first), val.second);
-    return std::map<std::string,shared_ptr<Port> >::insert(position, sval);
+    return std::map<std::string,SharedPtr<Port> >::insert(position, sval);
   }
 };
 
@@ -216,9 +216,9 @@ private:
     Vector3 cgoff = v - mBodyReference;
     return convertFrom(uInch, Vector3(-cgoff(1), cgoff(2), -cgoff(3)));
   }
-  shared_ptr<Port> mPrevousFCSOutput;
+  SharedPtr<Port> mPrevousFCSOutput;
   PropertyMap mExpressionTable;
-  shared_ptr<AeroForce> mAeroForce;
+  SharedPtr<AeroForce> mAeroForce;
   Vector3 mBodyReference;
 };
 

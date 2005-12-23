@@ -22,7 +22,7 @@ void
 Port::setPortInterface(PortInterface* portInterface)
 {
   mPortInterface = portInterface;
-  std::vector<shared_ptr<Port> >::iterator it;
+  std::vector<SharedPtr<Port> >::iterator it;
   for (it = mChainPorts.begin(); it != mChainPorts.end(); ++it) {
     (*it)->setPortInterface(mPortInterface);
   }
@@ -94,7 +94,7 @@ Port::disconnect(Port* sourcePort)
   
   // Remove ourselves from the consumer list of the sourcePort to
   // disconnect us from
-  std::vector<shared_ptr<Port> >::iterator it, beginPort, endPort;
+  std::vector<SharedPtr<Port> >::iterator it, beginPort, endPort;
   beginPort = sourcePort->mChainPorts.begin();
   endPort = sourcePort->mChainPorts.end();
   it = std::find(beginPort, endPort, this);
