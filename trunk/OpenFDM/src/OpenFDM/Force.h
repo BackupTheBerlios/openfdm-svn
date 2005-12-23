@@ -35,68 +35,6 @@ public:
   virtual void computeForce(void) = 0;
 };
 
-class InternalForce
-  : public Force {
-public:
-  OpenFDM_NodeImplementation(2);
-
-  InternalForce(const std::string& name)
-    : Force(name)
-  {}
-  virtual ~InternalForce(void) {}
-
-  virtual const Vector6& getForce(Frame *parent) const
-  {
-    OpenFDMAssert(parent == getParentFrame(0) || parent == getParentFrame(1));
-    if (getParentFrame(0) == parent)
-      return mForce[0];
-    else
-      return mForce[1];
-  }
-
-protected:
-  /**
-   */
- 
-  Vector6 parentXTransform(unsigned fromParent, unsigned toParent,
-                           const Vector6& force)
-  {
-    Frame* parentFrames[2] = { getParentFrame(fromParent), getParentFrame(toParent) };
-    if (!(parentFrames[0] && parentFrames[1]))
-      return Vector6();
-
-    // FIXME don't go over the world's center ...
-    Vector6 refForce = forceFrom(parentFrames[0]->getRefPosition(),
-                                 parentFrames[0]->getRefOrientation(), force);
-
-    return forceTo(parentFrames[1]->getRefPosition(),
-                   parentFrames[1]->getRefOrientation(), refForce);
-  }
-
-  /** Sets the force contribution of this force element.
-   * Sets the force contribution of this current force element to
-   * the parent rigid body with the index parent to force.
-   * The force applied to the other rigid body is transformed accordingly.
-   */
-  void applyForce(unsigned parent, const Vector6& force)
-  {
-    OpenFDMAssert(parent < 2);
-    if (2 <= parent)
-      return;
-
-    if (parent == 0) {
-      mForce[0] = force;
-      mForce[1] = parentXTransform(0, 1, force);
-    } else {
-      mForce[0] = parentXTransform(1, 0, force);
-      mForce[1] = force;
-    }
-  }
-
-private:
-  Vector6 mForce[2];
-};
-
 class ExternalForce
   : public Force {
   OpenFDM_NodeImplementation(1);
