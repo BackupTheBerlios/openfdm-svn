@@ -44,10 +44,17 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo& taskInfo);
   virtual void update(const TaskInfo& taskInfo);
+
+  /// Add a RigidBody to that MultiBodySystem FIXME missing other api functions
+  void addRigidBody(RigidBody* rigidBody);
 private:
   /// At the moment each MultiBodySystem has its own root frame,
   /// In the future just store the root joint and reference a common root frame
   SharedPtr<RootFrame> mRootFrame;
+
+  /// A list of RigidBody objects in this MultiBodySystem
+  typedef std::vector<SharedPtr<RigidBody> > BodyList;
+  BodyList mRigidBodies;
 };
 
 } // namespace OpenFDM

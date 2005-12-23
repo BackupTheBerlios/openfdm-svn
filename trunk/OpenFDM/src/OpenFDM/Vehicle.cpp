@@ -46,6 +46,7 @@ Vehicle::Vehicle(void)
   mModelGroup = new ModelGroup("Flight Control System");
 
   mMultiBodySystem = new MultiBodySystem(mRootFrame);
+  mMultiBodySystem->addRigidBody(mTopBody);
 
 //   mSystem->setTimestepper(new ExplicitAdams);
   mSystem->setTimestepper(new DoPri5);

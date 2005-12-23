@@ -409,11 +409,11 @@ public:
       RigidBody* rigidBody = new RigidBody();
       rigidBody->setName((*it)->getAttribute("Name"));
       
-      if (mVehicle->getRigidBody((*it)->getAttribute("Name")))
-        return error(std::string("Error loading RigidBodies: Duplicate Rigid Body Name \"")
-                     + (*it)->getAttribute("Name") + "\" !");
+//       if (mVehicle->getRigidBody((*it)->getAttribute("Name")))
+//         return error(std::string("Error loading RigidBodies: Duplicate Rigid Body Name \"")
+//                      + (*it)->getAttribute("Name") + "\" !");
       
-      mVehicle->addRigidBody(rigidBody);
+//       mVehicle->addRigidBody(rigidBody);
       ++it;
     }
     return true;
@@ -438,10 +438,10 @@ public:
                      + (*it)->getAttribute("Type") + "\" !");
       
       
-      if (mVehicle->getJoint((*it)->getAttribute("Name")))
-        return error(std::string("Error loading Vehicle: Duplicate Name \"")
-                     + (*it)->getAttribute("Name") + "\" !");
-      mVehicle->addJoint(joint);
+//       if (mVehicle->getJoint((*it)->getAttribute("Name")))
+//         return error(std::string("Error loading Vehicle: Duplicate Name \"")
+//                      + (*it)->getAttribute("Name") + "\" !");
+//       mVehicle->addJoint(joint);
       
       
       // Connect the joints to the rigid bodies.
@@ -452,13 +452,13 @@ public:
       std::list<XMLElement::const_pointer>::iterator mit = mounts.begin();
       for (unsigned idx = 0; mit != mounts.end(); ++idx, ++mit) {
         std::string mountAttrName = (*mit)->getAttribute("Name");
-        RigidBody* body = mVehicle->getRigidBody(mountAttrName);
-        if (!body)
-          return error(std::string("Error loading Vehicle:") +
-                       " Can not find RigidBody \"" + mountAttrName +
-                       "\" for Mount of Joint \"" + joint->getName() + "\"!");
+//         RigidBody* body = mVehicle->getRigidBody(mountAttrName);
+//         if (!body)
+//           return error(std::string("Error loading Vehicle:") +
+//                        " Can not find RigidBody \"" + mountAttrName +
+//                        "\" for Mount of Joint \"" + joint->getName() + "\"!");
        
-        joint->setParentFrame(body, idx);
+//         joint->setParentFrame(body, idx);
         
         // Read the orientation. No orientation element means unit orientation.
         // Multiple orientations is an error.

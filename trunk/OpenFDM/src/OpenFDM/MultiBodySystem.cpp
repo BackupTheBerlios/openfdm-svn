@@ -277,4 +277,10 @@ MultiBodySystem::update(const TaskInfo& taskInfo)
   mRootFrame->accept(uv);
 }
 
+void
+MultiBodySystem::addRigidBody(RigidBody* rigidBody)
+{
+  mRigidBodies.push_back(rigidBody);
+}
+
 } // namespace OpenFDM

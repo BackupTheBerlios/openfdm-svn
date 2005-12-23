@@ -121,22 +121,8 @@ public:
   System* getSystem(void)
   { return mSystem; }
 
-  void addRigidBody(RigidBody* rigidBody)
-  { mRigidBodyIdMap[rigidBody->getName()] = rigidBody; }
-  RigidBody* getRigidBody(const std::string& id)
-  {
-    if (0 < mRigidBodyIdMap.count(id))
-      return mRigidBodyIdMap[id];
-    return 0;
-  }
-  void addJoint(Joint* joint)
-  { mJointIdMap[joint->getName()] = joint; }
-  Joint* getJoint(const std::string& id)
-  {
-    if (0 < mJointIdMap.count(id))
-      return mJointIdMap[id];
-    return 0;
-  }
+  MultiBodySystem* getMultiBodySystem(void)
+  { return mMultiBodySystem; }
 
 private:
   // Environment ...
@@ -150,14 +136,6 @@ private:
   SharedPtr<ModelGroup> mModelGroup;
 
   SharedPtr<System> mSystem;
-
-  std::map<std::string, SharedPtr<Frame> > mFrameIdMap;
-  std::map<std::string, SharedPtr<Joint> > mJointIdMap;
-  std::map<std::string, SharedPtr<RigidBody> > mRigidBodyIdMap;
-  std::map<std::string, SharedPtr<Force> > mForceIdMap;
-
-  // FIXME make a attach blub at id ...
-  friend class JSBReader;
 };
 
 } // namespace OpenFDM
