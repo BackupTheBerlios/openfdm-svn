@@ -13,6 +13,7 @@
 #include "Frame.h"
 #include "FreeJoint.h"
 #include "RootFrame.h"
+#include "MultiBodySystem.h"
 #include "Planet.h"
 #include "ODESolver.h"
 #include "Environment.h"

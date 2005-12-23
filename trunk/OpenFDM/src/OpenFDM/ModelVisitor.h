@@ -8,6 +8,7 @@
 #include "Model.h"
 #include "ModelGroup.h"
 #include "RigidBody.h"
+#include "MultiBodySystem.h"
 
 namespace OpenFDM {
 
@@ -21,6 +22,8 @@ public:
   { apply((Model&)modelGroup); }
   virtual void apply(Interact& interact)
   { apply((Model&)interact); }
+  virtual void apply(MultiBodySystem& multiBodySystem)
+  { apply((Model&)multiBodySystem); }
 protected:
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse downward

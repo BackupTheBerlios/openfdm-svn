@@ -85,6 +85,7 @@ nobase_OpenFDMinclude_HEADERS = \
   ModelGroup.h \
   ModelVisitor.h \
   MultiBodyModel.h \
+  MultiBodySystem.h \
   Newton.h \
   Object.h \
   ODESolver.h \
@@ -174,6 +175,7 @@ libOpenFDM_la_SOURCES = \
   Model.cpp \
   ModelGroup.cpp \
   MultiBodyModel.cpp \
+  MultiBodySystem.cpp \
   Newton.cpp \
   Object.cpp \
   ODESolver.cpp \
