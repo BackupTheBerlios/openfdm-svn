@@ -12,7 +12,6 @@
 namespace OpenFDM {
 
 class Frame;
-class Mass;
 class Joint;
 class Visitor;
 class ConstVisitor;
@@ -28,9 +27,6 @@ public:
   virtual void traverse(Visitor& visitor);
   virtual void accept(ConstVisitor& visitor) const;
   virtual void traverse(ConstVisitor& visitor) const;
-
-  virtual Mass* toMass(void);
-  virtual const Mass* toMass(void) const;
 
   virtual Joint* toJoint(void);
   virtual const Joint* toJoint(void) const;

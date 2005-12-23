@@ -26,7 +26,6 @@ public:
   Interact(const std::string& name, unsigned numParents);
   virtual ~Interact(void);
 
-
   /// Double dispatch helper for the multibody system visitor
   virtual void accept(Visitor& visitor);
   /// Double dispatch helper for the multibody system visitor
@@ -35,6 +34,8 @@ public:
   virtual void accept(ConstVisitor& visitor) const;
   /// Double dispatch helper for the multibody system visitor
   virtual void traverse(ConstVisitor& visitor) const;
+
+
 
 
   bool attachTo(RigidBody* rigidBody);

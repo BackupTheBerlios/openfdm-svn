@@ -707,7 +707,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
     spi += inertiaFrom(structToBody(it->first), inertia);
     ++it;
   }
-  mVehicle->getTopBody()->addMultiBodyModel(new Mass(spi));
+  mVehicle->getTopBody()->addInteract2(new Mass(spi));
 
   // Attach the eye point.
   FreeFrame* epFrame = new FreeFrame("Eyepoint Frame");
@@ -738,7 +738,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
 {
   RigidBody* wheel = new RigidBody(name + " Wheel");
   InertiaMatrix wheelInertia(10, 0, 0, 100, 0, 10);
-  wheel->addMultiBodyModel(new Mass(SpatialInertia(wheelInertia, 50)));
+  wheel->addInteract2(new Mass(SpatialInertia(wheelInertia, 50)));
   parent->addChildFrame(wheel);
   mVehicle->getMultiBodySystem()->addRigidBody(wheel);
   
@@ -929,7 +929,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       RigidBody* arm = new RigidBody(name + " Arm");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
       mVehicle->getTopBody()->addChildFrame(arm);
-      arm->addMultiBodyModel(new Mass(inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
+      arm->addInteract2(new Mass(inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
 
       // Connect that with a revolute joint to the main body
       RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
@@ -1047,7 +1047,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       RigidBody* arm = new RigidBody(name + " Strut");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
       strutParent->addChildFrame(arm);
-      arm->addMultiBodyModel(new Mass(inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
+      arm->addInteract2(new Mass(inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
 
       // This time it is a prismatic joint
       PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");

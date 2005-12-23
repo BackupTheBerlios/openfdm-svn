@@ -2,15 +2,13 @@
  *
  */
 
-#include "Frame.h"
 #include "Mass.h"
-#include "Visitor.h"
-#include "ConstVisitor.h"
 
 namespace OpenFDM {
 
-Mass::Mass(const SpatialInertia& inertia, const std::string& name)
-  : MultiBodyModel(name), _inertia(inertia)
+Mass::Mass(const SpatialInertia& inertia, const std::string& name) :
+  Interact(name, 1),
+  mInertia(inertia)
 {
 }
 
@@ -19,51 +17,27 @@ Mass::~Mass(void)
 }
 
 void
-Mass::accept(Visitor& visitor)
+Mass::interactWith(RigidBody* rigidBody)
 {
-  visitor.apply(*this);
-}
-
-void
-Mass::accept(ConstVisitor& visitor) const
-{
-  visitor.apply(*this);
-}
-
-Mass*
-Mass::toMass(void)
-{
-  return this;
-}
-
-const Mass*
-Mass::toMass(void) const
-{
-  return this;
+  rigidBody->contributeLocalInertia(mInertia);
 }
 
 void
 Mass::setInertia(real_type mass)
 {
-  _inertia = SpatialInertia(mass);
+  mInertia = SpatialInertia(mass);
 }
 
 void
 Mass::setInertia(real_type mass, const InertiaMatrix& inertia)
 {
-  _inertia = SpatialInertia(inertia, mass);
+  mInertia = SpatialInertia(inertia, mass);
 }
 
 void
 Mass::setInertia(const SpatialInertia& I)
 {
-  _inertia = I;
-}
-
-void
-Mass::contributeInertia(SpatialInertia& I) const
-{
-  I += _inertia;
+  mInertia = I;
 }
 
 } // namespace OpenFDM

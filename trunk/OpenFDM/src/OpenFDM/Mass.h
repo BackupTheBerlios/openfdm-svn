@@ -5,31 +5,22 @@
 #ifndef OpenFDM_Mass_H
 #define OpenFDM_Mass_H
 
-#include "Assert.h"
-#include "MultiBodyModel.h"
+#include "Interact.h"
 #include "Inertia.h"
 
 namespace OpenFDM {
 
-class Visitor;
-class ConstVisitor;
-
-class Mass
-  : public MultiBodyModel {
-  OpenFDM_NodeImplementation(1);
+class Mass :
+    public Interact {
 public:
   Mass(const SpatialInertia& inertia = SpatialInertia(0),
        const std::string& name = std::string());
   virtual ~Mass(void);
 
-  virtual void accept(Visitor& visitor);
-  virtual void accept(ConstVisitor& visitor) const;
-
-  virtual Mass* toMass(void);
-  virtual const Mass* toMass(void) const;
+  virtual void interactWith(RigidBody* rigidBody);
 
   const SpatialInertia& getInertia(void) const
-  { return _inertia; }
+  { return mInertia; }
 
   /** Set the local spatial inertia.
       @param mass mass in kg.
@@ -55,11 +46,8 @@ public:
    */
   void setInertia(const SpatialInertia& I);
 
-  // More efficient getter. ??
-  void contributeInertia(SpatialInertia& I) const;
-
 private:
-  SpatialInertia _inertia;
+  SpatialInertia mInertia;
 };
 
 } // namespace OpenFDM

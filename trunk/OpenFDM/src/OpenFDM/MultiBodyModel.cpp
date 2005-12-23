@@ -40,18 +40,6 @@ MultiBodyModel::traverse(ConstVisitor& visitor) const
 {
 }
 
-Mass*
-MultiBodyModel::toMass(void)
-{
-  return 0;
-}
-
-const Mass*
-MultiBodyModel::toMass(void) const
-{
-  return 0;
-}
-
 Joint*
 MultiBodyModel::toJoint(void)
 {

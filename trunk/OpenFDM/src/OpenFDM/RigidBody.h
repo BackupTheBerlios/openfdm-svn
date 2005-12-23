@@ -82,16 +82,24 @@ public:
   Vector6 getPAlpha(void) const
   { return mArtForce + mArtInertia*getHdot(); }
 
-  /**
-   */
+  /// Contribute articulated force
   void contributeForce(const Vector6& force)
   { mArtForce += force; }
 
-  /**
-   */
+  /// Contribute articulated inertia
   void contributeInertia(const SpatialInertia& inertia)
   { mArtInertia += inertia; }
 
+  /// Contribute the articulated inertia and force of a local Mass object
+  void contributeLocalInertia(const SpatialInertia& inertia)
+  {
+    Vector6 iv = getFrame()->getSpVel();
+    Vector6 Jiv = inertia*iv;
+    mArtForce += Vector6(cross(iv.getAngular(), Jiv.getAngular()) +
+                         cross(iv.getLinear(), Jiv.getLinear()),
+                         cross(iv.getAngular(), Jiv.getLinear()));
+    mArtInertia += inertia;
+  }
 
   /** Introduce an interface routine
    */
@@ -107,13 +115,14 @@ private:
   void addInteract(Interact* interact);
   bool removeInteract(Interact* interact);
 
-  /** Outboard articulated inertia.
-   */
+  /// Outboard articulated inertia
   SpatialInertia mArtInertia;
 
-  /** Outboard articulated force.
-   */
+  /// Outboard articulated force
   Vector6 mArtForce;
+
+  /// Local inertia, needs to be set up at each cycle!?
+//   SpatialInertia mLocalInertia;
 
   /// Frame attached to this rigid body
 //   SharedPtr<Frame> mFrame;

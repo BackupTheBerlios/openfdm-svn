@@ -56,10 +56,6 @@ RigidBody::traverse(Visitor& visitor)
   InteractList::iterator it;
   for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
     (*it)->accept(visitor);
-//     MassList::iterator it;
-//     for (it = mMasses.begin(); it != mMasses.end(); ++it)
-//       (*it)->accept(visitor);
-  
   Frame::traverse(visitor);
 }
 
@@ -69,9 +65,6 @@ RigidBody::traverse(ConstVisitor& visitor) const
   InteractList::const_iterator it;
   for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
     (*it)->accept(visitor);
-//     MassList::const_iterator it;
-//     for (it = mMasses.begin(); it != mMasses.end(); ++it)
-//       (*it)->accept(visitor);
   Frame::traverse(visitor);
 }
 
@@ -83,27 +76,10 @@ RigidBody::computeArtValues(void)
 
   // At first this is the inertia matrix of the current body.
   mArtInertia = SpatialInertia::zeros();
-
-  unsigned n = getNumMultiBodyModels();
-  for (unsigned i = 0; i < n; ++i) {
-    Mass* child = getMultiBodyModel(i)->toMass();
-    if (child) {
-      Log(ArtBody, Debug) << "Adding local mass \"" << child->getName()
-                          << "\" to body \"" << getName() << "\"" << endl;
-      mArtInertia += child->getInertia();
-    }
-  }
-  
-
-  // 
-  Vector6 iv = getSpVel();
-  Vector6 Jiv = mArtInertia*iv;
-  Log(ArtBody, Debug3) << "Spatial velocity is " << trans(iv) << endl;
-  mArtForce = Vector6(cross(iv.getAngular(), Jiv.getAngular()) +
-                      cross(iv.getLinear(), Jiv.getLinear()),
-                      cross(iv.getAngular(), Jiv.getLinear()));
+  mArtForce = Vector6::zeros();
 
   // Now collect all articulated forces and all articulated inertias.
+  unsigned n = getNumMultiBodyModels();
   for (unsigned i = 0; i < n; ++i) {
     Joint* joint = getMultiBodyModel(i)->toJoint();
     if (joint) {
