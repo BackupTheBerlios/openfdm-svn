@@ -87,6 +87,10 @@ private:
   friend class managed_ptr;
 };
 
+
+/// FIXME: remove the direct accessors, only copy to a shared_ptr
+/// Where you can access then, may be similar to the std::tr2::weak_ptr::lock()
+/// function. That is to avoid deletioin of a currently used object
 template<typename T>
 class managed_ptr {
 public:
