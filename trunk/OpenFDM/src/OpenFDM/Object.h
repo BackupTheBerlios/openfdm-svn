@@ -91,6 +91,8 @@ private:
 /// FIXME: remove the direct accessors, only copy to a shared_ptr
 /// Where you can access then, may be similar to the std::tr2::weak_ptr::lock()
 /// function. That is to avoid deletioin of a currently used object
+// FIXME: rename to WeakPtr in the spirit of OpenFDM's naming and not to
+// collide with std::tr2's shared_ptr ...
 template<typename T>
 class managed_ptr {
 public:

@@ -14,6 +14,8 @@ class shared_ptr;
 template<typename T>
 class managed_ptr;
 
+// FIXME: rename to SharedPtr in the spirit of OpenFDM's naming and not to
+// collide with std::tr2's shared_ptr ...
 template<typename T>
 class shared_ptr {
 public:
