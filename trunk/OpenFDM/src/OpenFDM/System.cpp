@@ -13,6 +13,8 @@
 #include "Newton.h"
 #include "System.h"
 
+#include "ModelVisitor.h"
+
 namespace OpenFDM {
 
 System::System(const std::string& name) :
@@ -68,8 +70,8 @@ System::init(void)
   // Now that we know the basic sample time, build the job schedules
   Log(Schedule, Info) << "Basic time is: " << gcd << endl;
   if (100*gcd < minSampleTime)
-    Log(Schedule, Warning) << "Basic sample time is less than 100 times smaller "
-      "than the smalles submodels sample time" << endl;
+    Log(Schedule, Warning) << "Basic sample time is less than 100 times "
+      "smaller than the smallest submodels sample time" << endl;
 
   // We do not have any discrete sample time, just do continous scheduling
   if (gcd <= 0)
@@ -130,6 +132,37 @@ System::init(void)
   mTimestepper->setStepsize(gcd);
   return true;
 }
+
+class StateGetModelVisitor : public ModelVisitor {
+public:
+  StateGetModelVisitor(unsigned nStates) : mState(nStates), mOffset(0u)
+  {}
+  virtual void apply(Model& model)
+  {
+    OpenFDMAssert(mOffset + model.getNumContinousStates() <= mState.size());
+    model.getState(mState, mOffset);
+    mOffset += model.getNumContinousStates();
+  }
+
+  virtual void apply(ModelGroup& modelGroup)
+  {
+    traverse(modelGroup);
+  }
+  virtual void apply(Interact& interact)
+  {
+//     traverse(interact);
+  }
+  virtual void apply(MultiBodySystem& multiBodySystem)
+  {
+    traverse(multiBodySystem);
+  }
+
+  const Vector& getState(void) const
+  { return mState; }
+private:
+  Vector mState;
+  unsigned mOffset;
+};
 
 bool
 System::simulate(real_type tEnd)

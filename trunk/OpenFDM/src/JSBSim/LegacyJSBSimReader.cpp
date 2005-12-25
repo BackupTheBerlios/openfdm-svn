@@ -718,7 +718,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   accelSensor->addSampleTime(SampleTime(1.0/120));
   Port* port = accelSensor->getOutputPort("nz");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
-//   epFrame->addMultiBodyModel(accelSensor);
+//   epFrame->addInteract2(accelSensor);
   mVehicle->getTopBody()->addMultiBodyModel(accelSensor);
   mVehicle->getTopBody()->addChildFrame(epFrame);
   addOutputModel(port, "Normalized load value", "/accelerations/nlf");
@@ -743,8 +743,8 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   mVehicle->getMultiBodySystem()->addRigidBody(wheel);
   
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
-  parent->addMultiBodyModel(wj, 0);
-  wheel->addMultiBodyModel(wj, 1);
+  parent->addInteract2(wj, 0);
+  wheel->addInteract2(wj, 1);
   wj->setJointAxis(Vector3(0, 1, 0));
   wj->setPosition(pos);
   wj->setOrientation(Quaternion::unit());
@@ -933,8 +933,8 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
       // Connect that with a revolute joint to the main body
       RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
-      mVehicle->getTopBody()->addMultiBodyModel(rj, 0);
-      arm->addMultiBodyModel(rj, 1);
+      mVehicle->getTopBody()->addInteract2(rj, 0);
+      arm->addInteract2(rj, 1);
       rj->setJointAxis(Vector3(0, 1, 0));
       rj->setJointPos(0);
       rj->setJointVel(0);
@@ -1009,8 +1009,8 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         // Note the 0.05m below, most steering wheels have some kind of
         // castering auto line up behavour. That is doe with this 0.05m.
         RevoluteJoint* sj = new RevoluteJoint(name + " Steer Joint");
-        strutParent->addMultiBodyModel(sj, 0);
-        steer->addMultiBodyModel(sj, 1);
+        strutParent->addInteract2(sj, 0);
+        steer->addInteract2(sj, 1);
         sj->setJointAxis(Vector3(0, 0, 1));
         sj->setJointPos(0);
         sj->setJointVel(0);
@@ -1051,8 +1051,8 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
       // This time it is a prismatic joint
       PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
-      strutParent->addMultiBodyModel(pj, 0);
-      arm->addMultiBodyModel(pj, 1);
+      strutParent->addInteract2(pj, 0);
+      arm->addInteract2(pj, 1);
       pj->setJointAxis(Vector3(0, 0, -1));
       if (strutParent == mVehicle->getTopBody())
         pj->setPosition(structToBody(compressJointPos));

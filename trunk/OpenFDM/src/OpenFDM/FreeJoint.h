@@ -24,6 +24,18 @@ public:
   FreeJoint(Environment* env, const std::string& name = std::string());
   virtual ~FreeJoint(void);
 
+  /// HACK
+  virtual bool isArticulatedJoint(void) const
+  { return true; }
+  virtual Frame* getInboardGroup(void)
+  { return 0; }
+  virtual const Frame* getInboardGroup(void) const
+  { return 0; }
+  virtual Frame* getOutboardGroup(void)
+  { return getParentFrame(0); }
+  virtual const Frame* getOutboardGroup(void) const
+  { return getParentFrame(0); }
+
   /** Set the relative velocity.
    */
   void setRelVel(const Vector6& vel)

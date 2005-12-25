@@ -48,6 +48,9 @@ public:
 
   virtual void interactWith(RigidBody* rigidBody) = 0;
 
+  /// FIXME: hmm
+  virtual bool updateAccels() { return true; }
+
   /// FIXME remove
   const Frame* getParentFrame(unsigned id = 0) const
   {

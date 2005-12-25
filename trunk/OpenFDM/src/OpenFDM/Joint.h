@@ -7,7 +7,6 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "MultiBodyModel.h"
 #include "Frame.h"
 #include "Vector.h"
 #include "Matrix.h"
@@ -21,20 +20,11 @@
 
 namespace OpenFDM {
 
-class Joint2 :
-    public Interact {
-public:
-  Joint2(const std::string& name) : Interact(name, 2) { }
-  virtual ~Joint2(void) { }
-
-};
-
 class Joint
-  : public MultiBodyModel {
-  OpenFDM_NodeImplementation(2);
+  : public Interact {
 public:
   Joint(const std::string& name)
-    : MultiBodyModel(name)
+    : Interact(name, 2)
   {}
 
   virtual void accept(Visitor& visitor)
@@ -42,7 +32,7 @@ public:
   virtual void accept(ConstVisitor& visitor) const
   { visitor.apply(*this); }
 
-  bool isArticulatedJoint(void) const
+  virtual bool isArticulatedJoint(void) const
   {
     const Frame* parent0 = getParentFrame(0);
     if (!parent0)
@@ -57,7 +47,7 @@ public:
     return false;
   }
 
-  Frame* getInboardGroup(void)
+  virtual Frame* getInboardGroup(void)
   {
     Frame* parent0 = getParentFrame(0);
     if (!parent0)
@@ -71,7 +61,7 @@ public:
       return parent1;
     return 0;
   }
-  const Frame* getInboardGroup(void) const
+  virtual const Frame* getInboardGroup(void) const
   {
     const Frame* parent0 = getParentFrame(0);
     if (!parent0)
@@ -85,7 +75,7 @@ public:
       return parent1;
     return 0;
   }
-  Frame* getOutboardGroup(void)
+  virtual Frame* getOutboardGroup(void)
   {
     Frame* parent0 = getParentFrame(0);
     if (!parent0)
@@ -99,7 +89,7 @@ public:
       return parent0;
     return 0;
   }
-  const Frame* getOutboardGroup(void) const
+  virtual const Frame* getOutboardGroup(void) const
   {
     const Frame* parent0 = getParentFrame(0);
     if (!parent0)
@@ -114,11 +104,21 @@ public:
     return 0;
   }
 
-  // Cast functions.
-  virtual Joint* toJoint(void)
-  { return this; }
-  virtual const Joint* toJoint(void) const
-  { return this; }
+  virtual void interactWith(RigidBody* rigidBody)
+  {
+    // HMmMm
+    if (!isArticulatedJoint())
+      return;
+
+    if (rigidBody->getFrame() != getInboardGroup())
+      return;
+
+    SpatialInertia artI = SpatialInertia::zeros();
+    Vector6 artF = Vector6::zeros();
+    contributeArticulation(artI, artF);
+    rigidBody->contributeForce(artF);
+    rigidBody->contributeInertia(artI);
+  }
 
   bool contributeArticulation(SpatialInertia& artI, Vector6& artF)
   {

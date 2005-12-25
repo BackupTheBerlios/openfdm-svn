@@ -42,136 +42,8 @@ public:
   }
 };
 
-class SetStateVisitor
-  : public Visitor {
-public:
-  SetStateVisitor(const Vector& state)
-    : mState(state), mOffset(0u)
-  { }
-  virtual void apply(MultiBodyModel& abNode)
-  {
-    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mState.size());
-    abNode.setState(mState, mOffset);
-    mOffset += abNode.getNumContinousStates();
-  }
-  virtual void apply(Interact& abNode)
-  {
-    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mState.size());
-    abNode.setState(mState, mOffset);
-    mOffset += abNode.getNumContinousStates();
-  }
-private:
-  Vector mState;
-  unsigned mOffset;
-  real_type mTime;
-};
-
-class GetStateVisitor
-  : public ConstVisitor {
-public:
-  GetStateVisitor(unsigned size)
-    : mState(size), mOffset(0u)
-  { }
-  virtual void apply(const MultiBodyModel& abNode)
-  {
-    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mState.size());
-    abNode.getState(mState, mOffset);
-    mOffset += abNode.getNumContinousStates();
-  }
-  virtual void apply(const Interact& abNode)
-  {
-    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mState.size());
-    abNode.getState(mState, mOffset);
-    mOffset += abNode.getNumContinousStates();
-  }
-  const Vector& getState(void) const
-  { return mState; }
-private:
-  Vector mState;
-  unsigned mOffset;
-};
-
-class GetStateDerivVisitor
-  : public Visitor {
-public:
-  GetStateDerivVisitor(unsigned size)
-    : mStateDeriv(size), mOffset(0u)
-  { }
-  virtual void apply(MultiBodyModel& abNode)
-  {
-    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mStateDeriv.size());
-    abNode.getStateDeriv(mStateDeriv, mOffset);
-    mOffset += abNode.getNumContinousStates();
-  }
-  virtual void apply(Interact& abNode)
-  {
-    OpenFDMAssert(mOffset + abNode.getNumContinousStates() <= mStateDeriv.size());
-    abNode.getStateDeriv(mStateDeriv, mOffset);
-    mOffset += abNode.getNumContinousStates();
-  }
-  const Vector& getStateDeriv(void) const
-  { return mStateDeriv; }
-private:
-  Vector mStateDeriv;
-  unsigned mOffset;
-};
-
-class OutputVisitor
-  : public Visitor {
-public:
-  OutputVisitor(const TaskInfo& taskInfo) : mTaskInfo(taskInfo)
-  { }
-  virtual void apply(MultiBodyModel& abNode)
-  {
-    abNode.output(mTaskInfo);
-  }
-  virtual void apply(Interact& abNode)
-  {
-    abNode.output(mTaskInfo);
-  }
-private:
-  const TaskInfo& mTaskInfo;
-};
-
-class UpdateVisitor
-  : public Visitor {
-public:
-  UpdateVisitor(const TaskInfo& taskInfo) : mTaskInfo(taskInfo)
-  { }
-  virtual void apply(MultiBodyModel& abNode)
-  {
-    abNode.update(mTaskInfo);
-  }
-  virtual void apply(Interact& abNode)
-  {
-    abNode.update(mTaskInfo);
-  }
-private:
-  const TaskInfo& mTaskInfo;
-};
-
-class StateCountVisitor
-  : public ConstVisitor {
-public:
-  StateCountVisitor(void)
-    : mOffset(0u)
-  { }
-  virtual void apply(const MultiBodyModel& abNode)
-  {
-    mOffset += abNode.getNumContinousStates();
-  }
-  virtual void apply(const Interact& abNode)
-  {
-    mOffset += abNode.getNumContinousStates();
-  }
-  unsigned getStateCount(void) const
-  { return mOffset; }
-private:
-  unsigned mOffset;
-};
-
 MultiBodySystem::MultiBodySystem(RootFrame* rootFrame) :
-  Model("multibodymodel"),
+  ModelGroup("multibodymodel"),
   mRootFrame(rootFrame)
 {
   // FIXME
@@ -189,92 +61,46 @@ MultiBodySystem::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
-void
-MultiBodySystem::setEvalState(const Vector& state)
-{
-  // First we need to inject the current state into the tree of parts.
-  setState(state, 0);
+// bool
+// MultiBodySystem::init(void)
+// {
+//   StateCountVisitor gsc;
+//   mRootFrame->accept(gsc);
+//   setNumContinousStates(gsc.getStateCount());
+//   return ModelGroup::init();
+// }
 
-  // Compute the external and interaction forces.
-  // FIXME:Output->continous states ...
-
-  // Compute forward dynamics, that is the articulated forces and inertia.
-  ForwardDynamicsVisitor fwdVisitor;
-  mRootFrame->accept(fwdVisitor);
-
-  // Then compute the articulated inertias and forces.
-  AccelerationPropagationVisitor apVisitor;
-  mRootFrame->accept(apVisitor);
-}
-
-void
-MultiBodySystem::computeStateDeriv(real_type t, const Vector& state, Vector& deriv)
-{
-  setEvalState(state);
-
-  // And finally extract the derivative vector from the tree.
-  GetStateDerivVisitor gsdv(getNumContinousStates());
-  mRootFrame->accept(gsdv);
-  deriv = gsdv.getStateDeriv();
-}
-
-void
-MultiBodySystem::setState(const Vector& state, unsigned offset)
-{
-  SetStateVisitor ssv(state(Range(offset+1, offset+getNumContinousStates())));
-  mRootFrame->accept(ssv);
-}
-
-void
-MultiBodySystem::getState(Vector& state, unsigned offset) const
-{
-  GetStateVisitor gsv(getNumContinousStates());
-  mRootFrame->accept(gsv);
-  state(Range(offset+1, offset+getNumContinousStates())) = gsv.getState();
-}
-
-void
-MultiBodySystem::getStateDeriv(Vector& stateDeriv, unsigned offset)
-{
-  // Compute the external and interaction forces.
-  // FIXME:Output->continous states ...
-
-  // Compute forward dynamics, that is the articulated forces and inertia.
-  ForwardDynamicsVisitor fwdVisitor;
-  mRootFrame->accept(fwdVisitor);
-
-  // Then compute the articulated inertias and forces.
-  AccelerationPropagationVisitor apVisitor;
-  mRootFrame->accept(apVisitor);
-
-  // And finally extract the derivative vector from the tree.
-  GetStateDerivVisitor gsdv(getNumContinousStates());
-  mRootFrame->accept(gsdv);
-  stateDeriv(Range(offset+1, offset+getNumContinousStates()))
-    = gsdv.getStateDeriv();
-}
-
-bool
-MultiBodySystem::init(void)
-{
-  StateCountVisitor gsc;
-  mRootFrame->accept(gsc);
-  setNumContinousStates(gsc.getStateCount());
-  return true;
-}
+class OutputVisitor
+  : public Visitor {
+public:
+  OutputVisitor(const TaskInfo& taskInfo) : mTaskInfo(taskInfo)
+  { }
+  virtual void apply(MultiBodyModel& abNode)
+  {
+    abNode.output(mTaskInfo);
+  }
+  virtual void apply(Interact& abNode)
+  { }
+private:
+  const TaskInfo& mTaskInfo;
+};
 
 void
 MultiBodySystem::output(const TaskInfo& taskInfo)
 {
+  ModelGroup::output(taskInfo);
+
+  // Compute forward dynamics, that is the articulated forces and inertia.
+  ForwardDynamicsVisitor fwdVisitor;
+  mRootFrame->accept(fwdVisitor);
+
+  // Then compute the articulated inertias and forces.
+  AccelerationPropagationVisitor apVisitor;
+  mRootFrame->accept(apVisitor);
+
+  // At the moment only that acceleration sensor ...
   OutputVisitor ov(taskInfo);
   mRootFrame->accept(ov);
-}
-
-void
-MultiBodySystem::update(const TaskInfo& taskInfo)
-{
-  UpdateVisitor uv(taskInfo);
-  mRootFrame->accept(uv);
 }
 
 void
@@ -289,6 +115,7 @@ MultiBodySystem::addRigidBody(RigidBody* rigidBody)
     ++it;
   }
   mRigidBodies.push_back(rigidBody);
+  rigidBody->setParentMultiBodySystem(this);
 }
 
 void
@@ -296,8 +123,10 @@ MultiBodySystem::removeRigidBody(RigidBody* rigidBody)
 {
   RigidBodyList::iterator it = mRigidBodies.begin();
   while (it != mRigidBodies.end()) {
-    if ((*it) == rigidBody)
+    if ((*it) == rigidBody) {
       it = mRigidBodies.erase(it);
+      rigidBody->setParentMultiBodySystem(0);
+    }
     else
       ++it;
   }
@@ -311,8 +140,7 @@ MultiBodySystem::addInteract(Interact* interact)
   /// Already in the list, might be already attached to an other rigid body
   if (this == interact->getParent())
     return;
-  mInteracts.push_back(interact);
-  interact->setParent(this);
+  addModel(interact);
 }
 
 void
@@ -322,14 +150,7 @@ MultiBodySystem::removeInteract(Interact* interact)
     return;
   if (this != interact->getParent())
     return;
-  interact->setParent(0);
-  InteractList::iterator it = mInteracts.begin();
-  while (it != mInteracts.end()) {
-    if ((*it) == interact)
-      it = mInteracts.erase(it);
-    else
-      ++it;
-  }
+  removeModel(interact);
 }
 
 } // namespace OpenFDM

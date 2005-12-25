@@ -114,13 +114,11 @@ public:
     mBodyAxisSummers[axis-1]->addInputProperty(prop);
   }
 
-  virtual void
-  setState(const Vector& state, unsigned offset);
-
   // The interface to the mechanical system.
   virtual void computeForce(void);
 
 private:
+  void dirtyAll(void);
   void computeAtmosphere(void) const;
   void computeSLAtmosphere(void) const;
   void computeCalEquAirspeed(void) const;

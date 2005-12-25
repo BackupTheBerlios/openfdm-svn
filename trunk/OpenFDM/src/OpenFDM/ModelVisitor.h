@@ -20,16 +20,16 @@ public:
   { }
   virtual void apply(ModelGroup& modelGroup)
   { apply((Model&)modelGroup); }
+  virtual void apply(MultiBodySystem& multiBodySystem)
+  { apply((ModelGroup&)multiBodySystem); }
   virtual void apply(Interact& interact)
   { apply((Model&)interact); }
-  virtual void apply(MultiBodySystem& multiBodySystem)
-  { apply((Model&)multiBodySystem); }
 protected:
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse downward
   inline void traverse(ModelGroup& modelGroup)
   { modelGroup.traverse(*this); }
-  /// Call this in the apply(MultiBodyModel&) method if you want to
+  /// Call this in the apply(MultiBodySystem&) method if you want to
   /// traverse downward
   inline void traverse(MultiBodySystem& multiBodySystem)
   { multiBodySystem.traverse(*this); }

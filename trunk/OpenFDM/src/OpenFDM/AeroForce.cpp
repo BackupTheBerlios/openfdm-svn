@@ -31,23 +31,7 @@ AeroForce::AeroForce(Environment* env, const std::string& name)
   mWingArea = 0.0;
   mCoord = 0.0;
 
-  mDirtyRefPosition = true;
-  mDirtyUnitDown = false;
-  mDirtyLocalGroundPlane = true;
-  mDirtyAtmosphere = true;
-  mDirtyAltitude = true;
-  mDirtyAboveGroundLevel = true;
-  mDirtySLAtmosphere = true;
-  mDirtyAirSpeed = true;
-  mDirtyMach = true;
-  mDirtyTrueSpeed = true;
-  mDirtyCalibratedAirSpeed = true;
-  mDirtyEquivalentAirSpeed = true;
-  mDirtyDynamicPressure = true;
-  mDirtyAlpha = true;
-  mDirtyAlphaDot = true;
-  mDirtyBeta = true;
-  mDirtyBetaDot = true;
+  dirtyAll();
 
   addProperty("position",
               Property(this, &AeroForce::getPosition, &AeroForce::setPosition));
@@ -127,6 +111,7 @@ AeroForce::output(const TaskInfo& taskInfo)
     real_type t = taskInfo.getTime();
     mGroundVal = mEnvironment->getGround()->getGroundPlane(t, getRefPosition());
   }
+  dirtyAll();
 }
 
 void
@@ -572,29 +557,6 @@ AeroForce::getLocalGroundPlane(void) const
 }
 
 void
-AeroForce::setState(const Vector& state, unsigned offset)
-{
-  // Dirty everything.
-  mDirtyRefPosition = true;
-  mDirtyUnitDown = true;
-  mDirtyLocalGroundPlane = true;
-  mDirtyAtmosphere = true;
-  mDirtyAltitude = true;
-  mDirtyAboveGroundLevel = true;
-  mDirtySLAtmosphere = true;
-  mDirtyAirSpeed = true;
-  mDirtyMach = true;
-  mDirtyTrueSpeed = true;
-  mDirtyCalibratedAirSpeed = true;
-  mDirtyEquivalentAirSpeed = true;
-  mDirtyDynamicPressure = true;
-  mDirtyAlpha = true;
-  mDirtyAlphaDot = true;
-  mDirtyBeta = true;
-  mDirtyBetaDot = true;
-}
-
-void
 AeroForce::computeForce(void)
 {
   // FIXME: they can be computed cheaper ...
@@ -621,6 +583,29 @@ AeroForce::computeForce(void)
                        << trans(force) << endl;
 
   applyForce(forceFrom(mPosition, mOrientation, force));
+}
+
+void
+AeroForce::dirtyAll(void)
+{
+  // Dirty everything.
+  mDirtyRefPosition = true;
+  mDirtyUnitDown = true;
+  mDirtyLocalGroundPlane = true;
+  mDirtyAtmosphere = true;
+  mDirtyAltitude = true;
+  mDirtyAboveGroundLevel = true;
+  mDirtySLAtmosphere = true;
+  mDirtyAirSpeed = true;
+  mDirtyMach = true;
+  mDirtyTrueSpeed = true;
+  mDirtyCalibratedAirSpeed = true;
+  mDirtyEquivalentAirSpeed = true;
+  mDirtyDynamicPressure = true;
+  mDirtyAlpha = true;
+  mDirtyAlphaDot = true;
+  mDirtyBeta = true;
+  mDirtyBetaDot = true;
 }
 
 void

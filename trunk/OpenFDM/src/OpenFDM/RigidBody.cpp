@@ -14,6 +14,7 @@
 #include "Force.h"
 #include "Mass.h"
 #include "Joint.h"
+#include "MultiBodySystem.h"
 
 namespace OpenFDM {
 
@@ -78,23 +79,6 @@ RigidBody::computeArtValues(void)
   mArtInertia = SpatialInertia::zeros();
   mArtForce = Vector6::zeros();
 
-  // Now collect all articulated forces and all articulated inertias.
-  unsigned n = getNumMultiBodyModels();
-  for (unsigned i = 0; i < n; ++i) {
-    Joint* joint = getMultiBodyModel(i)->toJoint();
-    if (joint) {
-      Log(ArtBody, Debug) << "Processing joint \"" << joint->getName()
-                          << "\" to body \"" << getName() << "\"" << endl;
-      // Check if this is an articulated joint and if we are the parent.
-      // BTW: here the recursion happens ...
-      if (joint->isArticulatedJoint() && this == joint->getInboardGroup())
-        joint->contributeArticulation(mArtInertia, mArtForce);
-      else
-        // Return some contraint force for now...
-        ;
-    }
-  }
-
   // Collect all articulated forces and inertias
   InteractList::iterator it;
   for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
@@ -111,27 +95,41 @@ RigidBody::computeAccel(void)
   Log(ArtBody, Debug) << "Entry of computeAccel of \"" << getName()
                       << "\"" << endl;
 
-  unsigned n = getNumMultiBodyModels();
-  for (unsigned i = 0; i < n; ++i) {
-    Joint* joint = getMultiBodyModel(i)->toJoint();
-    if (joint) {
-      Log(ArtBody, Debug) << "Processing joint \"" << joint->getName()
-                          << "\" to body \"" << getName()
-                          << "\" for acceleration update" << endl;
-      // Check if this is an articulated joint and if we are the parent.
-      if (joint->isArticulatedJoint() && this == joint->getOutboardGroup())
-        joint->updateAccels();
-    }
-  }
-  
+  // Update all accelerations, Hmm, is a bit too croase that way ...
+  InteractList::iterator it;
+  for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
+    (*it)->updateAccels();
+
   Log(ArtBody, Debug3) << "On exit of computeAccel of \"" << getName()
                        << "\"" << endl;
+}
+
+void
+RigidBody::setParentMultiBodySystem(MultiBodySystem* multiBodySystem)
+{
+  /// FIXME: rethink that ...
+  mParentMultiBodySystem = multiBodySystem;
+  if (!multiBodySystem)
+    return;
+  InteractList::iterator it;
+  for (it = mInteracts.begin(); it != mInteracts.end(); ++it) {
+    multiBodySystem->addInteract(*it);
+  }
+}
+
+MultiBodySystem*
+RigidBody::getParentMultiBodySystem(void)
+{
+  return mParentMultiBodySystem;
 }
 
 void
 RigidBody::addInteract(Interact* interact)
 {
   mInteracts.push_back(interact);
+  if (!mParentMultiBodySystem)
+    return;
+  mParentMultiBodySystem->addInteract(interact);
 }
 
 bool

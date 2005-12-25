@@ -37,9 +37,9 @@ Vehicle::Vehicle(void)
   mTopBody = new RigidBody("Topmost rigid body");
   mRootFrame->addChildFrame(mTopBody);
 
-  mFreeJoint = new FreeJoint(mEnvironment, "Mobile vehicle base (free joint)");
-  mRootFrame->addMultiBodyModel(mFreeJoint, 1);
-  mTopBody->addMultiBodyModel(mFreeJoint);
+  mFreeJoint = new FreeJoint(mEnvironment, "Mobile vehicle base");
+  mRootFrame->addInteract2(mFreeJoint, 1);
+  mTopBody->addInteract2(mFreeJoint);
 
   mSystem = new System("Top Vehicle System");
 

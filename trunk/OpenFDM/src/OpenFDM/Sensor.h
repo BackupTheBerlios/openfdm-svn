@@ -30,9 +30,9 @@ public:
   { }
 
   virtual void accept(Visitor& visitor)
-  {  visitor.apply(*this); }
+  { visitor.apply(*this); }
   virtual void accept(ConstVisitor& visitor) const
-  {  visitor.apply(*this); }
+  { visitor.apply(*this); }
 
   void output(const TaskInfo& taskInfo)
   {

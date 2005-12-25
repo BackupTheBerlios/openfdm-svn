@@ -68,7 +68,7 @@ Interact::attachTo(RigidBody* rigidBody)
   }
   ParentList::iterator it;
   for (it = mParents.begin(); it != mParents.end(); ++it) {
-    if (!(*it)) {
+    if ((*it) == 0) {
       (*it) = rigidBody;
       (*it)->addInteract(this);
       return true;

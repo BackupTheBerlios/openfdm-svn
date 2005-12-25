@@ -20,6 +20,7 @@
 namespace OpenFDM {
 
 class Interact;
+class MultiBodySystem;
 
 // Rename to Body???
 class RigidBody :
@@ -111,6 +112,9 @@ public:
   /// FIXME remove
   virtual bool addInteract2(Interact* child, unsigned parentNum = 0);
 
+  void setParentMultiBodySystem(MultiBodySystem* multiBodySystem);
+  MultiBodySystem* getParentMultiBodySystem(void);
+
 private:
   void addInteract(Interact* interact);
   bool removeInteract(Interact* interact);
@@ -133,6 +137,8 @@ private:
   /// FIXME: is interact too???
 //   typedef std::vector<SharedPtr<Mass> > MassList;
 //   MassList mMasses;
+
+  WeakPtr<MultiBodySystem> mParentMultiBodySystem;
 
   friend class Interact;
 };
