@@ -85,6 +85,9 @@ public:
   bool getDirectFeedThrough(void) const
   { return mDirectFeedThrough; }
 
+  bool getMultiBodyAcceleration(void) const
+  { return mMultiBodyAcceleration; }
+
   bool addSampleTime(const SampleTime& sampleTime)
   { return mSampleTimeSet.addSampleTime(sampleTime); }
   bool removeSampleTime(const SampleTime& sampleTime)
@@ -122,6 +125,8 @@ protected:
   void setNumDiscreteStates(unsigned numDiscreteStates);
   void setDirectFeedThrough(bool directFeedThrough)
   { mDirectFeedThrough = directFeedThrough; }
+  void setMultiBodyAcceleration(bool multiBodyAcceleration)
+  { mMultiBodyAcceleration = multiBodyAcceleration; }
 
   /// Sets the number of input properties.
   void setNumInputPorts(unsigned num);
@@ -158,6 +163,9 @@ private:
   unsigned mNumContinousStates;
   unsigned mNumDiscreteStates;
   bool mDirectFeedThrough;
+  // FIXME, at the moment used to state that this model must be scheduled
+  // past all joint interacts
+  bool mMultiBodyAcceleration;
   SampleTimeSet mSampleTimeSet;
   std::vector<SharedPtr<Port> > mInputPorts;
   std::vector<SharedPtr<Port> > mOutputPorts;

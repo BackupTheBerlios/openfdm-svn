@@ -18,12 +18,14 @@
 #include "Quaternion.h"
 #include "Rotation.h"
 #include "Inertia.h"
-#include "MultiBodyModel.h"
 
 namespace OpenFDM {
 
 class RigidBody;
 class Interact;
+
+class Visitor;
+class ConstVisitor;
 
 /** 
 The \ref Frame class is the basic tool to model a tree of moving and
@@ -98,68 +100,9 @@ public:
 
 
 
+  //////////////////
 
-
-  /////////////////////////////////////////
-  typedef std::vector<SharedPtr<MultiBodyModel> > abchild_list;
-  typedef abchild_list::iterator           abchild_iterator;
-  typedef abchild_list::const_iterator     const_abchild_iterator;
-  abchild_list _children;
-
-  bool addMultiBodyModel(MultiBodyModel* child, unsigned parentNum = 0)
-  {
-    if (!child)
-      return false;
-    if (findMultiBodyModelIndex(child) < _children.size())
-      return false;
-    
-    bool couldSetParent = child->setParentFrame(this, parentNum);
-    if (couldSetParent)
-      _children.push_back(child);
-    return couldSetParent;
-  }
-  bool removeMultiBodyModel(const MultiBodyModel* child)
-  { return removeMultiBodyModel(findMultiBodyModelIndex(child)); }
-private:
-  bool removeMultiBodyModel(unsigned i)
-  {
-    if (_children.size() <= i)
-      return false;
-
-    abchild_iterator it = _children.begin() + i;
-    MultiBodyModel* child = *it;
-    bool couldRemoveParent = child->removeParentFrame(this);
-    if (couldRemoveParent)
-      _children.erase(it);
-    return couldRemoveParent;
-  }
-public:
-  unsigned findMultiBodyModelIndex(const MultiBodyModel* child) const
-  {
-    unsigned i;
-    for (i = 0; i < _children.size(); ++i) {
-      if (_children[i] == child)
-        return i;
-    }
-    return i;
-  }
-
-  MultiBodyModel* getMultiBodyModel(unsigned i)
-  {
-    if (_children.size() <= i)
-      return 0;
-    return _children[i];
-  }
-  const MultiBodyModel* getMultiBodyModel(unsigned i) const
-  {
-    if (_children.size() <= i)
-      return 0;
-    return _children[i];
-  }
-
-  unsigned getNumMultiBodyModels(void) const
-  { return _children.size(); }
-
+  /// FIXME should vanish
   virtual bool addInteract2(Interact* child, unsigned parentNum = 0)
   { return false; }
 

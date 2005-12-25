@@ -52,22 +52,10 @@ Frame::accept(Visitor& visitor)
 void
 Frame::traverse(Visitor& visitor)
 {
-  {
-    ChildFrameList::iterator it = mChildFrames.begin();
-    ChildFrameList::iterator iEnd = mChildFrames.end();
-    while (it != iEnd) {
-      (*it)->accept(visitor);
-      ++it;
-    }
-  }
-  abchild_iterator it = _children.begin();
-  abchild_iterator iEnd = _children.end();
+  ChildFrameList::iterator it = mChildFrames.begin();
+  ChildFrameList::iterator iEnd = mChildFrames.end();
   while (it != iEnd) {
-    // Make sure the nodes with two parents are only traversed once.
-    MultiBodyModel* child = (*it);
-    if (child->getParentFrame(0) == this)
-      child->accept(visitor);
-    
+    (*it)->accept(visitor);
     ++it;
   }
 }
@@ -81,22 +69,10 @@ Frame::accept(ConstVisitor& visitor) const
 void
 Frame::traverse(ConstVisitor& visitor) const
 {
-  {
-    ChildFrameList::const_iterator it = mChildFrames.begin();
-    ChildFrameList::const_iterator iEnd = mChildFrames.end();
-    while (it != iEnd) {
-      (*it)->accept(visitor);
-      ++it;
-    }
-  }
-  const_abchild_iterator it = _children.begin();
-  const_abchild_iterator iEnd = _children.end();
+  ChildFrameList::const_iterator it = mChildFrames.begin();
+  ChildFrameList::const_iterator iEnd = mChildFrames.end();
   while (it != iEnd) {
-    // Make sure the nodes with two parents are only traversed once.
-    const MultiBodyModel* child = (*it);
-    if (child->getParentFrame(0) == this)
-      child->accept(visitor);
-    
+    (*it)->accept(visitor);
     ++it;
   }
 }

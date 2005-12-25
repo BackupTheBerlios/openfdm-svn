@@ -12,11 +12,8 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Frame.h"
 #include "RigidBody.h"
 #include "ModelVisitor.h"
-#include "Visitor.h"
-#include "ConstVisitor.h"
 #include "Interact.h"
 
 namespace OpenFDM {
@@ -28,28 +25,6 @@ Interact::Interact(const std::string& name, unsigned numParents) :
 }
 
 Interact::~Interact(void)
-{
-}
-
-void
-Interact::accept(Visitor& visitor)
-{
-  visitor.apply(*this);
-}
-
-void
-Interact::traverse(Visitor& visitor)
-{
-}
-
-void
-Interact::accept(ConstVisitor& visitor) const
-{
-  visitor.apply(*this);
-}
-
-void
-Interact::traverse(ConstVisitor& visitor) const
 {
 }
 

@@ -10,29 +10,23 @@
 #include "Vector.h"
 #include "Frame.h"
 #include "RigidBody.h"
-#include "Visitor.h"
-#include "ConstVisitor.h"
-#include "MultiBodyModel.h"
+#include "Interact.h"
 
 namespace OpenFDM {
 
 class Sensor
-  : public MultiBodyModel {
+  : public Interact {
 public:
   Sensor(const std::string& name) :
-    MultiBodyModel(name)
+    Interact(name, 1)
   {
     mAccel.resize(6, 1);
     setNumOutputPorts(1);
+    setMultiBodyAcceleration(true);
     setOutputPort(0, "nz", this, &Sensor::getNZ);
   }
   virtual ~Sensor(void)
   { }
-
-  virtual void accept(Visitor& visitor)
-  { visitor.apply(*this); }
-  virtual void accept(ConstVisitor& visitor) const
-  { visitor.apply(*this); }
 
   void output(const TaskInfo& taskInfo)
   {
@@ -51,9 +45,10 @@ public:
   const real_type& getNZ(void) const
   { return mNz; }
 
-private:
-  OpenFDM_NodeImplementation(1);
+  virtual void interactWith(RigidBody*)
+  {}
 
+private:
   Matrix mAccel;
   real_type mNz;
 };

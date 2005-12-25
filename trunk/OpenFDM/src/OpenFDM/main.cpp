@@ -40,6 +40,8 @@ using namespace std;
 #include <OpenFDM/LogStream.h>
 #include <OpenFDM/Variant.h>
 #include <OpenFDM/Property.h>
+#include <OpenFDM/Visitor.h>
+#include <OpenFDM/ConstVisitor.h>
 
 // Model includes
 #include <OpenFDM/Model.h>
@@ -557,14 +559,6 @@ class StatePrintVisitor
 public:
   StatePrintVisitor(void) : _indent(3) {}
   virtual ~StatePrintVisitor(void) {}
-  virtual void apply(const MultiBodyModel& node)
-  {
-    Vector v(node.getNumContinousStates());
-    node.getState(v, 0);
-    std::cout << std::setw(_indent) << ""
-              << "\"" << node.getName() << "\", "
-              << trans(v) << endl;
-  }
   virtual void apply(const Frame& group)
   {
     std::cout << std::setw(_indent) << ""

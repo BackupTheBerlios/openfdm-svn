@@ -42,8 +42,6 @@ public:
 
   virtual void accept(Visitor& visitor);
   virtual void accept(ConstVisitor& visitor) const;
-  virtual void traverse(Visitor& visitor);
-  virtual void traverse(ConstVisitor& visitor) const;
 
 
 // protected:

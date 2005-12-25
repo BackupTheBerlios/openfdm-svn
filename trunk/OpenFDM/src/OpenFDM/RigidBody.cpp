@@ -10,11 +10,13 @@
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "Frame.h"
-#include "RigidBody.h"
 #include "Force.h"
 #include "Mass.h"
 #include "Joint.h"
 #include "MultiBodySystem.h"
+#include "Visitor.h"
+#include "ConstVisitor.h"
+#include "RigidBody.h"
 
 namespace OpenFDM {
 
@@ -49,24 +51,6 @@ void
 RigidBody::accept(ConstVisitor& visitor) const
 {
   visitor.apply(*this);
-}
-
-void
-RigidBody::traverse(Visitor& visitor)
-{
-  InteractList::iterator it;
-  for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
-    (*it)->accept(visitor);
-  Frame::traverse(visitor);
-}
-
-void
-RigidBody::traverse(ConstVisitor& visitor) const
-{
-  InteractList::const_iterator it;
-  for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
-    (*it)->accept(visitor);
-  Frame::traverse(visitor);
 }
 
 void

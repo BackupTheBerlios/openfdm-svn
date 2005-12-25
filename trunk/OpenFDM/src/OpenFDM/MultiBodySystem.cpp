@@ -70,25 +70,15 @@ MultiBodySystem::accept(ModelVisitor& visitor)
 //   return ModelGroup::init();
 // }
 
-class OutputVisitor
-  : public Visitor {
-public:
-  OutputVisitor(const TaskInfo& taskInfo) : mTaskInfo(taskInfo)
-  { }
-  virtual void apply(MultiBodyModel& abNode)
-  {
-    abNode.output(mTaskInfo);
-  }
-  virtual void apply(Interact& abNode)
-  { }
-private:
-  const TaskInfo& mTaskInfo;
-};
-
 void
 MultiBodySystem::output(const TaskInfo& taskInfo)
 {
-  ModelGroup::output(taskInfo);
+  // Hmm, just works now ... FIXME
+  ModelList::iterator it;
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
+    if (!(*it)->getMultiBodyAcceleration())
+      (*it)->output(taskInfo);
+  }
 
   // Compute forward dynamics, that is the articulated forces and inertia.
   ForwardDynamicsVisitor fwdVisitor;
@@ -98,9 +88,11 @@ MultiBodySystem::output(const TaskInfo& taskInfo)
   AccelerationPropagationVisitor apVisitor;
   mRootFrame->accept(apVisitor);
 
-  // At the moment only that acceleration sensor ...
-  OutputVisitor ov(taskInfo);
-  mRootFrame->accept(ov);
+  // Hmm, just works now ... FIXME
+  for (it = mModels.begin(); it != mModels.end(); ++it) {
+    if ((*it)->getMultiBodyAcceleration())
+      (*it)->output(taskInfo);
+  }
 }
 
 void

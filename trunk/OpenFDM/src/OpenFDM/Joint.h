@@ -13,8 +13,6 @@
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "Interact.h"
-#include "Visitor.h"
-#include "ConstVisitor.h"
 #include "Frame.h"
 #include "LogStream.h"
 
@@ -26,11 +24,6 @@ public:
   Joint(const std::string& name)
     : Interact(name, 2)
   {}
-
-  virtual void accept(Visitor& visitor)
-  { visitor.apply(*this); }
-  virtual void accept(ConstVisitor& visitor) const
-  { visitor.apply(*this); }
 
   virtual bool isArticulatedJoint(void) const
   {

@@ -10,9 +10,6 @@
 namespace OpenFDM {
 
 class RigidBody;
-class Joint;
-class MultiBodyModel;
-class Interact;
 
 class Visitor {
 public:
@@ -20,18 +17,10 @@ public:
   {}
   virtual void apply(Frame& frame)
   { traverse(frame); }
-  virtual void apply(RigidBody& body)
-  { apply((Frame&)body); }
-  virtual void apply(MultiBodyModel& abNode)
-  { traverse(abNode); }
-  virtual void apply(Joint& joint)
-  { apply((MultiBodyModel&)joint); }
-  virtual void apply(Interact& interact)
-  { }
+  virtual void apply(RigidBody& rigidBody)
+  { apply((Frame&)rigidBody); }
   inline void traverse(Frame& frame)
   { frame.traverse(*this); }
-  inline void traverse(MultiBodyModel& multiBodyModel)
-  { multiBodyModel.traverse(*this); }
 };
 
 } // namespace OpenFDM

@@ -16,7 +16,8 @@ Model::Model(const std::string& name) :
   Object(name),
   mNumContinousStates(0l),
   mNumDiscreteStates(0l),
-  mDirectFeedThrough(false)
+  mDirectFeedThrough(false),
+  mMultiBodyAcceleration(false)
 {
   addProperty("numContinousStates",
               Property(this, &Model::getNumContinousStates));

@@ -9,11 +9,7 @@
 
 namespace OpenFDM {
 
-class Frame;
 class RigidBody;
-class Force;
-class Joint;
-class Interact;
 
 class ConstVisitor {
 public:
@@ -21,18 +17,10 @@ public:
   {}
   virtual void apply(const Frame& frame)
   { traverse(frame); }
-  virtual void apply(const RigidBody& body)
-  { apply((const Frame&)body); }
-  virtual void apply(const MultiBodyModel& abNode)
-  { traverse(abNode); }
-  virtual void apply(const Joint& joint)
-  { apply((const MultiBodyModel&)joint); }
-  virtual void apply(const Interact& interact)
-  { }
+  virtual void apply(const RigidBody& rigidBody)
+  { apply((const Frame&)rigidBody); }
   inline void traverse(const Frame& frame)
   { frame.traverse(*this); }
-  inline void traverse(const MultiBodyModel& multiBodyModel)
-  { multiBodyModel.traverse(*this); }
 };
 
 } // namespace OpenFDM

@@ -719,7 +719,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   Port* port = accelSensor->getOutputPort("nz");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
 //   epFrame->addInteract2(accelSensor);
-  mVehicle->getTopBody()->addMultiBodyModel(accelSensor);
+  mVehicle->getTopBody()->addInteract2(accelSensor);
   mVehicle->getTopBody()->addChildFrame(epFrame);
   addOutputModel(port, "Normalized load value", "/accelerations/nlf");
 

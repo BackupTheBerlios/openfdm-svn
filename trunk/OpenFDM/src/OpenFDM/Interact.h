@@ -17,6 +17,7 @@
 #include "Inertia.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "Model.h"
 
 namespace OpenFDM {
 
@@ -27,21 +28,9 @@ public:
   virtual ~Interact(void);
 
   /// Double dispatch helper for the multibody system visitor
-  virtual void accept(Visitor& visitor);
-  /// Double dispatch helper for the multibody system visitor
-  virtual void traverse(Visitor& visitor);
-  /// Double dispatch helper for the multibody system visitor
-  virtual void accept(ConstVisitor& visitor) const;
-  /// Double dispatch helper for the multibody system visitor
-  virtual void traverse(ConstVisitor& visitor) const;
-
-
-  /// Double dispatch helper for the multibody system visitor
   virtual void accept(ModelVisitor& visitor);
   /// Double dispatch helper for the multibody system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
-
-
 
   bool attachTo(RigidBody* rigidBody);
   bool detachFrom(RigidBody* rigidBody);
