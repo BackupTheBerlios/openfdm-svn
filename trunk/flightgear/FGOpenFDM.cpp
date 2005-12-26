@@ -343,7 +343,7 @@ void FGOpenFDM::update(double dt)
   _set_Climb_Rate(-localVel(3));
 
   const RigidBody* topBody = vehicle->getTopBody();
-  Vector3 bodyAccel = convertTo(uFeetPSec2, topBody->getClassicAccel().getLinear());
+  Vector3 bodyAccel = convertTo(uFeetPSec2, topBody->getFrame()->getClassicAccel().getLinear());
   _set_Accels_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
   _set_Accels_Pilot_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
   _set_Accels_CG_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
@@ -357,7 +357,7 @@ void FGOpenFDM::update(double dt)
   _set_Nlf(-nAccel(3));
 
   
-  Vector3 angVel = topBody->getRelVel().getAngular();
+  Vector3 angVel = topBody->getFrame()->getRelVel().getAngular();
   _set_Omega_Body(angVel(1), angVel(2), angVel(3));
 //   _set_Euler_Rates(roll, pitch, hdg);
 
