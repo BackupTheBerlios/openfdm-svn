@@ -82,11 +82,6 @@ public:
     topBody->setRefOrientation(o);
   }
 
-  /** Sets the state of this multibody system from the state vector state
-      and returns the time derivative in deriv.
-   */
-  void computeStateDeriv(real_type t, const Vector& state, Vector& deriv);
-
 private:
   /** Plugin function for the articulated body algorithm.
    */
