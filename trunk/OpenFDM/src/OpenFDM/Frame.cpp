@@ -127,6 +127,19 @@ Frame::getChildFrame(unsigned i) const
 }
 
 void
+Frame::reparentChildren(Frame* frame)
+{
+  if (!frame)
+    return;
+  ChildFrameList::iterator it = frame->mChildFrames.begin();
+  while (it != frame->mChildFrames.end()) {
+    (*it)->setParentFrame(0);
+    addChildFrame(*it);
+    it = frame->mChildFrames.erase(it);
+  }
+}
+
+void
 Frame::computePositionDep(void) const
 {
   if (hasParent()) {

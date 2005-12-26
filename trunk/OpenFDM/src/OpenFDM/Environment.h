@@ -15,6 +15,7 @@ class Ground;
 class Planet;
 class Turbulence;
 class Wind;
+class RootFrame;
 
 class EnvironmentObject;
 
@@ -78,6 +79,15 @@ public:
   const Wind* getWind(void) const
   { return mWind; }
 
+  /// Set RootFrame
+  void setRootFrame(RootFrame* rootFrame);
+
+  /// Get RootFrame
+  const RootFrame* getRootFrame(void) const
+  { return mRootFrame; }
+  RootFrame* getRootFrame(void)
+  { return mRootFrame; }
+
 private:
   void attachEnvironmentObject(EnvironmentObject* environmentObject);
   void detachEnvironmentObject(EnvironmentObject* environmentObject);
@@ -88,6 +98,7 @@ private:
   SharedPtr<Planet> mPlanet;
   SharedPtr<Turbulence> mTurbulence;
   SharedPtr<Wind> mWind;
+  SharedPtr<RootFrame> mRootFrame;
 };
 
 } // namespace OpenFDM

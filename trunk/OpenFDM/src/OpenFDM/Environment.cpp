@@ -12,6 +12,7 @@
 #include "Turbulence.h"
 #include "Wind.h"
 #include "Environment.h"
+#include "RootFrame.h"
 
 namespace OpenFDM {
 
@@ -22,6 +23,10 @@ Environment::Environment(void)
   setGround(new DefaultGround);
   setPlanet(new DefaultPlanet);
   setWind(new Wind);
+  RootFrame* rootFrame = new RootFrame("Planet centered frame");
+  Vector3 earthRotation(0.0, 0.0, pi2/(60*60*24));
+  rootFrame->setAngularRelVel(earthRotation);
+  setRootFrame(rootFrame);
 }
 
 Environment::~Environment(void)
@@ -74,6 +79,13 @@ Environment::setWind(Wind* wind)
   detachEnvironmentObject(mWind);
   mWind = wind;
   attachEnvironmentObject(wind);
+}
+
+void
+Environment::setRootFrame(RootFrame* rootFrame)
+{
+  rootFrame->reparentChildren(mRootFrame);
+  mRootFrame = rootFrame;
 }
 
 void

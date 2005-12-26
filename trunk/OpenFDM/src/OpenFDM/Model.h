@@ -23,6 +23,8 @@ namespace OpenFDM {
 
 class ModelGroup;
 class MultiBodySystem;
+class Environment;
+
 class Input;
 class Output;
 
@@ -149,6 +151,8 @@ protected:
   void setOutputPort(unsigned i, const std::string& name, M* model,
                      const Matrix& (M::*getter)(void) const)
   { setOutputPort(i, name, new MatrixGetterPortInterface<M>(model, getter)); }
+
+  virtual Environment* getEnvironment(void) const;
 
 private:
   // Sets the parent model.

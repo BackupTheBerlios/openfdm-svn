@@ -268,6 +268,14 @@ Model::setOutputPort(unsigned i, const std::string& name,
   mOutputPorts[i] = port;
 }
 
+Environment*
+Model::getEnvironment(void) const
+{
+  if (mParentModel)
+    return mParentModel->getEnvironment();
+  return 0;
+}
+
 void
 Model::setParent(Model* model)
 {

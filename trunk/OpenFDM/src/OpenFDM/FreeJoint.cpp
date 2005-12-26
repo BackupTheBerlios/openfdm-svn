@@ -12,20 +12,45 @@
 #include "Gravity.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "RootFrame.h"
 #include "FreeJoint.h"
 
 namespace OpenFDM {
 
-FreeJoint::FreeJoint(Environment* env,const std::string& name)
+FreeJoint::FreeJoint(const std::string& name)
   : Joint(name)
 {
   setNumContinousStates(13);
-  mEnvironment = env;
   addSampleTime(SampleTime::Continous);
 }
 
 FreeJoint::~FreeJoint(void)
 {
+}
+
+bool
+FreeJoint::init(void)
+{
+  Environment* environment = getEnvironment();
+  if (!environment) {
+    Log(Model,Error) << "Can not get environment pointer! Most propably the"
+      " Model is not put together correctly!" << endl;
+    return false;
+  }
+  mGravity = environment->getGravity();
+  if (!mGravity) {
+    Log(Model,Error) << "Can not get gravity model!" << endl;
+    return false;
+  }
+  Frame* rootFrame = environment->getRootFrame();
+  if (!rootFrame) {
+    Log(Model,Error) << "Can not get rootFrame model!" << endl;
+    return false;
+  }
+  Frame* outboardFrame = getOutboardBody()->getFrame();
+  rootFrame->addChildFrame(outboardFrame);
+
+  return Joint::init();
 }
 
 bool
@@ -51,7 +76,7 @@ FreeJoint::computeRelAccel(const SpatialInertia& artI,
   // center of mass. That means gravity could be considered equal for the whole
   // vehicle.
   // See Featherstone, Orin: Equations and Algorithms
-  Vector3 ga = mEnvironment->getGravity()->gravityAccel(frame->getRefPosition());
+  Vector3 ga = mGravity->gravityAccel(frame->getRefPosition());
   Vector6 grav = Vector6(Vector3::zeros(), frame->rotFromRef(ga));
 
   Log(ArtBody, Debug) << "grav = " << trans(grav) << endl;

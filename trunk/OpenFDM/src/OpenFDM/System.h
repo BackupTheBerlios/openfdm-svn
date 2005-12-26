@@ -49,6 +49,8 @@ public:
   /// Return a reference to the timestepping algorithm
   ODESolver* getTimestepper(void) { return mTimestepper; }
 
+  virtual Environment* getEnvironment(void) const;
+
 private:
   /// The timestepper used to get time discrete approximate solutions to the
   /// continous system
@@ -59,6 +61,8 @@ private:
   TaskList mDiscreteTaskList;
   unsigned mCurrentTaskNum;
   real_type mCurrentSliceTime;
+
+  SharedPtr<Environment> mEnvironment;
 
   /// The actual simulation time for the system
   real_type mTime;

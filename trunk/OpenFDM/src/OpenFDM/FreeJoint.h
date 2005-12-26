@@ -21,8 +21,10 @@ namespace OpenFDM {
 class FreeJoint
   : public Joint {
 public:
-  FreeJoint(Environment* env, const std::string& name = std::string());
+  FreeJoint(const std::string& name = std::string());
   virtual ~FreeJoint(void);
+
+  virtual bool init(void);
 
   /// HACK
   virtual bool isArticulatedJoint(void) const
@@ -107,7 +109,7 @@ private:
 
   /** Reference to the vehicles environment.
    */
-  SharedPtr<Environment> mEnvironment;
+  SharedPtr<const Gravity> mGravity;
 };
 
 } // namespace OpenFDM

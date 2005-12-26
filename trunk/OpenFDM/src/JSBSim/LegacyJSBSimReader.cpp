@@ -89,7 +89,7 @@ LegacyJSBSimReader::loadAircraft(const std::string& acFileName)
   mExpressionTable.clear();
   // Allocate a new vehicle
   mVehicle = new Vehicle;
-  mAeroForce = new AeroForce(mVehicle->getEnvironment(), "Aerodynamic force");
+  mAeroForce = new AeroForce("Aerodynamic force");
   mVehicle->getTopBody()->addInteract(mAeroForce);
   // Default discrete stepsize of JSBSim
   mVehicle->getModelGroup()->addSampleTime(SampleTime(1.0/120));
@@ -763,8 +763,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   }
   wj->setLineForce(brakeF);
   
-  WheelContact* wc = new WheelContact(name + " Wheel Contact",
-                                      mVehicle->getEnvironment());
+  WheelContact* wc = new WheelContact(name + " Wheel Contact");
   wc->setWheelRadius(0.5*wheelDiam);
   wc->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
   wc->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
@@ -810,8 +809,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       if (type == "CASTERING") {
         // Modelling castering gars as simple contacs without a special
         // direction
-        SimpleContact* sc = new SimpleContact(name,
-                                              mVehicle->getEnvironment());
+        SimpleContact* sc = new SimpleContact(name);
         sc->setPosition(structToBody(Vector3(x, y, z)));
 
         sc->setSpringConstant(convertFrom(uPoundForcePFt, k));
@@ -826,7 +824,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
       } else {
         // For jsbsim use simple gears
-        SimpleGear* sg = new SimpleGear(name, mVehicle->getEnvironment());
+        SimpleGear* sg = new SimpleGear(name);
         sg->setPosition(structToBody(Vector3(x, y, z)));
         
         sg->setSpringConstant(convertFrom(uPoundForcePFt, k));
@@ -1090,7 +1088,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
               >> type >> brake >> sa >> retract;
 
       // Very simple contact force. Penalty method.
-      SimpleContact* sc = new SimpleContact(name, mVehicle->getEnvironment());
+      SimpleContact* sc = new SimpleContact(name);
       sc->setPosition(structToBody(Vector3(x, y, z)));
 
       sc->setSpringConstant(convertFrom(uPoundForcePFt, k));

@@ -25,6 +25,10 @@ public:
     : Interact(name, 2)
   {}
 
+  /// FIXME: joint's should be lockable, which means trylock == true and
+  /// velocity small enough - keep position ...
+
+
   virtual bool isArticulatedJoint(void) const
   {
     const Frame* parent0 = getParentFrame(0);

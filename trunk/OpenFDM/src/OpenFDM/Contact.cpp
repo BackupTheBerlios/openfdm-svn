@@ -13,11 +13,10 @@
 
 namespace OpenFDM {
 
-Contact::Contact(const std::string& name, Environment* env)
+Contact::Contact(const std::string& name)
   : ExternalForce(name)
 {
   mEnabled = true;
-  mEnvironment = env;
   setPosition(Vector3::zeros());
 
   unsigned inputPortBase = getNumInputPorts();
@@ -31,6 +30,15 @@ Contact::Contact(const std::string& name, Environment* env)
 
 Contact::~Contact(void)
 {
+}
+
+bool
+Contact::init(void)
+{
+  mEnvironment = getEnvironment();
+  if (!mEnvironment)
+    return false;
+  return ExternalForce::init();
 }
 
 void
@@ -123,6 +131,11 @@ Contact::getGround(real_type t)
   OpenFDMAssert(frame);
   if (!frame)
     return;
+
+  // FIXME
+  if (!mEnvironment) {
+    mEnvironment = getEnvironment();
+  }
 
   // Get the position of the contact in the reference system.
   Vector3 pos = frame->posToRef(getPosition());

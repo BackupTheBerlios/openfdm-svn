@@ -13,11 +13,9 @@
 
 namespace OpenFDM {
 
-AeroForce::AeroForce(Environment* env, const std::string& name)
+AeroForce::AeroForce(const std::string& name)
   : ExternalForce(name)
 {
-  mEnvironment = env;
-
   // Initialize all the expression nodes we will need.
   for (unsigned i = 0; i < 6; ++i) {
     mStabilityAxisSummers[i] = new SumExpressionImpl;
@@ -99,6 +97,15 @@ AeroForce::AeroForce(Environment* env, const std::string& name)
 
 AeroForce::~AeroForce(void)
 {
+}
+
+bool
+AeroForce::init(void)
+{
+  mEnvironment = getEnvironment();
+  if (!mEnvironment)
+    return false;
+  return ExternalForce::init();
 }
 
 void
@@ -198,6 +205,10 @@ AeroForce::getAirSpeed(void) const
     const Frame* frame = getParentFrame(0);
     OpenFDMAssert(frame);
     if (frame) {
+      // FIXME temporary workaround
+      if (!mEnvironment) {
+        const_cast<AeroForce*>(this)->mEnvironment = getEnvironment();
+      }
       // Get the position in the earth centered coordinate frame.
       Vector3 pos = frame->posToRef(getPosition());
       Vector3 windVel = mEnvironment->getWind()->getWindVel(pos);
@@ -426,6 +437,10 @@ real_type
 AeroForce::getAltitude(void) const
 {
   if (mDirtyAltitude) {
+    // FIXME temporary workaround
+    if (!mEnvironment) {
+      const_cast<AeroForce*>(this)->mEnvironment = getEnvironment();
+    }
     // Get the altitude for the atmosphere.
     Geodetic geod = mEnvironment->getPlanet()->toGeod(getRefPosition());
 

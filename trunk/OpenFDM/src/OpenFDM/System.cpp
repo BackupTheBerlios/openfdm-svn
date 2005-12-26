@@ -22,6 +22,7 @@ System::System(const std::string& name) :
   mTime(0)
 {
   setTimestepper(new ExplicitEuler);
+  mEnvironment = new Environment;
 }
 
 System::~System(void)
@@ -341,6 +342,13 @@ System::setTimestepper(ODESolver* timestepper)
     mTimestepper->setModel(this);
     mTimestepper->setTime(t);
   }
+}
+
+Environment*
+System::getEnvironment(void) const
+{
+  /// Hmmm, FIXME
+  return const_cast<Environment*>((const Environment*)mEnvironment);
 }
 
 } // namespace OpenFDM

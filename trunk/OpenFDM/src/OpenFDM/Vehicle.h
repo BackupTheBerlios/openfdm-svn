@@ -45,7 +45,7 @@ public:
   /** Get planet callback.
    */
   const Planet* getPlanet(void) const
-  { return mEnvironment->getPlanet(); }
+  { return mSystem->getEnvironment()->getPlanet(); }
 
   /** Set ground callback.
    */
@@ -54,7 +54,7 @@ public:
   /** Get ground callback.
    */
   const Ground* getGround(void) const
-  { return mEnvironment->getGround(); }
+  { return mSystem->getEnvironment()->getGround(); }
 
   /** Set atmosphere callback.
    */
@@ -64,7 +64,7 @@ public:
       FIXME ?? only callback??
    */
   const Atmosphere* getAtmosphere(void) const
-  { return mEnvironment->getAtmosphere(); }
+  { return mSystem->getEnvironment()->getAtmosphere(); }
 
   /** Set wind callback.
    */
@@ -73,7 +73,7 @@ public:
   /** Get wind callback.
    */
   const Wind* getWind(void) const
-  { return mEnvironment->getWind(); }
+  { return mSystem->getEnvironment()->getWind(); }
 
   /** Get the vehicle base node.
    */
@@ -113,8 +113,6 @@ public:
   { return mTopBody; }
   RigidBody* getTopBody(void)
   { return mTopBody; }
-  Environment* getEnvironment(void)
-  { return mEnvironment; }
 
   const System* getSystem(void) const
   { return mSystem; }
@@ -125,9 +123,6 @@ public:
   { return mMultiBodySystem; }
 
 private:
-  // Environment ...
-  SharedPtr<Environment> mEnvironment;
-
   SharedPtr<RigidBody> mTopBody;
   SharedPtr<FreeJoint> mFreeJoint;
   SharedPtr<RootFrame> mRootFrame;

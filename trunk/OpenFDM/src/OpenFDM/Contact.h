@@ -18,9 +18,10 @@ namespace OpenFDM {
 class Contact
   : public ExternalForce {
 public:
-  Contact(const std::string& name, Environment* env);
+  Contact(const std::string& name);
   virtual ~Contact(void);
 
+  virtual bool init(void);
   virtual void output(const TaskInfo&);
 
   Vector3 mPosition;

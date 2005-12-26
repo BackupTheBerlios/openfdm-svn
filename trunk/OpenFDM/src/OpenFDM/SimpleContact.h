@@ -17,7 +17,7 @@ namespace OpenFDM {
 class SimpleContact
   : public Contact {
 public:
-  SimpleContact(const std::string& name, Environment* env);
+  SimpleContact(const std::string& name);
   virtual ~SimpleContact(void);
 
   real_type getSpringConstant(void) const

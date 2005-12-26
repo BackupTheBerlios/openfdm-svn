@@ -12,8 +12,8 @@
 
 namespace OpenFDM {
 
-SimpleContact::SimpleContact(const std::string& name, Environment* env)
-  : Contact(name, env)
+SimpleContact::SimpleContact(const std::string& name)
+  : Contact(name)
 {
   mSpringConst = 0;
   mSpringDamp = 0;

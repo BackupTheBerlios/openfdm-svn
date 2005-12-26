@@ -26,9 +26,6 @@ namespace OpenFDM {
 
 Vehicle::Vehicle(void)
 {
-  // The environment models and callbacks of this vehicle.
-  mEnvironment = new Environment;
-
   // The Planet centered frame is used by the others!
   mRootFrame = new RootFrame("Planet centered frame");
   Vector3 earthRotation(0.0, 0.0, pi2/(60*60*24));
@@ -37,8 +34,7 @@ Vehicle::Vehicle(void)
   mTopBody = new RigidBody("Topmost rigid body");
   mRootFrame->addChildFrame(mTopBody->getFrame());
 
-  mFreeJoint = new FreeJoint(mEnvironment, "Mobile vehicle base");
-//   mRootFrame->addInteract(mFreeJoint);
+  mFreeJoint = new FreeJoint("Mobile vehicle base");
   mTopBody->addInteract(mFreeJoint);
 
   mSystem = new System("Top Vehicle System");
@@ -90,25 +86,25 @@ Vehicle::trim(void)
 void
 Vehicle::setPlanet(Planet* p)
 {
-  mEnvironment->setPlanet(p);
+  mSystem->getEnvironment()->setPlanet(p);
 }
 
 void
 Vehicle::setGround(Ground* p)
 {
-  mEnvironment->setGround(p);
+  mSystem->getEnvironment()->setGround(p);
 }
 
 void
 Vehicle::setAtmosphere(Atmosphere* p)
 {
-  mEnvironment->setAtmosphere(p);
+  mSystem->getEnvironment()->setAtmosphere(p);
 }
 
 void
 Vehicle::setWind(Wind* w)
 {
-  mEnvironment->setWind(w);
+  mSystem->getEnvironment()->setWind(w);
 }
 
 Vector3

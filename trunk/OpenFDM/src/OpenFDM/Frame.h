@@ -93,6 +93,8 @@ public:
   unsigned getNumChildFrames(void) const
   { return mChildFrames.size(); }
 
+  /// Take over all children from the given frame to this frame
+  void reparentChildren(Frame* frame);
 
   // Return the current frames frame id.
   frameid_type getFrameId(void) const

@@ -13,15 +13,13 @@
 
 namespace OpenFDM {
 
-WheelContact::WheelContact(const std::string& name, Environment* env)
+WheelContact::WheelContact(const std::string& name)
   : ExternalForce(name)
 {
   mWheelRadius = 0.3;
   mSpringConstant = 0;
   mSpringDamping = 0;
   mFrictionCoeficient = 0.8;
-
-  mEnvironment = env;
 
   // FIXME??
   addSampleTime(SampleTime::PerTimestep);
@@ -30,6 +28,15 @@ WheelContact::WheelContact(const std::string& name, Environment* env)
 
 WheelContact::~WheelContact(void)
 {
+}
+
+bool
+WheelContact::init(void)
+{
+  mEnvironment = getEnvironment();
+  if (!mEnvironment)
+    return false;
+  return ExternalForce::init();
 }
 
 void
@@ -165,6 +172,11 @@ WheelContact::getGround(real_type t)
   OpenFDMAssert(frame);
   if (!frame)
     return;
+
+  // FIXME
+  if (!mEnvironment) {
+    mEnvironment = getEnvironment();
+  }
 
   // Get the position of the contact in the reference system.
   Vector3 pos = frame->posToRef(Vector3::zeros());

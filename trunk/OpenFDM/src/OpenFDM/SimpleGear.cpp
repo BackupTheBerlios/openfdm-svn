@@ -14,8 +14,8 @@
 
 namespace OpenFDM {
 
-SimpleGear::SimpleGear(const std::string& name, Environment* env)
-  : Contact(name, env)
+SimpleGear::SimpleGear(const std::string& name)
+  : Contact(name)
 {
   mSteeringAngle = 0;
   mBrake = 0;

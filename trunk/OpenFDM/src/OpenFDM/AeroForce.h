@@ -30,9 +30,10 @@ public:
     SideAxis = 5,
     LiftAxis = 6
   };
-  AeroForce(Environment* env, const std::string&);
+  AeroForce(const std::string&);
   virtual ~AeroForce(void);
 
+  virtual bool init(void);
   virtual void output(const TaskInfo&);
 
   void setPosition(const Vector3& p);
