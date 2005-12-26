@@ -14,8 +14,6 @@
 #include "Mass.h"
 #include "Joint.h"
 #include "MultiBodySystem.h"
-#include "Visitor.h"
-#include "ConstVisitor.h"
 #include "RigidBody.h"
 
 namespace OpenFDM {
@@ -28,18 +26,6 @@ RigidBody::RigidBody(const std::string& name) :
 
 RigidBody::~RigidBody(void)
 {
-}
-
-void
-RigidBody::accept(Visitor& visitor)
-{
-  visitor.apply(*this);
-}
-
-void
-RigidBody::accept(ConstVisitor& visitor) const
-{
-  visitor.apply(*this);
 }
 
 void
@@ -116,6 +102,8 @@ RigidBody::removeInteract(Interact* interact)
   for (it = mInteracts.begin(); it != mInteracts.end(); ++it) {
     if ((*it) == interact) {
       mInteracts.erase(it);
+      if (!interact->detachFrom(this))
+        return false;
       return true;
     }
   }

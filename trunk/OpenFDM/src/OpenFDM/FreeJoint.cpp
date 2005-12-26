@@ -18,7 +18,8 @@
 namespace OpenFDM {
 
 FreeJoint::FreeJoint(const std::string& name)
-  : Joint(name)
+  : Joint(name),
+    mFrame(new FreeFrame(name))
 {
   setNumContinousStates(13);
   addSampleTime(SampleTime::Continous);
@@ -47,10 +48,37 @@ FreeJoint::init(void)
     Log(Model,Error) << "Can not get rootFrame model!" << endl;
     return false;
   }
-  Frame* outboardFrame = getOutboardBody()->getFrame();
-  rootFrame->addChildFrame(outboardFrame);
+  recheckTopology();
 
   return Joint::init();
+}
+
+void
+FreeJoint::recheckTopology(void)
+{
+  // Hmm, works for the first cut, but rethink what happens with strange
+  // attach reattach sequences ...
+  RigidBody* rigidBody = getParentRigidBody(0);
+  if (!rigidBody)
+    return;
+  // check if already done
+  if (mFrame != rigidBody->getFrame())
+    rigidBody->setFrame(mFrame);
+
+  // Check if we are attached to some rigid body ...
+  rigidBody = getParentRigidBody(1);
+  if (rigidBody) {
+    Frame* frame = rigidBody->getFrame();
+    if (!frame->isParentFrame(mFrame))
+      frame->addChildFrame(mFrame);
+  } else {
+    Environment* environment = getEnvironment();
+    if (environment) {
+      Frame* rootFrame = environment->getRootFrame();
+      if (rootFrame)
+        rootFrame->addChildFrame(mFrame);
+    }
+  }
 }
 
 bool
@@ -64,11 +92,8 @@ Vector6
 FreeJoint::computeRelAccel(const SpatialInertia& artI,
                            const Vector6& artF)
 {
-  RigidBody* topBody = getOutboardBody();
-  if (!topBody)
-    return Vector6::zeros();
-
-  FreeFrame* frame = topBody->getFreeFrame();
+  RigidBody* topBody = getParentRigidBody(0);
+  OpenFDMAssert(topBody);
 
   Log(ArtBody, Debug) << "FreeJoint::computeRelAccel():\n" << artI << endl;
 
@@ -76,17 +101,17 @@ FreeJoint::computeRelAccel(const SpatialInertia& artI,
   // center of mass. That means gravity could be considered equal for the whole
   // vehicle.
   // See Featherstone, Orin: Equations and Algorithms
-  Vector3 ga = mGravity->gravityAccel(frame->getRefPosition());
-  Vector6 grav = Vector6(Vector3::zeros(), frame->rotFromRef(ga));
+  Vector3 ga = mGravity->gravityAccel(mFrame->getRefPosition());
+  Vector6 grav = Vector6(Vector3::zeros(), mFrame->rotFromRef(ga));
 
   Log(ArtBody, Debug) << "grav = " << trans(grav) << endl;
   Log(ArtBody, Debug) << "solve = " << trans(solve(artI, artF)) << endl;
-  Log(ArtBody, Debug) << "parent spatial accel = " << trans(frame->getParentSpAccel()) << endl;
+  Log(ArtBody, Debug) << "parent spatial accel = " << trans(mFrame->getParentSpAccel()) << endl;
   Log(ArtBody, Debug) << "Hdot = " << trans(getHdot()) << endl;
   
 
   Vector6 accel = grav - solve(artI, artF)
-    - frame->getParentSpAccel() - getHdot();
+    - mFrame->getParentSpAccel() - getHdot();
   return accel;
 }
 
@@ -103,22 +128,18 @@ FreeJoint::setState(const Vector& state, unsigned offset)
 void
 FreeJoint::getState(Vector& state, unsigned offset) const
 {
-  const RigidBody* topBody = getParentRigidBody(0);
-  if (!topBody)
-    return;
-  const Frame* frame = topBody->getFrame();
-  Quaternion q = frame->getOrientation();
+  Quaternion q = mFrame->getOrientation();
   state(offset+1) = q(1);
   state(offset+2) = q(2);
   state(offset+3) = q(3);
   state(offset+4) = q(4);
   
-  Vector3 p = frame->getPosition();
+  Vector3 p = mFrame->getPosition();
   state(offset+5) = p(1);
   state(offset+6) = p(2);
   state(offset+7) = p(3);
   
-  Vector6 v = frame->getRelVel();
+  Vector6 v = mFrame->getRelVel();
   state(offset+8) = v(1);
   state(offset+9) = v(2);
   state(offset+10) = v(3);
@@ -130,13 +151,9 @@ FreeJoint::getState(Vector& state, unsigned offset) const
 void
 FreeJoint::getStateDeriv(Vector& state, unsigned offset)
 {
-  RigidBody* topBody = getOutboardBody();
-  if (!topBody)
-    return;
-  FreeFrame* frame = topBody->getFreeFrame();
-  Quaternion q = frame->getOrientation();
-  Vector3 angVel = frame->getRelVel().getAngular();
-  Vector3 vel = frame->rotToParent(frame->getRelVel().getLinear());
+  Quaternion q = mFrame->getOrientation();
+  Vector3 angVel = mFrame->getRelVel().getAngular();
+  Vector3 vel = mFrame->rotToParent(mFrame->getRelVel().getLinear());
 
   // Compute the derivative term originating from the angular velocity.
   // Correction term to keep the quaternion normalized.
@@ -152,7 +169,7 @@ FreeJoint::getStateDeriv(Vector& state, unsigned offset)
   state(offset+6) = vel(2);
   state(offset+7) = vel(3);
   
-  Vector6 accel = frame->getRelAccel();
+  Vector6 accel = mFrame->getRelAccel();
   state(offset+8)  = accel(1);
   state(offset+9)  = accel(2);
   state(offset+10) = accel(3);

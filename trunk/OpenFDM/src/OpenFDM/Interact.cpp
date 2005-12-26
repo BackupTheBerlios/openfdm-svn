@@ -45,6 +45,7 @@ Interact::attachTo(RigidBody* rigidBody)
   for (it = mParents.begin(); it != mParents.end(); ++it) {
     if ((*it) == 0) {
       (*it) = rigidBody;
+      recheckTopology();
       return true;
     }
   }
@@ -67,6 +68,7 @@ Interact::detachFrom(RigidBody* rigidBody)
   for (it = mParents.begin(); it != mParents.end(); ++it) {
     if ((*it) == rigidBody) {
       (*it) = 0;
+      recheckTopology();
       return true;
     }
   }

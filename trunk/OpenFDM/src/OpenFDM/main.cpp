@@ -408,7 +408,7 @@ public:
 
     std::list<XMLElement::const_pointer>::iterator it = rigidBodies.begin();
     while (it != rigidBodies.end()) {
-      RigidBody* rigidBody = new RigidBody();
+      RigidBody* rigidBody = new RigidBody("rigid body");
       rigidBody->setName((*it)->getAttribute("Name"));
       
 //       if (mVehicle->getRigidBody((*it)->getAttribute("Name")))
@@ -554,25 +554,6 @@ public:
   
 } // namespace OpenFDM
 
-class StatePrintVisitor
-  : public ConstVisitor {
-public:
-  StatePrintVisitor(void) : _indent(3) {}
-  virtual ~StatePrintVisitor(void) {}
-  virtual void apply(const Frame& group)
-  {
-    std::cout << std::setw(_indent) << ""
-              << "Traversing \""
-              << group.getName() << "\", "
-              << endl;
-    _indent += 3;
-    traverse(group);
-    _indent -= 3;
-  }
-private:
-  unsigned _indent;
-};
-
 void printVehicle(Vehicle* vehicle)
 {
   cout << "T = " << vehicle->getTime()
@@ -580,8 +561,6 @@ void printVehicle(Vehicle* vehicle)
 //        << ", Or: " << vehicle->getGeodOrientation()
        << endl;
 
-  StatePrintVisitor spv;
-  vehicle->getTopBody()->accept(spv);
 }
 
 int main(int argc, char *argv[])

@@ -36,6 +36,10 @@ private:
   bool attachTo(RigidBody* rigidBody);
   bool detachFrom(RigidBody* rigidBody);
 
+  /// Called whenever the local topology chages, use to manage frames with this
+  /// interact
+  virtual void recheckTopology(void) {}
+
   friend class RigidBody;
 
 public:
@@ -50,6 +54,14 @@ public:
     OpenFDMAssert(id < mParents.size());
     return mParents[id];
   }
+  void swapParents(void)
+  {
+    OpenFDMAssert(2 == mParents.size());
+    WeakPtr<RigidBody> rigidBody = mParents[0];
+    mParents[0] = mParents[1];
+    mParents[1] = rigidBody;
+  }
+
 
   virtual void interactWith(RigidBody* rigidBody) = 0;
 

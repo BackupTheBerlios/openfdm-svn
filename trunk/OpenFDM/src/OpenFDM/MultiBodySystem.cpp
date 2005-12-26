@@ -18,9 +18,8 @@
 
 namespace OpenFDM {
 
-MultiBodySystem::MultiBodySystem(RootFrame* rootFrame) :
-  ModelGroup("multibodymodel"),
-  mRootFrame(rootFrame)
+MultiBodySystem::MultiBodySystem(const std::string& name) :
+  ModelGroup(name)
 {
   // FIXME
   addSampleTime(SampleTime::PerTimestep);

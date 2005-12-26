@@ -21,10 +21,28 @@ namespace OpenFDM {
 class FreeJoint
   : public Joint {
 public:
-  FreeJoint(const std::string& name = std::string());
+  FreeJoint(const std::string& name);
   virtual ~FreeJoint(void);
 
   virtual bool init(void);
+
+  const Vector3& getInitialPosition(void) const
+  { return mInitialPosition; }
+  void setInitialPosition(const Vector3& pos)
+  { mInitialPosition = pos; }
+
+  const Quaternion& getInitialOrientation(void) const
+  { return mInitialOrientation; }
+  void setInitialOrientation(const Quaternion& orientation)
+  { mInitialOrientation = orientation; }
+
+  const Vector6& getInitialVel(void) const
+  { return mInitialVel; }
+  void setInitialVel(const Vector6& vel)
+  { mInitialVel = vel; }
+
+  virtual void recheckTopology(void);
+
 
   /// HACK
   virtual bool isArticulatedJoint(void) const
@@ -39,47 +57,37 @@ public:
   { return getParentFrame(0); }
   virtual RigidBody* getOutboardBody(void)
   { return getParentRigidBody(0); }
+  virtual RigidBody* getInboardBody(void)
+  { return 0; }
 
   /** Set the relative velocity.
    */
   void setRelVel(const Vector6& vel)
-  { Joint::setOutboardRelVel(vel); }
+  { mFrame->setRelVel(vel); }
   /** Set the relative velocity.
    */
   void setLinearRelVel(const Vector3& vel)
   {
-    FreeFrame* topBody = getOutboardBody()->getFreeFrame();
-    if (!topBody)
-      return;
-    topBody->setLinearRelVel(vel);
+    mFrame->setLinearRelVel(vel);
   }
   /** Set the relative velocity.
    */
   void setAngularRelVel(const Vector3& vel)
   {
-    FreeFrame* topBody = getOutboardBody()->getFreeFrame();
-    if (!topBody)
-      return;
-    topBody->setAngularRelVel(vel);
+    mFrame->setAngularRelVel(vel);
   }
 
   /** Set the reference position.
    */
   void setRefPosition(const Vector3& p)
   {
-    FreeFrame* topBody = getOutboardBody()->getFreeFrame();
-    if (!topBody)
-      return;
-    topBody->setRefPosition(p);
+    mFrame->setRefPosition(p);
   }
   /** Set the reference orientation.
    */
   void setRefOrientation(const Quaternion& o)
   {
-    FreeFrame* topBody = getOutboardBody()->getFreeFrame();
-    if (!topBody)
-      return;
-    topBody->setRefOrientation(o);
+    mFrame->setRefOrientation(o);
   }
 
 private:
@@ -102,9 +110,17 @@ private:
    */
   virtual void getStateDeriv(Vector& state, unsigned offset);
 
-  /** Reference to the vehicles environment.
-   */
+  /// The initial states which are used for the first guess
+  Vector3 mInitialPosition;
+  Quaternion mInitialOrientation;
+  Vector6 mInitialVel;
+
+  /// The commonly used gravity model from the environment class
+  /// It is initialized at the init() call
   SharedPtr<const Gravity> mGravity;
+
+  /// The frame of the mobile root
+  SharedPtr<FreeFrame> mFrame;
 };
 
 } // namespace OpenFDM

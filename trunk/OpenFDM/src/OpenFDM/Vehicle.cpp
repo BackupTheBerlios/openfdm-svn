@@ -9,7 +9,6 @@
 #include "Force.h"
 #include "RigidBody.h"
 #include "FreeJoint.h"
-#include "RootFrame.h"
 #include "Planet.h"
 #include "Wind.h"
 #include "ExplicitEuler.h"
@@ -26,13 +25,7 @@ namespace OpenFDM {
 
 Vehicle::Vehicle(void)
 {
-  // The Planet centered frame is used by the others!
-  mRootFrame = new RootFrame("Planet centered frame");
-  Vector3 earthRotation(0.0, 0.0, pi2/(60*60*24));
-  mRootFrame->setAngularRelVel(earthRotation);
-
   mTopBody = new RigidBody("Topmost rigid body");
-  mRootFrame->addChildFrame(mTopBody->getFrame());
 
   mFreeJoint = new FreeJoint("Mobile vehicle base");
   mTopBody->addInteract(mFreeJoint);
@@ -41,7 +34,7 @@ Vehicle::Vehicle(void)
 
   mModelGroup = new ModelGroup("Flight Control System");
 
-  mMultiBodySystem = new MultiBodySystem(mRootFrame);
+  mMultiBodySystem = new MultiBodySystem("Multi Body System");
   mMultiBodySystem->addRigidBody(mTopBody);
 
 //   mSystem->setTimestepper(new ExplicitAdams);

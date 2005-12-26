@@ -32,13 +32,10 @@ public:
 
   /** Constructor.
    */
-  RigidBody(const std::string& name = std::string());
+  RigidBody(const std::string& name);
   /** Destructor.
    */
   virtual ~RigidBody(void);
-
-  virtual void accept(Visitor& visitor);
-  virtual void accept(ConstVisitor& visitor) const;
 
 
 // protected:
@@ -99,13 +96,15 @@ public:
 
   /** Introduce an interface routine
    */
+  void setFrame(Frame* frame)
+  {
+    // take over all children
+    frame->reparentChildren(mFrame);
+    mFrame = frame;
+  }
   Frame* getFrame(void)
   { return mFrame; }
   const Frame* getFrame(void) const
-  { return mFrame; }
-  FreeFrame* getFreeFrame(void)
-  { return mFrame; }
-  const FreeFrame* getFreeFrame(void) const
   { return mFrame; }
 
   void setParentMultiBodySystem(MultiBodySystem* multiBodySystem);
@@ -125,8 +124,7 @@ private:
 //   SpatialInertia mLocalInertia;
 
   /// Frame attached to this rigid body
-//   SharedPtr<Frame> mFrame;
-  SharedPtr<FreeFrame> mFrame;
+  SharedPtr<Frame> mFrame;
 
   typedef std::vector<SharedPtr<Interact> > InteractList;
   InteractList mInteracts;

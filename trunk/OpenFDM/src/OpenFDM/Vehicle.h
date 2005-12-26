@@ -125,7 +125,6 @@ public:
 private:
   SharedPtr<RigidBody> mTopBody;
   SharedPtr<FreeJoint> mFreeJoint;
-  SharedPtr<RootFrame> mRootFrame;
   SharedPtr<MultiBodySystem> mMultiBodySystem;
 
   SharedPtr<ModelGroup> mModelGroup;

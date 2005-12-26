@@ -23,7 +23,7 @@ namespace OpenFDM {
 class MultiBodySystem :
     public ModelGroup {
 public:
-  MultiBodySystem(RootFrame* rootFrame);
+  MultiBodySystem(const std::string& name);
   virtual ~MultiBodySystem(void);
 
   /// Double dispatch helper for the multibody system visitor
@@ -42,11 +42,6 @@ public:
   void addInteract(Interact* interact);
   void removeInteract(Interact* interact);
 private:
-  /// At the moment each MultiBodySystem has its own root frame,
-  /// In the future just store the root joint and reference a common root frame
-  /// move that to environment
-  SharedPtr<RootFrame> mRootFrame;
-
   /// That is the root for now ...
   SharedPtr<FreeJoint> mFreeJoint;
 

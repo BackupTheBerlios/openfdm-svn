@@ -114,6 +114,20 @@ public:
       return getParentRigidBody(0);
     return 0;
   }
+  virtual RigidBody* getInboardBody(void)
+  {
+    const Frame* parent0 = getParentFrame(0);
+    if (!parent0)
+      return 0;
+    const Frame* parent1 = getParentFrame(1);
+    if (!parent1)
+      return 0;
+    if (parent1->isParentFrame(parent0))
+      return getParentRigidBody(0);
+    if (parent0->isParentFrame(parent1))
+      return getParentRigidBody(1);
+    return 0;
+  }
 
   virtual void interactWith(RigidBody* rigidBody)
   {
@@ -121,7 +135,7 @@ public:
     if (!isArticulatedJoint())
       return;
 
-    if (rigidBody->getFrame() != getInboardGroup())
+    if (rigidBody != getInboardBody())
       return;
 
     getOutboardBody()->computeArtValues();
@@ -134,10 +148,11 @@ public:
 
   bool contributeArticulation(SpatialInertia& artI, Vector6& artF)
   {
-    Frame* frame = getOutboardGroup();
     RigidBody* outboardBody = getOutboardBody();
     if (!outboardBody)
       return false;
+
+    Frame* frame = outboardBody->getFrame();
 
     Log(ArtBody, Debug) << "Contributing articulation from \""
                         << outboardBody->getName() << "\" through joint \""
