@@ -97,13 +97,16 @@ RigidBody::getParentMultiBodySystem(void)
   return mParentMultiBodySystem;
 }
 
-void
+bool
 RigidBody::addInteract(Interact* interact)
 {
   mInteracts.push_back(interact);
+  if (!interact->attachTo(this))
+    return false;
   if (!mParentMultiBodySystem)
-    return;
+    return true;
   mParentMultiBodySystem->addInteract(interact);
+  return true;
 }
 
 bool
@@ -117,12 +120,6 @@ RigidBody::removeInteract(Interact* interact)
     }
   }
   return false;
-}
-
-bool
-RigidBody::addInteract2(Interact* child, unsigned parentNum)
-{
-  child->attachTo(this);
 }
 
 } // namespace OpenFDM

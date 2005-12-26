@@ -38,8 +38,8 @@ Vehicle::Vehicle(void)
   mRootFrame->addChildFrame(mTopBody->getFrame());
 
   mFreeJoint = new FreeJoint(mEnvironment, "Mobile vehicle base");
-  mRootFrame->addInteract2(mFreeJoint, 1);
-  mTopBody->addInteract2(mFreeJoint);
+//   mRootFrame->addInteract(mFreeJoint);
+  mTopBody->addInteract(mFreeJoint);
 
   mSystem = new System("Top Vehicle System");
 

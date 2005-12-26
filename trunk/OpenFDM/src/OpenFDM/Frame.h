@@ -94,17 +94,6 @@ public:
   { return mChildFrames.size(); }
 
 
-
-
-  //////////////////
-
-  /// FIXME should vanish
-  virtual bool addInteract2(Interact* child, unsigned parentNum = 0)
-  { return false; }
-
-  //////////////////
-
-
   // Return the current frames frame id.
   frameid_type getFrameId(void) const
   { return this; }

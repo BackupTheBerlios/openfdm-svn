@@ -108,16 +108,13 @@ public:
   const FreeFrame* getFreeFrame(void) const
   { return mFrame; }
 
-  /// FIXME remove
-  virtual bool addInteract2(Interact* child, unsigned parentNum = 0);
-
   void setParentMultiBodySystem(MultiBodySystem* multiBodySystem);
   MultiBodySystem* getParentMultiBodySystem(void);
 
-private:
-  void addInteract(Interact* interact);
+  bool addInteract(Interact* interact);
   bool removeInteract(Interact* interact);
 
+private:
   /// Outboard articulated inertia
   SpatialInertia mArtInertia;
 

@@ -90,7 +90,7 @@ LegacyJSBSimReader::loadAircraft(const std::string& acFileName)
   // Allocate a new vehicle
   mVehicle = new Vehicle;
   mAeroForce = new AeroForce(mVehicle->getEnvironment(), "Aerodynamic force");
-  mVehicle->getTopBody()->addInteract2(mAeroForce);
+  mVehicle->getTopBody()->addInteract(mAeroForce);
   // Default discrete stepsize of JSBSim
   mVehicle->getModelGroup()->addSampleTime(SampleTime(1.0/120));
 
@@ -707,7 +707,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
     spi += inertiaFrom(structToBody(it->first), inertia);
     ++it;
   }
-  mVehicle->getTopBody()->addInteract2(new Mass(spi));
+  mVehicle->getTopBody()->addInteract(new Mass(spi));
 
   // Attach the eye point.
   FreeFrame* epFrame = new FreeFrame("Eyepoint Frame");
@@ -718,8 +718,8 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   accelSensor->addSampleTime(SampleTime(1.0/120));
   Port* port = accelSensor->getOutputPort("nz");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
-//   epFrame->addInteract2(accelSensor);
-  mVehicle->getTopBody()->addInteract2(accelSensor);
+//   epFrame->addInteract(accelSensor);
+  mVehicle->getTopBody()->addInteract(accelSensor);
   mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
   addOutputModel(port, "Normalized load value", "/accelerations/nlf");
 
@@ -738,13 +738,13 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
 {
   RigidBody* wheel = new RigidBody(name + " Wheel");
   InertiaMatrix wheelInertia(10, 0, 0, 100, 0, 10);
-  wheel->addInteract2(new Mass(SpatialInertia(wheelInertia, 50)));
+  wheel->addInteract(new Mass(SpatialInertia(wheelInertia, 50)));
   parent->getFrame()->addChildFrame(wheel->getFrame());
   mVehicle->getMultiBodySystem()->addRigidBody(wheel);
   
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
-  parent->addInteract2(wj, 0);
-  wheel->addInteract2(wj, 1);
+  parent->addInteract(wj);
+  wheel->addInteract(wj);
   wj->setJointAxis(Vector3(0, 1, 0));
   wj->setPosition(pos);
   wj->setOrientation(Quaternion::unit());
@@ -769,7 +769,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   wc->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
   wc->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
   wc->setFrictionCoeficient(0.9);
-  wheel->addInteract2(wc);
+  wheel->addInteract(wc);
   
   Port* port = wj->getOutputPort(0);
   std::string nameBase = "Wheel " + numStr + " Position";
@@ -822,7 +822,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         sc->setSpringDamping(convertFrom(uPoundForcePFt, d));
         sc->setFrictionCoeficient(0.1*fs);
         
-        mVehicle->getTopBody()->addInteract2(sc);
+        mVehicle->getTopBody()->addInteract(sc);
 
       } else {
         // For jsbsim use simple gears
@@ -880,7 +880,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
           sg->getInputPort("brakeCommand")->connect(port);
         }
         
-        mVehicle->getTopBody()->addInteract2(sg);
+        mVehicle->getTopBody()->addInteract(sg);
       }
       
     } else if (uctype == "AC_LAUNCHBAR") {
@@ -929,12 +929,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       RigidBody* arm = new RigidBody(name + " Arm");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
       mVehicle->getTopBody()->getFrame()->addChildFrame(arm->getFrame());
-      arm->addInteract2(new Mass(inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
+      arm->addInteract(new Mass(inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
 
       // Connect that with a revolute joint to the main body
       RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
-      mVehicle->getTopBody()->addInteract2(rj, 0);
-      arm->addInteract2(rj, 1);
+      mVehicle->getTopBody()->addInteract(rj);
+      arm->addInteract(rj);
       rj->setJointAxis(Vector3(0, 1, 0));
       rj->setJointPos(0);
       rj->setJointVel(0);
@@ -1009,8 +1009,8 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         // Note the 0.05m below, most steering wheels have some kind of
         // castering auto line up behavour. That is doe with this 0.05m.
         RevoluteJoint* sj = new RevoluteJoint(name + " Steer Joint");
-        strutParent->addInteract2(sj, 0);
-        steer->addInteract2(sj, 1);
+        strutParent->addInteract(sj);
+        steer->addInteract(sj);
         sj->setJointAxis(Vector3(0, 0, 1));
         sj->setJointPos(0);
         sj->setJointVel(0);
@@ -1047,12 +1047,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       RigidBody* arm = new RigidBody(name + " Strut");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
       strutParent->getFrame()->addChildFrame(arm->getFrame());
-      arm->addInteract2(new Mass(inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
+      arm->addInteract(new Mass(inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
 
       // This time it is a prismatic joint
       PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
-      strutParent->addInteract2(pj, 0);
-      arm->addInteract2(pj, 1);
+      strutParent->addInteract(pj);
+      arm->addInteract(pj);
       pj->setJointAxis(Vector3(0, 0, -1));
       if (strutParent == mVehicle->getTopBody())
         pj->setPosition(structToBody(compressJointPos));
@@ -1101,7 +1101,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       sc->setSpringDamping(convertFrom(uPoundForcePFt, d));
       sc->setFrictionCoeficient(fs);
 
-      mVehicle->getTopBody()->addInteract2(sc);
+      mVehicle->getTopBody()->addInteract(sc);
     }
   }
 
@@ -1855,7 +1855,7 @@ LegacyJSBSimReader::convertEngine(const std::string& data,
   std::string throttlename = "fcs/throttle-cmd-norm[" + number + "]";
   engineForce->getInputPort(0)->connect(lookupJSBExpression(throttlename));
 
-  mVehicle->getTopBody()->addInteract2(engineForce);
+  mVehicle->getTopBody()->addInteract(engineForce);
 
   return true;
 }

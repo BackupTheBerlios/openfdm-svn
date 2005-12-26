@@ -32,8 +32,13 @@ public:
   /// Double dispatch helper for the multibody system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
+private:
   bool attachTo(RigidBody* rigidBody);
   bool detachFrom(RigidBody* rigidBody);
+
+  friend class RigidBody;
+
+public:
 
   const RigidBody* getParentRigidBody(unsigned id = 0) const
   {
