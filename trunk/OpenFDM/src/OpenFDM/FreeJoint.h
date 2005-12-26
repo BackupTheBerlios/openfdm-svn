@@ -35,6 +35,8 @@ public:
   { return getParentFrame(0); }
   virtual const Frame* getOutboardGroup(void) const
   { return getParentFrame(0); }
+  virtual RigidBody* getOutboardBody(void)
+  { return getParentRigidBody(0); }
 
   /** Set the relative velocity.
    */
@@ -44,7 +46,7 @@ public:
    */
   void setLinearRelVel(const Vector3& vel)
   {
-    RigidBody* topBody = getOutboardGroup()->toRigidBody();
+    FreeFrame* topBody = getOutboardBody()->getFreeFrame();
     if (!topBody)
       return;
     topBody->setLinearRelVel(vel);
@@ -53,7 +55,7 @@ public:
    */
   void setAngularRelVel(const Vector3& vel)
   {
-    RigidBody* topBody = getOutboardGroup()->toRigidBody();
+    FreeFrame* topBody = getOutboardBody()->getFreeFrame();
     if (!topBody)
       return;
     topBody->setAngularRelVel(vel);
@@ -63,7 +65,7 @@ public:
    */
   void setRefPosition(const Vector3& p)
   {
-    RigidBody* topBody = getOutboardGroup()->toRigidBody();
+    FreeFrame* topBody = getOutboardBody()->getFreeFrame();
     if (!topBody)
       return;
     topBody->setRefPosition(p);
@@ -72,7 +74,7 @@ public:
    */
   void setRefOrientation(const Quaternion& o)
   {
-    RigidBody* topBody = getOutboardGroup()->toRigidBody();
+    FreeFrame* topBody = getOutboardBody()->getFreeFrame();
     if (!topBody)
       return;
     topBody->setRefOrientation(o);

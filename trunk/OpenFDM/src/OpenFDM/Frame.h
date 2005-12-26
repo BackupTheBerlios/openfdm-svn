@@ -22,6 +22,7 @@
 namespace OpenFDM {
 
 class RigidBody;
+class Joint;
 class Interact;
 
 class Visitor;
@@ -64,11 +65,6 @@ public:
   virtual void accept(ConstVisitor& visitor) const;
   /// Double dispatch helper for the multibody system visitor
   virtual void traverse(ConstVisitor& visitor) const;
-
-  /// Cast to a RigidBody Object if it is one.
-  virtual RigidBody* toRigidBody(void);
-  /// Cast to a const RigidBody Object if it is one.
-  virtual const RigidBody* toRigidBody(void) const;
 
   /// Return the parent frame.
   Frame* getParentFrame(void)
@@ -496,6 +492,7 @@ protected:
   { mDisableSpAccel = true; }
   void enableAccel(void)
   { mDisableSpAccel = false; }
+  friend class Joint; /// FIXME
 
   void computePositionDep(void) const;
   void computeVelocityDep(void) const;

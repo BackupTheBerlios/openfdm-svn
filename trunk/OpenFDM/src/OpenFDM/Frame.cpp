@@ -77,18 +77,6 @@ Frame::traverse(ConstVisitor& visitor) const
   }
 }
 
-RigidBody*
-Frame::toRigidBody(void)
-{
-  return 0;
-}
-
-const RigidBody*
-Frame::toRigidBody(void) const
-{
-  return 0;
-}
-
 bool
 Frame::addChildFrame(Frame* child)
 {

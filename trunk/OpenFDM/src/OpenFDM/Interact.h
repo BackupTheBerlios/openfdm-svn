@@ -35,10 +35,23 @@ public:
   bool attachTo(RigidBody* rigidBody);
   bool detachFrom(RigidBody* rigidBody);
 
+  const RigidBody* getParentRigidBody(unsigned id = 0) const
+  {
+    OpenFDMAssert(id < mParents.size());
+    return mParents[id];
+  }
+  RigidBody* getParentRigidBody(unsigned id = 0)
+  {
+    OpenFDMAssert(id < mParents.size());
+    return mParents[id];
+  }
+
   virtual void interactWith(RigidBody* rigidBody) = 0;
 
+
+
   /// FIXME: hmm
-  virtual bool updateAccels() { return true; }
+  virtual bool updateAccels(RigidBody*) { return true; }
 
   /// FIXME remove
   const Frame* getParentFrame(unsigned id = 0) const

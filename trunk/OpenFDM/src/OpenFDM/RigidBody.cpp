@@ -21,24 +21,13 @@
 namespace OpenFDM {
 
 RigidBody::RigidBody(const std::string& name) :
-  Frame(name)
+  Object(name),
+  mFrame(new FreeFrame(name))
 {
 }
 
 RigidBody::~RigidBody(void)
 {
-}
-
-RigidBody*
-RigidBody::toRigidBody(void)
-{
-  return this;
-}
-
-const RigidBody*
-RigidBody::toRigidBody(void) const
-{
-  return this;
 }
 
 void
@@ -81,8 +70,9 @@ RigidBody::computeAccel(void)
 
   // Update all accelerations, Hmm, is a bit too croase that way ...
   InteractList::iterator it;
-  for (it = mInteracts.begin(); it != mInteracts.end(); ++it)
-    (*it)->updateAccels();
+  for (it = mInteracts.begin(); it != mInteracts.end(); ++it) {
+    (*it)->updateAccels(this);
+  }
 
   Log(ArtBody, Debug3) << "On exit of computeAccel of \"" << getName()
                        << "\"" << endl;

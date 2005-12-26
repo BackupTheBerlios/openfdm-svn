@@ -35,7 +35,7 @@ Vehicle::Vehicle(void)
   mRootFrame->setAngularRelVel(earthRotation);
 
   mTopBody = new RigidBody("Topmost rigid body");
-  mRootFrame->addChildFrame(mTopBody);
+  mRootFrame->addChildFrame(mTopBody->getFrame());
 
   mFreeJoint = new FreeJoint(mEnvironment, "Mobile vehicle base");
   mRootFrame->addInteract2(mFreeJoint, 1);
@@ -114,7 +114,7 @@ Vehicle::setWind(Wind* w)
 Vector3
 Vehicle::getCartPosition(void) const
 {
-  return mTopBody->getRefPosition();/*FIXME*/
+  return mTopBody->getFrame()->getRefPosition();/*FIXME*/
 }
 
 void
@@ -150,7 +150,7 @@ Vehicle::setGeocPosition(const Geocentric& geoc)
 Quaternion
 Vehicle::getCartOrientation(void) const
 {
-  return mTopBody->getRefOrientation();/*FIXME*/
+  return mTopBody->getFrame()->getRefOrientation();/*FIXME*/
 }
 
 void

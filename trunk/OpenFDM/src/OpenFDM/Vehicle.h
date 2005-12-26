@@ -103,7 +103,7 @@ public:
 
   // FIXME
   Vector6 getVelocity(void) const
-  { return mTopBody->getRelVel(); }
+  { return mTopBody->getFrame()->getRelVel(); }
   real_type getRadius(void) const
   { return 15; }
   real_type getTime(void) const

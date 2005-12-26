@@ -14,6 +14,7 @@
 #include "Frame.h"
 #include "RigidBody.h"
 #include "Joint.h"
+#include "FreeJoint.h"
 #include "RootFrame.h"
 #include "ModelGroup.h"
 
@@ -43,7 +44,11 @@ public:
 private:
   /// At the moment each MultiBodySystem has its own root frame,
   /// In the future just store the root joint and reference a common root frame
+  /// move that to environment
   SharedPtr<RootFrame> mRootFrame;
+
+  /// That is the root for now ...
+  SharedPtr<FreeJoint> mFreeJoint;
 
   /// A list of RigidBody objects in this MultiBodySystem
   typedef std::vector<SharedPtr<RigidBody> > RigidBodyList;

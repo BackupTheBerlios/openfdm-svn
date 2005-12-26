@@ -96,6 +96,20 @@ public:
       return parent0;
     return 0;
   }
+  virtual RigidBody* getOutboardBody(void)
+  {
+    Frame* parent0 = getParentFrame(0);
+    if (!parent0)
+      return 0;
+    Frame* parent1 = getParentFrame(1);
+    if (!parent1)
+      return 0;
+    if (parent1->isParentFrame(parent0))
+      return getParentRigidBody(1);
+    if (parent0->isParentFrame(parent1))
+      return getParentRigidBody(0);
+    return 0;
+  }
 
   virtual void interactWith(RigidBody* rigidBody)
   {
@@ -106,6 +120,7 @@ public:
     if (rigidBody->getFrame() != getInboardGroup())
       return;
 
+    getOutboardBody()->computeArtValues();
     SpatialInertia artI = SpatialInertia::zeros();
     Vector6 artF = Vector6::zeros();
     contributeArticulation(artI, artF);
@@ -115,7 +130,8 @@ public:
 
   bool contributeArticulation(SpatialInertia& artI, Vector6& artF)
   {
-    RigidBody* outboardBody = getOutboardGroup()->toRigidBody();
+    Frame* frame = getOutboardGroup();
+    RigidBody* outboardBody = getOutboardBody();
     if (!outboardBody)
       return false;
 
@@ -141,8 +157,8 @@ public:
                          << "\nInertia\n" << I << endl;
 
     // Contribute the transformed values to the parent.
-    artI += outboardBody->inertiaToParent(I);
-    artF += outboardBody->forceToParent(F);
+    artI += frame->inertiaToParent(I);
+    artF += frame->forceToParent(F);
 
     return true;
   }
@@ -156,23 +172,26 @@ public:
   // FIXME: just for compatibility
   Vector6 getHdot()
   {
-    RigidBody* outboardBody = getOutboardGroup()->toRigidBody();
-    if (!outboardBody)
-      return Vector6::zeros();
-    return outboardBody->getHdot();
+    Frame* frame = getOutboardGroup();
+    return frame->getHdot();
   }
 
   //???
-  bool updateAccels(void)
+  bool updateAccels(RigidBody* rigidBody)
   {
-    RigidBody* outboardBody = getOutboardGroup()->toRigidBody();
+    RigidBody* outboardBody = getOutboardBody();
     if (!outboardBody)
+      return false;
+
+    if (outboardBody == rigidBody)
       return false;
 
     // Set the local acceleration
     setOutboardRelAccel(computeRelAccel(outboardBody->getArtInertia(),
                                         outboardBody->getArtForce()));
     
+    outboardBody->computeAccel();
+
     return true;
   }
 
@@ -184,51 +203,56 @@ protected:
   void setOutboardState(const Vector3& pos, const Quaternion& orient,
                         const Vector6& vel)
   {
-    RigidBody* outboardBody = getOutboardGroup()->toRigidBody();
-    if (!outboardBody)
+    Frame* frame0 = getOutboardGroup();
+    FreeFrame* frame = dynamic_cast<FreeFrame*>(frame0);
+    if (!frame)
       return;
 
-    outboardBody->disableAccel();
-    outboardBody->setPosition(pos);
-    outboardBody->setOrientation(orient);
-    outboardBody->setRelVel(vel);
+    frame->disableAccel();
+    frame->setPosition(pos);
+    frame->setOrientation(orient);
+    frame->setRelVel(vel);
   }
 
   void setOutboardPosition(const Vector3& pos)
   {
-    RigidBody* outboardBody = getOutboardGroup()->toRigidBody();
-    if (!outboardBody)
+    Frame* frame0 = getOutboardGroup();
+    FreeFrame* frame = dynamic_cast<FreeFrame*>(frame0);
+    if (!frame)
       return;
 
-    outboardBody->disableAccel();
-    outboardBody->setPosition(pos);
+    frame->disableAccel();
+    frame->setPosition(pos);
   }
   void setOutboardOrientation(const Quaternion& orient)
   {
-    RigidBody* outboardBody = getOutboardGroup()->toRigidBody();
-    if (!outboardBody)
+    Frame* frame0 = getOutboardGroup();
+    FreeFrame* frame = dynamic_cast<FreeFrame*>(frame0);
+    if (!frame)
       return;
 
-    outboardBody->disableAccel();
-    outboardBody->setOrientation(orient);
+    frame->disableAccel();
+    frame->setOrientation(orient);
   }
   void setOutboardRelVel(const Vector6& vel)
   {
-    RigidBody* outboardBody = getOutboardGroup()->toRigidBody();
-    if (!outboardBody)
+    Frame* frame0 = getOutboardGroup();
+    FreeFrame* frame = dynamic_cast<FreeFrame*>(frame0);
+    if (!frame)
       return;
 
-    outboardBody->disableAccel();
-    outboardBody->setRelVel(vel);
+    frame->disableAccel();
+    frame->setRelVel(vel);
   }
   void setOutboardRelAccel(const Vector6& accel)
   {
-    RigidBody* outboardBody = getOutboardGroup()->toRigidBody();
-    if (!outboardBody)
+    Frame* frame0 = getOutboardGroup();
+    FreeFrame* frame = dynamic_cast<FreeFrame*>(frame0);
+    if (!frame)
       return;
 
-    outboardBody->enableAccel();
-    outboardBody->setRelAccel(accel);
+    frame->enableAccel();
+    frame->setRelAccel(accel);
   }
 };
 

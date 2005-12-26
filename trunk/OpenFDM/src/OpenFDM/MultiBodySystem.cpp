@@ -18,30 +18,6 @@
 
 namespace OpenFDM {
 
-class ForwardDynamicsVisitor
-  : public Visitor {
-public:
-  virtual void apply(RigidBody& body)
-  {
-    // Note the order. First compute the articulated values on each child.
-    traverse(body);
-    // Past that, do it on this current rigid body.
-    body.computeArtValues();
-  }
-};
-
-class AccelerationPropagationVisitor
-  : public Visitor {
-public:
-  virtual void apply(RigidBody& body)
-  {
-    body.computeAccel();
-    // Note the order. First compute the acceleration and than traverse
-    // to the children.
-    traverse(body);
-  }
-};
-
 MultiBodySystem::MultiBodySystem(RootFrame* rootFrame) :
   ModelGroup("multibodymodel"),
   mRootFrame(rootFrame)
@@ -81,12 +57,9 @@ MultiBodySystem::output(const TaskInfo& taskInfo)
   }
 
   // Compute forward dynamics, that is the articulated forces and inertia.
-  ForwardDynamicsVisitor fwdVisitor;
-  mRootFrame->accept(fwdVisitor);
-
+  mFreeJoint->getOutboardBody()->computeArtValues();
   // Then compute the articulated inertias and forces.
-  AccelerationPropagationVisitor apVisitor;
-  mRootFrame->accept(apVisitor);
+  mFreeJoint->updateAccels(0);
 
   // Hmm, just works now ... FIXME
   for (it = mModels.begin(); it != mModels.end(); ++it) {
@@ -132,6 +105,10 @@ MultiBodySystem::addInteract(Interact* interact)
   /// Already in the list, might be already attached to an other rigid body
   if (this == interact->getParent())
     return;
+  // FIXME incorporate that somehow into the depencencies ...
+  if (dynamic_cast<FreeJoint*>(interact)) {
+    mFreeJoint = dynamic_cast<FreeJoint*>(interact);
+  }
   addModel(interact);
 }
 

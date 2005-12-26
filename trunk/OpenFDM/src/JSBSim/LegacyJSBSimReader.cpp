@@ -720,7 +720,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
 //   epFrame->addInteract2(accelSensor);
   mVehicle->getTopBody()->addInteract2(accelSensor);
-  mVehicle->getTopBody()->addChildFrame(epFrame);
+  mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
   addOutputModel(port, "Normalized load value", "/accelerations/nlf");
 
   // Set the position of the aerodynamic force frame.
@@ -739,7 +739,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   RigidBody* wheel = new RigidBody(name + " Wheel");
   InertiaMatrix wheelInertia(10, 0, 0, 100, 0, 10);
   wheel->addInteract2(new Mass(SpatialInertia(wheelInertia, 50)));
-  parent->addChildFrame(wheel);
+  parent->getFrame()->addChildFrame(wheel->getFrame());
   mVehicle->getMultiBodySystem()->addRigidBody(wheel);
   
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
@@ -928,7 +928,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       // This is the movable part of the strut, doing the compression
       RigidBody* arm = new RigidBody(name + " Arm");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
-      mVehicle->getTopBody()->addChildFrame(arm);
+      mVehicle->getTopBody()->getFrame()->addChildFrame(arm->getFrame());
       arm->addInteract2(new Mass(inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
 
       // Connect that with a revolute joint to the main body
@@ -1003,7 +1003,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         // A new part modelling the steering
         RigidBody* steer = new RigidBody(name + " Steer");
         mVehicle->getMultiBodySystem()->addRigidBody(steer);
-        strutParent->addChildFrame(steer);
+        strutParent->getFrame()->addChildFrame(steer->getFrame());
 
         // connect that via a revolute joint to the toplevel body.
         // Note the 0.05m below, most steering wheels have some kind of
@@ -1046,7 +1046,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       // Now the compressible part of the strut
       RigidBody* arm = new RigidBody(name + " Strut");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
-      strutParent->addChildFrame(arm);
+      strutParent->getFrame()->addChildFrame(arm->getFrame());
       arm->addInteract2(new Mass(inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
 
       // This time it is a prismatic joint

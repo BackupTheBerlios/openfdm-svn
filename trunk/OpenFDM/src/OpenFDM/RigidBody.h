@@ -24,7 +24,7 @@ class MultiBodySystem;
 
 // Rename to Body???
 class RigidBody :
-    public Frame {
+    public Object {
 public:
   // HMM ... FIXME
   friend class Joint;
@@ -36,9 +36,6 @@ public:
   /** Destructor.
    */
   virtual ~RigidBody(void);
-
-  virtual RigidBody* toRigidBody(void);
-  virtual const RigidBody* toRigidBody(void) const;
 
   virtual void accept(Visitor& visitor);
   virtual void accept(ConstVisitor& visitor) const;
@@ -79,7 +76,7 @@ public:
   /** HMM
    */
   Vector6 getPAlpha(void) const
-  { return mArtForce + mArtInertia*getHdot(); }
+  { return mArtForce + mArtInertia*getFrame()->getHdot(); }
 
   /// Contribute articulated force
   void contributeForce(const Vector6& force)
@@ -103,9 +100,13 @@ public:
   /** Introduce an interface routine
    */
   Frame* getFrame(void)
-  { return this; }
+  { return mFrame; }
   const Frame* getFrame(void) const
-  { return this; }
+  { return mFrame; }
+  FreeFrame* getFreeFrame(void)
+  { return mFrame; }
+  const FreeFrame* getFreeFrame(void) const
+  { return mFrame; }
 
   /// FIXME remove
   virtual bool addInteract2(Interact* child, unsigned parentNum = 0);
@@ -128,6 +129,7 @@ private:
 
   /// Frame attached to this rigid body
 //   SharedPtr<Frame> mFrame;
+  SharedPtr<FreeFrame> mFrame;
 
   typedef std::vector<SharedPtr<Interact> > InteractList;
   InteractList mInteracts;

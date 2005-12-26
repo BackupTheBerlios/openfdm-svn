@@ -79,7 +79,7 @@ PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
 {
   // That projects away tha components where the degrees of freedom
   // of the joint are.
-  RigidBody* out = getOutboardGroup()->toRigidBody();
+  RigidBody* out = getOutboardBody();
   real_type tau = getJointForce();
   return JointT<1>::jointArticulation(artI, artF, out->getPAlpha(),
                                       tau*getJointAxis(),
@@ -90,8 +90,8 @@ Vector6
 PrismaticJoint::computeRelAccel(const SpatialInertia&,
                                 const Vector6&)
 {
-  RigidBody* out = getOutboardGroup()->toRigidBody();
-  Vector6 parentAccel = out->getParentSpAccel();
+  RigidBody* out = getOutboardBody();
+  Vector6 parentAccel = out->getFrame()->getParentSpAccel();
 
   SpatialInertia artI = out->getArtInertia();
   Vector6 pAlpha = out->getPAlpha();
