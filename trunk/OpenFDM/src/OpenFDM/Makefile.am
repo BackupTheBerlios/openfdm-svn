@@ -31,6 +31,7 @@ nobase_OpenFDMinclude_HEADERS = \
   AtmosphereSTD1976.h \
   Bias.h \
   BinaryFunctionModel.h \
+  CartesianJointFrame.h \
   Contact.h \
   ConstantForce.h \
   ConstSystem.h \
@@ -62,7 +63,6 @@ nobase_OpenFDMinclude_HEADERS = \
   ImplicitEuler.h \
   Inertia.h \
   Joint.h \
-  JointT.h \
   Limits.h \
   LinAlg/Algorithm.h \
   LinAlg/Array.h \
@@ -96,10 +96,12 @@ nobase_OpenFDMinclude_HEADERS = \
   Property.h \
   Product.h \
   PrismaticJoint.h \
+  PrismaticJointFrame.h \
   Quaternion.h \
   ReaderWriter.h \
   Referenced.h \
   RevoluteJoint.h \
+  RevoluteJointFrame.h \
   RigidBody.h \
   Rotation.h \
   RootFrame.h \

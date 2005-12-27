@@ -34,8 +34,8 @@ RigidBody::computeArtValues(void)
                       << "\"" << endl;
 
   // At first this is the inertia matrix of the current body.
-  mArtInertia = SpatialInertia::zeros();
-  mArtForce = Vector6::zeros();
+  mArtInertia.clear();
+  mArtForce.clear();
 
   // Collect all articulated forces and inertias
   InteractList::iterator it;

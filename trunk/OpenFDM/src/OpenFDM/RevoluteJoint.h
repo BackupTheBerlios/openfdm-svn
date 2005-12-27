@@ -14,13 +14,13 @@
 #include "Frame.h"
 #include "RigidBody.h"
 #include "Joint.h"
-#include "JointT.h"
 #include "LineForce.h"
+#include "RevoluteJointFrame.h"
 
 namespace OpenFDM {
 
-class RevoluteJoint
-  : public Joint, public JointT<1> {
+class RevoluteJoint :
+    public Joint {
 public:
   RevoluteJoint(const std::string& name);
   virtual ~RevoluteJoint(void);

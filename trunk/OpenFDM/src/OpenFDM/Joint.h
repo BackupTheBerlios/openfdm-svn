@@ -39,49 +39,35 @@ public:
     if (rigidBody != getInboardBody())
       return;
 
-    getOutboardBody()->computeArtValues();
-    SpatialInertia artI = SpatialInertia::zeros();
-    Vector6 artF = Vector6::zeros();
-    contributeArticulation(artI, artF);
-    rigidBody->contributeForce(artF);
-    rigidBody->contributeInertia(artI);
-  }
-
-  bool contributeArticulation(SpatialInertia& artI, Vector6& artF)
-  {
     RigidBody* outboardBody = getOutboardBody();
     if (!outboardBody)
-      return false;
+      return;
 
-    Frame* frame = outboardBody->getFrame();
-
+    outboardBody->computeArtValues();
     Log(ArtBody, Debug) << "Contributing articulation from \""
                         << outboardBody->getName() << "\" through joint \""
                         << getName() << "\"" << endl;
 
     // We need the articulated inertia and force from the outboard body.
-    SpatialInertia I = outboardBody->getArtInertia();
-    Vector6 F = outboardBody->getArtForce();
-
-    Log(ArtBody, Debug3) << "Outboard Articulated values: Force:\n"
-                         << trans(F) << "\nInertia\n" << I << endl;
+    SpatialInertia I;
+    Vector6 F;
 
     // Apply the joint degrees of freedom to that.
     // If there was an error, (something was singular ???)
     // just ignore that part. FIXME, ist this ok????
     if (!jointArticulation(I, F))
-      return false;
+      return;
 
     Log(ArtBody, Debug3) << "Outboard Articulated values past joint "
                          << "projection: Force:\n" << trans(F)
                          << "\nInertia\n" << I << endl;
 
     // Contribute the transformed values to the parent.
-    artI += frame->inertiaToParent(I);
-    artF += frame->forceToParent(F);
-
-    return true;
+    Frame* frame = outboardBody->getFrame();
+    rigidBody->contributeInertia(frame->inertiaToParent(I));
+    rigidBody->contributeForce(frame->forceToParent(F));
   }
+
 
   // Joint slot ...
   // FIXME: pure virtual

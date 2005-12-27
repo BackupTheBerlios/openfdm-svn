@@ -13,14 +13,14 @@
 #include "Inertia.h"
 #include "Frame.h"
 #include "RigidBody.h"
-#include "JointT.h"
 #include "Joint.h"
 #include "LineForce.h"
+#include "PrismaticJointFrame.h"
 
 namespace OpenFDM {
 
 class PrismaticJoint
-  : public Joint, public JointT<1> {
+  : public Joint {
 public:
   PrismaticJoint(const std::string& name);
   virtual ~PrismaticJoint(void);

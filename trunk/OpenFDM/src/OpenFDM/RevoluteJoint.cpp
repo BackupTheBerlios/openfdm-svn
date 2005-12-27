@@ -74,23 +74,22 @@ RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
   // of the joint are.
   RigidBody* out = getOutboardBody();
   real_type tau = getJointForce();
-  return JointT<1>::jointArticulation(artI, artF, out->getPAlpha(),
-                                      tau*getJointAxis(),
-                                      getJointAxis());
+  return mRevoluteJointFrame->jointArticulation(artI, artF,
+                                                out->getArtInertia(),
+                                                out->getPAlpha(),
+                                                tau*getJointAxis(),
+                                                getJointAxis());
 }
 
 Vector6
 RevoluteJoint::computeRelAccel(const SpatialInertia&,
                                const Vector6&)
 {
-  Vector6 parentAccel = mRevoluteJointFrame->getParentSpAccel();
-
   RigidBody* out = getOutboardBody();
-  SpatialInertia artI = out->getArtInertia();
   Vector6 pAlpha = out->getPAlpha();
 
-  JointT<1>::VectorN acc;
-  JointT<1>::computeRelAccel(artI, parentAccel, pAlpha, getJointAxis(), acc);
+  CartesianJointFrame<1>::VectorN acc;
+  mRevoluteJointFrame->computeRelAccel(pAlpha, getJointAxis(), acc);
   mRevoluteJointFrame->setJointVelDot(acc(1));
   
   Log(ArtBody, Debug) << "Relative acceleration for Joint \""
