@@ -99,7 +99,6 @@ nobase_OpenFDMinclude_HEADERS = \
   Quaternion.h \
   ReaderWriter.h \
   Referenced.h \
-  RevoluteActuator.h \
   RevoluteJoint.h \
   RigidBody.h \
   Rotation.h \
@@ -185,7 +184,6 @@ libOpenFDM_la_SOURCES = \
   Product.cpp \
   Property.cpp \
   ReaderWriter.cpp \
-  RevoluteActuator.cpp \
   RevoluteJoint.cpp \
   RigidBody.cpp \
   RootFrame.cpp \

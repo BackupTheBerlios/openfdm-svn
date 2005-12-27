@@ -3,6 +3,7 @@
  */
 
 #include "Assert.h"
+#include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
@@ -80,15 +81,17 @@ Frame::traverse(ConstVisitor& visitor) const
 bool
 Frame::addChildFrame(Frame* child)
 {
-  if (!child)
+  if (!child) {
+    Log(Frame,Warning) << "Trying to attach zero pointer child Frame to "
+                       << "Frame \"" << getName() << "\"!" << endl;
     return false;
-  // check if it is already there. Emit an error in this caes.
-  ChildFrameList::iterator it = mChildFrames.begin();
-  ChildFrameList::iterator iEnd = mChildFrames.end();
-  while (it != iEnd) {
-    if ((*it) == child)
-      return false;
-    ++it;
+  }
+  if (child->getParentFrame()) {
+    Log(Frame,Error) << "Can not attach Frame \"" << child->getName()
+                     << "\" to Frame \"" << getName() << "\": "
+                     << " is already child of \""
+                     << child->getParentFrame()->getName() << endl;
+    return false;
   }
   
   child->setParentFrame(this);
@@ -107,6 +110,7 @@ Frame::removeChildFrame(Frame* child)
     }
     ++it;
   }
+
   return false;
 }
 
@@ -126,17 +130,34 @@ Frame::getChildFrame(unsigned i) const
   return mChildFrames[i];
 }
 
+// class PrintVisitor : public ConstVisitor {
+// public:
+//   virtual void apply(const Frame& frame)
+//   {
+//     Log(Model,Error) << frame.getName() << endl;
+//     traverse(frame);
+//   }
+// };
+
 void
 Frame::reparentChildren(Frame* frame)
 {
   if (!frame)
     return;
+
+//   PrintVisitor pv;
+//   frame->accept(pv);
+
   ChildFrameList::iterator it = frame->mChildFrames.begin();
   while (it != frame->mChildFrames.end()) {
-    (*it)->setParentFrame(0);
-    addChildFrame(*it);
+    Log(Model,Error) << "Moving Frame " << (*it)->getName() << " from "
+                     << frame->getName() << " to " << getName() << endl;
+    (*it)->setParentFrame(this);
+    mChildFrames.push_back(*it);
     it = frame->mChildFrames.erase(it);
   }
+
+//   frame->accept(pv);
 }
 
 void

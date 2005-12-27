@@ -10,7 +10,7 @@
 #include "Inertia.h"
 #include "Frame.h"
 #include "RigidBody.h"
-#include "Visitor.h"
+#include "ConstVisitor.h"
 #include "ModelVisitor.h"
 #include "Mass.h"
 #include "Force.h"
@@ -36,14 +36,11 @@ MultiBodySystem::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
-// bool
-// MultiBodySystem::init(void)
-// {
-//   StateCountVisitor gsc;
-//   mRootFrame->accept(gsc);
-//   setNumContinousStates(gsc.getStateCount());
-//   return ModelGroup::init();
-// }
+bool
+MultiBodySystem::init(void)
+{
+  return ModelGroup::init();
+}
 
 void
 MultiBodySystem::output(const TaskInfo& taskInfo)

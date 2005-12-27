@@ -13,8 +13,8 @@ namespace OpenFDM {
 class Mass :
     public Interact {
 public:
-  Mass(const SpatialInertia& inertia = SpatialInertia(0),
-       const std::string& name = std::string());
+  Mass(const std::string& name,
+       const SpatialInertia& inertia = SpatialInertia(0));
   virtual ~Mass(void);
 
   virtual void interactWith(RigidBody* rigidBody);

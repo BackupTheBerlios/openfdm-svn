@@ -6,7 +6,7 @@
 
 namespace OpenFDM {
 
-Mass::Mass(const SpatialInertia& inertia, const std::string& name) :
+Mass::Mass(const std::string& name, const SpatialInertia& inertia) :
   Interact(name, 1),
   mInertia(inertia)
 {

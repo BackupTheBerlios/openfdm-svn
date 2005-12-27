@@ -26,15 +26,9 @@ class MultiBodySystem;
 class RigidBody :
     public Object {
 public:
-  // HMM ... FIXME
-  friend class Joint;
-  friend class FreeJoint;
-
-  /** Constructor.
-   */
+  /// Constructor
   RigidBody(const std::string& name);
-  /** Destructor.
-   */
+  /// Destructor
   virtual ~RigidBody(void);
 
 
@@ -94,8 +88,7 @@ public:
     mArtInertia += inertia;
   }
 
-  /** Introduce an interface routine
-   */
+  /// Introduce an interface routine
   void setFrame(Frame* frame)
   {
     // take over all children
@@ -110,6 +103,7 @@ public:
   void setParentMultiBodySystem(MultiBodySystem* multiBodySystem);
   MultiBodySystem* getParentMultiBodySystem(void);
 
+  bool setInboardJoint(Joint* joint);
   bool addInteract(Interact* interact);
   bool removeInteract(Interact* interact);
 
@@ -120,21 +114,20 @@ private:
   /// Outboard articulated force
   Vector6 mArtForce;
 
-  /// Local inertia, needs to be set up at each cycle!?
-//   SpatialInertia mLocalInertia;
-
   /// Frame attached to this rigid body
   SharedPtr<Frame> mFrame;
 
+  /// One of our interacts is special ...
+  /// FIXME Make that dynamic later, for now we need to know the tree root at
+  /// MultiBodySystem build time
+  SharedPtr<Joint> mInboardJoint;
+  /// All Interacts attached to this RigidBody
   typedef std::vector<SharedPtr<Interact> > InteractList;
   InteractList mInteracts;
 
-  /// FIXME: is interact too???
-//   typedef std::vector<SharedPtr<Mass> > MassList;
-//   MassList mMasses;
-
   WeakPtr<MultiBodySystem> mParentMultiBodySystem;
 
+  // HMM ... FIXME
   friend class Interact;
 };
 

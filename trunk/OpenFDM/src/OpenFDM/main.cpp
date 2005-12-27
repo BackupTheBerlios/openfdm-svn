@@ -626,12 +626,12 @@ int main(int argc, char *argv[])
   vehicle->getFreeJoint()->setRelVel(Vector6::zeros());
   Vector3 vel(convertFrom(uFeetPSecond, 23900.0), 0, 0);
   vehicle->getFreeJoint()->setLinearRelVel(vel);
-  vehicle->getTopBody()->addMultiBodyModel(new Mass(SpatialInertia(InertiaMatrix(100,0,0,100,0,100), 100), "Mass"));
+  vehicle->getTopBody()->addMultiBodyModel(new Mass("Testmass", SpatialInertia(InertiaMatrix(100,0,0,100,0,100), 100), "Mass"));
 
 
   RigidBody* body = new RigidBody;
   body->setName("Body am revolute Joint");
-  body->addMultiBodyModel(new Mass(SpatialInertia(InertiaMatrix(1,0,0,1,0,1), 1), "Mass"));
+  body->addMultiBodyModel(new Mass("Testmass", SpatialInertia(InertiaMatrix(1,0,0,1,0,1), 1), "Mass"));
   vehicle->getTopBody()->addChildFrame(body);
   PrismaticJoint* joint = new PrismaticJoint("Prismatic Joint 1");
   // FIXME, seem to have a poblem with the 2*pi periodicity,
@@ -644,7 +644,7 @@ int main(int argc, char *argv[])
 
   RigidBody* body2 = new RigidBody;
   body2->setName("Body2 am prismatic Joint");
-  body2->addMultiBodyModel(new Mass(SpatialInertia(InertiaMatrix(1,0,0,1,0,1), 1), "Mass"));
+  body2->addMultiBodyModel(new Mass("Testmass", SpatialInertia(InertiaMatrix(1,0,0,1,0,1), 1), "Mass"));
   body->addChildFrame(body2);
 //   PrismaticJoint* joint2 = new PrismaticJoint("Prismatic Joint 1");
   RevoluteJoint* joint2 = new RevoluteJoint("Revolute Joint 2");

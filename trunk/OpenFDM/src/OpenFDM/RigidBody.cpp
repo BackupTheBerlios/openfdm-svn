@@ -19,8 +19,7 @@
 namespace OpenFDM {
 
 RigidBody::RigidBody(const std::string& name) :
-  Object(name),
-  mFrame(new FreeFrame(name))
+  Object(name)
 {
 }
 
@@ -75,6 +74,8 @@ RigidBody::setParentMultiBodySystem(MultiBodySystem* multiBodySystem)
   for (it = mInteracts.begin(); it != mInteracts.end(); ++it) {
     multiBodySystem->addInteract(*it);
   }
+  if (mInboardJoint)
+    multiBodySystem->addInteract(mInboardJoint);
 }
 
 MultiBodySystem*
@@ -84,10 +85,22 @@ RigidBody::getParentMultiBodySystem(void)
 }
 
 bool
+RigidBody::setInboardJoint(Joint* joint)
+{
+  mInboardJoint = joint;
+  if (!joint->attachTo(this, true))
+    return false;
+  if (!mParentMultiBodySystem)
+    return true;
+  mParentMultiBodySystem->addInteract(joint);
+  return true;
+}
+
+bool
 RigidBody::addInteract(Interact* interact)
 {
   mInteracts.push_back(interact);
-  if (!interact->attachTo(this))
+  if (!interact->attachTo(this, false))
     return false;
   if (!mParentMultiBodySystem)
     return true;

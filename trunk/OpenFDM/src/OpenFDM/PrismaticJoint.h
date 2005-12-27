@@ -22,8 +22,31 @@ namespace OpenFDM {
 class PrismaticJoint
   : public Joint, public JointT<1> {
 public:
-  PrismaticJoint(const std::string& name = std::string());
+  PrismaticJoint(const std::string& name);
   virtual ~PrismaticJoint(void);
+
+  virtual bool init(void)
+  { recheckTopology(); return Joint::init(); }
+
+  virtual void recheckTopology(void)
+  {
+    if (!getOutboardBody() || !getInboardBody())
+      return;
+
+    // check for the inboard frame
+    Frame* inFrame = getInboardBody()->getFrame();
+    if (!inFrame)
+      return;
+
+    Frame* outFrame = getOutboardBody()->getFrame();
+    if (!outFrame) {
+      getOutboardBody()->setFrame(mFrame);
+    }
+    outFrame = getOutboardBody()->getFrame();
+    if (!outFrame->isParentFrame(inFrame)) {
+      inFrame->addChildFrame(mFrame);
+    }
+  }
 
   /** Gets the joint axis where this joint is allowed to rotate around.
    */
@@ -117,6 +140,9 @@ private:
   /** The direct joint interaction force
    */
   SharedPtr<LineForce> mLineForce;
+
+  /// The frame of the mobile root
+  SharedPtr<FreeFrame> mFrame;
 };
 
 } // namespace OpenFDM

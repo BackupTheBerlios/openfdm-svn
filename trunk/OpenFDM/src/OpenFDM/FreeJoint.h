@@ -26,69 +26,24 @@ public:
 
   virtual bool init(void);
 
-  const Vector3& getInitialPosition(void) const
-  { return mInitialPosition; }
-  void setInitialPosition(const Vector3& pos)
-  { mInitialPosition = pos; }
-
-  const Quaternion& getInitialOrientation(void) const
-  { return mInitialOrientation; }
-  void setInitialOrientation(const Quaternion& orientation)
-  { mInitialOrientation = orientation; }
-
-  const Vector6& getInitialVel(void) const
-  { return mInitialVel; }
-  void setInitialVel(const Vector6& vel)
-  { mInitialVel = vel; }
-
   virtual void recheckTopology(void);
 
-
-  /// HACK
-  virtual bool isArticulatedJoint(void) const
-  { return true; }
-  virtual Frame* getInboardGroup(void)
-  { return 0; }
-  virtual const Frame* getInboardGroup(void) const
-  { return 0; }
-  virtual Frame* getOutboardGroup(void)
-  { return getParentFrame(0); }
-  virtual const Frame* getOutboardGroup(void) const
-  { return getParentFrame(0); }
-  virtual RigidBody* getOutboardBody(void)
-  { return getParentRigidBody(0); }
-  virtual RigidBody* getInboardBody(void)
-  { return 0; }
-
-  /** Set the relative velocity.
-   */
+  /// Set the relative velocity.
   void setRelVel(const Vector6& vel)
   { mFrame->setRelVel(vel); }
-  /** Set the relative velocity.
-   */
+  /// Set the relative velocity.
   void setLinearRelVel(const Vector3& vel)
-  {
-    mFrame->setLinearRelVel(vel);
-  }
-  /** Set the relative velocity.
-   */
+  { mFrame->setLinearRelVel(vel); }
+  /// Set the relative velocity.
   void setAngularRelVel(const Vector3& vel)
-  {
-    mFrame->setAngularRelVel(vel);
-  }
+  { mFrame->setAngularRelVel(vel); }
 
-  /** Set the reference position.
-   */
+  /// Set the reference position.
   void setRefPosition(const Vector3& p)
-  {
-    mFrame->setRefPosition(p);
-  }
-  /** Set the reference orientation.
-   */
+  { mFrame->setRefPosition(p); }
+  /// Set the reference orientation.
   void setRefOrientation(const Quaternion& o)
-  {
-    mFrame->setRefOrientation(o);
-  }
+  { mFrame->setRefOrientation(o); }
 
 private:
   /** Plugin function for the articulated body algorithm.
@@ -109,11 +64,6 @@ private:
   /** Plugin function for the state propagation.
    */
   virtual void getStateDeriv(Vector& state, unsigned offset);
-
-  /// The initial states which are used for the first guess
-  Vector3 mInitialPosition;
-  Quaternion mInitialOrientation;
-  Vector6 mInitialVel;
 
   /// The commonly used gravity model from the environment class
   /// It is initialized at the init() call

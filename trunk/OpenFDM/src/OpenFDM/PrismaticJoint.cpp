@@ -26,6 +26,8 @@ PrismaticJoint::PrismaticJoint(const std::string& name)
   mJointAxis = Vector3::unit(1);
   mPosition = Vector3::zeros();
 
+  mFrame = new FreeFrame(name);
+
   setNumOutputPorts(2);
   setOutputPort(0, "jointPos", this, &PrismaticJoint::getJointPos);
   setOutputPort(1, "jointVel", this, &PrismaticJoint::getJointVel);
@@ -51,27 +53,27 @@ void
 PrismaticJoint::setJointPos(real_type pos)
 {
   mJointPosition = pos;
-  setOutboardPosition(mPosition + mJointPosition*mJointAxis);
+  mFrame->setPosition(mPosition + mJointPosition*mJointAxis);
 }
 
 void
 PrismaticJoint::setJointVel(real_type vel)
 {
   mJointVelocity = vel;
-  setOutboardRelVel(mJointVelocity*getJointAxis());
+  mFrame->setRelVel(mJointVelocity*getJointAxis());
 }
 
 void
 PrismaticJoint::setOrientation(const Quaternion& orientation)
 {
-  setOutboardPosition(mPosition + mJointPosition*mJointAxis);
+  mFrame->setPosition(mPosition + mJointPosition*mJointAxis);
 }
 
 void
 PrismaticJoint::setPosition(const Vector3& position)
 {
   mPosition = position;
-  setOutboardPosition(mPosition + mJointPosition*mJointAxis);
+  mFrame->setPosition(mPosition + mJointPosition*mJointAxis);
 }
 
 bool
@@ -90,9 +92,9 @@ Vector6
 PrismaticJoint::computeRelAccel(const SpatialInertia&,
                                 const Vector6&)
 {
-  RigidBody* out = getOutboardBody();
-  Vector6 parentAccel = out->getFrame()->getParentSpAccel();
+  Vector6 parentAccel = mFrame->getParentSpAccel();
 
+  RigidBody* out = getOutboardBody();
   SpatialInertia artI = out->getArtInertia();
   Vector6 pAlpha = out->getPAlpha();
 

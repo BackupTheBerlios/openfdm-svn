@@ -27,6 +27,8 @@ RevoluteJoint::RevoluteJoint(const std::string& name, bool trackPosition)
   mJointAxis = Vector3::unit(1);
   mOrientation = Quaternion::unit();
 
+  mFrame = new FreeFrame(name);
+
   setNumOutputPorts(2);
   setOutputPort(0, "jointPos", this, &RevoluteJoint::getJointPos);
   setOutputPort(1, "jointVel", this, &RevoluteJoint::getJointVel);
@@ -54,20 +56,20 @@ RevoluteJoint::setJointPos(real_type pos)
   mJointPosition = pos;
   Quaternion q = mOrientation;
   q *= Quaternion::fromAngleAxis(mJointPosition, mJointAxis);
-  setOutboardOrientation(q);
+  mFrame->setOrientation(q);
 }
 
 void
 RevoluteJoint::setJointVel(real_type vel)
 {
   mJointVelocity = vel;
-  setOutboardRelVel(mJointVelocity*getJointAxis());
+  mFrame->setRelVel(mJointVelocity*getJointAxis());
 }
 
 void
 RevoluteJoint::setPosition(const Vector3& position)
 {
-  setOutboardPosition(position);
+  mFrame->setPosition(position);
 }
 
 void
@@ -76,7 +78,7 @@ RevoluteJoint::setOrientation(const Quaternion& orientation)
   mOrientation = orientation;
   Quaternion q = orientation;
   q *= Quaternion::fromAngleAxis(mJointPosition, mJointAxis);
-  setOutboardOrientation(q);
+  mFrame->setOrientation(q);
 }
 
 bool
@@ -95,9 +97,9 @@ Vector6
 RevoluteJoint::computeRelAccel(const SpatialInertia&,
                                const Vector6&)
 {
-  RigidBody* out = getOutboardBody();
-  Vector6 parentAccel = out->getFrame()->getParentSpAccel();
+  Vector6 parentAccel = mFrame->getParentSpAccel();
 
+  RigidBody* out = getOutboardBody();
   SpatialInertia artI = out->getArtInertia();
   Vector6 pAlpha = out->getPAlpha();
 

@@ -32,8 +32,13 @@ public:
   /// Double dispatch helper for the multibody system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
+  /// This is the primary gate function which handles interaction
+  virtual void interactWith(RigidBody* rigidBody) = 0;
+
+
+
 private:
-  bool attachTo(RigidBody* rigidBody);
+  bool attachTo(RigidBody* rigidBody, bool upstream);
   bool detachFrom(RigidBody* rigidBody);
 
   /// Called whenever the local topology chages, use to manage frames with this
@@ -57,14 +62,10 @@ public:
   void swapParents(void)
   {
     OpenFDMAssert(2 == mParents.size());
-    WeakPtr<RigidBody> rigidBody = mParents[0];
+    RigidBody* rigidBody = mParents[0];
     mParents[0] = mParents[1];
     mParents[1] = rigidBody;
   }
-
-
-  virtual void interactWith(RigidBody* rigidBody) = 0;
-
 
 
   /// FIXME: hmm

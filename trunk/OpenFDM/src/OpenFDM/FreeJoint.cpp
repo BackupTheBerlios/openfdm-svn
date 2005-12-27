@@ -58,7 +58,7 @@ FreeJoint::recheckTopology(void)
 {
   // Hmm, works for the first cut, but rethink what happens with strange
   // attach reattach sequences ...
-  RigidBody* rigidBody = getParentRigidBody(0);
+  RigidBody* rigidBody = getOutboardBody();
   if (!rigidBody)
     return;
   // check if already done
@@ -66,10 +66,10 @@ FreeJoint::recheckTopology(void)
     rigidBody->setFrame(mFrame);
 
   // Check if we are attached to some rigid body ...
-  rigidBody = getParentRigidBody(1);
+  rigidBody = getInboardBody();
   if (rigidBody) {
     Frame* frame = rigidBody->getFrame();
-    if (!frame->isParentFrame(mFrame))
+    if (frame && !frame->isParentFrame(mFrame))
       frame->addChildFrame(mFrame);
   } else {
     Environment* environment = getEnvironment();
@@ -107,21 +107,21 @@ FreeJoint::computeRelAccel(const SpatialInertia& artI,
   Log(ArtBody, Debug) << "grav = " << trans(grav) << endl;
   Log(ArtBody, Debug) << "solve = " << trans(solve(artI, artF)) << endl;
   Log(ArtBody, Debug) << "parent spatial accel = " << trans(mFrame->getParentSpAccel()) << endl;
-  Log(ArtBody, Debug) << "Hdot = " << trans(getHdot()) << endl;
+  Log(ArtBody, Debug) << "Hdot = " << trans(mFrame->getHdot()) << endl;
   
 
   Vector6 accel = grav - solve(artI, artF)
-    - mFrame->getParentSpAccel() - getHdot();
+    - mFrame->getParentSpAccel() - mFrame->getHdot();
   return accel;
 }
 
 void
 FreeJoint::setState(const Vector& state, unsigned offset)
 {
-  setOutboardOrientation(Vector4(state(offset+1), state(offset+2),
-                         state(offset+3), state(offset+4)));
-  setOutboardPosition(Vector3(state(offset+5), state(offset+6), state(offset+7)));
-  setOutboardRelVel(Vector6(state(offset+8), state(offset+9), state(offset+10),
+  mFrame->setOrientation(Vector4(state(offset+1), state(offset+2),
+                                 state(offset+3), state(offset+4)));
+  mFrame->setPosition(Vector3(state(offset+5), state(offset+6), state(offset+7)));
+  mFrame->setRelVel(Vector6(state(offset+8), state(offset+9), state(offset+10),
                             state(offset+11), state(offset+12), state(offset+13)));
 }
 

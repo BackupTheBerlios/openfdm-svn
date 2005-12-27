@@ -35,7 +35,7 @@ Interact::accept(ModelVisitor& visitor)
 }
 
 bool
-Interact::attachTo(RigidBody* rigidBody)
+Interact::attachTo(RigidBody* rigidBody, bool upstream)
 {
   if (!rigidBody) {
     Log(MultiBody,Error) << "Got 0 RigidBody pointer to attach to." << endl;
@@ -45,6 +45,8 @@ Interact::attachTo(RigidBody* rigidBody)
   for (it = mParents.begin(); it != mParents.end(); ++it) {
     if ((*it) == 0) {
       (*it) = rigidBody;
+      if (upstream && it != mParents.begin())
+        swapParents();
       recheckTopology();
       return true;
     }
