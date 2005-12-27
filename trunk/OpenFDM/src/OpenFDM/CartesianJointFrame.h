@@ -34,7 +34,7 @@ public:
                          Vector6& artF,
                          const Vector6& outF,
                          const SpatialInertia& outI,
-                         const Vector6& jointForce,
+                         const VectorN& jointForce,
                          const Matrix6N& jointAxis)
   {
     Log(ArtBody, Debug1) << artI << endl;
@@ -57,9 +57,7 @@ public:
 
     artF = pAlpha;
     
-    Vector6 mForcePAlpha = pAlpha - jointForce;
-
-    artF -= Ih*hIh.solve(trans(jointAxis)*mForcePAlpha);
+    artF -= Ih*hIh.solve(trans(jointAxis)*pAlpha - jointForce);
     artI = outI;
     artI -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
 
@@ -73,15 +71,15 @@ public:
       jointAccel.clear();
     } else {
       Vector6 pAlpha = mOutboardForce + mOutboardInertia*getHdot();
-      Vector6 tmp = mJointForce - mOutboardInertia*getParentSpAccel() - pAlpha;
-      jointAccel = hIh.solve(trans(jointAxis)*tmp);
+      Vector6 tmp = - mOutboardInertia*getParentSpAccel() - pAlpha;
+      jointAccel = hIh.solve(trans(jointAxis)*tmp + mJointForce);
     }
   }
 
 private:
   SpatialInertia mOutboardInertia;
   Vector6 mOutboardForce;
-  Vector6 mJointForce;
+  VectorN mJointForce;
   MatrixFactorsNN hIh;
 };
 

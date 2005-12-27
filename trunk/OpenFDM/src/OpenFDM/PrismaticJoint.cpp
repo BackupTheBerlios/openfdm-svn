@@ -74,12 +74,12 @@ PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
   // That projects away tha components where the degrees of freedom
   // of the joint are.
   RigidBody* out = getOutboardBody();
-  real_type tau = getJointForce();
-
+  LinAlg::Vector<real_type,1> tau;
+  tau(1) = getJointForce();
   return mPrismaticJointFrame->jointArticulation(artI, artF,
                                                  out->getArtForce(),
                                                  out->getArtInertia(),
-                                                 tau*getJointAxis(),
+                                                 tau,
                                                  getJointAxis());
 }
 
