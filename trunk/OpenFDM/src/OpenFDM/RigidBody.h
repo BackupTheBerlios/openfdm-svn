@@ -5,15 +5,11 @@
 #ifndef OpenFDM_RigidBody_H
 #define OpenFDM_RigidBody_H
 
-#include <iosfwd>
-#include <list>
 #include <string>
+#include <vector>
 
-#include "Assert.h"
 #include "Object.h"
 #include "Vector.h"
-#include "Matrix.h"
-#include "Quaternion.h"
 #include "Inertia.h"
 #include "Frame.h"
 
@@ -63,11 +59,6 @@ public:
    */
   const Vector6& getArtForce(void) const
   { return mArtForce; }
-
-  /** HMM
-   */
-  Vector6 getPAlpha(void) const
-  { return mArtForce + mArtInertia*getFrame()->getHdot(); }
 
   /// Contribute articulated force
   void contributeForce(const Vector6& force)

@@ -32,14 +32,20 @@ public:
 
   bool jointArticulation(SpatialInertia& artI,
                          Vector6& artF,
+                         const Vector6& outF,
                          const SpatialInertia& outI,
-                         const Vector6& pAlpha,
                          const Vector6& jointForce,
                          const Matrix6N& jointAxis)
   {
     Log(ArtBody, Debug1) << artI << endl;
 
     mOutboardInertia = outI;
+    mOutboardForce = outF;
+
+
+    Vector6 pAlpha = outF + mOutboardInertia*getHdot();
+
+
 
     mJointForce = jointForce;
 
@@ -60,13 +66,13 @@ public:
     return true;
   }
   
-  void computeRelAccel(const Vector6& pAlpha,
-                       const Matrix6N& jointAxis,
+  void computeRelAccel(const Matrix6N& jointAxis,
                        VectorN& jointAccel) const
   {
     if (hIh.singular()) {
       jointAccel.clear();
     } else {
+      Vector6 pAlpha = mOutboardForce + mOutboardInertia*getHdot();
       Vector6 tmp = mJointForce - mOutboardInertia*getParentSpAccel() - pAlpha;
       jointAccel = hIh.solve(trans(jointAxis)*tmp);
     }
@@ -74,6 +80,7 @@ public:
 
 private:
   SpatialInertia mOutboardInertia;
+  Vector6 mOutboardForce;
   Vector6 mJointForce;
   MatrixFactorsNN hIh;
 };

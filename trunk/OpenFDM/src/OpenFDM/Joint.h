@@ -68,7 +68,6 @@ public:
     rigidBody->contributeForce(frame->forceToParent(F));
   }
 
-
   // Joint slot ...
   // FIXME: pure virtual
   virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF) = 0;

@@ -75,9 +75,10 @@ PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
   // of the joint are.
   RigidBody* out = getOutboardBody();
   real_type tau = getJointForce();
+
   return mPrismaticJointFrame->jointArticulation(artI, artF,
+                                                 out->getArtForce(),
                                                  out->getArtInertia(),
-                                                 out->getPAlpha(),
                                                  tau*getJointAxis(),
                                                  getJointAxis());
 }
@@ -86,11 +87,8 @@ Vector6
 PrismaticJoint::computeRelAccel(const SpatialInertia&,
                                 const Vector6&)
 {
-  RigidBody* out = getOutboardBody();
-  Vector6 pAlpha = out->getPAlpha();
-
   CartesianJointFrame<1>::VectorN acc;
-  mPrismaticJointFrame->computeRelAccel(pAlpha, getJointAxis(), acc);
+  mPrismaticJointFrame->computeRelAccel(getJointAxis(), acc);
   mPrismaticJointFrame->setJointVelDot(acc(1));
   Log(ArtBody, Debug) << "Relative acceleration for Joint \""
                       << getName() << "\" is " << trans(acc) << endl;
