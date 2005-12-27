@@ -16,18 +16,12 @@
 
 namespace OpenFDM {
 
-RevoluteJoint::RevoluteJoint(const std::string& name, bool trackPosition)
-  : Joint(name)
+RevoluteJoint::RevoluteJoint(const std::string& name) :
+  Joint(name)
 {
-  setNumContinousStates(trackPosition ? 2 : 1);
-  mTrackPosition = trackPosition;
-  mJointPosition = 0;
-  mJointVelocity = 0;
-  mJointAcceleration = 0;
-  mJointAxis = Vector3::unit(1);
-  mOrientation = Quaternion::unit();
+  setNumContinousStates(2);
 
-  mFrame = new FreeFrame(name);
+  mRevoluteJointFrame = new RevoluteJointFrame(name);
 
   setNumOutputPorts(2);
   setOutputPort(0, "jointPos", this, &RevoluteJoint::getJointPos);
@@ -46,39 +40,31 @@ RevoluteJoint::setJointAxis(const Vector3& axis)
     Log(Initialization, Error) << "JointAxis is zero ..." << endl;
     return;
   }
-
-  mJointAxis = (1/nrm)*axis;
+  mRevoluteJointFrame->setJointAxis((1/nrm)*axis);
 }
 
 void
 RevoluteJoint::setJointPos(real_type pos)
 {
-  mJointPosition = pos;
-  Quaternion q = mOrientation;
-  q *= Quaternion::fromAngleAxis(mJointPosition, mJointAxis);
-  mFrame->setOrientation(q);
+  mRevoluteJointFrame->setJointPos(pos);
 }
 
 void
 RevoluteJoint::setJointVel(real_type vel)
 {
-  mJointVelocity = vel;
-  mFrame->setRelVel(mJointVelocity*getJointAxis());
+  mRevoluteJointFrame->setJointVel(vel);
 }
 
 void
 RevoluteJoint::setPosition(const Vector3& position)
 {
-  mFrame->setPosition(position);
+  mRevoluteJointFrame->setPosition(position);
 }
 
 void
 RevoluteJoint::setOrientation(const Quaternion& orientation)
 {
-  mOrientation = orientation;
-  Quaternion q = orientation;
-  q *= Quaternion::fromAngleAxis(mJointPosition, mJointAxis);
-  mFrame->setOrientation(q);
+  mRevoluteJointFrame->setZeroOrientation(orientation);
 }
 
 bool
@@ -97,7 +83,7 @@ Vector6
 RevoluteJoint::computeRelAccel(const SpatialInertia&,
                                const Vector6&)
 {
-  Vector6 parentAccel = mFrame->getParentSpAccel();
+  Vector6 parentAccel = mRevoluteJointFrame->getParentSpAccel();
 
   RigidBody* out = getOutboardBody();
   SpatialInertia artI = out->getArtInertia();
@@ -105,7 +91,8 @@ RevoluteJoint::computeRelAccel(const SpatialInertia&,
 
   JointT<1>::VectorN acc;
   JointT<1>::computeRelAccel(artI, parentAccel, pAlpha, getJointAxis(), acc);
-  mJointAcceleration = acc(1);
+  mRevoluteJointFrame->setJointVelDot(acc(1));
+  
   Log(ArtBody, Debug) << "Relative acceleration for Joint \""
                       << getName() << "\" is " << trans(acc) << endl;
   return getJointAxis()*acc;
@@ -114,34 +101,22 @@ RevoluteJoint::computeRelAccel(const SpatialInertia&,
 void
 RevoluteJoint::setState(const Vector& state, unsigned offset)
 {
-  if (mTrackPosition) {
-    setJointPos(state(offset+1));
-    setJointVel(state(offset+2));
-  } else {
-    setJointVel(state(offset+1));
-  }
+  mRevoluteJointFrame->setJointPos(state(offset+1));
+  mRevoluteJointFrame->setJointVel(state(offset+2));
 }
 
 void
 RevoluteJoint::getState(Vector& state, unsigned offset) const
 {
-  if (mTrackPosition) {
-    state(offset+1) = mJointPosition;
-    state(offset+2) = mJointVelocity;
-  } else {
-    state(offset+1) = mJointVelocity;
-  }
+  state(offset+1) = mRevoluteJointFrame->getJointPos();
+  state(offset+2) = mRevoluteJointFrame->getJointVel();
 }
 
 void
 RevoluteJoint::getStateDeriv(Vector& state, unsigned offset)
 {
-  if (mTrackPosition) {
-    state(offset+1) = mJointVelocity;
-    state(offset+2) = mJointAcceleration;
-  } else {
-    state(offset+1) = mJointAcceleration;
-  }
+  state(offset+1) = mRevoluteJointFrame->getJointVel();
+  state(offset+2) = mRevoluteJointFrame->getJointVelDot();
 }
 
 } // namespace OpenFDM

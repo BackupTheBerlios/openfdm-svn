@@ -106,12 +106,10 @@ public:
     Frame* frame0 = outboardBody->getFrame();
     if (!frame0)
       return false;
+    frame0->enableAccel();
     FreeFrame* frame = dynamic_cast<FreeFrame*>(frame0);
-    if (!frame)
-      return false;
-
-    frame->enableAccel();
-    frame->setRelAccel(accel);
+    if (frame)
+      frame->setRelAccel(accel);
 
     outboardBody->computeAccel();
 

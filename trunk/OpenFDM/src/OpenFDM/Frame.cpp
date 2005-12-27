@@ -251,6 +251,13 @@ Frame::setAccelDirtyUnconditional(void)
   }
 }
 
+void
+Frame::setParentFrame(Frame* parent)
+{
+  mParentFrame = parent;
+  setPosDirty();
+}
+
 SpatialInertia
 Frame::inertiaToParent(const SpatialInertia& I) const
 {

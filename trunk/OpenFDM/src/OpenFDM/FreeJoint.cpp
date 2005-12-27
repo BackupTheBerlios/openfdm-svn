@@ -104,12 +104,12 @@ FreeJoint::computeRelAccel(const SpatialInertia& artI,
   Vector3 ga = mGravity->gravityAccel(mFrame->getRefPosition());
   Vector6 grav = Vector6(Vector3::zeros(), mFrame->rotFromRef(ga));
 
-  Log(ArtBody, Debug) << "grav = " << trans(grav) << endl;
-  Log(ArtBody, Debug) << "solve = " << trans(solve(artI, artF)) << endl;
-  Log(ArtBody, Debug) << "parent spatial accel = " << trans(mFrame->getParentSpAccel()) << endl;
-  Log(ArtBody, Debug) << "Hdot = " << trans(mFrame->getHdot()) << endl;
+  Log(ArtBody, Debug) << "grav = " << trans(grav) << endl
+                      << "solve = " << trans(solve(artI, artF)) << endl
+                      << "parent spatial accel = "
+                      << trans(mFrame->getParentSpAccel()) << endl
+                      << "Hdot = " << trans(mFrame->getHdot()) << endl;
   
-
   Vector6 accel = grav - solve(artI, artF)
     - mFrame->getParentSpAccel() - mFrame->getHdot();
   return accel;

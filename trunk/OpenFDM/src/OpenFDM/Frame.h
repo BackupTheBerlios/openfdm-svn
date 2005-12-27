@@ -527,8 +527,7 @@ private:
 
 private:
   /// Set the parent frame to the given one.
-  void setParentFrame(Frame* parent)
-  { mParentFrame = parent; }
+  void setParentFrame(Frame* parent);
 
   // The offset of this frames origin wrt the parent frame measured in
   // the parent frames coordinates.
@@ -608,7 +607,14 @@ class PrismaticJointFrame :
     public Frame {
 public:
   PrismaticJointFrame(const std::string& name) :
-    Frame(name) { /*FIXME zero out members ...*/ }
+    Frame(name)
+  {
+    mZeroPos = Vector3::zeros();
+    mJointAxis = Vector3::unit(1);
+    mJointPos = 0;
+    mJointVel = 0;
+    mJointVelDot = 0;
+  }
   virtual ~PrismaticJointFrame(void) {}
 
   /// Gets the joint axis where this joint is allowed to rotate around.
@@ -649,13 +655,14 @@ public:
   { mJointVelDot = velDot; setLinearRelAccel(mJointVelDot*mJointAxis); }
 
   /// Sets the zero position of the joint.
-  void setZeroPos(const Vector3& zeroPos)
+  void setZeroPosition(const Vector3& zeroPos)
   { mZeroPos = zeroPos; setPosition(mZeroPos + mJointPos*mJointAxis); }
-  const Vector3& getZeroPos(void) const
+  const Vector3& getZeroPosition(void) const
   { return mZeroPos; }
 
+  using Frame::setOrientation;
   /// FIXME Hdot
-
+  
 private:
   /// The zero position with respect to the parent frame.
   Vector3 mZeroPos;
@@ -676,7 +683,14 @@ class RevoluteJointFrame :
     public Frame {
 public:
   RevoluteJointFrame(const std::string& name) :
-    Frame(name) { /*FIXME zero out members ...*/ }
+    Frame(name)
+  {
+    mZeroOrient = Quaternion::unit();
+    mJointAxis = Vector3::unit(1);
+    mJointPos = 0;
+    mJointVel = 0;
+    mJointVelDot = 0;
+  }
   virtual ~RevoluteJointFrame(void) {}
 
   /// Gets the joint axis where this joint is allowed to rotate around.
@@ -719,14 +733,16 @@ public:
   void setJointVelDot(real_type velDot)
   { mJointVelDot = velDot; setAngularRelAccel(mJointVelDot*mJointAxis); }
 
-  /// Sets the zero position of the joint.
-  void setZeroOrient(const Quaternion& zeroOrient)
+  /// Sets the zero orientation of the joint.
+  void setZeroOrientation(const Quaternion& zeroOrient)
   {
     mZeroOrient = zeroOrient;
-    setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
+    setOrientation(zeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
   }
-  const Quaternion& getZeroOrient(void) const
+  const Quaternion& getZeroOrientation(void) const
   { return mZeroOrient; }
+
+  using Frame::setPosition;
 
   /// FIXME Hdot
 

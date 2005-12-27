@@ -20,13 +20,8 @@ PrismaticJoint::PrismaticJoint(const std::string& name)
   : Joint(name)
 {
   setNumContinousStates(2);
-  mJointPosition = 0;
-  mJointVelocity = 0;
-  mJointAcceleration = 0;
-  mJointAxis = Vector3::unit(1);
-  mPosition = Vector3::zeros();
 
-  mFrame = new FreeFrame(name);
+  mPrismaticJointFrame = new PrismaticJointFrame(name);
 
   setNumOutputPorts(2);
   setOutputPort(0, "jointPos", this, &PrismaticJoint::getJointPos);
@@ -46,34 +41,31 @@ PrismaticJoint::setJointAxis(const Vector3& axis)
     return;
   }
 
-  mJointAxis = (1/nrm)*axis;
+  mPrismaticJointFrame->setJointAxis((1/nrm)*axis);
 }
 
 void
 PrismaticJoint::setJointPos(real_type pos)
 {
-  mJointPosition = pos;
-  mFrame->setPosition(mPosition + mJointPosition*mJointAxis);
+  mPrismaticJointFrame->setJointPos(pos);
 }
 
 void
 PrismaticJoint::setJointVel(real_type vel)
 {
-  mJointVelocity = vel;
-  mFrame->setRelVel(mJointVelocity*getJointAxis());
+  mPrismaticJointFrame->setJointVel(vel);
 }
 
 void
 PrismaticJoint::setOrientation(const Quaternion& orientation)
 {
-  mFrame->setPosition(mPosition + mJointPosition*mJointAxis);
+  mPrismaticJointFrame->setOrientation(orientation);
 }
 
 void
 PrismaticJoint::setPosition(const Vector3& position)
 {
-  mPosition = position;
-  mFrame->setPosition(mPosition + mJointPosition*mJointAxis);
+  mPrismaticJointFrame->setZeroPosition(position);
 }
 
 bool
@@ -92,7 +84,7 @@ Vector6
 PrismaticJoint::computeRelAccel(const SpatialInertia&,
                                 const Vector6&)
 {
-  Vector6 parentAccel = mFrame->getParentSpAccel();
+  Vector6 parentAccel = mPrismaticJointFrame->getParentSpAccel();
 
   RigidBody* out = getOutboardBody();
   SpatialInertia artI = out->getArtInertia();
@@ -100,7 +92,7 @@ PrismaticJoint::computeRelAccel(const SpatialInertia&,
 
   JointT<1>::VectorN acc;
   JointT<1>::computeRelAccel(artI, parentAccel, pAlpha, getJointAxis(), acc);
-  mJointAcceleration = acc(1);
+  mPrismaticJointFrame->setJointVelDot(acc(1));
   Log(ArtBody, Debug) << "Relative acceleration for Joint \""
                       << getName() << "\" is " << trans(acc) << endl;
   return getJointAxis()*acc;
@@ -109,22 +101,22 @@ PrismaticJoint::computeRelAccel(const SpatialInertia&,
 void
 PrismaticJoint::setState(const Vector& state, unsigned offset)
 {
-  setJointPos(state(offset+1));
-  setJointVel(state(offset+2));
+  mPrismaticJointFrame->setJointPos(state(offset+1));
+  mPrismaticJointFrame->setJointVel(state(offset+2));
 }
 
 void
 PrismaticJoint::getState(Vector& state, unsigned offset) const
 {
-  state(offset+1) = mJointPosition;
-  state(offset+2) = mJointVelocity;
+  state(offset+1) = mPrismaticJointFrame->getJointPos();
+  state(offset+2) = mPrismaticJointFrame->getJointVel();
 }
 
 void
 PrismaticJoint::getStateDeriv(Vector& state, unsigned offset)
 {
-  state(offset+1) = mJointVelocity;
-  state(offset+2) = mJointAcceleration;
+  state(offset+1) = mPrismaticJointFrame->getJointVel();
+  state(offset+2) = mPrismaticJointFrame->getJointVelDot();
 }
 
 } // namespace OpenFDM

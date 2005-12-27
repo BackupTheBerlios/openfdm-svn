@@ -22,7 +22,7 @@ namespace OpenFDM {
 class RevoluteJoint
   : public Joint, public JointT<1> {
 public:
-  RevoluteJoint(const std::string& name, bool trackPosition = true);
+  RevoluteJoint(const std::string& name);
   virtual ~RevoluteJoint(void);
 
   virtual bool init(void)
@@ -40,18 +40,18 @@ public:
 
     Frame* outFrame = getOutboardBody()->getFrame();
     if (!outFrame) {
-      getOutboardBody()->setFrame(mFrame);
+      getOutboardBody()->setFrame(mRevoluteJointFrame);
     }
     outFrame = getOutboardBody()->getFrame();
     if (!outFrame->isParentFrame(inFrame)) {
-      inFrame->addChildFrame(mFrame);
+      inFrame->addChildFrame(mRevoluteJointFrame);
     }
   }
 
   /** Gets the joint axis where this joint is allowed to rotate around.
    */
   Vector6 getJointAxis(void) const
-  { return Vector6(mJointAxis, Vector3::zeros()); }
+  { return Vector6(mRevoluteJointFrame->getJointAxis(), Vector3::zeros()); }
 
   /** Sets the joint axis where this joint is allowed to rotate around.
    */
@@ -60,7 +60,7 @@ public:
   /** Returns the joint position.
    */
   const real_type& getJointPos(void) const
-  { return mJointPosition; }
+  { return mRevoluteJointFrame->getJointPos(); }
 
   /** Sets the joint position.
    */
@@ -69,7 +69,7 @@ public:
   /** Returns the joint velocity.
    */
   const real_type& getJointVel(void) const
-  { return mJointVelocity; }
+  { return mRevoluteJointFrame->getJointVel(); }
 
   /** Sets the joint velocity.
    */
@@ -95,7 +95,7 @@ public:
     if (!mLineForce)
       return 0;
     
-    mLineForce->computeForce(mJointPosition, mJointVelocity);
+    mLineForce->computeForce(getJointPos(), getJointVel());
     return mLineForce->getForce();
   }
 
@@ -117,39 +117,12 @@ private:
   virtual void getState(Vector& state, unsigned offset) const;
   virtual void getStateDeriv(Vector& state, unsigned offset);
 
-  /** The joint rotation axis.
-   */
-  Vector3 mJointAxis;
-
-  /** The relative joint rotation with respect to the zero orientation.
-   */
-  real_type mJointPosition;
-
-  /** The rotational velocity with respect to the rotation axis.
-   */
-  real_type mJointVelocity;
-
-  /** The rotational velocity with respect to the rotation axis.
-   */
-  real_type mJointAcceleration;
-
-  /** The zero orientation with respect to the parent frame.
-   */
-  Quaternion mOrientation;
-
-  /** Signals if we should track the joint position in the ordinary
-      differential equation part of the multibody system.
-      This is useful for wheel models where the position of the wheel is
-      only used for animations and thus could be postprocessed.
-   */
-  bool mTrackPosition;
-
   /** The direct joint interaction force
    */
   SharedPtr<LineForce> mLineForce;
 
   /// The frame of the mobile root
-  SharedPtr<FreeFrame> mFrame;
+  SharedPtr<RevoluteJointFrame> mRevoluteJointFrame;
 };
 
 } // namespace OpenFDM
