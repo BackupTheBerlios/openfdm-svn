@@ -84,11 +84,11 @@ PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
 }
 
 Vector6
-PrismaticJoint::computeRelAccel(const SpatialInertia&,
-                                const Vector6&)
+PrismaticJoint::computeRelVelDot(const SpatialInertia&,
+                                 const Vector6&)
 {
   CartesianJointFrame<1>::VectorN acc;
-  mPrismaticJointFrame->computeRelAccel(getJointAxis(), acc);
+  mPrismaticJointFrame->computeRelVelDot(getJointAxis(), acc);
   mPrismaticJointFrame->setJointVelDot(acc(1));
   Log(ArtBody, Debug) << "Relative acceleration for Joint \""
                       << getName() << "\" is " << trans(acc) << endl;

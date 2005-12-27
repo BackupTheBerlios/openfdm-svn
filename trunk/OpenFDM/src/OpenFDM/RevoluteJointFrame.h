@@ -42,7 +42,7 @@ public:
     mJointAxis = axis;
     setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
     setAngularRelVel(mJointVel*mJointAxis);
-    setAngularRelAccel(mJointVelDot*mJointAxis);
+    setAngularRelVelDot(mJointVelDot*mJointAxis);
   }
 
   /// Returns the joint position.
@@ -70,7 +70,7 @@ public:
 
   /// Returns the derivative of the relative velocity
   void setJointVelDot(real_type velDot)
-  { mJointVelDot = velDot; setAngularRelAccel(mJointVelDot*mJointAxis); }
+  { mJointVelDot = velDot; setAngularRelVelDot(mJointVelDot*mJointAxis); }
 
   /// Sets the zero orientation of the joint.
   void setZeroOrientation(const Quaternion& zeroOrient)

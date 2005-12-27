@@ -707,13 +707,13 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
     spi += inertiaFrom(structToBody(it->first), inertia);
     ++it;
   }
-  mVehicle->getTopBody()->addInteract(new Mass(spi));
+  mVehicle->getTopBody()->addInteract(new Mass("Emptyweight Mass", spi));
 
   // Attach the eye point.
   FreeFrame* epFrame = new FreeFrame("Eyepoint Frame");
   epFrame->setPosition(structToBody(ep));
   epFrame->setRelVel(Vector6::zeros());
-  epFrame->setRelAccel(Vector6::zeros());
+  epFrame->setRelVelDot(Vector6::zeros());
   Sensor* accelSensor = new Sensor("Acceleration Sensor");
   accelSensor->addSampleTime(SampleTime(1.0/120));
   Port* port = accelSensor->getOutputPort("nz");
@@ -738,13 +738,12 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
 {
   RigidBody* wheel = new RigidBody(name + " Wheel");
   InertiaMatrix wheelInertia(10, 0, 0, 100, 0, 10);
-  wheel->addInteract(new Mass(SpatialInertia(wheelInertia, 50)));
-  parent->getFrame()->addChildFrame(wheel->getFrame());
+  wheel->addInteract(new Mass("Wheel Inertia", SpatialInertia(wheelInertia, 50)));
   mVehicle->getMultiBodySystem()->addRigidBody(wheel);
   
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
   parent->addInteract(wj);
-  wheel->addInteract(wj);
+  wheel->setInboardJoint(wj);
   wj->setJointAxis(Vector3(0, 1, 0));
   wj->setPosition(pos);
   wj->setOrientation(Quaternion::unit());
@@ -926,13 +925,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       // This is the movable part of the strut, doing the compression
       RigidBody* arm = new RigidBody(name + " Arm");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
-      mVehicle->getTopBody()->getFrame()->addChildFrame(arm->getFrame());
-      arm->addInteract(new Mass(inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
+      arm->addInteract(new Mass("Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
 
       // Connect that with a revolute joint to the main body
       RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
       mVehicle->getTopBody()->addInteract(rj);
-      arm->addInteract(rj);
+      arm->setInboardJoint(rj);
       rj->setJointAxis(Vector3(0, 1, 0));
       rj->setJointPos(0);
       rj->setJointVel(0);
@@ -1001,14 +999,13 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         // A new part modelling the steering
         RigidBody* steer = new RigidBody(name + " Steer");
         mVehicle->getMultiBodySystem()->addRigidBody(steer);
-        strutParent->getFrame()->addChildFrame(steer->getFrame());
 
         // connect that via a revolute joint to the toplevel body.
         // Note the 0.05m below, most steering wheels have some kind of
         // castering auto line up behavour. That is doe with this 0.05m.
         RevoluteJoint* sj = new RevoluteJoint(name + " Steer Joint");
         strutParent->addInteract(sj);
-        steer->addInteract(sj);
+        steer->setInboardJoint(sj);
         sj->setJointAxis(Vector3(0, 0, 1));
         sj->setJointPos(0);
         sj->setJointVel(0);
@@ -1044,13 +1041,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       // Now the compressible part of the strut
       RigidBody* arm = new RigidBody(name + " Strut");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
-      strutParent->getFrame()->addChildFrame(arm->getFrame());
-      arm->addInteract(new Mass(inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
+      arm->addInteract(new Mass("Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
 
       // This time it is a prismatic joint
       PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
       strutParent->addInteract(pj);
-      arm->addInteract(pj);
+      arm->setInboardJoint(pj);
       pj->setJointAxis(Vector3(0, 0, -1));
       if (strutParent == mVehicle->getTopBody())
         pj->setPosition(structToBody(compressJointPos));

@@ -42,8 +42,6 @@ Each frame can have a linear and angular velocity with respect to its
 parent frame.
 */
 
-/// FIXME: RelAccel->VelDot ...
-
 class Frame :
     public Object {
 public:
@@ -155,8 +153,8 @@ public:
               to the parent frame. The velocity is in the current frames
               coordinates.
    */
-  const Vector6& getRelAccel(void) const 
-  { return mRelAccel; }
+  const Vector6& getRelVelDot(void) const 
+  { return mRelVelDot; }
 
 
   /** Linear velocity with respect to parent.
@@ -204,15 +202,15 @@ public:
       @return The linear acceleration of this frame with respect to the parent
       frame.
    */
-  Vector3 getLinearRelAccel(void) const
-  { return getRelAccel().getLinear(); }
+  Vector3 getLinearRelVelDot(void) const
+  { return getRelVelDot().getLinear(); }
 
   /** Angular acceleration with respect to parent.
       @return The angular acceleration of this frame with respect to the parent
       frame.
    */
-  Vector3 getAngularRelAccel(void) const
-  { return getRelAccel().getAngular(); }
+  Vector3 getAngularRelVelDot(void) const
+  { return getRelVelDot().getAngular(); }
 
   /** Spatial acceleration of the parent frame.
       @return The spatial acceleration of the parent frame with respect to an
@@ -238,7 +236,7 @@ public:
   Vector6 getSpAccel(void) const
   {
     OpenFDMAssert(!mDisableSpAccel);
-    return getRelAccel() + getParentSpAccel() + getHdot();
+    return getRelVelDot() + getParentSpAccel() + getHdot();
   }
 
   /** Classical acceleration of the current frame.
@@ -250,7 +248,7 @@ public:
   {
     OpenFDMAssert(!mDisableSpAccel);
     Vector6 iv = getSpVel();
-    return getRelAccel() + getParentSpAccel() + getHdot()
+    return getRelVelDot() + getParentSpAccel() + getHdot()
       + Vector6(Vector3::zeros(), cross(iv.getAngular(), iv.getLinear()));
   }
 
@@ -472,12 +470,12 @@ protected:
   { setVelDirty(); mRelVel.setLinear(v); }
   void setAngularRelVel(const Vector3& rotVel)
   { setVelDirty(); mRelVel.setAngular(rotVel); }
-  void setRelAccel(const Vector6& accel)
-  { setAccelDirty(); mRelAccel = accel; }
-  void setLinearRelAccel(const Vector3& accel)
-  { setAccelDirty(); mRelAccel.setLinear(accel); }
-  void setAngularRelAccel(const Vector3& accel)
-  { setAccelDirty(); mRelAccel.setAngular(accel); }
+  void setRelVelDot(const Vector6& accel)
+  { setAccelDirty(); mRelVelDot = accel; }
+  void setLinearRelVelDot(const Vector3& accel)
+  { setAccelDirty(); mRelVelDot.setLinear(accel); }
+  void setAngularRelVelDot(const Vector3& accel)
+  { setAccelDirty(); mRelVelDot.setAngular(accel); }
 
   void disableAccel(void)
   { mDisableSpAccel = true; }
@@ -542,7 +540,7 @@ private:
 
   // The spatial acceleration of this frame wrt the parent frame.
   // True? more the relative acceleration ...
-  Vector6 mRelAccel;
+  Vector6 mRelVelDot;
 
   mutable Vector6 mParentSpVel;
   mutable Vector6 mParentSpAccel;
@@ -590,12 +588,12 @@ public:
   { Frame::setLinearRelVel(vel); }
   void setAngularRelVel(const Vector3& vel)
   { Frame::setAngularRelVel(vel); }
-  void setRelAccel(const Vector6& accel)
-  { Frame::setRelAccel(accel); }
-  void setLinearRelAccel(const Vector3& accel)
-  { Frame::setLinearRelAccel(accel); }
-  void setAngularRelAccel(const Vector3& accel)
-  { Frame::setAngularRelAccel(accel); }
+  void setRelVelDot(const Vector6& accel)
+  { Frame::setRelVelDot(accel); }
+  void setLinearRelVelDot(const Vector3& accel)
+  { Frame::setLinearRelVelDot(accel); }
+  void setAngularRelVelDot(const Vector3& accel)
+  { Frame::setAngularRelVelDot(accel); }
 
   void setRefPosition(const Vector3& p)
   { Frame::setRefPosition(p); }

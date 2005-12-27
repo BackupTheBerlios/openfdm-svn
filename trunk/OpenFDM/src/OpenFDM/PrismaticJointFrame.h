@@ -42,7 +42,7 @@ public:
     mJointAxis = axis;
     setPosition(mZeroPos + mJointPos*mJointAxis);
     setLinearRelVel(mJointVel*mJointAxis);
-    setLinearRelAccel(mJointVelDot*mJointAxis);
+    setLinearRelVelDot(mJointVelDot*mJointAxis);
   }
 
   /// Returns the joint position.
@@ -67,7 +67,7 @@ public:
 
   /// Returns the derivative of the relative velocity
   void setJointVelDot(real_type velDot)
-  { mJointVelDot = velDot; setLinearRelAccel(mJointVelDot*mJointAxis); }
+  { mJointVelDot = velDot; setLinearRelVelDot(mJointVelDot*mJointAxis); }
 
   /// Sets the zero position of the joint.
   void setZeroPosition(const Vector3& zeroPos)

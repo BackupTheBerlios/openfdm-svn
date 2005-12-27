@@ -51,8 +51,8 @@ private:
   virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF);
   /** Plugin function for the articulated body algorithm.
    */
-  virtual Vector6 computeRelAccel(const SpatialInertia& artI,
-                                  const Vector6& artF);
+  virtual Vector6 computeRelVelDot(const SpatialInertia& artI,
+                                   const Vector6& artF);
 
 
   /** Plugin function for the state propagation.

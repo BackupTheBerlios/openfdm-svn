@@ -26,14 +26,14 @@ Frame::Frame(const std::string& name) :
   setPosition(Vector3::zeros());
   setOrientation(Quaternion::unit());
   setRelVel(Vector6::zeros());
-  setRelAccel(Vector6::zeros());
+  setRelVelDot(Vector6::zeros());
 
   addProperty("position", Property(this, &Frame::getPosition));
   addProperty("orienatation", Property(this, &Frame::getOrientation));
   addProperty("relVel", Property(this, &Frame::getRelVel));
   addProperty("spVel", Property(this, &Frame::getSpVel));
   addProperty("refVel", Property(this, &Frame::getRefVel));
-  addProperty("relAccel", Property(this, &Frame::getRelAccel));
+  addProperty("relVelDot", Property(this, &Frame::getRelVelDot));
   addProperty("spAccel", Property(this, &Frame::getSpAccel));
   addProperty("classicAccel", Property(this, &Frame::getClassicAccel));
   addProperty("refPosition", Property(this, &Frame::getRefPosition));

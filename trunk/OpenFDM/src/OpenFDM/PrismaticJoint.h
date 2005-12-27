@@ -108,8 +108,8 @@ private:
   /** Computes the relative acceleration of this body with respect to its
       parent. It is part of the articulated body algorithm.
    */
-  virtual Vector6 computeRelAccel(const SpatialInertia& artI,
-                                  const Vector6& artF);
+  virtual Vector6 computeRelVelDot(const SpatialInertia& artI,
+                                   const Vector6& artF);
 
   /** Methods for the OpenFDM::Part.
    */

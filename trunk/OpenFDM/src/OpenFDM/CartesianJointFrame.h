@@ -64,8 +64,8 @@ public:
     return true;
   }
   
-  void computeRelAccel(const Matrix6N& jointAxis,
-                       VectorN& jointAccel) const
+  void computeRelVelDot(const Matrix6N& jointAxis,
+                        VectorN& jointAccel) const
   {
     if (hIh.singular()) {
       jointAccel.clear();

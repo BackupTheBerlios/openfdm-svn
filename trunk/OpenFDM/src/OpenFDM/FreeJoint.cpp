@@ -89,13 +89,13 @@ FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
 }
 
 Vector6
-FreeJoint::computeRelAccel(const SpatialInertia& artI,
-                           const Vector6& artF)
+FreeJoint::computeRelVelDot(const SpatialInertia& artI,
+                            const Vector6& artF)
 {
   RigidBody* topBody = getParentRigidBody(0);
   OpenFDMAssert(topBody);
 
-  Log(ArtBody, Debug) << "FreeJoint::computeRelAccel():\n" << artI << endl;
+  Log(ArtBody, Debug) << "FreeJoint::computeRelVelDot():\n" << artI << endl;
 
   // Assumption: body is small compared to the distance to the planets
   // center of mass. That means gravity could be considered equal for the whole
@@ -169,7 +169,7 @@ FreeJoint::getStateDeriv(Vector& state, unsigned offset)
   state(offset+6) = vel(2);
   state(offset+7) = vel(3);
   
-  Vector6 accel = mFrame->getRelAccel();
+  Vector6 accel = mFrame->getRelVelDot();
   state(offset+8)  = accel(1);
   state(offset+9)  = accel(2);
   state(offset+10) = accel(3);

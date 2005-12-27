@@ -71,8 +71,8 @@ public:
   // Joint slot ...
   // FIXME: pure virtual
   virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF) = 0;
-  virtual Vector6 computeRelAccel(const SpatialInertia& artI,
-                                  const Vector6& artF) = 0;
+  virtual Vector6 computeRelVelDot(const SpatialInertia& artI,
+                                   const Vector6& artF) = 0;
 
   //???
   bool updateAccels(RigidBody* rigidBody)
@@ -85,8 +85,8 @@ public:
       return false;
 
     // Set the local acceleration
-    Vector6 accel = computeRelAccel(outboardBody->getArtInertia(),
-                                    outboardBody->getArtForce());
+    Vector6 accel = computeRelVelDot(outboardBody->getArtInertia(),
+                                     outboardBody->getArtForce());
     
     Frame* frame0 = outboardBody->getFrame();
     if (!frame0)
@@ -94,7 +94,7 @@ public:
     frame0->enableAccel();
     FreeFrame* frame = dynamic_cast<FreeFrame*>(frame0);
     if (frame)
-      frame->setRelAccel(accel);
+      frame->setRelVelDot(accel);
 
     outboardBody->computeAccel();
 

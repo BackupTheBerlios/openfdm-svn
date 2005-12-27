@@ -83,11 +83,11 @@ RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
 }
 
 Vector6
-RevoluteJoint::computeRelAccel(const SpatialInertia&,
-                               const Vector6&)
+RevoluteJoint::computeRelVelDot(const SpatialInertia&,
+                                const Vector6&)
 {
   CartesianJointFrame<1>::VectorN acc;
-  mRevoluteJointFrame->computeRelAccel(getJointAxis(), acc);
+  mRevoluteJointFrame->computeRelVelDot(getJointAxis(), acc);
   mRevoluteJointFrame->setJointVelDot(acc(1));
   
   Log(ArtBody, Debug) << "Relative acceleration for Joint \""
