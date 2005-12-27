@@ -43,6 +43,7 @@ public:
     setPosition(mZeroPos + mJointPos*mJointAxis);
     setLinearRelVel(mJointVel*mJointAxis);
     setLinearRelVelDot(mJointVelDot*mJointAxis);
+    setJointMatrix(Vector6(Vector3::zeros(), axis));
   }
 
   /// Returns the joint position.

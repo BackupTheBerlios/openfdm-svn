@@ -53,9 +53,9 @@ MultiBodySystem::output(const TaskInfo& taskInfo)
   }
 
   // Compute forward dynamics, that is the articulated forces and inertia.
-  mFreeJoint->getOutboardBody()->computeArtValues();
+  mFreeJoint->interactWith(mFreeJoint->getInboardBody());
   // Then compute the articulated inertias and forces.
-  mFreeJoint->updateAccels(0);
+  mFreeJoint->updateAccels(mFreeJoint->getInboardBody());
 
   // Hmm, just works now ... FIXME
   for (it = mModels.begin(); it != mModels.end(); ++it) {

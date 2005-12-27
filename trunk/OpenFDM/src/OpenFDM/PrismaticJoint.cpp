@@ -69,30 +69,25 @@ PrismaticJoint::setPosition(const Vector3& position)
 }
 
 bool
-PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
+PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
+                                 const SpatialInertia& outI,
+                                 const Vector6& outF)
 {
   // That projects away tha components where the degrees of freedom
   // of the joint are.
-  RigidBody* out = getOutboardBody();
-  LinAlg::Vector<real_type,1> tau;
+  CartesianJointFrame<1>::VectorN tau;
   tau(1) = getJointForce();
-  return mPrismaticJointFrame->jointArticulation(artI, artF,
-                                                 out->getArtForce(),
-                                                 out->getArtInertia(),
-                                                 tau,
-                                                 getJointAxis());
+  return mPrismaticJointFrame->jointArticulation(artI, artF, outF, outI, tau);
 }
 
-Vector6
-PrismaticJoint::computeRelVelDot(const SpatialInertia&,
-                                 const Vector6&)
+void
+PrismaticJoint::computeRelVelDot()
 {
   CartesianJointFrame<1>::VectorN acc;
-  mPrismaticJointFrame->computeRelVelDot(getJointAxis(), acc);
+  mPrismaticJointFrame->computeRelVelDot(acc);
   mPrismaticJointFrame->setJointVelDot(acc(1));
   Log(ArtBody, Debug) << "Relative acceleration for Joint \""
                       << getName() << "\" is " << trans(acc) << endl;
-  return getJointAxis()*acc;
 }
 
 void

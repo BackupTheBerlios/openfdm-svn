@@ -82,20 +82,14 @@ FreeJoint::recheckTopology(void)
 }
 
 bool
-FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
+FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
+                             const SpatialInertia& outI,
+                             const Vector6& outF)
 {
-  artI = SpatialInertia::zeros();
-  artF = Vector6::zeros();
-}
+  artI.clear();
+  artF.clear();
 
-Vector6
-FreeJoint::computeRelVelDot(const SpatialInertia& artI,
-                            const Vector6& artF)
-{
-  RigidBody* topBody = getParentRigidBody(0);
-  OpenFDMAssert(topBody);
-
-  Log(ArtBody, Debug) << "FreeJoint::computeRelVelDot():\n" << artI << endl;
+  Log(ArtBody, Debug) << "FreeJoint::computeRelVelDot():\n" << outI << endl;
 
   // Assumption: body is small compared to the distance to the planets
   // center of mass. That means gravity could be considered equal for the whole
@@ -105,14 +99,22 @@ FreeJoint::computeRelVelDot(const SpatialInertia& artI,
   Vector6 grav = Vector6(Vector3::zeros(), mFrame->rotFromRef(ga));
 
   Log(ArtBody, Debug) << "grav = " << trans(grav) << endl
-                      << "solve = " << trans(solve(artI, artF)) << endl
+                      << "solve = " << trans(solve(outI, outF)) << endl
                       << "parent spatial accel = "
                       << trans(mFrame->getParentSpAccel()) << endl
                       << "Hdot = " << trans(mFrame->getHdot()) << endl;
   
-  Vector6 accel = grav - solve(artI, artF)
+  Vector6 accel = grav - solve(outI, outF)
     - mFrame->getParentSpAccel() - mFrame->getHdot();
-  return accel;
+  
+  mFrame->setRelVelDot(accel);
+
+  return true;
+}
+
+void
+FreeJoint::computeRelVelDot()
+{
 }
 
 void

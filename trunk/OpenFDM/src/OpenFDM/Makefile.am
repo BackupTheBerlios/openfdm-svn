@@ -166,6 +166,7 @@ libOpenFDM_la_SOURCES = \
   Integrator.cpp \
   Interact.cpp \
   ImplicitEuler.cpp \
+  Joint.cpp \
   LineActuator.cpp \
   LinearSpring.cpp \
   LineForce.cpp \

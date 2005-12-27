@@ -43,6 +43,8 @@ public:
     setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
     setAngularRelVel(mJointVel*mJointAxis);
     setAngularRelVelDot(mJointVelDot*mJointAxis);
+
+    setJointMatrix(Vector6(axis, Vector3::zeros()));
   }
 
   /// Returns the joint position.

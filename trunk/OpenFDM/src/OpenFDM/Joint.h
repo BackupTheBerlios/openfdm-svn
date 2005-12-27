@@ -21,9 +21,8 @@ namespace OpenFDM {
 class Joint
   : public Interact {
 public:
-  Joint(const std::string& name)
-    : Interact(name, 2)
-  {}
+  Joint(const std::string& name);
+  virtual ~Joint(void);
 
   /// FIXME: joint's should be lockable, which means trylock == true and
   /// velocity small enough - keep position ...
@@ -55,7 +54,8 @@ public:
     // Apply the joint degrees of freedom to that.
     // If there was an error, (something was singular ???)
     // just ignore that part. FIXME, ist this ok????
-    if (!jointArticulation(I, F))
+    if (!jointArticulation(I, F, outboardBody->getArtInertia(),
+                           outboardBody->getArtForce()))
       return;
 
     Log(ArtBody, Debug3) << "Outboard Articulated values past joint "
@@ -63,6 +63,8 @@ public:
                          << "\nInertia\n" << I << endl;
 
     // Contribute the transformed values to the parent.
+    if (!rigidBody)
+      return;
     Frame* frame = outboardBody->getFrame();
     rigidBody->contributeInertia(frame->inertiaToParent(I));
     rigidBody->contributeForce(frame->forceToParent(F));
@@ -70,9 +72,10 @@ public:
 
   // Joint slot ...
   // FIXME: pure virtual
-  virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF) = 0;
-  virtual Vector6 computeRelVelDot(const SpatialInertia& artI,
-                                   const Vector6& artF) = 0;
+  virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF,
+                                 const SpatialInertia& outI,
+                                 const Vector6& outF) = 0;
+  virtual void computeRelVelDot() = 0;
 
   //???
   bool updateAccels(RigidBody* rigidBody)
@@ -85,16 +88,12 @@ public:
       return false;
 
     // Set the local acceleration
-    Vector6 accel = computeRelVelDot(outboardBody->getArtInertia(),
-                                     outboardBody->getArtForce());
+    computeRelVelDot();
     
     Frame* frame0 = outboardBody->getFrame();
     if (!frame0)
       return false;
     frame0->enableAccel();
-    FreeFrame* frame = dynamic_cast<FreeFrame*>(frame0);
-    if (frame)
-      frame->setRelVelDot(accel);
 
     outboardBody->computeAccel();
 

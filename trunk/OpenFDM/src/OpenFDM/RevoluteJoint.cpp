@@ -68,31 +68,24 @@ RevoluteJoint::setOrientation(const Quaternion& orientation)
 }
 
 bool
-RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF)
+RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
+                                 const SpatialInertia& outI,
+                                 const Vector6& outF)
 {
-  // That projects away tha components where the degrees of freedom
-  // of the joint are.
-  RigidBody* out = getOutboardBody();
-  LinAlg::Vector<real_type,1> tau;
+  CartesianJointFrame<1>::VectorN tau;
   tau(1) = getJointForce();
-  return mRevoluteJointFrame->jointArticulation(artI, artF,
-                                                out->getArtForce(),
-                                                out->getArtInertia(),
-                                                tau,
-                                                getJointAxis());
+  return mRevoluteJointFrame->jointArticulation(artI, artF, outF, outI, tau);
 }
 
-Vector6
-RevoluteJoint::computeRelVelDot(const SpatialInertia&,
-                                const Vector6&)
+void
+RevoluteJoint::computeRelVelDot()
 {
   CartesianJointFrame<1>::VectorN acc;
-  mRevoluteJointFrame->computeRelVelDot(getJointAxis(), acc);
+  mRevoluteJointFrame->computeRelVelDot(acc);
   mRevoluteJointFrame->setJointVelDot(acc(1));
   
   Log(ArtBody, Debug) << "Relative acceleration for Joint \""
                       << getName() << "\" is " << trans(acc) << endl;
-  return getJointAxis()*acc;
 }
 
 void

@@ -48,11 +48,6 @@ public:
     }
   }
 
-  /** Gets the joint axis where this joint is allowed to rotate around.
-   */
-  Vector6 getJointAxis(void) const
-  { return Vector6(Vector3::zeros(), mPrismaticJointFrame->getJointAxis()); }
-
   /** Sets the joint axis where this joint is allowed to rotate around.
    */
   void setJointAxis(const Vector3& axis);
@@ -103,13 +98,14 @@ private:
   /** Computes the inboard articulated inertia and force for
       this articulated body. It is part of the articulated body algorithm.
    */
-  virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF);
+  virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF,
+                                 const SpatialInertia& outI,
+                                 const Vector6& outF);
 
   /** Computes the relative acceleration of this body with respect to its
       parent. It is part of the articulated body algorithm.
    */
-  virtual Vector6 computeRelVelDot(const SpatialInertia& artI,
-                                   const Vector6& artF);
+  virtual void computeRelVelDot();
 
   /** Methods for the OpenFDM::Part.
    */
