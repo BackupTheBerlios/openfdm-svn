@@ -82,6 +82,7 @@ nobase_OpenFDMinclude_HEADERS = \
   MaxModel.h \
   MidpointRule.h \
   MinModel.h \
+  MobileRootJointFrame.h \
   Model.h \
   ModelGroup.h \
   ModelVisitor.h \

@@ -18,6 +18,8 @@
 
 namespace OpenFDM {
 
+class MobileRootJointFrame;
+
 class FreeJoint
   : public Joint {
 public:
@@ -29,21 +31,16 @@ public:
   virtual void recheckTopology(void);
 
   /// Set the relative velocity.
-  void setRelVel(const Vector6& vel)
-  { mFrame->setRelVel(vel); }
+  void setRelVel(const Vector6& vel);
   /// Set the relative velocity.
-  void setLinearRelVel(const Vector3& vel)
-  { mFrame->setLinearRelVel(vel); }
+  void setLinearRelVel(const Vector3& vel);
   /// Set the relative velocity.
-  void setAngularRelVel(const Vector3& vel)
-  { mFrame->setAngularRelVel(vel); }
+  void setAngularRelVel(const Vector3& vel);
 
   /// Set the reference position.
-  void setRefPosition(const Vector3& p)
-  { mFrame->setRefPosition(p); }
+  void setRefPosition(const Vector3& p);
   /// Set the reference orientation.
-  void setRefOrientation(const Quaternion& o)
-  { mFrame->setRefOrientation(o); }
+  void setRefOrientation(const Quaternion& o);
 
 private:
   /** Plugin function for the articulated body algorithm.
@@ -68,7 +65,7 @@ private:
   SharedPtr<const Gravity> mGravity;
 
   /// The frame of the mobile root
-  SharedPtr<FreeFrame> mFrame;
+  SharedPtr<MobileRootJointFrame> mFrame;
 };
 
 } // namespace OpenFDM

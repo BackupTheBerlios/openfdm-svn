@@ -13,13 +13,14 @@
 #include "Frame.h"
 #include "RigidBody.h"
 #include "RootFrame.h"
+#include "MobileRootJointFrame.h"
 #include "FreeJoint.h"
 
 namespace OpenFDM {
 
 FreeJoint::FreeJoint(const std::string& name)
   : Joint(name),
-    mFrame(new FreeFrame(name))
+    mFrame(new MobileRootJointFrame(name))
 {
   setNumContinousStates(13);
   addSampleTime(SampleTime::Continous);
@@ -82,6 +83,36 @@ FreeJoint::recheckTopology(void)
 }
 
 void
+FreeJoint::setRelVel(const Vector6& vel)
+{
+  mFrame->setRelVel(vel);
+}
+
+void
+FreeJoint::setLinearRelVel(const Vector3& vel)
+{
+  mFrame->setLinearRelVel(vel);
+}
+
+void
+FreeJoint::setAngularRelVel(const Vector3& vel)
+{
+  mFrame->setAngularRelVel(vel);
+}
+
+void
+FreeJoint::setRefPosition(const Vector3& p)
+{
+  mFrame->setRefPosition(p);
+}
+
+void
+FreeJoint::setRefOrientation(const Quaternion& o)
+{
+  mFrame->setRefOrientation(o);
+}
+
+void
 FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
                              const SpatialInertia& outI,
                              const Vector6& outF)
@@ -90,24 +121,7 @@ FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
   artF.clear();
 
   Log(ArtBody, Debug) << "FreeJoint::computeRelVelDot():\n" << outI << endl;
-
-  // Assumption: body is small compared to the distance to the planets
-  // center of mass. That means gravity could be considered equal for the whole
-  // vehicle.
-  // See Featherstone, Orin: Equations and Algorithms
-  Vector3 ga = mGravity->gravityAccel(mFrame->getRefPosition());
-  Vector6 grav = Vector6(Vector3::zeros(), mFrame->rotFromRef(ga));
-
-  Log(ArtBody, Debug) << "grav = " << trans(grav) << endl
-                      << "solve = " << trans(solve(outI, outF)) << endl
-                      << "parent spatial accel = "
-                      << trans(mFrame->getParentSpAccel()) << endl
-                      << "Hdot = " << trans(mFrame->getHdot()) << endl;
-  
-  Vector6 accel = grav - solve(outI, outF)
-    - mFrame->getParentSpAccel() - mFrame->getHdot();
-  
-  mFrame->setRelVelDot(accel);
+  mFrame->jointArticulation(outF, outI, mGravity);
 }
 
 void
