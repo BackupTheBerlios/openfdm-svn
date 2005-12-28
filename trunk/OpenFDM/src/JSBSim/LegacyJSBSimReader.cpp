@@ -27,6 +27,7 @@
 #include <OpenFDM/AirSpring.h>
 #include <OpenFDM/PrismaticJoint.h>
 #include <OpenFDM/Product.h>
+#include <OpenFDM/RevoluteActuator.h>
 #include <OpenFDM/RevoluteJoint.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/Sensor.h>
@@ -38,7 +39,6 @@
 #include <OpenFDM/Units.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/WheelContact.h>
-#include <OpenFDM/LineActuator.h>
 #include <OpenFDM/DiscBrake.h>
 
 #include <OpenFDM/ReaderWriter.h>
@@ -1003,7 +1003,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         // connect that via a revolute joint to the toplevel body.
         // Note the 0.05m below, most steering wheels have some kind of
         // castering auto line up behavour. That is doe with this 0.05m.
-        RevoluteJoint* sj = new RevoluteJoint(name + " Steer Joint");
+        RevoluteActuator* sj = new RevoluteActuator(name + " Steer Joint");
         strutParent->addInteract(sj);
         steer->setInboardJoint(sj);
         sj->setJointAxis(Vector3(0, 0, 1));
@@ -1013,13 +1013,8 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
                         + Vector3(0.05, 0, 0));
         sj->setOrientation(Quaternion::unit());
 
-        // Add an actuator trying to interpret the steering command
-        LineActuator* steerAct = new LineActuator(name + " Steering Actuator");
         Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
-        steerAct->getInputPort(0)->connect(port);
-        steerAct->setProportionalGain(-1e6);
-        steerAct->setDerivativeGain(-1e3);
-        sj->setLineForce(steerAct);
+        sj->getInputPort(0)->connect(port);
         
         strutParent = steer;
         

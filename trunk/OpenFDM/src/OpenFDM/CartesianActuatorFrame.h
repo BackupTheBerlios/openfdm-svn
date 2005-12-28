@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_CartesianJointFrame_H
-#define OpenFDM_CartesianJointFrame_H
+#ifndef OpenFDM_CartesianActuatorFrame_H
+#define OpenFDM_CartesianActuatorFrame_H
 
 #include "Assert.h"
 #include "Vector.h"
@@ -14,7 +14,7 @@
 namespace OpenFDM {
 
 template<unsigned n>
-class CartesianJointFrame :
+class CartesianActuatorFrame :
   public Frame {
 public:
   typedef LinAlg::Vector<real_type,n> VectorN;
@@ -22,7 +22,7 @@ public:
   typedef LinAlg::Matrix<real_type,n,n> MatrixNN;
   typedef LinAlg::MatrixFactors<real_type,n,n,LinAlg::LUTag> MatrixFactorsNN;
 
-  CartesianJointFrame(const std::string& name) :
+  CartesianActuatorFrame(const std::string& name) :
     Frame(name),
 //     mJointMatrix(Matrix6N::zeros()), /// ??? ... see LinAlg checkout ...
     mOutboardInertia(SpatialInertia::zeros()),
@@ -35,7 +35,7 @@ public:
     mJointVelDot(VectorN::zeros()),
     mRelVelDot(Vector6::zeros())
   { }
-  virtual ~CartesianJointFrame(void)
+  virtual ~CartesianActuatorFrame(void)
   { }
 
   /// The interface routine for the Frame,
@@ -60,7 +60,7 @@ public:
     if (mJointVelDotDirty) {
       if (hIh.singular()) {
         Log(ArtBody,Error) << "Detected singular mass matrix for "
-                           << "CartesianJointFrame \"" << getName()
+                           << "CartesianActuatorFrame \"" << getName()
                            << "\": Fix your model!" << endl;
         mJointVelDot.clear();
       } else {
@@ -75,13 +75,12 @@ public:
   /// Compute the articulated force and inertia past inboard to that joint
   bool jointArticulation(SpatialInertia& artI, Vector6& artF,
                          const Vector6& outF, const SpatialInertia& outI,
-                         const VectorN& jointForce)
+                         const VectorN& jointAccel)
   {
     // Store the outboard values since we will need them later in velocity
     // derivative computations
     mOutboardInertia = outI;
     mOutboardForce = outF;
-    mJointForce = jointForce;
     // Make sure we have the correct internal state
     mJointVelDotDirty = true;
     mArticulationDirty = false;
@@ -91,18 +90,21 @@ public:
     hIh = trans(mJointMatrix)*Ih;
 
     mPAlpha = mOutboardForce + mOutboardInertia*getHdot();
+
+    mJointForce = trans(mJointMatrix)*(Ih*jointAccel + mPAlpha);
+
     artF = mPAlpha;
     artI = outI;
 
     if (hIh.singular()) {
       Log(ArtBody,Error) << "Detected singular mass matrix for "
-                         << "CartesianJointFrame \"" << getName()
+                         << "CartesianActuatorFrame \"" << getName()
                          << "\": Fix your model!" << endl;
       return false;
     }
     
     // Project away the directions handled with this current joint
-    artF -= Ih*hIh.solve(trans(mJointMatrix)*mPAlpha - jointForce);
+    artF -= Ih*hIh.solve(trans(mJointMatrix)*mPAlpha - mJointForce);
     artI -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
 
     return true;

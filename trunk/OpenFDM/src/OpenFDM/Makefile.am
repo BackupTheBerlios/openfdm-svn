@@ -31,6 +31,7 @@ nobase_OpenFDMinclude_HEADERS = \
   AtmosphereSTD1976.h \
   Bias.h \
   BinaryFunctionModel.h \
+  CartesianActuatorFrame.h \
   CartesianJointFrame.h \
   Contact.h \
   ConstantForce.h \
@@ -72,7 +73,6 @@ nobase_OpenFDMinclude_HEADERS = \
   LinAlg/IO.h \
   LinAlg/Misc.h \
   LinAlg/Proxy.h \
-  LineActuator.h \
   LinearSpring.h \
   LineForce.h \
   LogStream.h \
@@ -101,6 +101,8 @@ nobase_OpenFDMinclude_HEADERS = \
   Quaternion.h \
   ReaderWriter.h \
   Referenced.h \
+  RevoluteActuator.h \
+  RevoluteActuatorFrame.h \
   RevoluteJoint.h \
   RevoluteJointFrame.h \
   RigidBody.h \
@@ -168,7 +170,6 @@ libOpenFDM_la_SOURCES = \
   Interact.cpp \
   ImplicitEuler.cpp \
   Joint.cpp \
-  LineActuator.cpp \
   LinearSpring.cpp \
   LineForce.cpp \
   Logger.cpp \
@@ -188,6 +189,7 @@ libOpenFDM_la_SOURCES = \
   Product.cpp \
   Property.cpp \
   ReaderWriter.cpp \
+  RevoluteActuator.cpp \
   RevoluteJoint.cpp \
   RigidBody.cpp \
   RootFrame.cpp \
