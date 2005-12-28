@@ -42,8 +42,6 @@ public:
    */
   void computeArtValues(void);
 
-  void computeAccel(void);
-
   /** Get the outboard articulated inertia.
       Returns a reference to the outboard articulated inertia.
       The returned inertia matrix is computed prevously by a call to

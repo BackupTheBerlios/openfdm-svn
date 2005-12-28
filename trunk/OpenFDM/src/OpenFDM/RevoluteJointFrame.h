@@ -27,8 +27,7 @@ public:
     mZeroOrient(Quaternion::unit()),
     mJointAxis(Vector3::unit(1)),
     mJointPos(0),
-    mJointVel(0),
-    mJointVelDot(0)
+    mJointVel(0)
   { }
   virtual ~RevoluteJointFrame(void) {}
 
@@ -42,7 +41,6 @@ public:
     mJointAxis = axis;
     setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
     setAngularRelVel(mJointVel*mJointAxis);
-    setAngularRelVelDot(mJointVelDot*mJointAxis);
 
     setJointMatrix(Vector6(axis, Vector3::zeros()));
   }
@@ -64,32 +62,23 @@ public:
 
   /// Sets the joint velocity.
   void setJointVel(real_type vel)
-  { mJointVel = vel; setAngularRelVel(mJointVel*mJointAxis); }
-
-  /// Returns the derivative of the relative velocity
-  const real_type& getJointVelDot(void) const
-  { return mJointVelDot; }
-
-  /// Returns the derivative of the relative velocity
-  void setJointVelDot(real_type velDot)
-  { mJointVelDot = velDot; setAngularRelVelDot(mJointVelDot*mJointAxis); }
+  { setAngularRelVel(mJointVel*mJointAxis); mJointVel = vel; }
 
   /// Sets the zero orientation of the joint.
   void setZeroOrientation(const Quaternion& zeroOrient)
   {
-    mZeroOrient = zeroOrient;
     setOrientation(zeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
+    mZeroOrient = zeroOrient;
   }
   const Quaternion& getZeroOrientation(void) const
   { return mZeroOrient; }
 
-  using Frame::setPosition;
-
-  /// FIXME Hdot
+  using CartesianJointFrame<1>::setPosition;
 
 private:
   /// The zero orientation with respect to the parent frame.
   Quaternion mZeroOrient;
+
   /// The joint rotation axis.
   Vector3 mJointAxis;
 
@@ -98,9 +87,6 @@ private:
 
   /// The rotational velocity with respect to the rotation axis.
   real_type mJointVel;
-
-  /// The rotational velocity derivative with respect to the rotation axis.
-  real_type mJointVelDot;
 };
 
 } // namespace OpenFDM

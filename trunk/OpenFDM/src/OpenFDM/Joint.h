@@ -54,9 +54,8 @@ public:
     // Apply the joint degrees of freedom to that.
     // If there was an error, (something was singular ???)
     // just ignore that part. FIXME, ist this ok????
-    if (!jointArticulation(I, F, outboardBody->getArtInertia(),
-                           outboardBody->getArtForce()))
-      return;
+    jointArticulation(I, F, outboardBody->getArtInertia(),
+                      outboardBody->getArtForce());
 
     Log(ArtBody, Debug3) << "Outboard Articulated values past joint "
                          << "projection: Force:\n" << trans(F)
@@ -71,34 +70,10 @@ public:
   }
 
   // Joint slot ...
-  // FIXME: pure virtual
-  virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF,
+  virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
                                  const SpatialInertia& outI,
                                  const Vector6& outF) = 0;
-  virtual void computeRelVelDot() = 0;
 
-  //???
-  bool updateAccels(RigidBody* rigidBody)
-  {
-    RigidBody* outboardBody = getOutboardBody();
-    if (!outboardBody)
-      return false;
-
-    if (outboardBody == rigidBody)
-      return false;
-
-    // Set the local acceleration
-    computeRelVelDot();
-    
-    Frame* frame0 = outboardBody->getFrame();
-    if (!frame0)
-      return false;
-    frame0->enableAccel();
-
-    outboardBody->computeAccel();
-
-    return true;
-  }
 };
 
 } // namespace OpenFDM

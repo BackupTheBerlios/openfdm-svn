@@ -23,69 +23,142 @@ public:
   typedef LinAlg::MatrixFactors<real_type,n,n,LinAlg::LUTag> MatrixFactorsNN;
 
   CartesianJointFrame(const std::string& name) :
-    Frame(name)
+    Frame(name),
+//     mJointMatrix(Matrix6N::zeros()), /// ??? ... see LinAlg checkout ...
+    mOutboardInertia(SpatialInertia::zeros()),
+    mOutboardForce(Vector6::zeros()),
+    mPAlpha(Vector6::zeros()),
+    mJointForce(VectorN::zeros()),
+    mArticulationDirty(true),
+    mJointVelDotDirty(true),
+    mSpVelDotDirty(true),
+    mJointVelDot(VectorN::zeros()),
+    mRelVelDot(Vector6::zeros())
   { }
   virtual ~CartesianJointFrame(void)
   { }
+
+  /// The interface routine for the Frame,
+  /// returns the relative velocity derivative of this frame
+  virtual const Vector6& getRelVelDot(void) const
+  {
+    if (mSpVelDotDirty) {
+      mRelVelDot = mJointMatrix*getJointVelDot();
+      mSpVelDotDirty = false;
+      // Note that we do not need to mark the accelerations dirty since
+      // we can only get here if something else the accelerations will depend
+      // on anyway is set dirty before
+      // setAccelDirty();
+    }
+    return mRelVelDot;
+  }
+
+  /// Returns the derivative of the joint velocity
+  const VectorN& getJointVelDot() const
+  {
+    OpenFDMAssert(!mArticulationDirty);
+    if (mJointVelDotDirty) {
+      if (hIh.singular()) {
+        Log(ArtBody,Error) << "Detected singular mass matrix for "
+                           << "CartesianJointFrame \"" << getName()
+                           << "\": Fix your model!" << endl;
+        mJointVelDot.clear();
+      } else {
+        Vector6 tmp = mOutboardInertia*getParentSpAccel() + mPAlpha;
+        mJointVelDot = hIh.solve(mJointForce - trans(mJointMatrix)*tmp);
+      }
+      mJointVelDotDirty = false;
+    }
+    return mJointVelDot;
+  }
+
+  /// Compute the articulated force and inertia past inboard to that joint
+  bool jointArticulation(SpatialInertia& artI, Vector6& artF,
+                         const Vector6& outF, const SpatialInertia& outI,
+                         const VectorN& jointForce)
+  {
+    // Store the outboard values since we will need them later in velocity
+    // derivative computations
+    mOutboardInertia = outI;
+    mOutboardForce = outF;
+    mJointForce = jointForce;
+    // Make sure we have the correct internal state
+    mJointVelDotDirty = true;
+    mArticulationDirty = false;
+
+    // Compute the projection to the joint coodinate space
+    Matrix6N Ih = outI*mJointMatrix;
+    hIh = trans(mJointMatrix)*Ih;
+
+    mPAlpha = mOutboardForce + mOutboardInertia*getHdot();
+    artF = mPAlpha;
+    artI = outI;
+
+    if (hIh.singular()) {
+      Log(ArtBody,Error) << "Detected singular mass matrix for "
+                         << "CartesianJointFrame \"" << getName()
+                         << "\": Fix your model!" << endl;
+      return false;
+    }
+    
+    // Project away the directions handled with this current joint
+    artF -= Ih*hIh.solve(trans(mJointMatrix)*mPAlpha - jointForce);
+    artI -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
+
+    return true;
+  }
 
 protected:
   const Matrix6N& getJointMatrix(void) const
   { return mJointMatrix; }
 
   void setJointMatrix(const Matrix6N& jointAxis)
-  { mJointMatrix = jointAxis; }
+  { mJointMatrix = jointAxis; setDirty(); }
 
-public: /// FIXME
-  bool jointArticulation(SpatialInertia& artI,
-                         Vector6& artF,
-                         const Vector6& outF,
-                         const SpatialInertia& outI,
-                         const VectorN& jointForce)
+  void setPosition(const Vector3& pos)
+  { Frame::setPosition(pos); setDirty(); }
+  void setOrientation(const Quaternion& orientation)
+  { Frame::setOrientation(orientation); setDirty(); }
+  void setRelVel(const Vector6& vel)
+  { Frame::setRelVel(vel); setDirty(); }
+  void setLinearRelVel(const Vector3& vel)
+  { Frame::setLinearRelVel(vel); setDirty(); }
+  void setAngularRelVel(const Vector3& vel)
+  { Frame::setAngularRelVel(vel); setDirty(); }
+  void setDirty(void) const
   {
-    Log(ArtBody, Debug1) << artI << endl;
-
-    mOutboardInertia = outI;
-    mOutboardForce = outF;
-
-
-    mPAlpha = outF + mOutboardInertia*getHdot();
-
-
-
-    mJointForce = jointForce;
-
-    Matrix6N Ih = outI*mJointMatrix;
-    hIh = trans(mJointMatrix)*Ih;
-
-    if (hIh.singular())
-      return false;
-
-    artF = mPAlpha;
-    
-    artF -= Ih*hIh.solve(trans(mJointMatrix)*mPAlpha - jointForce);
-    artI = outI;
-    artI -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
-
-    return true;
-  }
-  
-  void computeRelVelDot(VectorN& jointAccel) const
-  {
-    if (hIh.singular()) {
-      jointAccel.clear();
-    } else {
-      Vector6 tmp = mOutboardInertia*getParentSpAccel() + mPAlpha;
-      jointAccel = hIh.solve(mJointForce - trans(mJointMatrix)*tmp);
-    }
+    mArticulationDirty = true;
+    mJointVelDotDirty = true;
+    mSpVelDotDirty = true;
+    setAccelDirty();
   }
 
 private:
-  SpatialInertia mOutboardInertia;
-  Vector6 mOutboardForce;
-  Vector6 mPAlpha;
+  /// The cartesian joint map matrix, that is for the simple one dimensional
+  /// case just a spatial vector.
   Matrix6N mJointMatrix;
+
+  /// The articulated intertia of the outboard frame, 
+  SpatialInertia mOutboardInertia;
+  /// The articulated force of the outboard frame, 
+  Vector6 mOutboardForce;
+  /// The joint internal force in joint generalized coordinates
   VectorN mJointForce;
+  /// Some intermediate value we will need later
+  Vector6 mPAlpha;
+  /// The decomposition of the inertia matrix projected to joint coordinates
   MatrixFactorsNN hIh;
+  /// This is true if the state has changed but the articulated intertia and
+  /// forces are not yet updated
+  mutable bool mArticulationDirty : 1;
+  /// This is true if the joint velocity derivatives are not yet computed
+  mutable bool mJointVelDotDirty : 1;
+  /// This is true if the spatial velocity derivative is not yet computed
+  mutable bool mSpVelDotDirty : 1;
+  /// The derivative of the joint velocity
+  mutable VectorN mJointVelDot;
+  /// The derivative of the frame velocity
+  mutable Vector6 mRelVelDot;
 };
 
 } // namespace OpenFDM

@@ -12,6 +12,7 @@
 #include "Inertia.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "PrismaticJointFrame.h"
 #include "PrismaticJoint.h"
 
 namespace OpenFDM {
@@ -33,6 +34,27 @@ PrismaticJoint::~PrismaticJoint(void)
 }
 
 void
+PrismaticJoint::recheckTopology(void)
+{
+  if (!getOutboardBody() || !getInboardBody())
+    return;
+  
+  // check for the inboard frame
+  Frame* inFrame = getInboardBody()->getFrame();
+  if (!inFrame)
+    return;
+  
+  Frame* outFrame = getOutboardBody()->getFrame();
+  if (!outFrame) {
+    getOutboardBody()->setFrame(mPrismaticJointFrame);
+  }
+  outFrame = getOutboardBody()->getFrame();
+  if (!outFrame->isParentFrame(inFrame)) {
+    inFrame->addChildFrame(mPrismaticJointFrame);
+  }
+}
+
+void
 PrismaticJoint::setJointAxis(const Vector3& axis)
 {
   real_type nrm = norm(axis);
@@ -42,6 +64,12 @@ PrismaticJoint::setJointAxis(const Vector3& axis)
   }
 
   mPrismaticJointFrame->setJointAxis((1/nrm)*axis);
+}
+
+const real_type&
+PrismaticJoint::getJointPos(void) const
+{
+  return mPrismaticJointFrame->getJointPos();
 }
 
 void
@@ -56,6 +84,12 @@ PrismaticJoint::setJointVel(real_type vel)
   mPrismaticJointFrame->setJointVel(vel);
 }
 
+const real_type&
+PrismaticJoint::getJointVel(void) const
+{
+  return mPrismaticJointFrame->getJointVel();
+}
+
 void
 PrismaticJoint::setOrientation(const Quaternion& orientation)
 {
@@ -68,7 +102,7 @@ PrismaticJoint::setPosition(const Vector3& position)
   mPrismaticJointFrame->setZeroPosition(position);
 }
 
-bool
+void
 PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
                                  const SpatialInertia& outI,
                                  const Vector6& outF)
@@ -77,17 +111,7 @@ PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
   // of the joint are.
   CartesianJointFrame<1>::VectorN tau;
   tau(1) = getJointForce();
-  return mPrismaticJointFrame->jointArticulation(artI, artF, outF, outI, tau);
-}
-
-void
-PrismaticJoint::computeRelVelDot()
-{
-  CartesianJointFrame<1>::VectorN acc;
-  mPrismaticJointFrame->computeRelVelDot(acc);
-  mPrismaticJointFrame->setJointVelDot(acc(1));
-  Log(ArtBody, Debug) << "Relative acceleration for Joint \""
-                      << getName() << "\" is " << trans(acc) << endl;
+  mPrismaticJointFrame->jointArticulation(artI, artF, outF, outI, tau);
 }
 
 void
@@ -108,7 +132,7 @@ void
 PrismaticJoint::getStateDeriv(Vector& state, unsigned offset)
 {
   state(offset+1) = mPrismaticJointFrame->getJointVel();
-  state(offset+2) = mPrismaticJointFrame->getJointVelDot();
+  state(offset+2) = mPrismaticJointFrame->getJointVelDot()(1);
 }
 
 } // namespace OpenFDM

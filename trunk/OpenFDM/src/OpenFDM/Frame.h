@@ -71,6 +71,8 @@ public:
   const Frame* getParentFrame(void) const
   { return mParentFrame; }
   /// Return true if the given frame is the parent frame.
+  /// FIXME: it will read more intuitive if it is called
+  /// this->isParentFrameOf(that)
   bool isParentFrame(const Frame* frame) const
   { return frame == mParentFrame; }
   /// True if the current frame has a parent frame.
@@ -153,8 +155,8 @@ public:
               to the parent frame. The velocity is in the current frames
               coordinates.
    */
-  const Vector6& getRelVelDot(void) const 
-  { return mRelVelDot; }
+  virtual const Vector6& getRelVelDot(void) const 
+  { return mZeroVector; }
 
 
   /** Linear velocity with respect to parent.
@@ -234,10 +236,7 @@ public:
       of the moving and accelerating body (@see getClassicAccel).
    */
   Vector6 getSpAccel(void) const
-  {
-    OpenFDMAssert(!mDisableSpAccel);
-    return getRelVelDot() + getParentSpAccel() + getHdot();
-  }
+  { return getRelVelDot() + getParentSpAccel() + getHdot(); }
 
   /** Classical acceleration of the current frame.
       @return The sensed acceleration of the current frame with respect to an
@@ -246,7 +245,6 @@ public:
    */
   Vector6 getClassicAccel(void) const
   {
-    OpenFDMAssert(!mDisableSpAccel);
     Vector6 iv = getSpVel();
     return getRelVelDot() + getParentSpAccel() + getHdot()
       + Vector6(Vector3::zeros(), cross(iv.getAngular(), iv.getLinear()));
@@ -470,18 +468,6 @@ protected:
   { setVelDirty(); mRelVel.setLinear(v); }
   void setAngularRelVel(const Vector3& rotVel)
   { setVelDirty(); mRelVel.setAngular(rotVel); }
-  void setRelVelDot(const Vector6& accel)
-  { setAccelDirty(); mRelVelDot = accel; }
-  void setLinearRelVelDot(const Vector3& accel)
-  { setAccelDirty(); mRelVelDot.setLinear(accel); }
-  void setAngularRelVelDot(const Vector3& accel)
-  { setAccelDirty(); mRelVelDot.setAngular(accel); }
-
-  void disableAccel(void)
-  { mDisableSpAccel = true; }
-  void enableAccel(void)
-  { mDisableSpAccel = false; }
-  friend class Joint; /// FIXME
 
   void computePositionDep(void) const;
   void computeVelocityDep(void) const;
@@ -508,7 +494,7 @@ protected:
     // only really call a function if real work needs to be done.
     setVelDirtyUnconditional();
   }
-  void setAccelDirty(void)
+  void setAccelDirty(void) const
   {
     // Don't bother iterating over all children if we are already dirty.
     if (mDirtySpAccel == true)
@@ -521,7 +507,7 @@ protected:
 private:
   void setPosDirtyUnconditional(void);
   void setVelDirtyUnconditional(void);
-  void setAccelDirtyUnconditional(void);
+  void setAccelDirtyUnconditional(void) const;
 
 private:
   /// Set the parent frame to the given one.
@@ -537,10 +523,6 @@ private:
   // this frames coordinates.
   // True? more the relative velocity ...
   Vector6 mRelVel;
-
-  // The spatial acceleration of this frame wrt the parent frame.
-  // True? more the relative acceleration ...
-  Vector6 mRelVelDot;
 
   mutable Vector6 mParentSpVel;
   mutable Vector6 mParentSpAccel;
@@ -559,13 +541,15 @@ private:
   mutable bool mDirtyPos:1;
   mutable bool mDirtySpVel:1;
   mutable bool mDirtySpAccel:1;
-  mutable bool mDisableSpAccel:1;
 
   // The parent frame.
   // FIXME: May be we should store a list of all parents ???
   WeakPtr<Frame> mParentFrame;
   // The list of child frames.
   ChildFrameList mChildFrames;
+
+  /// Used to return a zero acceleration, might move to the LinAlg namespace
+  static const Vector6 mZeroVector;
 };
 
 class FreeFrame
@@ -573,7 +557,9 @@ class FreeFrame
 public:
   FreeFrame(const std::string& name = std::string())
     : Frame(name)
-  {}
+  {
+    setRelVelDot(Vector6::zeros());
+  }
   virtual ~FreeFrame(void)
   {}
 
@@ -588,17 +574,25 @@ public:
   { Frame::setLinearRelVel(vel); }
   void setAngularRelVel(const Vector3& vel)
   { Frame::setAngularRelVel(vel); }
+
+  virtual const Vector6& getRelVelDot(void) const 
+  { return mRelVelDot; }
   void setRelVelDot(const Vector6& accel)
-  { Frame::setRelVelDot(accel); }
-  void setLinearRelVelDot(const Vector3& accel)
-  { Frame::setLinearRelVelDot(accel); }
-  void setAngularRelVelDot(const Vector3& accel)
-  { Frame::setAngularRelVelDot(accel); }
+  { setAccelDirty(); mRelVelDot = accel; }
+//   void setLinearRelVelDot(const Vector3& accel)
+//   { setAccelDirty(); mRelVelDot.setLinear(accel); }
+//   void setAngularRelVelDot(const Vector3& accel)
+//   { setAccelDirty(); mRelVelDot.setAngular(accel); }
 
   void setRefPosition(const Vector3& p)
   { Frame::setRefPosition(p); }
   void setRefOrientation(const Quaternion& o)
   { Frame::setRefOrientation(o); }
+
+private:
+  // The spatial acceleration of this frame wrt the parent frame.
+  // True? more the relative acceleration ...
+  Vector6 mRelVelDot;
 };
 
 } // namespace OpenFDM

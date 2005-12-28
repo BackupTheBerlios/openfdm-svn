@@ -12,6 +12,7 @@
 #include "Inertia.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "RevoluteJointFrame.h"
 #include "RevoluteJoint.h"
 
 namespace OpenFDM {
@@ -33,6 +34,27 @@ RevoluteJoint::~RevoluteJoint(void)
 }
 
 void
+RevoluteJoint::recheckTopology(void)
+{
+  if (!getOutboardBody() || !getInboardBody())
+    return;
+  
+  // check for the inboard frame
+  Frame* inFrame = getInboardBody()->getFrame();
+  if (!inFrame)
+    return;
+  
+  Frame* outFrame = getOutboardBody()->getFrame();
+  if (!outFrame) {
+    getOutboardBody()->setFrame(mRevoluteJointFrame);
+  }
+  outFrame = getOutboardBody()->getFrame();
+  if (!outFrame->isParentFrame(inFrame)) {
+    inFrame->addChildFrame(mRevoluteJointFrame);
+  }
+}
+
+void
 RevoluteJoint::setJointAxis(const Vector3& axis)
 {
   real_type nrm = norm(axis);
@@ -43,10 +65,22 @@ RevoluteJoint::setJointAxis(const Vector3& axis)
   mRevoluteJointFrame->setJointAxis((1/nrm)*axis);
 }
 
+const real_type&
+RevoluteJoint::getJointPos(void) const
+{
+  return mRevoluteJointFrame->getJointPos();
+}
+
 void
 RevoluteJoint::setJointPos(real_type pos)
 {
   mRevoluteJointFrame->setJointPos(pos);
+}
+
+const real_type&
+RevoluteJoint::getJointVel(void) const
+{
+  return mRevoluteJointFrame->getJointVel();
 }
 
 void
@@ -67,25 +101,14 @@ RevoluteJoint::setOrientation(const Quaternion& orientation)
   mRevoluteJointFrame->setZeroOrientation(orientation);
 }
 
-bool
+void
 RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
                                  const SpatialInertia& outI,
                                  const Vector6& outF)
 {
   CartesianJointFrame<1>::VectorN tau;
   tau(1) = getJointForce();
-  return mRevoluteJointFrame->jointArticulation(artI, artF, outF, outI, tau);
-}
-
-void
-RevoluteJoint::computeRelVelDot()
-{
-  CartesianJointFrame<1>::VectorN acc;
-  mRevoluteJointFrame->computeRelVelDot(acc);
-  mRevoluteJointFrame->setJointVelDot(acc(1));
-  
-  Log(ArtBody, Debug) << "Relative acceleration for Joint \""
-                      << getName() << "\" is " << trans(acc) << endl;
+  mRevoluteJointFrame->jointArticulation(artI, artF, outF, outI, tau);
 }
 
 void
@@ -106,7 +129,7 @@ void
 RevoluteJoint::getStateDeriv(Vector& state, unsigned offset)
 {
   state(offset+1) = mRevoluteJointFrame->getJointVel();
-  state(offset+2) = mRevoluteJointFrame->getJointVelDot();
+  state(offset+2) = mRevoluteJointFrame->getJointVelDot()(1);
 }
 
 } // namespace OpenFDM

@@ -15,9 +15,10 @@
 #include "RigidBody.h"
 #include "Joint.h"
 #include "LineForce.h"
-#include "RevoluteJointFrame.h"
 
 namespace OpenFDM {
+
+class RevoluteJointFrame;
 
 class RevoluteJoint :
     public Joint {
@@ -28,25 +29,7 @@ public:
   virtual bool init(void)
   { recheckTopology(); return Joint::init(); }
 
-  virtual void recheckTopology(void)
-  {
-    if (!getOutboardBody() || !getInboardBody())
-      return;
-
-    // check for the inboard frame
-    Frame* inFrame = getInboardBody()->getFrame();
-    if (!inFrame)
-      return;
-
-    Frame* outFrame = getOutboardBody()->getFrame();
-    if (!outFrame) {
-      getOutboardBody()->setFrame(mRevoluteJointFrame);
-    }
-    outFrame = getOutboardBody()->getFrame();
-    if (!outFrame->isParentFrame(inFrame)) {
-      inFrame->addChildFrame(mRevoluteJointFrame);
-    }
-  }
+  virtual void recheckTopology(void);
 
   /** Sets the joint axis where this joint is allowed to rotate around.
    */
@@ -54,8 +37,7 @@ public:
 
   /** Returns the joint position.
    */
-  const real_type& getJointPos(void) const
-  { return mRevoluteJointFrame->getJointPos(); }
+  const real_type& getJointPos(void) const;
 
   /** Sets the joint position.
    */
@@ -63,8 +45,7 @@ public:
 
   /** Returns the joint velocity.
    */
-  const real_type& getJointVel(void) const
-  { return mRevoluteJointFrame->getJointVel(); }
+  const real_type& getJointVel(void) const;
 
   /** Sets the joint velocity.
    */
@@ -98,14 +79,9 @@ private:
   /** Computes the inboard articulated inertia and force for
       this articulated body. It is part of the articulated body algorithm.
    */
-  virtual bool jointArticulation(SpatialInertia& artI, Vector6& artF,
+  virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
                                  const SpatialInertia& outI,
                                  const Vector6& outF);
-
-  /** Computes the relative acceleration of this body with respect to its
-      parent. It is part of the articulated body algorithm.
-   */
-  virtual void computeRelVelDot();
 
   /** Methods for the OpenFDM::Part.
    */

@@ -81,7 +81,7 @@ FreeJoint::recheckTopology(void)
   }
 }
 
-bool
+void
 FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
                              const SpatialInertia& outI,
                              const Vector6& outF)
@@ -108,13 +108,6 @@ FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
     - mFrame->getParentSpAccel() - mFrame->getHdot();
   
   mFrame->setRelVelDot(accel);
-
-  return true;
-}
-
-void
-FreeJoint::computeRelVelDot()
-{
 }
 
 void

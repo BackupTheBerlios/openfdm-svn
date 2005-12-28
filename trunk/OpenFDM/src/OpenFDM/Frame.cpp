@@ -20,13 +20,11 @@ Frame::Frame(const std::string& name) :
   mDirtyPos(true),
   mDirtySpVel(true),
   mDirtySpAccel(true),
-  mDisableSpAccel(false),
   mReferenceFrameId(0)
 {
   setPosition(Vector3::zeros());
   setOrientation(Quaternion::unit());
   setRelVel(Vector6::zeros());
-  setRelVelDot(Vector6::zeros());
 
   addProperty("position", Property(this, &Frame::getPosition));
   addProperty("orienatation", Property(this, &Frame::getOrientation));
@@ -237,14 +235,14 @@ Frame::setVelDirtyUnconditional(void)
 }
 
 void
-Frame::setAccelDirtyUnconditional(void)
+Frame::setAccelDirtyUnconditional(void) const
 {
   // Mark ourself dirty.
   mDirtySpAccel = true;
   
   // Mark all child dirty.
-  ChildFrameList::iterator it = mChildFrames.begin();
-  ChildFrameList::iterator iEnd = mChildFrames.end();
+  ChildFrameList::const_iterator it = mChildFrames.begin();
+  ChildFrameList::const_iterator iEnd = mChildFrames.end();
   while (it != iEnd) {
     (*it)->setAccelDirty();
     ++it;
@@ -275,5 +273,7 @@ Frame::inertiaToParent(const SpatialInertia& I) const
     }
   }
 }
+
+const Vector6 Frame::mZeroVector = Vector6::zeros();
 
 } // namespace OpenFDM

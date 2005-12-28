@@ -48,22 +48,6 @@ RigidBody::computeArtValues(void)
 }
 
 void
-RigidBody::computeAccel(void)
-{
-  Log(ArtBody, Debug) << "Entry of computeAccel of \"" << getName()
-                      << "\"" << endl;
-
-  // Update all accelerations, Hmm, is a bit too croase that way ...
-  InteractList::iterator it;
-  for (it = mInteracts.begin(); it != mInteracts.end(); ++it) {
-    (*it)->updateAccels(this);
-  }
-
-  Log(ArtBody, Debug3) << "On exit of computeAccel of \"" << getName()
-                       << "\"" << endl;
-}
-
-void
 RigidBody::setParentMultiBodySystem(MultiBodySystem* multiBodySystem)
 {
   /// FIXME: rethink that ...

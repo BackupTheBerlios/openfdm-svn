@@ -27,8 +27,7 @@ public:
     mZeroPos(Vector3::zeros()),
     mJointAxis(Vector3::unit(1)),
     mJointPos(0),
-    mJointVel(0),
-    mJointVelDot(0)
+    mJointVel(0)
   { }
   virtual ~PrismaticJointFrame(void) {}
 
@@ -42,7 +41,6 @@ public:
     mJointAxis = axis;
     setPosition(mZeroPos + mJointPos*mJointAxis);
     setLinearRelVel(mJointVel*mJointAxis);
-    setLinearRelVelDot(mJointVelDot*mJointAxis);
     setJointMatrix(Vector6(Vector3::zeros(), axis));
   }
 
@@ -60,28 +58,20 @@ public:
 
   /// Sets the joint velocity.
   void setJointVel(real_type vel)
-  { mJointVel = vel; setLinearRelVel(mJointVel*mJointAxis); }
-
-  /// Returns the derivative of the relative velocity
-  const real_type& getJointVelDot(void) const
-  { return mJointVelDot; }
-
-  /// Returns the derivative of the relative velocity
-  void setJointVelDot(real_type velDot)
-  { mJointVelDot = velDot; setLinearRelVelDot(mJointVelDot*mJointAxis); }
+  { setLinearRelVel(mJointVel*mJointAxis); mJointVel = vel; }
 
   /// Sets the zero position of the joint.
   void setZeroPosition(const Vector3& zeroPos)
-  { mZeroPos = zeroPos; setPosition(mZeroPos + mJointPos*mJointAxis); }
+  { setPosition(mZeroPos + mJointPos*mJointAxis); mZeroPos = zeroPos; }
   const Vector3& getZeroPosition(void) const
   { return mZeroPos; }
 
-  using Frame::setOrientation;
-  /// FIXME Hdot
+  using CartesianJointFrame<1>::setOrientation;
   
 private:
   /// The zero position with respect to the parent frame.
   Vector3 mZeroPos;
+
   /// The joint rotation axis.
   Vector3 mJointAxis;
 
@@ -90,9 +80,6 @@ private:
 
   /// The realtive linear velocity along the joint axis
   real_type mJointVel;
-
-  /// The realtive linear velocity derivative along the joint axis
-  real_type mJointVelDot;
 };
 
 } // namespace OpenFDM
