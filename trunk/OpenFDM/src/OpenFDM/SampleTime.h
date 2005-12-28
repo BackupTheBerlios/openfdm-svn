@@ -17,6 +17,9 @@ namespace OpenFDM {
 /// - positive real number, this is the discrete sample time itself
 /// - zero, continous updates
 /// - otherwise, inherited from its parent model group
+/// FIXME: need to have a sample time slot which is only evaluated if the
+/// simulation returns to the user. Just to avoid additional effort for
+/// animations
 class SampleTime {
 public:
   /// Default constructor, defaults to discrete sample time
