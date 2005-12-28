@@ -33,7 +33,12 @@ public:
     if (!nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
         return;
 
-    Frame* frame = getParentFrame(0);
+    RigidBody* rigidBody = getParentRigidBody(0);
+    if (!rigidBody) {
+      mAccel = Vector6::zeros();
+      return;
+    }
+    Frame* frame = rigidBody->getFrame();
     if (!frame) {
       mAccel = Vector6::zeros();
       return;

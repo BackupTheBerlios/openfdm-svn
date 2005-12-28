@@ -50,6 +50,19 @@ protected:
     mForce = force;
   }
 
+  /// FIXME remove
+  const Frame* getParentFrame(unsigned id = 0) const
+  {
+    OpenFDMAssert(id < mParents.size() && mParents[id]);
+    return getParentRigidBody(id)->getFrame();
+  }
+  /// FIXME remove
+  Frame* getParentFrame(unsigned id = 0)
+  {
+    OpenFDMAssert(id < mParents.size() && mParents[id]);
+    return getParentRigidBody(id)->getFrame();
+  }
+
 private:
   Vector6 mForce;
 };
