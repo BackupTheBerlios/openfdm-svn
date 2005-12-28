@@ -11,7 +11,7 @@
 #include "Quaternion.h"
 #include "Force.h"
 #include "Frame.h"
-#include "FreeJoint.h"
+#include "MobileRootJoint.h"
 #include "RootFrame.h"
 #include "MultiBodySystem.h"
 #include "Planet.h"
@@ -77,10 +77,10 @@ public:
 
   /** Get the vehicle base node.
    */
-  const FreeJoint* getFreeJoint(void) const
-  { return mFreeJoint; }
-  FreeJoint* getFreeJoint(void)
-  { return mFreeJoint; }
+  const MobileRootJoint* getMobileRootJoint(void) const
+  { return mMobileRootJoint; }
+  MobileRootJoint* getMobileRootJoint(void)
+  { return mMobileRootJoint; }
 
   const ModelGroup* getModelGroup(void) const
   { return mModelGroup; }
@@ -124,7 +124,7 @@ public:
 
 private:
   SharedPtr<RigidBody> mTopBody;
-  SharedPtr<FreeJoint> mFreeJoint;
+  SharedPtr<MobileRootJoint> mMobileRootJoint;
   SharedPtr<MultiBodySystem> mMultiBodySystem;
 
   SharedPtr<ModelGroup> mModelGroup;

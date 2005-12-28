@@ -14,11 +14,11 @@
 #include "RigidBody.h"
 #include "RootFrame.h"
 #include "MobileRootJointFrame.h"
-#include "FreeJoint.h"
+#include "MobileRootJoint.h"
 
 namespace OpenFDM {
 
-FreeJoint::FreeJoint(const std::string& name)
+MobileRootJoint::MobileRootJoint(const std::string& name)
   : Joint(name),
     mFrame(new MobileRootJointFrame(name))
 {
@@ -26,12 +26,12 @@ FreeJoint::FreeJoint(const std::string& name)
   addSampleTime(SampleTime::Continous);
 }
 
-FreeJoint::~FreeJoint(void)
+MobileRootJoint::~MobileRootJoint(void)
 {
 }
 
 bool
-FreeJoint::init(void)
+MobileRootJoint::init(void)
 {
   Environment* environment = getEnvironment();
   if (!environment) {
@@ -55,7 +55,7 @@ FreeJoint::init(void)
 }
 
 void
-FreeJoint::recheckTopology(void)
+MobileRootJoint::recheckTopology(void)
 {
   // Hmm, works for the first cut, but rethink what happens with strange
   // attach reattach sequences ...
@@ -83,49 +83,49 @@ FreeJoint::recheckTopology(void)
 }
 
 void
-FreeJoint::setRelVel(const Vector6& vel)
+MobileRootJoint::setRelVel(const Vector6& vel)
 {
   mFrame->setRelVel(vel);
 }
 
 void
-FreeJoint::setLinearRelVel(const Vector3& vel)
+MobileRootJoint::setLinearRelVel(const Vector3& vel)
 {
   mFrame->setLinearRelVel(vel);
 }
 
 void
-FreeJoint::setAngularRelVel(const Vector3& vel)
+MobileRootJoint::setAngularRelVel(const Vector3& vel)
 {
   mFrame->setAngularRelVel(vel);
 }
 
 void
-FreeJoint::setRefPosition(const Vector3& p)
+MobileRootJoint::setRefPosition(const Vector3& p)
 {
   mFrame->setRefPosition(p);
 }
 
 void
-FreeJoint::setRefOrientation(const Quaternion& o)
+MobileRootJoint::setRefOrientation(const Quaternion& o)
 {
   mFrame->setRefOrientation(o);
 }
 
 void
-FreeJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
+MobileRootJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
                              const SpatialInertia& outI,
                              const Vector6& outF)
 {
   artI.clear();
   artF.clear();
 
-  Log(ArtBody, Debug) << "FreeJoint::computeRelVelDot():\n" << outI << endl;
+  Log(ArtBody, Debug) << "MobileRootJoint::computeRelVelDot():\n" << outI << endl;
   mFrame->jointArticulation(outF, outI, mGravity);
 }
 
 void
-FreeJoint::setState(const Vector& state, unsigned offset)
+MobileRootJoint::setState(const Vector& state, unsigned offset)
 {
   mFrame->setOrientation(Vector4(state(offset+1), state(offset+2),
                                  state(offset+3), state(offset+4)));
@@ -135,7 +135,7 @@ FreeJoint::setState(const Vector& state, unsigned offset)
 }
 
 void
-FreeJoint::getState(Vector& state, unsigned offset) const
+MobileRootJoint::getState(Vector& state, unsigned offset) const
 {
   Quaternion q = mFrame->getOrientation();
   state(offset+1) = q(1);
@@ -158,7 +158,7 @@ FreeJoint::getState(Vector& state, unsigned offset) const
 }
 
 void
-FreeJoint::getStateDeriv(Vector& state, unsigned offset)
+MobileRootJoint::getStateDeriv(Vector& state, unsigned offset)
 {
   Quaternion q = mFrame->getOrientation();
   Vector3 angVel = mFrame->getRelVel().getAngular();

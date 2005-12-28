@@ -52,7 +52,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Expression.h \
   Force.h \
   Frame.h \
-  FreeJoint.h \
+  MobileRootJoint.h \
   Function.h \
   Gain.h \
   Gravity.h \
@@ -158,7 +158,7 @@ libOpenFDM_la_SOURCES = \
   Expression.cpp \
   Force.cpp \
   Frame.cpp \
-  FreeJoint.cpp \
+  MobileRootJoint.cpp \
   Function.cpp \
   Gain.cpp \
   Gravity.cpp \

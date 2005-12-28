@@ -22,7 +22,7 @@ using namespace std;
 #include <OpenFDM/Planet.h>
 #include <OpenFDM/DefaultPlanet.h>
 #include <OpenFDM/RigidBody.h>
-#include <OpenFDM/FreeJoint.h>
+#include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/AeroForce.h>
 #include <OpenFDM/SimpleContact.h>
 #include <OpenFDM/SimpleGear.h>
@@ -623,9 +623,9 @@ int main(int argc, char *argv[])
   Quaternion q = Quaternion::fromAngleAxis(heading, Vector3::unit(3));
   vehicle->setGeodOrientation(q);
 
-  vehicle->getFreeJoint()->setRelVel(Vector6::zeros());
+  vehicle->getMobileRootJoint()->setRelVel(Vector6::zeros());
   Vector3 vel(convertFrom(uFeetPSecond, 23900.0), 0, 0);
-  vehicle->getFreeJoint()->setLinearRelVel(vel);
+  vehicle->getMobileRootJoint()->setLinearRelVel(vel);
   vehicle->getTopBody()->addMultiBodyModel(new Mass("Testmass", SpatialInertia(InertiaMatrix(100,0,0,100,0,100), 100), "Mass"));
 
 

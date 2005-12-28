@@ -53,7 +53,7 @@ MultiBodySystem::output(const TaskInfo& taskInfo)
   }
 
   // Compute forward dynamics, that is the articulated forces and inertia.
-  mFreeJoint->interactWith(mFreeJoint->getInboardBody());
+  mMobileRootJoint->interactWith(mMobileRootJoint->getInboardBody());
 
   // Hmm, just works now ... FIXME
   for (it = mModels.begin(); it != mModels.end(); ++it) {
@@ -100,8 +100,8 @@ MultiBodySystem::addInteract(Interact* interact)
   if (this == interact->getParent())
     return;
   // FIXME incorporate that somehow into the depencencies ...
-  if (dynamic_cast<FreeJoint*>(interact)) {
-    mFreeJoint = dynamic_cast<FreeJoint*>(interact);
+  if (dynamic_cast<MobileRootJoint*>(interact)) {
+    mMobileRootJoint = dynamic_cast<MobileRootJoint*>(interact);
   }
   addModel(interact);
 }

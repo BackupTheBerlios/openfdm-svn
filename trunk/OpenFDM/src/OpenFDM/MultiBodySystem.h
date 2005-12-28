@@ -14,7 +14,7 @@
 #include "Frame.h"
 #include "RigidBody.h"
 #include "Joint.h"
-#include "FreeJoint.h"
+#include "MobileRootJoint.h"
 #include "RootFrame.h"
 #include "ModelGroup.h"
 
@@ -43,7 +43,7 @@ public:
   void removeInteract(Interact* interact);
 private:
   /// That is the root for now ...
-  SharedPtr<FreeJoint> mFreeJoint;
+  SharedPtr<MobileRootJoint> mMobileRootJoint;
 
   /// A list of RigidBody objects in this MultiBodySystem
   typedef std::vector<SharedPtr<RigidBody> > RigidBodyList;

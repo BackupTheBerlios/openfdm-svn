@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_FreeJoint_H
-#define OpenFDM_FreeJoint_H
+#ifndef OpenFDM_MobileRootJoint_H
+#define OpenFDM_MobileRootJoint_H
 
 #include "Assert.h"
 #include "Object.h"
@@ -20,11 +20,11 @@ namespace OpenFDM {
 
 class MobileRootJointFrame;
 
-class FreeJoint
+class MobileRootJoint
   : public Joint {
 public:
-  FreeJoint(const std::string& name);
-  virtual ~FreeJoint(void);
+  MobileRootJoint(const std::string& name);
+  virtual ~MobileRootJoint(void);
 
   virtual bool init(void);
 

@@ -8,7 +8,7 @@
 #include "Quaternion.h"
 #include "Force.h"
 #include "RigidBody.h"
-#include "FreeJoint.h"
+#include "MobileRootJoint.h"
 #include "Planet.h"
 #include "Wind.h"
 #include "ExplicitEuler.h"
@@ -27,8 +27,8 @@ Vehicle::Vehicle(void)
 {
   mTopBody = new RigidBody("Topmost rigid body");
 
-  mFreeJoint = new FreeJoint("Mobile vehicle base");
-  mTopBody->setInboardJoint(mFreeJoint);
+  mMobileRootJoint = new MobileRootJoint("Mobile vehicle base");
+  mTopBody->setInboardJoint(mMobileRootJoint);
 
   mSystem = new System("Top Vehicle System");
 
@@ -109,7 +109,7 @@ Vehicle::getCartPosition(void) const
 void
 Vehicle::setCartPosition(const Vector3& pos)
 {
-  mFreeJoint->setRefPosition(pos);/*FIXME*/
+  mMobileRootJoint->setRefPosition(pos);/*FIXME*/
 }
 
 Geodetic
@@ -145,7 +145,7 @@ Vehicle::getCartOrientation(void) const
 void
 Vehicle::setCartOrientation(const Quaternion& o)
 {
-  mFreeJoint->setRefOrientation(o);/*FIXME*/
+  mMobileRootJoint->setRefOrientation(o);/*FIXME*/
 }
 
 Quaternion
