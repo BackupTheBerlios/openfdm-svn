@@ -121,8 +121,6 @@ public:
   Port* getOutputPort(const std::string& name);
   const std::string& getOutputPortName(unsigned i) const;
 
-  bool dependsDirectOn(const Model* const model) const;
-
 protected:
   void setNumContinousStates(unsigned numContinousStates);
   void setNumDiscreteStates(unsigned numDiscreteStates);

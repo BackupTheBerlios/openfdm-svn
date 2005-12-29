@@ -217,23 +217,6 @@ Model::getOutputPortName(unsigned i) const
   return mOutputPorts[i]->getName();
 }
 
-bool
-Model::dependsDirectOn(const Model* const model) const
-{
-  // If we have no direct feedthrought flag, we cannot depend on any input
-  // port directly.
-  if (!getDirectFeedThrough())
-    return false;
-  // Check if the given model is the source of any input property.
-  std::vector<SharedPtr<Port> >::const_iterator it = mInputPorts.begin();
-  while (it != mInputPorts.end()) {
-    if (model == (*it)->getProperty().getObject())
-      return true;
-    ++it;
-  }
-  return false;
-}
-
 void
 Model::setNumInputPorts(unsigned num)
 {
