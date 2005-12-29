@@ -115,24 +115,27 @@ PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
 }
 
 void
-PrismaticJoint::setState(const Vector& state, unsigned offset)
+PrismaticJoint::setState(const StateStream& state)
 {
-  mPrismaticJointFrame->setJointPos(state(offset+1));
-  mPrismaticJointFrame->setJointVel(state(offset+2));
+  CartesianJointFrame<1>::VectorN v;
+  state.readSubState(v);
+  mPrismaticJointFrame->setJointPos(v(1));
+  state.readSubState(v);
+  mPrismaticJointFrame->setJointVel(v(1));
 }
 
 void
-PrismaticJoint::getState(Vector& state, unsigned offset) const
+PrismaticJoint::getState(StateStream& state) const
 {
-  state(offset+1) = mPrismaticJointFrame->getJointPos();
-  state(offset+2) = mPrismaticJointFrame->getJointVel();
+  state.writeSubState(mPrismaticJointFrame->getJointPos());
+  state.writeSubState(mPrismaticJointFrame->getJointVel());
 }
 
 void
-PrismaticJoint::getStateDeriv(Vector& state, unsigned offset)
+PrismaticJoint::getStateDeriv(StateStream& stateDeriv)
 {
-  state(offset+1) = mPrismaticJointFrame->getJointVel();
-  state(offset+2) = mPrismaticJointFrame->getJointVelDot()(1);
+  stateDeriv.writeSubState(mPrismaticJointFrame->getJointVel());
+  stateDeriv.writeSubState(mPrismaticJointFrame->getJointVelDot());
 }
 
 } // namespace OpenFDM

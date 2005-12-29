@@ -19,9 +19,9 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo&);
 
-  virtual void setState(const Vector& state, unsigned offset);
-  virtual void getState(Vector& state, unsigned offset) const;
-  virtual void getStateDeriv(Vector& stateDeriv, unsigned offset);
+  virtual void setState(const StateStream& state);
+  virtual void getState(StateStream& state) const;
+  virtual void getStateDeriv(StateStream& stateDeriv);
 
   const Matrix& getInitialValue(void) const;
   void setInitialValue(const Matrix& value);

@@ -17,6 +17,7 @@
 #include "Vector.h"
 #include "SampleTime.h"
 #include "TaskInfo.h"
+#include "StateStream.h"
 #include "Port.h"
 
 namespace OpenFDM {
@@ -62,12 +63,12 @@ public:
   /// Called whenever discrete states need to be updated.
   virtual void update(const TaskInfo& taskInfo);
 
-  virtual void setState(const Vector& state, unsigned offset);
-  virtual void getState(Vector& state, unsigned offset) const;
-  virtual void getStateDeriv(Vector& stateDeriv, unsigned offset);
+  virtual void setState(const StateStream& state);
+  virtual void getState(StateStream& state) const;
+  virtual void getStateDeriv(StateStream& stateDeriv);
 
-  virtual void setDiscreteState(const Vector& state, unsigned offset);
-  virtual void getDiscreteState(Vector& state, unsigned offset) const;
+  virtual void setDiscreteState(const StateStream& state);
+  virtual void getDiscreteState(StateStream& state) const;
 
   /// FIXME Hmm, may be different ...
   /// May move into System ...

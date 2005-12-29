@@ -90,27 +90,27 @@ Model::update(const TaskInfo&)
 }
 
 void
-Model::setState(const Vector& state, unsigned offset)
+Model::setState(const StateStream& state)
 {
 }
 
 void
-Model::getState(Vector& state, unsigned offset) const
+Model::getState(StateStream& state) const
 {
 }
 
 void
-Model::getStateDeriv(Vector& stateDeriv, unsigned offset)
+Model::getStateDeriv(StateStream& stateDeriv)
 {
 }
 
 void
-Model::setDiscreteState(const Vector& state, unsigned offset)
+Model::setDiscreteState(const StateStream& state)
 {
 }
 
 void
-Model::getDiscreteState(Vector& state, unsigned offset) const
+Model::getDiscreteState(StateStream& state) const
 {
 }
 
@@ -118,13 +118,17 @@ void
 Model::evalFunction(real_type t, const Vector& v, Vector& out)
 {
   /// FIXME Hmm, may be different ...
-  setState(v, 0);
+  StateStream stateStream(v);
+  setState(v);
+
   TaskInfo taskInfo;
   taskInfo.setTime(t);
   taskInfo.addSampleTime(SampleTime::Continous);
   output(taskInfo);
-  out.resize(getNumContinousStates());
-  getStateDeriv(out, 0);
+
+  stateStream.reset();
+  getStateDeriv(stateStream);
+  out = stateStream.getState();
 }
 
 void

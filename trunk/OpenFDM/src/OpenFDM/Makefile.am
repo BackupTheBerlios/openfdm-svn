@@ -114,6 +114,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Sensor.h \
   SimpleContact.h \
   SimpleGear.h \
+  StateStream.h \
   Summer.h \
   System.h \
   Table.h \

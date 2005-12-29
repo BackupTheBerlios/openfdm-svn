@@ -52,13 +52,13 @@ private:
 
   /** Plugin function for the state propagation.
    */
-  virtual void setState(const Vector& state, unsigned offset);
+  virtual void setState(const StateStream& state);
   /** Plugin function for the state propagation.
    */
-  virtual void getState(Vector& state, unsigned offset) const;
+  virtual void getState(StateStream& state) const;
   /** Plugin function for the state propagation.
    */
-  virtual void getStateDeriv(Vector& state, unsigned offset);
+  virtual void getStateDeriv(StateStream& state);
 
   /// The commonly used gravity model from the environment class
   /// It is initialized at the init() call

@@ -20,8 +20,8 @@ public:
   virtual void output(const TaskInfo&);
   virtual void update(const TaskInfo& taskInfo);
 
-  virtual void setDiscreteState(const Vector& state, unsigned offset);
-  virtual void getDiscreteState(Vector& state, unsigned offset) const;
+  virtual void setDiscreteState(const StateStream& state);
+  virtual void getDiscreteState(StateStream& state) const;
 
   const Matrix& getInitialValue(void) const;
   void setInitialValue(const Matrix& value);

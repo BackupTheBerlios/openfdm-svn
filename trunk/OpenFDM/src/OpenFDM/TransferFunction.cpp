@@ -162,15 +162,15 @@ DiscreteTransferFunction::update(const TaskInfo& taskInfo)
 }
 
 void
-DiscreteTransferFunction::setDiscreteState(const Vector& state, unsigned offset)
+DiscreteTransferFunction::setDiscreteState(const StateStream& state)
 {
-  mState = state(Range(offset+1, offset+rows(mState)));
+  state.readSubState(mState);
 }
 
 void
-DiscreteTransferFunction::getDiscreteState(Vector& state, unsigned offset) const
+DiscreteTransferFunction::getDiscreteState(StateStream& state) const
 {
-  state(Range(offset+1, offset+rows(mState))) = mState;
+  state.writeSubState(mState);
 }
 
 const real_type&

@@ -79,25 +79,15 @@ DiscreteIntegrator::update(const TaskInfo& taskInfo)
 }
 
 void
-DiscreteIntegrator::setDiscreteState(const Vector& state, unsigned offset)
+DiscreteIntegrator::setDiscreteState(const StateStream& state)
 {
-  // FIXME reshape ...
-  for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
-    for (unsigned i = 1; i <= rows(mIntegralState); ++i) {
-      mIntegralState(i, j) = state(offset + i + (j-1)*rows(mIntegralState));
-    }
-  }
+  state.readSubState(mIntegralState);
 }
 
 void
-DiscreteIntegrator::getDiscreteState(Vector& state, unsigned offset) const
+DiscreteIntegrator::getDiscreteState(StateStream& state) const
 {
-  // FIXME reshape ...
-  for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
-    for (unsigned i = 1; i <= rows(mIntegralState); ++i) {
-      state(offset + i + (j-1)*rows(mIntegralState)) = mIntegralState(i, j);
-    }
-  }
+  state.writeSubState(mIntegralState);
 }
 
 const Matrix&

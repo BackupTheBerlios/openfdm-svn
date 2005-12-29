@@ -54,29 +54,19 @@ Integrator::output(const TaskInfo&)
 }
 
 void
-Integrator::setState(const Vector& state, unsigned offset)
+Integrator::setState(const StateStream& state)
 {
-  // FIXME reshape ...
-  for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
-    for (unsigned i = 1; i <= rows(mIntegralState); ++i) {
-      mIntegralState(i, j) = state(offset + i + (j-1)*rows(mIntegralState));
-    }
-  }
+  state.readSubState(mIntegralState);
 }
 
 void
-Integrator::getState(Vector& state, unsigned offset) const
+Integrator::getState(StateStream& state) const
 {
-  // FIXME reshape ...
-  for (unsigned j = 1; j <= cols(mIntegralState); ++j) {
-    for (unsigned i = 1; i <= rows(mIntegralState); ++i) {
-      state(offset + i + (j-1)*rows(mIntegralState)) = mIntegralState(i, j);
-    }
-  }
+  state.writeSubState(mIntegralState);
 }
 
 void
-Integrator::getStateDeriv(Vector& stateDeriv, unsigned offset)
+Integrator::getStateDeriv(StateStream& stateDeriv)
 {
   OpenFDMAssert(getInputPort(0)->isConnected());
 
@@ -85,12 +75,7 @@ Integrator::getStateDeriv(Vector& stateDeriv, unsigned offset)
   const Matrix& input = mh.getMatrixValue();
   OpenFDMAssert(size(input) == size(mIntegralState));
 
-  // FIXME reshape ...
-  for (unsigned j = 1; j <= cols(input); ++j) {
-    for (unsigned i = 1; i <= rows(input); ++i) {
-      stateDeriv(offset + i + (j-1)*rows(input)) = input(i, j);
-    }
-  }
+  stateDeriv.writeSubState(input);
 }
 
 const Matrix&

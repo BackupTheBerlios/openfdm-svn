@@ -6,14 +6,13 @@
 #include "Model.h"
 #include "Property.h"
 #include "Vector.h"
+#include "Environment.h"
 #include "LogStream.h"
 #include "ODESolver.h"
 #include "ExplicitEuler.h"
 #include "Function.h"
 #include "Newton.h"
 #include "System.h"
-
-#include "ModelVisitor.h"
 
 namespace OpenFDM {
 
@@ -134,37 +133,6 @@ System::init(void)
   return true;
 }
 
-class StateGetModelVisitor : public ModelVisitor {
-public:
-  StateGetModelVisitor(unsigned nStates) : mState(nStates), mOffset(0u)
-  {}
-  virtual void apply(Model& model)
-  {
-    OpenFDMAssert(mOffset + model.getNumContinousStates() <= mState.size());
-    model.getState(mState, mOffset);
-    mOffset += model.getNumContinousStates();
-  }
-
-  virtual void apply(ModelGroup& modelGroup)
-  {
-    traverse(modelGroup);
-  }
-  virtual void apply(Interact& interact)
-  {
-//     traverse(interact);
-  }
-  virtual void apply(MultiBodySystem& multiBodySystem)
-  {
-    traverse(multiBodySystem);
-  }
-
-  const Vector& getState(void) const
-  { return mState; }
-private:
-  Vector mState;
-  unsigned mOffset;
-};
-
 bool
 System::simulate(real_type tEnd)
 {
@@ -175,8 +143,9 @@ System::simulate(real_type tEnd)
   // outside this method, we need to read that state and set it into the
   // timestepper. The timestepper needs to take care if it needs to be
   // restarted. So just set it here.
-  Vector state(getNumContinousStates());
-  getState(state, 0);
+  StateStream stateStream(getNumContinousStates());
+  getState(stateStream);
+  Vector state = stateStream.getState();
   // Exact check is currect here, the user does not have to fiddle with
   // the state during simulation, if the state changes despite of that,
   // Just spend that extra effort.
@@ -309,10 +278,11 @@ System::trim(void)
   output(taskInfo);
 
   // Get the current state
-  Vector state(getNumContinousStates());
-  getState(state, 0);
+  StateStream stateStream(getNumContinousStates());
+  getState(stateStream);
+  Vector state = stateStream.getState();
 
-  Vector trimState = state;
+  Vector trimState = stateStream.getState();
   // Buld up the trim function
   TrimFunction trimFunction(*this, trimState);
 
@@ -321,9 +291,11 @@ System::trim(void)
   real_type rtol = 1e-8;
   bool ret = GaussNewton(trimFunction, getTime(), trimState, atol, rtol);
   if (ret) {
-    setState(trimState, 0);
+    stateStream.setState(trimState);
+    setState(stateStream);
   } else {
-    setState(state, 0);
+    stateStream.setState(state);
+    setState(stateStream);
   }
 
   return ret;

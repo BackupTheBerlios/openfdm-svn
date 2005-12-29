@@ -112,24 +112,27 @@ RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
 }
 
 void
-RevoluteJoint::setState(const Vector& state, unsigned offset)
+RevoluteJoint::setState(const StateStream& state)
 {
-  mRevoluteJointFrame->setJointPos(state(offset+1));
-  mRevoluteJointFrame->setJointVel(state(offset+2));
+  CartesianJointFrame<1>::VectorN v;
+  state.readSubState(v);
+  mRevoluteJointFrame->setJointPos(v(1));
+  state.readSubState(v);
+  mRevoluteJointFrame->setJointVel(v(1));
 }
 
 void
-RevoluteJoint::getState(Vector& state, unsigned offset) const
+RevoluteJoint::getState(StateStream& state) const
 {
-  state(offset+1) = mRevoluteJointFrame->getJointPos();
-  state(offset+2) = mRevoluteJointFrame->getJointVel();
+  state.writeSubState(mRevoluteJointFrame->getJointPos());
+  state.writeSubState(mRevoluteJointFrame->getJointVel());
 }
 
 void
-RevoluteJoint::getStateDeriv(Vector& state, unsigned offset)
+RevoluteJoint::getStateDeriv(StateStream& stateDeriv)
 {
-  state(offset+1) = mRevoluteJointFrame->getJointVel();
-  state(offset+2) = mRevoluteJointFrame->getJointVelDot()(1);
+  stateDeriv.writeSubState(mRevoluteJointFrame->getJointVel());
+  stateDeriv.writeSubState(mRevoluteJointFrame->getJointVelDot());
 }
 
 } // namespace OpenFDM

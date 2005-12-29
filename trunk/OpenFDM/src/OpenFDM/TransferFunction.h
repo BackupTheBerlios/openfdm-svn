@@ -39,8 +39,8 @@ public:
   virtual void update(const TaskInfo& taskInfo);
 
   /// This one can have discrete states
-  virtual void setDiscreteState(const Vector& state, unsigned offset);
-  virtual void getDiscreteState(Vector& state, unsigned offset) const;
+  virtual void setDiscreteState(const StateStream& state);
+  virtual void getDiscreteState(StateStream& state) const;
 
   const real_type& getOutput(void) const;
 

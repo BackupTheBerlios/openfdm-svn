@@ -125,40 +125,29 @@ MobileRootJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
 }
 
 void
-MobileRootJoint::setState(const Vector& state, unsigned offset)
+MobileRootJoint::setState(const StateStream& state)
 {
-  mFrame->setOrientation(Vector4(state(offset+1), state(offset+2),
-                                 state(offset+3), state(offset+4)));
-  mFrame->setPosition(Vector3(state(offset+5), state(offset+6), state(offset+7)));
-  mFrame->setRelVel(Vector6(state(offset+8), state(offset+9), state(offset+10),
-                            state(offset+11), state(offset+12), state(offset+13)));
+  Quaternion q;
+  state.readSubState(q);
+  mFrame->setOrientation(q);
+  Vector3 p;
+  state.readSubState(p);
+  mFrame->setPosition(p);
+  Vector6 v;
+  state.readSubState(v);
+  mFrame->setRelVel(v);
 }
 
 void
-MobileRootJoint::getState(Vector& state, unsigned offset) const
+MobileRootJoint::getState(StateStream& state) const
 {
-  Quaternion q = mFrame->getOrientation();
-  state(offset+1) = q(1);
-  state(offset+2) = q(2);
-  state(offset+3) = q(3);
-  state(offset+4) = q(4);
-  
-  Vector3 p = mFrame->getPosition();
-  state(offset+5) = p(1);
-  state(offset+6) = p(2);
-  state(offset+7) = p(3);
-  
-  Vector6 v = mFrame->getRelVel();
-  state(offset+8) = v(1);
-  state(offset+9) = v(2);
-  state(offset+10) = v(3);
-  state(offset+11) = v(4);
-  state(offset+12) = v(5);
-  state(offset+13) = v(6);
+  state.writeSubState(mFrame->getOrientation());
+  state.writeSubState(mFrame->getPosition());
+  state.writeSubState(mFrame->getRelVel());
 }
 
 void
-MobileRootJoint::getStateDeriv(Vector& state, unsigned offset)
+MobileRootJoint::getStateDeriv(StateStream& stateDeriv)
 {
   Quaternion q = mFrame->getOrientation();
   Vector3 angVel = mFrame->getRelVel().getAngular();
@@ -169,22 +158,9 @@ MobileRootJoint::getStateDeriv(Vector& state, unsigned offset)
   // That is if |q| < 1 add a little radial component outward,
   // if |q| > 1 add a little radial component inward
   Vector4 qderiv = derivative(q, angVel) + 0.1*(normalize(q) - q);
-  state(offset+1) = qderiv(1);
-  state(offset+2) = qderiv(2);
-  state(offset+3) = qderiv(3);
-  state(offset+4) = qderiv(4);
-  
-  state(offset+5) = vel(1);
-  state(offset+6) = vel(2);
-  state(offset+7) = vel(3);
-  
-  Vector6 accel = mFrame->getRelVelDot();
-  state(offset+8)  = accel(1);
-  state(offset+9)  = accel(2);
-  state(offset+10) = accel(3);
-  state(offset+11) = accel(4);
-  state(offset+12) = accel(5);
-  state(offset+13) = accel(6);
+  stateDeriv.writeSubState(qderiv);
+  stateDeriv.writeSubState(vel);
+  stateDeriv.writeSubState(mFrame->getRelVelDot());
 }
 
 } // namespace OpenFDM

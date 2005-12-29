@@ -83,9 +83,9 @@ private:
 
   /** Methods for the OpenFDM::Part.
    */
-  virtual void setState(const Vector& state, unsigned offset);
-  virtual void getState(Vector& state, unsigned offset) const;
-  virtual void getStateDeriv(Vector& state, unsigned offset);
+  virtual void setState(const StateStream& state);
+  virtual void getState(StateStream& state) const;
+  virtual void getStateDeriv(StateStream& state);
 
   /// The maximum movement of the controler
   real_type mMaxVel;
