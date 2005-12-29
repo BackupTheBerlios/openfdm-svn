@@ -49,7 +49,7 @@ RevoluteJoint::recheckTopology(void)
     getOutboardBody()->setFrame(mRevoluteJointFrame);
   }
   outFrame = getOutboardBody()->getFrame();
-  if (!outFrame->isParentFrame(inFrame)) {
+  if (!outFrame->isDirectChildFrameOf(inFrame)) {
     inFrame->addChildFrame(mRevoluteJointFrame);
   }
 }

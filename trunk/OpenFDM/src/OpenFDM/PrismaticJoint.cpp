@@ -49,7 +49,7 @@ PrismaticJoint::recheckTopology(void)
     getOutboardBody()->setFrame(mPrismaticJointFrame);
   }
   outFrame = getOutboardBody()->getFrame();
-  if (!outFrame->isParentFrame(inFrame)) {
+  if (!outFrame->isDirectChildFrameOf(inFrame)) {
     inFrame->addChildFrame(mPrismaticJointFrame);
   }
 }

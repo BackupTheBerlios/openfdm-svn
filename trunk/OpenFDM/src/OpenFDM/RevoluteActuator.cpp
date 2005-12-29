@@ -55,7 +55,7 @@ RevoluteActuator::recheckTopology(void)
     getOutboardBody()->setFrame(mRevoluteActuatorFrame);
   }
   outFrame = getOutboardBody()->getFrame();
-  if (!outFrame->isParentFrame(inFrame)) {
+  if (!outFrame->isDirectChildFrameOf(inFrame)) {
     inFrame->addChildFrame(mRevoluteActuatorFrame);
   }
 }

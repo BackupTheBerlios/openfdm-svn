@@ -70,7 +70,7 @@ MobileRootJoint::recheckTopology(void)
   rigidBody = getInboardBody();
   if (rigidBody) {
     Frame* frame = rigidBody->getFrame();
-    if (frame && !frame->isParentFrame(mFrame))
+    if (frame && !frame->isDirectParentFrameOf(mFrame))
       frame->addChildFrame(mFrame);
   } else {
     Environment* environment = getEnvironment();

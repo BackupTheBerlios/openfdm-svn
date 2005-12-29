@@ -77,6 +77,20 @@ Frame::traverse(ConstVisitor& visitor) const
 }
 
 bool
+Frame::isParentFrameOf(const Frame* const frame) const
+{
+  return isDirectParentFrameOf(frame) ||
+    (frame && isParentFrameOf(frame->mParentFrame));
+}
+
+bool
+Frame::isChildFrameOf(const Frame* const frame) const
+{
+  return isDirectChildFrameOf(frame) ||
+    (mParentFrame && mParentFrame->isChildFrameOf(frame));
+}
+
+bool
 Frame::addChildFrame(Frame* child)
 {
   if (!child) {

@@ -70,14 +70,33 @@ public:
   /// Return the parent frame.
   const Frame* getParentFrame(void) const
   { return mParentFrame; }
-  /// Return true if the given frame is the parent frame.
-  /// FIXME: it will read more intuitive if it is called
-  /// this->isParentFrameOf(that)
-  bool isParentFrame(const Frame* frame) const
-  { return frame == mParentFrame; }
   /// True if the current frame has a parent frame.
   bool hasParent(void) const
   { return getParentFrame(); }
+
+  /// Return true if this Frame is the direct parent Frame of the Frame given
+  /// in the argument frame.
+  /// That means it reads:
+  ///  this->isDirectParentFrameOf(frame)
+  bool isDirectParentFrameOf(const Frame* const frame) const
+  { return frame && this == frame->mParentFrame; }
+  /// Return true if this Frame is a parent Frame of the Frame given
+  /// in the argument frame. It does not need to be the direct parent.
+  /// That means it reads:
+  ///  this->isParentFrameOf(frame)
+  bool isParentFrameOf(const Frame* const frame) const;
+
+  /// Return true if this Frame is a direct child Frame of the Frame given
+  /// in the argument frame.
+  /// That means it reads:
+  ///  this->isDirectChildFrameOf(frame)
+  bool isDirectChildFrameOf(const Frame* const frame) const
+  { return frame && frame == mParentFrame; }
+  /// Return true if this Frame is a child Frame of the Frame given
+  /// in the argument frame. It does not need to be a direct child.
+  /// That means it reads:
+  ///  this->isChildFrameOf(frame)
+  bool isChildFrameOf(const Frame* const frame) const;
 
   /// Adds the given frame to the list of child frames.
   /// returns true if that completed sucessfully.
