@@ -153,6 +153,21 @@ public:
   }
 };
 
+template<Category category>
+class LogFactory<category,Warning> : public Logger {
+public:
+  typedef LogProxy<char> proxy_type;
+  static proxy_type
+  CreateInstance(void)
+  {
+    Logger* logger = Instance();
+    if (logger->enabled(category, Warning))
+      return proxy_type(logger->getStream());
+    else
+      return proxy_type(0);
+  }
+};
+
 #else /* defined(NDEBUG) */
 
 template<Category category, Priority priority>
