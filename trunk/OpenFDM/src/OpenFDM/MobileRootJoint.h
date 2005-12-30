@@ -26,7 +26,11 @@ public:
   MobileRootJoint(const std::string& name);
   virtual ~MobileRootJoint(void);
 
+  virtual const MobileRootJoint* toMobileRootJoint(void) const;
+  virtual MobileRootJoint* toMobileRootJoint(void);
+
   virtual bool init(void);
+  virtual void output(const TaskInfo& taskInfo);
 
   virtual void recheckTopology(void);
 

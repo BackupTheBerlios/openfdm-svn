@@ -30,6 +30,18 @@ MobileRootJoint::~MobileRootJoint(void)
 {
 }
 
+const MobileRootJoint*
+MobileRootJoint::toMobileRootJoint(void) const
+{
+  return this;
+}
+
+MobileRootJoint*
+MobileRootJoint::toMobileRootJoint(void)
+{
+  return this;
+}
+
 bool
 MobileRootJoint::init(void)
 {
@@ -52,6 +64,20 @@ MobileRootJoint::init(void)
   recheckTopology();
 
   return Joint::init();
+}
+
+void
+MobileRootJoint::output(const TaskInfo& taskInfo)
+{
+  RigidBody* outboardBody = getOutboardBody();
+  if (!outboardBody)
+    return;
+  
+  Log(ArtBody, Debug) << "Computing mobile root accelerations for joint \""
+                      << getName() << "\"" << endl;
+  
+  outboardBody->computeArtValues();
+  interactWith(getInboardBody());
 }
 
 void

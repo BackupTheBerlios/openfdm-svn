@@ -71,6 +71,10 @@ protected: // FIXME
 
   /// Helper functions to sort the models according their dependencies
   static bool dependsOn(Port* inputPort, Model* model);
+  /// return true if interact1 depends on interact2 which means that
+  /// interact1 is higher in the tree of multibody models
+  static bool dependsOnMultiBody(Joint* joint1, Joint* joint2);
+
   bool appendDependecies(const Model* firstModel, Model* model,
                          ModelList& newList);
   /// Sorts the models depending their dependencies

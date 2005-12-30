@@ -301,8 +301,69 @@ ModelGroup::dependsOn(Port* inputPort, Model* model)
 }
 
 bool
+ModelGroup::dependsOnMultiBody(Joint* joint1, Joint* joint2)
+{
+  return joint1->getOutboardBody() == joint2->getInboardBody();
+}
+
+bool
 ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& newList)
 {
+  Joint* joint = model->toJoint();
+  if (joint) {
+    for (;;) {
+      ModelList::iterator it = mModels.begin();
+      while (it != mModels.end()) {
+        Joint* joint2 = (*it)->toJoint();
+        if (joint2 && dependsOnMultiBody(joint, joint2))
+          break;
+        ++it;
+      }
+      if (it == mModels.end())
+        break;
+
+      // We need to store that one here since the iterator possibly invalidates
+      // during the next append dependency call
+      SharedPtr<Model> tmpModel = *it;
+      mModels.erase(it);
+      
+      // Now recurse into that model.
+      if (!appendDependecies(firstModel, tmpModel, newList))
+        return false;
+ 
+      // Finally, past all the dependent models are already in the list,
+      // push that one in question.
+      newList.push_back(tmpModel);
+    }
+  }
+
+  // Special case: if we depend on the accelerations, like acceleration
+  // sensors, we depend on the mobile root ...
+  // Well a bit croase now, but until there is something better ...
+  if (model->getMultiBodyAcceleration()) {
+    ModelList::iterator it = mModels.begin();
+    while (it != mModels.end()) {
+      MobileRootJoint* joint = (*it)->toMobileRootJoint();
+      if (joint)
+        break;
+      ++it;
+    }
+    if (it != mModels.end()) {
+      // We need to store that one here since the iterator possibly invalidates
+      // during the next append dependency call
+      SharedPtr<Model> tmpModel = *it;
+      mModels.erase(it);
+      
+      // Now recurse into that model.
+      if (!appendDependecies(firstModel, tmpModel, newList))
+        return false;
+      
+      // Finally, past all the dependent models are already in the list,
+      // push that one in question.
+      newList.push_back(tmpModel);
+    }
+  }
+
   // If the model in question does not have dependencies, stop.
   if (!model->getDirectFeedThrough())
     return true;

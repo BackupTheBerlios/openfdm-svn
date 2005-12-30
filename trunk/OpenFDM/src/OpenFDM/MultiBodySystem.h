@@ -31,8 +31,8 @@ public:
   /// Double dispatch helper for the multibody system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo& taskInfo);
+//   virtual bool init(void);
+//   virtual void output(const TaskInfo& taskInfo);
 
   /// Add a RigidBody to that MultiBodySystem
   void addRigidBody(RigidBody* rigidBody);

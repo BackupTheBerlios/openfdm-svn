@@ -36,31 +36,16 @@ MultiBodySystem::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
-bool
-MultiBodySystem::init(void)
-{
-  return ModelGroup::init();
-}
+// bool
+// MultiBodySystem::init(void)
+// {
+//   return true;
+// }
 
-void
-MultiBodySystem::output(const TaskInfo& taskInfo)
-{
-  // Hmm, just works now ... FIXME
-  ModelList::iterator it;
-  for (it = mModels.begin(); it != mModels.end(); ++it) {
-    if (!(*it)->getMultiBodyAcceleration())
-      (*it)->output(taskInfo);
-  }
-
-  // Compute forward dynamics, that is the articulated forces and inertia.
-  mMobileRootJoint->interactWith(mMobileRootJoint->getInboardBody());
-
-  // Hmm, just works now ... FIXME
-  for (it = mModels.begin(); it != mModels.end(); ++it) {
-    if ((*it)->getMultiBodyAcceleration())
-      (*it)->output(taskInfo);
-  }
-}
+// void
+// MultiBodySystem::output(const TaskInfo& taskInfo)
+// {
+// }
 
 void
 MultiBodySystem::addRigidBody(RigidBody* rigidBody)

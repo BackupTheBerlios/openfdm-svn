@@ -28,6 +28,8 @@ class Environment;
 
 class Input;
 class Output;
+class Joint;
+class MobileRootJoint;
 
 class ModelVisitor;
 
@@ -54,6 +56,12 @@ public:
 
   virtual const Output* toOutput(void) const;
   virtual Output* toOutput(void);
+
+  virtual const Joint* toJoint(void) const;
+  virtual Joint* toJoint(void);
+
+  virtual const MobileRootJoint* toMobileRootJoint(void) const;
+  virtual MobileRootJoint* toMobileRootJoint(void);
 
   /// Called on each system initialization.
   virtual bool init(void);
@@ -88,6 +96,8 @@ public:
   bool getDirectFeedThrough(void) const
   { return mDirectFeedThrough; }
 
+  /// Returns true if it needs to know the accelerations ...
+  /// FIXME: do that in a different way ...
   bool getMultiBodyAcceleration(void) const
   { return mMultiBodyAcceleration; }
 

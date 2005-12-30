@@ -18,56 +18,26 @@
 
 namespace OpenFDM {
 
+/// FIXME: joint's should be lockable, which means trylock == true and
+/// velocity small enough - keep position ...
+
 class Joint
   : public Interact {
 public:
   Joint(const std::string& name);
   virtual ~Joint(void);
 
-  /// FIXME: joint's should be lockable, which means trylock == true and
-  /// velocity small enough - keep position ...
+  virtual const Joint* toJoint(void) const;
+  virtual Joint* toJoint(void);
+
+  virtual void output(const TaskInfo& taskInfo);
 
   RigidBody* getOutboardBody(void)
   { return getParentRigidBody(0); }
   RigidBody* getInboardBody(void)
   { return getParentRigidBody(1); }
 
-  virtual void interactWith(RigidBody* rigidBody)
-  {
-    // HMmMm
-    if (rigidBody != getInboardBody())
-      return;
-
-    RigidBody* outboardBody = getOutboardBody();
-    if (!outboardBody)
-      return;
-
-    outboardBody->computeArtValues();
-    Log(ArtBody, Debug) << "Contributing articulation from \""
-                        << outboardBody->getName() << "\" through joint \""
-                        << getName() << "\"" << endl;
-
-    // We need the articulated inertia and force from the outboard body.
-    SpatialInertia I;
-    Vector6 F;
-
-    // Apply the joint degrees of freedom to that.
-    // If there was an error, (something was singular ???)
-    // just ignore that part. FIXME, ist this ok????
-    jointArticulation(I, F, outboardBody->getArtInertia(),
-                      outboardBody->getArtForce());
-
-    Log(ArtBody, Debug3) << "Outboard Articulated values past joint "
-                         << "projection: Force:\n" << trans(F)
-                         << "\nInertia\n" << I << endl;
-
-    // Contribute the transformed values to the parent.
-    if (!rigidBody)
-      return;
-    Frame* frame = outboardBody->getFrame();
-    rigidBody->contributeInertia(frame->inertiaToParent(I));
-    rigidBody->contributeForce(frame->forceToParent(F));
-  }
+  virtual void interactWith(RigidBody* rigidBody);
 
   // Joint slot ...
   virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
