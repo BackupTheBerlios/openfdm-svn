@@ -32,7 +32,7 @@ atou(const char* s)
 Logger::Logger(std::basic_ostream<char>* stream) :
   mStream(stream),
   mCategory(~0u),
-  mPriority(Log::Warning)
+  mPriority(Log::Error)
 {
   // Set some defaults from the environment
   unsigned value = atou(std::getenv("OPENFDM_DEBUG_PRIORITY"));
