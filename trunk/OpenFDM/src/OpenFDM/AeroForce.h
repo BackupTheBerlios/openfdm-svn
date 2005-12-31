@@ -43,57 +43,57 @@ public:
   const Rotation& getOrientation(void) const;
 
   void setWingSpan(const real_type& winSpan);
-  real_type getWingSpan(void) const;
+  const real_type& getWingSpan(void) const;
 
   void setWingArea(const real_type& winArea);
-  real_type getWingArea(void) const;
+  const real_type& getWingArea(void) const;
 
   void setCoord(const real_type& coord);
-  real_type getCoord(void) const;
+  const real_type& getCoord(void) const;
 
   const Vector3& getRefPosition(void) const;
   const Vector6& getAirSpeed(void) const;
   const Vector3& getMach(void) const;
-  real_type getTrueSpeed(void) const;
-  real_type getEquivalentAirSpeed(void) const;
-  real_type getCalibratedAirSpeed(void) const;
-  real_type getDynamicPressure(void) const;
-  real_type getAlpha(void) const;
-  real_type getAlphaDot(void) const;
-  real_type getBeta(void) const;
-  real_type getBetaDot(void) const;
+  const real_type& getTrueSpeed(void) const;
+  const real_type& getEquivalentAirSpeed(void) const;
+  const real_type& getCalibratedAirSpeed(void) const;
+  const real_type& getDynamicPressure(void) const;
+  const real_type& getAlpha(void) const;
+  const real_type& getAlphaDot(void) const;
+  const real_type& getBeta(void) const;
+  const real_type& getBetaDot(void) const;
 
-  real_type getBodyU(void) const;
-  real_type getBodyV(void) const;
-  real_type getBodyW(void) const;
+  const real_type& getBodyU(void) const;
+  const real_type& getBodyV(void) const;
+  const real_type& getBodyW(void) const;
 
-  real_type getBodyP(void) const;
-  real_type getBodyQ(void) const;
-  real_type getBodyR(void) const;
+  const real_type& getBodyP(void) const;
+  const real_type& getBodyQ(void) const;
+  const real_type& getBodyR(void) const;
 
-  real_type getMachNumber(void) const;
-  real_type getTrueSpeedUW(void) const;
+  const real_type& getMachNumber(void) const;
+  const real_type& getTrueSpeedUW(void) const;
 
   /// FIXME, may be just provide 1/(2Vt)???
   /// Or provide the whole set of nondimentionalized values ...
   /// May be better since we can throw out the singularities ...
-  real_type getWingSpanOver2Speed(void) const;
-  real_type getCoordOver2Speed(void) const;
-  real_type getHOverWingSpan(void) const;
+  const real_type& getWingSpanOver2Speed(void) const;
+  const real_type& getCoordOver2Speed(void) const;
+  const real_type& getHOverWingSpan(void) const;
 
-  real_type getAltitude(void) const;
-  real_type getAboveGroundLevel(void) const;
+  const real_type& getAltitude(void) const;
+  const real_type& getAboveGroundLevel(void) const;
 
-  real_type getPressure(void) const;
-  real_type getDensity(void) const;
-  real_type getSoundSpeed(void) const;
-  real_type getTemperature(void) const;
+  const real_type& getPressure(void) const;
+  const real_type& getDensity(void) const;
+  const real_type& getSoundSpeed(void) const;
+  const real_type& getTemperature(void) const;
 
 
-  real_type getPressureSeaLevel(void) const;
-  real_type getDensitySeaLevel(void) const;
-  real_type getSoundSpeedSeaLevel(void) const;
-  real_type getTemperatureSeaLevel(void) const;
+  const real_type& getPressureSeaLevel(void) const;
+  const real_type& getDensitySeaLevel(void) const;
+  const real_type& getSoundSpeedSeaLevel(void) const;
+  const real_type& getTemperatureSeaLevel(void) const;
 
   const Vector3& getUnitDown(void) const;
   const Plane& getLocalGroundPlane(void) const;
@@ -146,11 +146,16 @@ private:
   mutable bool mDirtyLocalGroundPlane:1;
   mutable bool mDirtyAltitude:1;
   mutable bool mDirtyAboveGroundLevel:1;
+  mutable bool mDirtyWingSpanOver2Speed:1;
+  mutable bool mDirtyCoordOver2Speed:1;
+  mutable bool mDirtyHOverWingSpan:1;
   mutable bool mDirtyAtmosphere:1;
   mutable bool mDirtySLAtmosphere:1;
   mutable bool mDirtyAirSpeed:1;
   mutable bool mDirtyMach:1;
+  mutable bool mDirtyMachNumber:1;
   mutable bool mDirtyTrueSpeed:1;
+  mutable bool mDirtyTrueSpeedUW:1;
   mutable bool mDirtyCalibratedAirSpeed:1;
   mutable bool mDirtyEquivalentAirSpeed:1;
   mutable bool mDirtyDynamicPressure:1;
@@ -165,9 +170,14 @@ private:
   mutable AtmosphereData mSLAtmos;
   mutable Vector6 mAirSpeed;
   mutable Vector3 mMach;
+  mutable real_type mMachNumber;
   mutable real_type mAltitude;
   mutable real_type mAboveGroundLevel;
+  mutable real_type mWingSpanOver2Speed;
+  mutable real_type mCoordOver2Speed;
+  mutable real_type mHOverWingSpan;
   mutable real_type mTrueSpeed;
+  mutable real_type mTrueSpeedUW;
   mutable real_type mCalibratedAirSpeed;
   mutable real_type mEquivalentAirSpeed;
   mutable real_type mDynamicPressure;

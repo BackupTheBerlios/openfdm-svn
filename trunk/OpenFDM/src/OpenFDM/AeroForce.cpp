@@ -151,7 +151,7 @@ AeroForce::setWingSpan(const real_type& winSpan)
   mWingSpan = winSpan;
 }
 
-real_type
+const real_type&
 AeroForce::getWingSpan(void) const
 {
   return mWingSpan;
@@ -163,7 +163,7 @@ AeroForce::setWingArea(const real_type& winArea)
   mWingArea = winArea;
 }
 
-real_type
+const real_type&
 AeroForce::getWingArea(void) const
 {
   return mWingArea;
@@ -175,7 +175,7 @@ AeroForce::setCoord(const real_type& coord)
   mCoord = coord;
 }
 
-real_type
+const real_type&
 AeroForce::getCoord(void) const
 {
   return mCoord;
@@ -237,7 +237,7 @@ AeroForce::getMach(void) const
   return mMach;
 }
 
-real_type
+const real_type&
 AeroForce::getTrueSpeed(void) const
 {
   if (mDirtyTrueSpeed) {
@@ -249,7 +249,7 @@ AeroForce::getTrueSpeed(void) const
   return mTrueSpeed;
 }
 
-real_type
+const real_type&
 AeroForce::getEquivalentAirSpeed(void) const
 {
   if (mDirtyEquivalentAirSpeed)
@@ -259,7 +259,7 @@ AeroForce::getEquivalentAirSpeed(void) const
   return mEquivalentAirSpeed;
 }
 
-real_type
+const real_type&
 AeroForce::getCalibratedAirSpeed(void) const
 {
   if (mDirtyCalibratedAirSpeed)
@@ -269,7 +269,7 @@ AeroForce::getCalibratedAirSpeed(void) const
   return mCalibratedAirSpeed;
 }
 
-real_type
+const real_type&
 AeroForce::getDynamicPressure(void) const
 {
   if (mDirtyDynamicPressure) {
@@ -282,7 +282,7 @@ AeroForce::getDynamicPressure(void) const
   return mDynamicPressure;
 }
 
-real_type
+const real_type&
 AeroForce::getAlpha(void) const
 {
   if (mDirtyAlpha) {
@@ -297,7 +297,7 @@ AeroForce::getAlpha(void) const
   return mAlpha;
 }
 
-real_type
+const real_type&
 AeroForce::getAlphaDot(void) const
 {
   if (mDirtyAlphaDot) {
@@ -315,7 +315,7 @@ AeroForce::getAlphaDot(void) const
   return mAlphaDot;
 }
 
-real_type
+const real_type&
 AeroForce::getBeta(void) const
 {
   if (mDirtyBeta) {
@@ -332,7 +332,7 @@ AeroForce::getBeta(void) const
   return mBeta;
 }
 
-real_type
+const real_type&
 AeroForce::getBetaDot(void) const
 {
   if (mDirtyBetaDot) {
@@ -352,88 +352,112 @@ AeroForce::getBetaDot(void) const
   return mBetaDot;
 }
 
-real_type
+const real_type&
 AeroForce::getBodyU(void) const
 {
   const Vector6& speed = getAirSpeed();
   return speed(4);
 }
 
-real_type
+const real_type&
 AeroForce::getBodyV(void) const
 {
   const Vector6& speed = getAirSpeed();
   return speed(5);
 }
 
-real_type
+const real_type&
 AeroForce::getBodyW(void) const
 {
   const Vector6& speed = getAirSpeed();
   return speed(6);
 }
 
-real_type
+const real_type&
 AeroForce::getBodyP(void) const
 {
   const Vector6& speed = getAirSpeed();
   return speed(1);
 }
 
-real_type
+const real_type&
 AeroForce::getBodyQ(void) const
 {
   const Vector6& speed = getAirSpeed();
   return speed(2);
 }
 
-real_type
+const real_type&
 AeroForce::getBodyR(void) const
 {
   const Vector6& speed = getAirSpeed();
   return speed(3);
 }
 
-real_type
+const real_type&
 AeroForce::getMachNumber(void) const
 {
-  return norm(getMach());
+  if (mDirtyMachNumber) {
+    mMachNumber = norm(getMach());
+    mDirtyMachNumber = false;
+  }
+  Log(ArtBody, Debug3) << "AeroForce::getMachNumber()"
+                       << mMachNumber << endl;
+  return mMachNumber;
 }
 
-real_type
+const real_type&
 AeroForce::getTrueSpeedUW(void) const
 {
-  const Vector6& speed = getAirSpeed();
-  return sqrt(speed(4)*speed(4)+speed(6)*speed(6));
+  if (mDirtyTrueSpeedUW) {
+    const Vector6& speed = getAirSpeed();
+    mTrueSpeedUW = sqrt(speed(4)*speed(4)+speed(6)*speed(6));
+    mDirtyTrueSpeedUW = false;
+  }
+  Log(ArtBody, Debug3) << "AeroForce::getTrueSpeedUW()"
+                       << mTrueSpeedUW << endl;
+  return mTrueSpeedUW;
 }
 
-real_type
+const real_type&
 AeroForce::getWingSpanOver2Speed(void) const
 {
-  real_type Vt2 = 2*getTrueSpeed();
-  if (fabs(Vt2) < Limits<real_type>::min())
-    return 0;
-  else
-    return getWingSpan()/Vt2;
+  if (mDirtyWingSpanOver2Speed) {
+    real_type Vt2 = 2*getTrueSpeed();
+    if (fabs(Vt2) < Limits<real_type>::min())
+      mWingSpanOver2Speed = 0;
+    else
+      mWingSpanOver2Speed = getWingSpan()/Vt2;
+    mDirtyWingSpanOver2Speed = false;
+  }
+  return mWingSpanOver2Speed;
 }
 
-real_type
+const real_type&
 AeroForce::getCoordOver2Speed(void) const
 {
-  real_type Vt2 = 2*getTrueSpeed();
-  if (fabs(Vt2) < Limits<real_type>::min())
-    return 0;
-  else
-    return getCoord()/Vt2;
+  if (mDirtyCoordOver2Speed) {
+    real_type Vt2 = 2*getTrueSpeed();
+    if (fabs(Vt2) < Limits<real_type>::min())
+      mCoordOver2Speed = 0;
+    else
+      mCoordOver2Speed = getCoord()/Vt2;
+    mDirtyCoordOver2Speed = false;
+  }
+  return mCoordOver2Speed;
 }
 
-real_type
+const real_type&
 AeroForce::getHOverWingSpan(void) const
 {
-  return getAboveGroundLevel()/getWingSpan();
+  if (mDirtyHOverWingSpan) {
+    mHOverWingSpan = getAboveGroundLevel()/getWingSpan();
+    mDirtyHOverWingSpan = false;
+  }
+  return mHOverWingSpan;
 }
 
-real_type
+const real_type&
 AeroForce::getAltitude(void) const
 {
   if (mDirtyAltitude) {
@@ -452,7 +476,7 @@ AeroForce::getAltitude(void) const
   return mAltitude;
 }
 
-real_type
+const real_type&
 AeroForce::getAboveGroundLevel(void) const
 {
   if (mDirtyAboveGroundLevel) {
@@ -473,7 +497,7 @@ AeroForce::getAboveGroundLevel(void) const
   return mAboveGroundLevel;
 }
 
-real_type
+const real_type&
 AeroForce::getPressure(void) const
 {
   computeAtmosphere();
@@ -482,7 +506,7 @@ AeroForce::getPressure(void) const
   return mAtmos.pressure;
 }
 
-real_type
+const real_type&
 AeroForce::getDensity(void) const
 {
   computeAtmosphere();
@@ -491,7 +515,7 @@ AeroForce::getDensity(void) const
   return mAtmos.density;
 }
 
-real_type
+const real_type&
 AeroForce::getSoundSpeed(void) const
 {
   computeAtmosphere();
@@ -500,7 +524,7 @@ AeroForce::getSoundSpeed(void) const
   return mAtmos.soundspeed;
 }
 
-real_type
+const real_type&
 AeroForce::getTemperature(void) const
 {
   computeAtmosphere();
@@ -509,28 +533,28 @@ AeroForce::getTemperature(void) const
   return mAtmos.temperature;
 }
 
-real_type
+const real_type&
 AeroForce::getPressureSeaLevel(void) const
 {
   computeSLAtmosphere();
   return mSLAtmos.pressure;
 }
 
-real_type
+const real_type&
 AeroForce::getDensitySeaLevel(void) const
 {
   computeSLAtmosphere();
   return mSLAtmos.density;
 }
 
-real_type
+const real_type&
 AeroForce::getSoundSpeedSeaLevel(void) const
 {
   computeSLAtmosphere();
   return mSLAtmos.soundspeed;
 }
 
-real_type
+const real_type&
 AeroForce::getTemperatureSeaLevel(void) const
 {
   computeSLAtmosphere();
@@ -610,10 +634,15 @@ AeroForce::dirtyAll(void)
   mDirtyAtmosphere = true;
   mDirtyAltitude = true;
   mDirtyAboveGroundLevel = true;
+  mDirtyWingSpanOver2Speed = true;
+  mDirtyCoordOver2Speed = true;
+  mDirtyHOverWingSpan = true;
   mDirtySLAtmosphere = true;
   mDirtyAirSpeed = true;
   mDirtyMach = true;
+  mDirtyMachNumber = true;
   mDirtyTrueSpeed = true;
+  mDirtyTrueSpeedUW = true;
   mDirtyCalibratedAirSpeed = true;
   mDirtyEquivalentAirSpeed = true;
   mDirtyDynamicPressure = true;
