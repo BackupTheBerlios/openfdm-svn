@@ -48,7 +48,7 @@ public:
   /** Const accessor.
    */
   OpenFDM_FORCE_INLINE
-  value_type operator()(size_type i, size_type j) const
+  const value_type& operator()(size_type i, size_type j) const
   { return *data_.find(i, j); }
   /** Nonconst accessor.
    */
@@ -190,7 +190,7 @@ public:
   /** Const accessor.
    */
   OpenFDM_FORCE_INLINE
-  value_type operator()(size_type i) const
+  const value_type& operator()(size_type i) const
   { return *data_.find(i); }
   /** Nonconst accessor.
    */
@@ -201,7 +201,7 @@ public:
   /** Const accessor.
    */
   OpenFDM_FORCE_INLINE
-  value_type operator()(size_type i, size_type j) const
+  const value_type& operator()(size_type i, size_type j) const
   { return *data_.find(i); }
   /** Nonconst accessor.
    */
@@ -400,7 +400,7 @@ public:
   /** Const accessor.
    */
   OpenFDM_FORCE_INLINE
-  value_type operator()(size_type i, size_type j) const
+  const value_type& operator()(size_type i, size_type j) const
   { return *data_.find(i, j); }
   /** Nonconst accessor.
    */
