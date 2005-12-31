@@ -751,16 +751,30 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   wj->setJointVel(0);
 
   // Add an brake force
-  DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
-  brakeF->setFrictionConstant(-1e4);
-  if (brake == "LEFT") {
-    Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
-    brakeF->getInputPort(0)->connect(port);
-  } else if (brake == "RIGHT") {
-    Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
-    brakeF->getInputPort(0)->connect(port);
+  if (brake == "LEFT" || brake == "RIGHT") {
+    DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
+    brakeF->setFrictionConstant(-1e4);
+    if (brake == "LEFT") {
+      Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
+      brakeF->getInputPort(0)->connect(port);
+    } else if (brake == "RIGHT") {
+      Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
+      brakeF->getInputPort(0)->connect(port);
+    }
+    // That one reads the joint position and velocity ...
+    brakeF->getInputPort(1)->connect(wj->getOutputPort(1));
+    // ... and provides an output force
+    wj->getInputPort(0)->connect(brakeF->getOutputPort(0));
+    mVehicle->getMultiBodySystem()->addModel(brakeF);
+  } else {
+    // Just some 'rolloing friction' FIXME: does this belong here?
+    Gain* rollingFric = new Gain(name + " Rolling Friction Force");
+    rollingFric->setGain(-10);
+    rollingFric->getInputPort(0)->connect(wj->getOutputPort(1));
+    // ... and provides an output force
+    wj->getInputPort(0)->connect(rollingFric->getOutputPort(0));
+    mVehicle->getMultiBodySystem()->addModel(rollingFric);
   }
-  wj->setLineForce(brakeF);
   
   WheelContact* wc = new WheelContact(name + " Wheel Contact");
   wc->setWheelRadius(0.5*wheelDiam);

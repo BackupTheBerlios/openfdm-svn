@@ -14,7 +14,6 @@
 #include "Frame.h"
 #include "RigidBody.h"
 #include "Joint.h"
-#include "LineForce.h"
 
 namespace OpenFDM {
 

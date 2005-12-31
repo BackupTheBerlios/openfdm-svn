@@ -9,7 +9,7 @@
 namespace OpenFDM {
 
 LinearSpring::LinearSpring(const std::string& name) :
-  LineForce(name),
+  Model(name),
   mSpringReference(0),
   mSpringConstant(0),
   mDamperConstant(0)
@@ -20,11 +20,41 @@ LinearSpring::~LinearSpring(void)
 {
 }
 
+bool
+LinearSpring::init(void)
+{
+  if (!getInputPort(0)->isConnected()) {
+    Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+  mPositionPort = getInputPort(0)->toRealPortHandle();
+
+  if (!getInputPort(1)->isConnected()) {
+    Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
+                      << "\" failed: Input port \"" << getInputPortName(1)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+  mVelocityPort = getInputPort(1)->toRealPortHandle();
+
+  return true;
+}
+
 void
 LinearSpring::output(const TaskInfo& taskInfo)
 {
-  real_type displacement = getPosition() - mSpringReference;
-  setForce(mSpringConstant*displacement + getVel()*mDamperConstant);
+  real_type position = mPositionPort.getRealValue();
+  real_type vel = mVelocityPort.getRealValue();
+  real_type displacement = position - mSpringReference;
+  mForce = mSpringConstant*displacement + vel*mDamperConstant;
+}
+
+const real_type&
+LinearSpring::getForce(void) const
+{
+  return mForce;
 }
 
 real_type

@@ -74,7 +74,6 @@ nobase_OpenFDMinclude_HEADERS = \
   LinAlg/Misc.h \
   LinAlg/Proxy.h \
   LinearSpring.h \
-  LineForce.h \
   LogStream.h \
   Mass.h \
   Math.h \
@@ -172,7 +171,6 @@ libOpenFDM_la_SOURCES = \
   ImplicitEuler.cpp \
   Joint.cpp \
   LinearSpring.cpp \
-  LineForce.cpp \
   Logger.cpp \
   Mass.cpp \
   MaxModel.cpp \

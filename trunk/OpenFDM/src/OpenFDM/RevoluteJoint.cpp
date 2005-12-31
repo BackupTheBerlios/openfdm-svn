@@ -127,8 +127,6 @@ RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
     tau(1) = mJointForcePort.getRealValue();
   } else
     tau.clear();
-  /// FIXME the old obsolete joint force computation
-  tau(1) += getJointForce();
   mRevoluteJointFrame->jointArticulation(artI, artF, outF, outI, tau);
 }
 

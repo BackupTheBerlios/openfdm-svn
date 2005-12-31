@@ -5,15 +5,6 @@
 #ifndef OpenFDM_RevoluteActuatorFrame_H
 #define OpenFDM_RevoluteActuatorFrame_H
 
-#include "Assert.h"
-#include "Vector.h"
-#include "Matrix.h"
-#include "Quaternion.h"
-#include "Inertia.h"
-#include "Frame.h"
-#include "RigidBody.h"
-#include "Joint.h"
-#include "LineForce.h"
 #include "CartesianActuatorFrame.h"
 
 namespace OpenFDM {
