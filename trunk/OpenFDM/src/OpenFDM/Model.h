@@ -165,6 +165,22 @@ protected:
                      const Matrix& (M::*getter)(void) const)
   { setOutputPort(i, name, new MatrixGetterPortInterface<M>(model, getter)); }
 
+  /// Convenience shortcuts
+  void addOutputPort(const std::string& name, PortInterface* portInterface)
+  {
+    unsigned num = getNumOutputPorts();
+    setNumOutputPorts(num+1);
+    setOutputPort(num, name, portInterface);
+  }
+  template<typename M>
+  void addOutputPort(const std::string& name, M* model,
+                     const real_type& (M::*getter)(void) const)
+  { addOutputPort(name, new RealGetterPortInterface<M>(model, getter)); }
+  template<typename M>
+  void addOutputPort(const std::string& name, M* model,
+                     const Matrix& (M::*getter)(void) const)
+  { addOutputPort(name, new MatrixGetterPortInterface<M>(model, getter)); }
+
   virtual Environment* getEnvironment(void) const;
 
 private:
