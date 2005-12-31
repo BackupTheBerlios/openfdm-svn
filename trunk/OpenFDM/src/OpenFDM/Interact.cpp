@@ -28,6 +28,18 @@ Interact::~Interact(void)
 {
 }
 
+const Interact*
+Interact::toInteract(void) const
+{
+  return this;
+}
+
+Interact*
+Interact::toInteract(void)
+{
+  return this;
+}
+
 void
 Interact::accept(ModelVisitor& visitor)
 {

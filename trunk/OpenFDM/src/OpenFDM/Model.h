@@ -28,6 +28,7 @@ class Environment;
 
 class Input;
 class Output;
+class Interact;
 class Joint;
 class MobileRootJoint;
 
@@ -56,6 +57,9 @@ public:
 
   virtual const Output* toOutput(void) const;
   virtual Output* toOutput(void);
+
+  virtual const Interact* toInteract(void) const;
+  virtual Interact* toInteract(void);
 
   virtual const Joint* toJoint(void) const;
   virtual Joint* toJoint(void);

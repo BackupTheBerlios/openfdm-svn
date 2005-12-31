@@ -73,6 +73,18 @@ Model::toOutput(void)
   return 0;
 }
 
+const Interact*
+Model::toInteract(void) const
+{
+  return 0;
+}
+
+Interact*
+Model::toInteract(void)
+{
+  return 0;
+}
+
 const Joint*
 Model::toJoint(void) const
 {

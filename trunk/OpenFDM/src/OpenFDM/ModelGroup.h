@@ -14,6 +14,8 @@
 
 namespace OpenFDM {
 
+class Joint;
+
 class ModelGroup
   : public Model {
 public:
@@ -75,8 +77,8 @@ protected: // FIXME
   /// interact1 is higher in the tree of multibody models
   static bool dependsOnMultiBody(Joint* joint1, Joint* joint2);
 
-  bool appendDependecies(const Model* firstModel, Model* model,
-                         ModelList& newList);
+  bool appendModel(const Model* firstModel, SharedPtr<Model> model,
+                   ModelList& newList);
   /// Sorts the models depending their dependencies
   bool sortModels(void);
 

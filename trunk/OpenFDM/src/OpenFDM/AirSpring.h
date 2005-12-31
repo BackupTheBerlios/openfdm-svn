@@ -7,18 +7,20 @@
 
 #include "Model.h"
 #include "Vector.h"
-#include "LineForce.h"
 
 namespace OpenFDM {
 
 /// AirSpring
 class AirSpring :
-    public LineForce {
+    public Model {
 public:
   AirSpring(const std::string& name);
   virtual ~AirSpring(void);
 
+  virtual bool init(void);
   virtual void output(const TaskInfo& taskInfo);
+
+  const real_type& getForce(void) const;
 
   real_type getPushPressure(void) const;
   void setPushPressure(real_type pushPressure);
@@ -57,6 +59,13 @@ private:
   real_type mMinDamperConstant;
 
   real_type mGamma;
+
+  real_type mForce;
+
+  /// The intput port which must provide the position
+  RealPortHandle mPositionPort;
+  /// The intput port which must provide the velocity
+  RealPortHandle mVelocityPort;
 };
 
 } // namespace OpenFDM

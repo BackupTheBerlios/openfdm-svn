@@ -24,6 +24,11 @@ PrismaticJoint::PrismaticJoint(const std::string& name)
 
   mPrismaticJointFrame = new PrismaticJointFrame(name);
 
+  setNumInputPorts(1);
+  setInputPortName(0, "jointForce");
+
+  // Since these output ports are just fed by the current state of the
+  // multibody system, we do not have a direct feedthrough model
   setNumOutputPorts(2);
   setOutputPort(0, "jointPos", this, &PrismaticJoint::getJointPos);
   setOutputPort(1, "jointVel", this, &PrismaticJoint::getJointVel);
@@ -31,6 +36,19 @@ PrismaticJoint::PrismaticJoint(const std::string& name)
 
 PrismaticJoint::~PrismaticJoint(void)
 {
+}
+
+bool
+PrismaticJoint::init(void)
+{
+  /// Check if we have an input port connected to the joint force ...
+  if (getInputPort(0)->isConnected())
+    mJointForcePort = getInputPort(0)->toRealPortHandle();
+  else
+    mJointForcePort = 0;
+
+  recheckTopology();
+  return Joint::init();
 }
 
 void
@@ -110,7 +128,10 @@ PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
   // That projects away tha components where the degrees of freedom
   // of the joint are.
   CartesianJointFrame<1>::VectorN tau;
-  tau(1) = getJointForce();
+  if (mJointForcePort.isConnected()) {
+    tau(1) = mJointForcePort.getRealValue();
+  } else
+    tau.clear();
   mPrismaticJointFrame->jointArticulation(artI, artF, outF, outI, tau);
 }
 

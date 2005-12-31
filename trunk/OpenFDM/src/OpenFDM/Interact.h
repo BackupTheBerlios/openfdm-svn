@@ -27,6 +27,9 @@ public:
   Interact(const std::string& name, unsigned numParents);
   virtual ~Interact(void);
 
+  virtual const Interact* toInteract(void) const;
+  virtual Interact* toInteract(void);
+
   /// Double dispatch helper for the multibody system visitor
   virtual void accept(ModelVisitor& visitor);
   /// Double dispatch helper for the multibody system visitor
@@ -44,6 +47,18 @@ public:
   {
     OpenFDMAssert(id < mParents.size());
     return mParents[id];
+  }
+  bool isChildOf(const RigidBody* const rigidBody) const
+  {
+    if (!rigidBody)
+      return false;
+    ParentList::const_iterator it = mParents.begin();
+    while (it != mParents.end()) {
+      if ((*it) == rigidBody)
+        return true;
+      ++it;
+    }
+    return false;
   }
 
 private:

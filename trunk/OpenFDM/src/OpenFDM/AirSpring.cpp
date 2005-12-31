@@ -2,14 +2,14 @@
  *
  */
 
-#include "Model.h"
-#include "Vector.h"
+#include <string>
+
 #include "AirSpring.h"
 
 namespace OpenFDM {
 
 AirSpring::AirSpring(const std::string& name) :
-  LineForce(name),
+  Model(name),
   mPushPressure(2e5),
   mPullPressure(1e5),
   mArea(0),
@@ -19,18 +19,51 @@ AirSpring::AirSpring(const std::string& name) :
   mMaxDamperConstant(0),
   mGamma(1.3)
 {
+  setDirectFeedThrough(true);
+
+  setNumInputPorts(2);
+  setInputPortName(0, "position");
+  setInputPortName(1, "velocity");
+  
+  setNumOutputPorts(1);
+  setOutputPort(0, "force", this, &AirSpring::getForce);
 }
 
 AirSpring::~AirSpring(void)
 {
 }
 
+bool
+AirSpring::init(void)
+{
+  if (!getInputPort(0)->isConnected()) {
+    Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+  mPositionPort = getInputPort(0)->toRealPortHandle();
+
+  if (!getInputPort(1)->isConnected()) {
+    Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
+                      << "\" failed: Input port \"" << getInputPortName(1)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+  mVelocityPort = getInputPort(1)->toRealPortHandle();
+
+  return true;
+}
+
 void
 AirSpring::output(const TaskInfo& taskInfo)
 {
+  real_type position = mPositionPort.getRealValue();
+  real_type vel = mVelocityPort.getRealValue();
+
   real_type maxDisp = mMaxCompression - mMinCompression;
-  real_type pullDisp = mMaxCompression - getPosition();
-  real_type pushDisp = getPosition() - mMinCompression;
+  real_type pullDisp = mMaxCompression - position;
+  real_type pushDisp = position - mMinCompression;
   
   real_type pullDispRatio = pullDisp/maxDisp;
   real_type pushDispRatio = pushDisp/maxDisp;
@@ -42,13 +75,17 @@ AirSpring::output(const TaskInfo& taskInfo)
   real_type pullPressure = mPullPressure/(1-pow(pullDispRatio, mGamma));
   real_type pushPressure = mPushPressure/(1-pow(pushDispRatio, mGamma));
   
-  real_type force = sign(maxDisp)*mArea*(pullPressure - pushPressure);
+  mForce = sign(maxDisp)*mArea*(pullPressure - pushPressure);
   // Add a position dependent damping force
-  force += getVel()*interpolate(getPosition(),
-                                mMinCompression, mMinDamperConstant,
-                                mMaxCompression, mMaxDamperConstant);
-  
-  setForce(force);
+  mForce += vel*interpolate(position,
+                            mMinCompression, mMinDamperConstant,
+                            mMaxCompression, mMaxDamperConstant);
+}
+
+const real_type&
+AirSpring::getForce(void) const
+{
+  return mForce;
 }
 
 real_type

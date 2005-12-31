@@ -461,7 +461,7 @@ Port*
 LegacyJSBSimReader::addInputModel(const std::string& name,
                                   const std::string& propName, real_type gain)
 {
-  Input* input = new Input(name);
+  Input* input = new Input(name + " Input");
   input->setInputName(propName);
   input->setInputGain(gain);
   addFCSModel(input);
@@ -475,7 +475,7 @@ LegacyJSBSimReader::addOutputModel(Port* out,
                                    const std::string& name,
                                    const std::string& propName, real_type gain)
 {
-  Output* output = new Output(std::string(name) + " output");
+  Output* output = new Output(name + " Output");
   output->getInputPort(0)->connect(out);
   output->setOutputName(propName);
   output->setOutputGain(gain);
@@ -738,7 +738,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
 {
   RigidBody* wheel = new RigidBody(name + " Wheel");
   InertiaMatrix wheelInertia(10, 0, 0, 100, 0, 10);
-  wheel->addInteract(new Mass("Wheel Inertia", SpatialInertia(wheelInertia, 50)));
+  wheel->addInteract(new Mass(name + " Wheel Inertia", SpatialInertia(wheelInertia, 50)));
   mVehicle->getMultiBodySystem()->addRigidBody(wheel);
   
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
@@ -925,7 +925,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       // This is the movable part of the strut, doing the compression
       RigidBody* arm = new RigidBody(name + " Arm");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
-      arm->addInteract(new Mass("Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
+      arm->addInteract(new Mass(name + " Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(200))));
 
       // Connect that with a revolute joint to the main body
       RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
@@ -947,7 +947,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       aoDamp->setMaxCompression(maxCompr);
       aoDamp->setMinDamperConstant(minDamp);
       aoDamp->setMaxDamperConstant(maxDamp);
-      rj->setLineForce(aoDamp);
+      // That one reads the joint position and velocity ...
+      aoDamp->getInputPort(0)->connect(rj->getOutputPort(0));
+      aoDamp->getInputPort(1)->connect(rj->getOutputPort(1));
+      // ... and provides an output force
+      rj->getInputPort(0)->connect(aoDamp->getOutputPort(0));
+      mVehicle->getMultiBodySystem()->addModel(aoDamp);
 
       // Attach a wheel to that strut part.
       attachWheel(name, Vector3(-armLength, 0, 0), brake, numStr, wheelDiam,
@@ -957,6 +962,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       addOutputModel(port, "Gear " + numStr + " Compression",
                      "/gear/gear[" + numStr + "]/compression-rad");
 
+      /// FIXME add a retract joint ...
       port = lookupJSBExpression("gear/gear-pos-norm");
       addOutputModel(port, "Gear " + numStr + " Position",
                      "/gear/gear[" + numStr + "]/position-norm");
@@ -1036,7 +1042,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       // Now the compressible part of the strut
       RigidBody* arm = new RigidBody(name + " Strut");
       mVehicle->getMultiBodySystem()->addRigidBody(arm);
-      arm->addInteract(new Mass("Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
+      arm->addInteract(new Mass(name + " Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(200))));
 
       // This time it is a prismatic joint
       PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
@@ -1057,7 +1063,10 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       aoDamp->setMaxCompression(maxCompr);
       aoDamp->setMinDamperConstant(minDamp);
       aoDamp->setMaxDamperConstant(maxDamp);
-      pj->setLineForce(aoDamp);
+      pj->getInputPort(0)->connect(aoDamp->getOutputPort(0));
+      aoDamp->getInputPort(0)->connect(pj->getOutputPort(0));
+      aoDamp->getInputPort(1)->connect(pj->getOutputPort(1));
+      mVehicle->getMultiBodySystem()->addModel(aoDamp);
 
       // Attach a wheel to that strut part.
       attachWheel(name, Vector3::zeros(), brake, numStr, wheelDiam,
@@ -2074,6 +2083,7 @@ LegacyJSBSimReader::makeAeroprops(void)
   port = new Port;
   port->setProperty(e);
   registerJSBExpression("velocities/mach-norm", port);
+  registerJSBExpression("velocities/mach", port);
 
   // Rotational rates wrt air.
   e = mAeroForce->getProperty("p");

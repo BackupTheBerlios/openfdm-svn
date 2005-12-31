@@ -26,8 +26,7 @@ public:
   RevoluteJoint(const std::string& name);
   virtual ~RevoluteJoint(void);
 
-  virtual bool init(void)
-  { recheckTopology(); return Joint::init(); }
+  virtual bool init(void);
 
   virtual void recheckTopology(void);
 
@@ -92,6 +91,9 @@ private:
   /** The direct joint interaction force
    */
   SharedPtr<LineForce> mLineForce;
+
+  /// The intput port which might provide some joint internal force
+  RealPortHandle mJointForcePort;
 
   /// The frame of the mobile root
   SharedPtr<RevoluteJointFrame> mRevoluteJointFrame;

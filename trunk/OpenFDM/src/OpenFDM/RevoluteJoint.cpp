@@ -24,6 +24,9 @@ RevoluteJoint::RevoluteJoint(const std::string& name) :
 
   mRevoluteJointFrame = new RevoluteJointFrame(name);
 
+  setNumInputPorts(1);
+  setInputPortName(0, "jointForce");
+
   setNumOutputPorts(2);
   setOutputPort(0, "jointPos", this, &RevoluteJoint::getJointPos);
   setOutputPort(1, "jointVel", this, &RevoluteJoint::getJointVel);
@@ -31,6 +34,19 @@ RevoluteJoint::RevoluteJoint(const std::string& name) :
 
 RevoluteJoint::~RevoluteJoint(void)
 {
+}
+
+bool
+RevoluteJoint::init(void)
+{
+  /// Check if we have an input port connected to the joint force ...
+  if (getInputPort(0)->isConnected())
+    mJointForcePort = getInputPort(0)->toRealPortHandle();
+  else
+    mJointForcePort = 0;
+
+  recheckTopology();
+  return Joint::init();
 }
 
 void
@@ -107,7 +123,12 @@ RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
                                  const Vector6& outF)
 {
   CartesianJointFrame<1>::VectorN tau;
-  tau(1) = getJointForce();
+  if (mJointForcePort.isConnected()) {
+    tau(1) = mJointForcePort.getRealValue();
+  } else
+    tau.clear();
+  /// FIXME the old obsolete joint force computation
+  tau(1) += getJointForce();
   mRevoluteJointFrame->jointArticulation(artI, artF, outF, outI, tau);
 }
 

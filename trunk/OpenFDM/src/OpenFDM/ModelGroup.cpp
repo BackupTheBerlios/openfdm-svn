@@ -307,8 +307,10 @@ ModelGroup::dependsOnMultiBody(Joint* joint1, Joint* joint2)
 }
 
 bool
-ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& newList)
+ModelGroup::appendModel(const Model* firstModel, SharedPtr<Model> model,
+                        ModelList& newList)
 {
+  Interact* interact = model->toInteract();
   Joint* joint = model->toJoint();
   if (joint) {
     for (;;) {
@@ -317,10 +319,25 @@ ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& 
         Joint* joint2 = (*it)->toJoint();
         if (joint2 && dependsOnMultiBody(joint, joint2))
           break;
+
+        Interact* interact2 = (*it)->toInteract();
+        if (interact2 && interact2->isChildOf(joint->getOutboardBody())
+            && !interact2->getMultiBodyAcceleration())
+          break;
+
         ++it;
       }
       if (it == mModels.end())
         break;
+
+      // FIXME: does not work in this algorithm
+      // Detect a circular dependency.
+//       if (*it == firstModel) {
+//         Log(Model, Warning)
+//           << "Detected circilar model dependency.\nRunning with a sample "
+//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
+//         return false;
+//       }
 
       // We need to store that one here since the iterator possibly invalidates
       // during the next append dependency call
@@ -328,12 +345,8 @@ ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& 
       mModels.erase(it);
       
       // Now recurse into that model.
-      if (!appendDependecies(firstModel, tmpModel, newList))
+      if (!appendModel(firstModel, tmpModel, newList))
         return false;
- 
-      // Finally, past all the dependent models are already in the list,
-      // push that one in question.
-      newList.push_back(tmpModel);
     }
   }
 
@@ -349,63 +362,72 @@ ModelGroup::appendDependecies(const Model* firstModel, Model* model, ModelList& 
       ++it;
     }
     if (it != mModels.end()) {
+      // FIXME: does not work in this algorithm
+      // Detect a circular dependency.
+//       if (*it == firstModel) {
+//         Log(Model, Warning)
+//           << "Detected circilar model dependency.\nRunning with a sample "
+//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
+//         return false;
+//       }
+
+      // We need to store that one here since the iterator possibly invalidates
+      // during the next append dependency call
+      SharedPtr<Model> tmpModel = *it;
+      mModels.erase(it);
+
+      // Now recurse into that model.
+      if (!appendModel(firstModel, tmpModel, newList))
+        return false;
+    }
+  }
+
+  // If the model in question does not have dependencies, stop.
+  if (model->getDirectFeedThrough() || joint) {
+
+    // Check, all inputs for dependencies.
+    unsigned numInputs = model->getNumInputPorts();
+    for (unsigned i = 0; i < numInputs; ++i) {
+      // Determine the model which is the source for this port
+      Port* port = model->getInputPort(i);
+      
+      // Check if it is still in the list to be scheduled.
+      ModelList::iterator it = mModels.begin();
+      while (it != mModels.end()) {
+        /// Horrible special case for now:
+        /// Output's from joints are only state dependent,
+        /// thus these 'output ports' do not have direct feedthrough:
+        /// Possible workarounds: extra sensor models or direct feedthrough
+        /// is a property of the port ...
+        Joint* joint2 = (*it)->toJoint();
+        if (dependsOn(port, *it) && !joint2)
+          break;
+        ++it;
+      }
+      if (it == mModels.end())
+        continue;
+      
+      // FIXME: does not work in this algorithm
+      // Detect a circular dependency.
+//       if (*it == firstModel) {
+//         Log(Model, Warning)
+//           << "Detected circilar model dependency.\nRunning with a sample "
+//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
+//         return false;
+//       }
+      
       // We need to store that one here since the iterator possibly invalidates
       // during the next append dependency call
       SharedPtr<Model> tmpModel = *it;
       mModels.erase(it);
       
       // Now recurse into that model.
-      if (!appendDependecies(firstModel, tmpModel, newList))
+      if (!appendModel(firstModel, tmpModel, newList))
         return false;
-      
-      // Finally, past all the dependent models are already in the list,
-      // push that one in question.
-      newList.push_back(tmpModel);
     }
   }
 
-  // If the model in question does not have dependencies, stop.
-  if (!model->getDirectFeedThrough())
-    return true;
-
-  // Check, all inputs for dependencies.
-  unsigned numInputs = model->getNumInputPorts();
-  for (unsigned i = 0; i < numInputs; ++i) {
-    // Determine the model which is the source for this port
-    Port* port = model->getInputPort(i);
-
-    // Check if it is still in the list to be scheduled.
-    ModelList::iterator it = mModels.begin();
-    while (it != mModels.end()) {
-      if (dependsOn(port, *it))
-        break;
-      ++it;
-    }
-    if (it == mModels.end())
-      continue;
-
-    // Detect a circular dependency.
-    if (*it == firstModel) {
-      Log(Model, Warning)
-        << "Detected circilar model dependency.\nRunning with a sample "
-        "delay at input of \"" << (*it)->getName() << "\"!" << endl;
-      return false;
-    }
-
-    // We need to store that one here since the iterator possibly invalidates
-    // during the next append dependency call
-    SharedPtr<Model> tmpModel = *it;
-    mModels.erase(it);
-
-    // Now recurse into that model.
-    if (!appendDependecies(firstModel, tmpModel, newList))
-      return false;
- 
-    // Finally, past all the dependent models are already in the list,
-    // push that one in question.
-    newList.push_back(tmpModel);
-  }
-
+  newList.push_back(model);
   return true;
 }
 
@@ -413,14 +435,14 @@ bool
 ModelGroup::sortModels(void)
 {
   // TODO: use better sort algorithm.
+  /// erhm, FIXME: This is a horrible sort thing!!!
   ModelList newList;
   while (!mModels.empty()) {
-    if (!appendDependecies(mModels.front(), mModels.front(), newList))
-      return false;
-    // Finally, past all the dependent models are already in the list,
-    // push that one in question.
-    newList.push_back(mModels.front());
+    SharedPtr<Model> tmpModel = mModels.front();
     mModels.erase(mModels.begin());
+
+    if (!appendModel(tmpModel, tmpModel, newList))
+      return false;
   }
   // Now the new ordered list is the current one.
   mModels.swap(newList);
