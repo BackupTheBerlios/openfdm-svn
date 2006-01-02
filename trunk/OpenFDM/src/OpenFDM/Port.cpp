@@ -41,19 +41,29 @@ Port::isConnectedTo(const Port* sourcePort) const
   return false;
 }
 
+bool
+Port::hasSameSource(const Port* otherPort) const
+{
+  OpenFDMAssert(mPortInterface);
+  return otherPort && otherPort->mPortInterface == mPortInterface;
+}
+
 Variant
 Port::getValue(void)
 {
-  if (mPortInterface) {
-    RealPortInterface* realPortInterface
-      = mPortInterface->toRealPortInterface();
-    if (realPortInterface)
-      return Variant(realPortInterface->getRealValue());
-    MatrixPortInterface* matrixPortInterface
-      = mPortInterface->toMatrixPortInterface();
-    if (matrixPortInterface)
-      return Variant(matrixPortInterface->getMatrixValue());
-  }
+  if (!mPortInterface)
+    return Variant();
+
+  RealPortInterface* realPortInterface
+    = mPortInterface->toRealPortInterface();
+  if (realPortInterface)
+    return Variant(realPortInterface->getRealValue());
+
+  MatrixPortInterface* matrixPortInterface
+    = mPortInterface->toMatrixPortInterface();
+  if (matrixPortInterface)
+    return Variant(matrixPortInterface->getMatrixValue());
+
   return Variant();
 }
 

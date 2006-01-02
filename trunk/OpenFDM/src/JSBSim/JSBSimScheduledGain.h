@@ -25,6 +25,7 @@ public:
   void setTableData(const TableData<1>& tableData, const TableLookup& lookup);
 
 private:
+  SharedPtr<TablePreLookup> mTablePreLookup;
   SharedPtr<Table1D> mTable;
 };
 

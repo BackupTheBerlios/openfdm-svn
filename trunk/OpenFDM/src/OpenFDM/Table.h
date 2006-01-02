@@ -146,6 +146,11 @@ public:
     return loIdx + theta;
   }
 
+  bool operator==(const TableLookup& tl) const
+  {
+    mTable == tl.mTable;
+  }
+
 private:
   Table mTable;
 };
@@ -269,6 +274,55 @@ private:
   SizeVector mSize;
 };
 
+class TablePreLookup : public Model {
+public:
+  TablePreLookup(const std::string& name) :
+    Model(name)
+  {
+    setDirectFeedThrough(true);
+
+    setNumInputPorts(1);
+    setInputPortName(0, "input");
+    
+    setNumOutputPorts(1);
+    setOutputPort(0, "output", this, &TablePreLookup::getOutput);
+
+    addProperty("output", Property(this, &TablePreLookup::getOutput));
+  }
+  virtual ~TablePreLookup(void)
+  { }
+
+  virtual bool init(void)
+  {
+    mInputPortHandle = getInputPort(0)->toRealPortHandle();
+    if (!mInputPortHandle.isConnected()) {
+      Log(Model,Error) << "Input port to TablePreLookup Model \""
+                       << getName() << "\" is not connected" << endl;
+      return false;
+    }
+    return true;
+  }
+
+  virtual void output(const TaskInfo&)
+  {
+    OpenFDMAssert(mInputPortHandle.isConnected());
+    mOutput = mTableLookup.lookup(mInputPortHandle.getRealValue());
+  }
+
+  const real_type& getOutput(void) const
+  { return mOutput; }
+
+  void setTableLookup(const TableLookup& tl)
+  { mTableLookup = tl; }
+  const TableLookup& getTableLookup(void) const
+  { return mTableLookup; }
+
+private:
+  real_type mOutput;
+  TableLookup mTableLookup;
+  RealPortHandle mInputPortHandle;
+};
+
 class Table1D : public Model {
 public:
   Table1D(const std::string& name) :
@@ -288,17 +342,20 @@ public:
   
   virtual bool init(void)
   {
-    OpenFDMAssert(getInputPort(0)->isConnected());
-  
-    return getInputPort(0)->isConnected();
+    mInputPortHandle = getInputPort(0)->toRealPortHandle();
+    if (!mInputPortHandle.isConnected()) {
+      Log(Model,Error) << "Input port to Table1D Model \""
+                       << getName() << "\" is not connected" << endl;
+      return false;
+    }
+    return true;
   }
 
   virtual void output(const TaskInfo&)
   {
-    OpenFDMAssert(getInputPort(0)->isConnected());
+    OpenFDMAssert(mInputPortHandle.isConnected());
     TableData<1>::InterpVector interpVec;
-    RealPortHandle rh = getInputPort(0)->toRealPortHandle();
-    interpVec(1) = mTableLookup.lookup(rh.getRealValue());
+    interpVec(1) = mInputPortHandle.getRealValue();
     mOutput = mTableData.interpolate(interpVec);
   }
 
@@ -312,13 +369,10 @@ public:
   TableData<1>& getTableData(void)
   { return mTableData; }
 
-  void setTableLookup(const TableLookup& tl)
-  { mTableLookup = tl; }
-
 private:
   real_type mOutput;
   TableData<1> mTableData;
-  TableLookup mTableLookup;
+  RealPortHandle mInputPortHandle;
 };
 
 class Table2D : public Model {
@@ -341,19 +395,24 @@ public:
   
   virtual bool init(void)
   {
-    OpenFDMAssert(getInputPort(0)->isConnected());
-    OpenFDMAssert(getInputPort(1)->isConnected());
-    return getInputPort(0)->isConnected() && getInputPort(1)->isConnected();
+    for (unsigned idx = 0; idx < 2; ++idx) {
+      mInputPortHandle[idx] = getInputPort(idx)->toRealPortHandle();
+      if (!mInputPortHandle[idx].isConnected()) {
+        Log(Model,Error) << "Input port to Table2D Model \""
+                         << getName() << "\" is not connected" << endl;
+        return false;
+      }
+    }
+    return true;
   }
 
   virtual void output(const TaskInfo&)
   {
-    OpenFDMAssert(getInputPort(0)->isConnected());
+    OpenFDMAssert(mInputPortHandle[0].isConnected());
+    OpenFDMAssert(mInputPortHandle[1].isConnected());
     TableData<2>::InterpVector interpVec;
-    RealPortHandle rh = getInputPort(0)->toRealPortHandle();
-    interpVec(1) = mTableLookup[0].lookup(rh.getRealValue());
-    rh = getInputPort(1)->toRealPortHandle();
-    interpVec(2) = mTableLookup[1].lookup(rh.getRealValue());
+    interpVec(1) = mInputPortHandle[0].getRealValue();
+    interpVec(2) = mInputPortHandle[1].getRealValue();
     mOutput = mTableData.interpolate(interpVec);
   }
 
@@ -367,13 +426,10 @@ public:
   TableData<2>& getTableData(void)
   { return mTableData; }
 
-  void setTableLookup(unsigned idx, const TableLookup& tl)
-  { mTableLookup[idx] = tl; }
-
 private:
   real_type mOutput;
   TableData<2> mTableData;
-  TableLookup mTableLookup[2];
+  RealPortHandle mInputPortHandle[2];
 };
 
 class Table3D : public Model {
@@ -397,23 +453,26 @@ public:
   
   virtual bool init(void)
   {
-    OpenFDMAssert(getInputPort(0)->isConnected());
-    OpenFDMAssert(getInputPort(1)->isConnected());
-    OpenFDMAssert(getInputPort(3)->isConnected());
-    return getInputPort(0)->isConnected() && getInputPort(1)->isConnected()
-      && getInputPort(2)->isConnected();
+    for (unsigned idx = 0; idx < 3; ++idx) {
+      mInputPortHandle[idx] = getInputPort(idx)->toRealPortHandle();
+      if (!mInputPortHandle[idx].isConnected()) {
+        Log(Model,Error) << "Input port to Table3D Model \""
+                         << getName() << "\" is not connected" << endl;
+        return false;
+      }
+    }
+    return true;
   }
 
   virtual void output(const TaskInfo&)
   {
-    OpenFDMAssert(getInputPort(0)->isConnected());
+    OpenFDMAssert(mInputPortHandle[0].isConnected());
+    OpenFDMAssert(mInputPortHandle[1].isConnected());
+    OpenFDMAssert(mInputPortHandle[2].isConnected());
     TableData<3>::InterpVector interpVec;
-    RealPortHandle rh = getInputPort(0)->toRealPortHandle();
-    interpVec(1) = mTableLookup[0].lookup(rh.getRealValue());
-    rh = getInputPort(1)->toRealPortHandle();
-    interpVec(2) = mTableLookup[1].lookup(rh.getRealValue());
-    rh = getInputPort(2)->toRealPortHandle();
-    interpVec(3) = mTableLookup[2].lookup(rh.getRealValue());
+    interpVec(1) = mInputPortHandle[0].getRealValue();
+    interpVec(2) = mInputPortHandle[1].getRealValue();
+    interpVec(3) = mInputPortHandle[2].getRealValue();
     mOutput = mTableData.interpolate(interpVec);
   }
 
@@ -427,13 +486,10 @@ public:
   TableData<3>& getTableData(void)
   { return mTableData; }
 
-  void setTableLookup(unsigned idx, const TableLookup& tl)
-  { mTableLookup[idx] = tl; }
-
 private:
   real_type mOutput;
   TableData<3> mTableData;
-  TableLookup mTableLookup[3];
+  RealPortHandle mInputPortHandle[3];
 };
 
 } // namespace OpenFDM

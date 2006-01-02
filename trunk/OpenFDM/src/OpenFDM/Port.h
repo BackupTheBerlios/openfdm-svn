@@ -136,6 +136,10 @@ public:
   /// current port
   bool isConnectedTo(const Port* sourcePort) const;
 
+  /// returns true if the source port sourcePort is the value source for the
+  /// current port
+  bool hasSameSource(const Port* otherPort) const;
+
   RealPortHandle toRealPortHandle(void)
   { return RealPortHandle(mPortInterface->toRealPortInterface()); }
   MatrixPortHandle toMatrixPortHandle(void)

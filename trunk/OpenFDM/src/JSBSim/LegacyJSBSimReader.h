@@ -13,6 +13,7 @@
 #include <OpenFDM/AeroForce.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/ReaderWriter.h>
+#include <OpenFDM/Table.h>
 
 namespace OpenFDM {
 
@@ -207,6 +208,7 @@ private:
 
   Port* convertCoefficient(const std::string& data, const std::string& type);
 
+  Port* getTablePrelookup(const std::string& name, Port* in, const TableLookup& tl);
 
 
   /// List for the aircraft search path.
@@ -225,6 +227,7 @@ private:
   PropertyMap mExpressionTable;
   SharedPtr<AeroForce> mAeroForce;
   Vector3 mBodyReference;
+  std::vector<SharedPtr<TablePreLookup> > mTableLookups;
 };
 
 } // namespace OpenFDM

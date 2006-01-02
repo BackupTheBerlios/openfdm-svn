@@ -2263,8 +2263,8 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
       = new Table1D(prod->getName() + " Table");
     addMultiBodyModel(table1D);
     table1D->setTableData(table);
-    table1D->setTableLookup(lookup);
-    table1D->getInputPort(0)->connect(inVal[0]);
+    Port* lPort = getTablePrelookup(prod->getName(), inVal[0], lookup);
+    table1D->getInputPort(0)->connect(lPort);
 
     unsigned nf = prod->getNumFactors();
     prod->setNumFactors(nf+1);
@@ -2285,8 +2285,8 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     addMultiBodyModel(table2D);
     table2D->setTableData(table);
     for (unsigned i = 0; i < 2; ++i) {
-      table2D->setTableLookup(i, lookup[i]);
-      table2D->getInputPort(i)->connect(inVal[i]);
+      Port* lPort = getTablePrelookup(prod->getName(), inVal[i], lookup[i]);
+      table2D->getInputPort(i)->connect(lPort);
     }
 
     unsigned nf = prod->getNumFactors();
@@ -2309,8 +2309,8 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     addMultiBodyModel(table3D);
     table3D->setTableData(table);
     for (unsigned i = 0; i < 3; ++i) {
-      table3D->setTableLookup(i, lookup[i]);
-      table3D->getInputPort(i)->connect(inVal[i]);
+      Port* lPort = getTablePrelookup(prod->getName(), inVal[i], lookup[i]);
+      table3D->getInputPort(i)->connect(lPort);
     }
 
     unsigned nf = prod->getNumFactors();
@@ -2319,6 +2319,30 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
   }
 
   return prod->getOutputPort(0);
+}
+
+Port*
+LegacyJSBSimReader::getTablePrelookup(const std::string& name, Port* in,
+                                      const TableLookup& tl)
+{
+  // First check if we already have a table lookup for this port/brakepoint
+  // combination. If so return that output port
+  std::vector<SharedPtr<TablePreLookup> >::iterator it;
+  for (it = mTableLookups.begin(); it != mTableLookups.end(); ++it) {
+    if (tl == (*it)->getTableLookup() &&
+        in->hasSameSource((*it)->getInputPort(0))) {
+      return (*it)->getOutputPort(0);
+    }
+  }
+
+  // No sharable table lookup found, we need to create a new one
+  TablePreLookup* tablePreLookup
+    = new TablePreLookup(name + " Table Prelookup");
+  addMultiBodyModel(tablePreLookup);
+  tablePreLookup->setTableLookup(tl);
+  tablePreLookup->getInputPort(0)->connect(in);
+  mTableLookups.push_back(tablePreLookup);
+  return tablePreLookup->getOutputPort(0);
 }
 
 } // namespace OpenFDM

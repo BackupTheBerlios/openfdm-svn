@@ -21,7 +21,7 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
 {
   // Such a component is a simple table lookup
   //
-  // -|InputSaturation|-|TableLookup|-
+  // -|InputSaturation|-|TablePreLookup|-|Table1D|-
   //
 
   Saturation* inputSaturation = new Saturation("Input Saturation");
@@ -32,12 +32,16 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   tmp(1, 1) = 1;
   inputSaturation->setMaxSaturation(tmp);
 
-  mTable = new Table1D("Table");
+  TablePreLookup* tablePreLookup = new TablePreLookup("Table Lookup");
   TableLookup tl;
   tl.setAtIndex(1, -1);
   tl.setAtIndex(2, 0);
   tl.setAtIndex(3, 1);
-  mTable->setTableLookup(tl);
+  tablePreLookup->setTableLookup(tl);
+  tablePreLookup->getInputPort(0)->connect(inputSaturation->getOutputPort(0));
+  getModelGroup()->addModel(tablePreLookup);
+
+  mTable = new Table1D("Table");
   TableData<1>::SizeVector sv;
   sv(1) = 3;
   TableData<1> tableData(sv);
@@ -49,7 +53,7 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   iv(1) = 3;
   tableData(iv) = 1;
   mTable->setTableData(tableData);
-  mTable->getInputPort(0)->connect(inputSaturation->getOutputPort(0));
+  mTable->getInputPort(0)->connect(tablePreLookup->getOutputPort(0));
   getModelGroup()->addModel(mTable);
 
   // Now connect the input and the output to this groups in and outputs
