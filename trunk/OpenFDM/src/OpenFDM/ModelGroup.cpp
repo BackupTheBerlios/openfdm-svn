@@ -118,6 +118,7 @@ ModelGroup::addModel(Model* model)
         << "While adding the OpenFDM::Model \"" << model->getName()
         << "\" to OpenFDM::ModelGroup \"" << getName()
         << "\": Model with the same name is already attached!" << endl;
+      return ~0u;
     }
   }
 
