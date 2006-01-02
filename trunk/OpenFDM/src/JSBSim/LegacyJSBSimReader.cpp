@@ -979,7 +979,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
     brakeF->getInputPort(1)->connect(wj->getOutputPort(1));
     // ... and provides an output force
     wj->getInputPort(0)->connect(brakeF->getOutputPort(0));
-    mVehicle->getMultiBodySystem()->addModel(brakeF);
+    addMultiBodyModel(brakeF);
   } else {
     // Just some 'rolloing friction' FIXME: does this belong here?
     Gain* rollingFric = new Gain(name + " Rolling Friction Force");
@@ -987,7 +987,7 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
     rollingFric->getInputPort(0)->connect(wj->getOutputPort(1));
     // ... and provides an output force
     wj->getInputPort(0)->connect(rollingFric->getOutputPort(0));
-    mVehicle->getMultiBodySystem()->addModel(rollingFric);
+    addMultiBodyModel(rollingFric);
   }
   
   WheelContact* wc = new WheelContact(name + " Wheel Contact");
@@ -1180,7 +1180,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       aoDamp->getInputPort(1)->connect(rj->getOutputPort(1));
       // ... and provides an output force
       rj->getInputPort(0)->connect(aoDamp->getOutputPort(0));
-      mVehicle->getMultiBodySystem()->addModel(aoDamp);
+      addMultiBodyModel(aoDamp);
 
       // Attach a wheel to that strut part.
       attachWheel(name, Vector3(-armLength, 0, 0), brake, numStr, wheelDiam,
@@ -1294,7 +1294,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       pj->getInputPort(0)->connect(aoDamp->getOutputPort(0));
       aoDamp->getInputPort(0)->connect(pj->getOutputPort(0));
       aoDamp->getInputPort(1)->connect(pj->getOutputPort(1));
-      mVehicle->getMultiBodySystem()->addModel(aoDamp);
+      addMultiBodyModel(aoDamp);
 
       // Attach a wheel to that strut part.
       attachWheel(name, Vector3::zeros(), brake, numStr, wheelDiam,
@@ -2163,14 +2163,16 @@ LegacyJSBSimReader::convertAEROSummands(const XMLElement* aeroSummands,
         return error("Error parsing aerodynamic tables, FACTOR without GROUP");
 
       std::string type = (*it)->getAttribute("TYPE");
-      Port* port = convertCoefficient((*it)->getData(), type);
+      std::string name = (*it)->getAttribute("NAME");
+      Port* port = convertCoefficient((*it)->getData(), type, name);
       unsigned nf = prod->getNumFactors();
       prod->setNumFactors(nf+1);
       prod->getInputPort(nf)->connect(port);
     }
     else if ((*it)->getName() == "COEFFICIENT") {
       std::string type = (*it)->getAttribute("TYPE");
-      Port* port = convertCoefficient((*it)->getData(), type);
+      std::string name = (*it)->getAttribute("NAME");
+      Port* port = convertCoefficient((*it)->getData(), type, name);
       unsigned ns = sum->getNumSummands();
       sum->setNumSummands(ns+1);
       sum->getInputPort(ns)->connect(port);
@@ -2182,8 +2184,13 @@ LegacyJSBSimReader::convertAEROSummands(const XMLElement* aeroSummands,
 
 Port*
 LegacyJSBSimReader::convertCoefficient(const std::string& data,
-                                       const std::string& type)
+                                       const std::string& type,
+                                       const std::string& name)
 {
+  SharedPtr<Product> prod = new Product(name);
+  prod->setNumFactors(0);
+  addMultiBodyModel(prod);
+
   unsigned ndims;
   if (type == "VALUE") {
     ndims = 0;
@@ -2204,10 +2211,6 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
   std::string token;
   // The fist token is some name string ...
   datastr >> token;
-
-  SharedPtr<Product> prod = new Product(token);
-  prod->setNumFactors(0);
-  addMultiBodyModel(prod);
 
   // The number of table entries 
   unsigned n[3] = { 0 };
@@ -2263,7 +2266,8 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
       = new Table1D(prod->getName() + " Table");
     addMultiBodyModel(table1D);
     table1D->setTableData(table);
-    Port* lPort = getTablePrelookup(prod->getName(), inVal[0], lookup);
+    Port* lPort = getTablePrelookup(prod->getName() + " PreLookup",
+                                    inVal[0], lookup);
     table1D->getInputPort(0)->connect(lPort);
 
     unsigned nf = prod->getNumFactors();
@@ -2285,7 +2289,8 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     addMultiBodyModel(table2D);
     table2D->setTableData(table);
     for (unsigned i = 0; i < 2; ++i) {
-      Port* lPort = getTablePrelookup(prod->getName(), inVal[i], lookup[i]);
+      Port* lPort = getTablePrelookup(prod->getName() + " PreLookup",
+                                      inVal[i], lookup[i]);
       table2D->getInputPort(i)->connect(lPort);
     }
 
@@ -2309,7 +2314,8 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     addMultiBodyModel(table3D);
     table3D->setTableData(table);
     for (unsigned i = 0; i < 3; ++i) {
-      Port* lPort = getTablePrelookup(prod->getName(), inVal[i], lookup[i]);
+      Port* lPort = getTablePrelookup(prod->getName() + " PreLookup",
+                                      inVal[i], lookup[i]);
       table3D->getInputPort(i)->connect(lPort);
     }
 

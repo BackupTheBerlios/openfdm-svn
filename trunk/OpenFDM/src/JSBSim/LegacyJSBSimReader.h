@@ -206,7 +206,8 @@ private:
   bool convertAEROSummands(const XMLElement* aeroSummands,
                            Summer* sum, Product* prod);
 
-  Port* convertCoefficient(const std::string& data, const std::string& type);
+  Port* convertCoefficient(const std::string& data, const std::string& type,
+                           const std::string& name);
 
   Port* getTablePrelookup(const std::string& name, Port* in, const TableLookup& tl);
 
