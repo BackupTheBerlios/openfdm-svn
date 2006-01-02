@@ -11,7 +11,7 @@ DiscreteIntegrator::DiscreteIntegrator(const std::string& name) :
   Model(name)
 {
   setNumInputPorts(1);
-  setInputPortName(0, "derivatirve");
+  setInputPortName(0, "derivative");
 
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &DiscreteIntegrator::getIntegralOutput);
