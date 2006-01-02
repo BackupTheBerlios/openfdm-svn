@@ -491,6 +491,12 @@ FGOpenFDM::toPropname(const std::string& name)
   while ((pos = pName.find('>')) != std::string::npos) {
     pName.replace(pos, 1, 1, ']');
   }
+  while ((pos = pName.find('(')) != std::string::npos) {
+    pName.replace(pos, 1, 1, '_');
+  }
+  while ((pos = pName.find(')')) != std::string::npos) {
+    pName.replace(pos, 1, 1, '_');
+  }
   return pName;
 }
 
