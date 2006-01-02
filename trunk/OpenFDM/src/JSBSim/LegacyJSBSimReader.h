@@ -11,7 +11,6 @@
 #include <iosfwd>
 
 #include <OpenFDM/AeroForce.h>
-#include <OpenFDM/Expression.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/ReaderWriter.h>
 

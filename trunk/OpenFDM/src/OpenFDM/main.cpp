@@ -16,7 +16,6 @@ using namespace std;
 #include <OpenFDM/Matrix.h>
 #include <OpenFDM/Quaternion.h>
 #include <OpenFDM/Frame.h>
-#include <OpenFDM/Expression.h>
 #include <OpenFDM/Friction2D.h>
 #include <OpenFDM/Units.h>
 #include <OpenFDM/Planet.h>

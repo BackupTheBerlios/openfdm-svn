@@ -50,7 +50,6 @@ nobase_OpenFDMinclude_HEADERS = \
   EnvironmentObject.h \
   ExplicitAdams.h \
   ExplicitEuler.h \
-  Expression.h \
   Force.h \
   Frame.h \
   MobileRootJoint.h \
@@ -157,7 +156,6 @@ libOpenFDM_la_SOURCES = \
   EnvironmentObject.cpp \
   ExplicitAdams.cpp \
   ExplicitEuler.cpp \
-  Expression.cpp \
   Force.cpp \
   Frame.cpp \
   MobileRootJoint.cpp \

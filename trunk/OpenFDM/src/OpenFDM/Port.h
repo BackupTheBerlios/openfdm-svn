@@ -11,7 +11,6 @@
 
 #include "LogStream.h"
 #include "Object.h"
-#include "Property.h"
 #include "Variant.h"
 
 namespace OpenFDM {
@@ -55,28 +54,6 @@ public:
 };
 
 
-/// FIXME adapter to be somehow backwards compatible
-/// Should vanish
-class PropertyPortInterface : public MatrixPortInterface {
-public:
-  PropertyPortInterface(const Property& property) : mProperty(property)
-  { }
-  virtual void evaluate(void)
-  {
-    if (mProperty.isRealProperty()) {
-      RealProperty rp = mProperty.toRealProperty();
-      mValue.resize(1, 1);
-      mValue(1, 1) = rp.getValue();
-    } else if (mProperty.isMatrixProperty()) {
-      MatrixProperty mp = mProperty.toMatrixProperty();
-      mValue = mp.getValue();
-    }
-  }
-  virtual bool isConnected(void) const
-  { return mProperty.isValid(); }
-private:
-  mutable Property mProperty;
-};
 /// Just a getter used for now
 template<typename M>
 class RealGetterPortInterface : public MatrixPortInterface {
@@ -139,23 +116,6 @@ private:
   SharedPtr<MatrixPortInterface> mMatrixPortInterface;
 };
 
-// should vanish, just an adaptor for smoother migration
-class RealPortExpression : public PropertyImpl<real_type> {
-public:
-  RealPortExpression(const RealPortHandle& rph) :
-    mRealPortHandle(rph)
-  { }
-  real_type getValue(void) const
-  { return mRealPortHandle.getRealValue(); }
-  void setValue(const real_type&)
-  {  }
-  bool isValid(void) const { return mRealPortHandle.isConnected(); }
-  const Object* getObject(void) const { return 0; }
-  Object* getObject(void) { return 0; }
-private:
-  mutable RealPortHandle mRealPortHandle;
-};
-
 /// Class for an input or output port of a Model.
 /// Ports can be connected together. This means in effect that the reader
 /// gains access to value at the source model.
@@ -166,15 +126,7 @@ class Port :
 public:
   virtual ~Port(void);
 
-  /// Just use the Properties for now. In this phase it might be a good idea.
-  void setProperty(const Property& property)
-  { setPortInterface(new PropertyPortInterface(property)); }
   void setPortInterface(PortInterface* portInterface);
-
-  /// Just use the Properties for now. In this phase it might be a good idea.
-  Property getProperty(void) const
-  { return Property(new RealPortExpression(((Port*)(this))->toRealPortHandle())); }
-
 
   /// returns true if this port has a source port connected to it
   bool isConnected() const
