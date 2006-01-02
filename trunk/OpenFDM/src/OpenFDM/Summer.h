@@ -28,6 +28,8 @@ public:
 
 private:
   Matrix mSum;
+  std::vector<MatrixPortHandle> mPositiveSummandPorts;
+  std::vector<MatrixPortHandle> mNegativeSummandPorts;
 };
 
 } // namespace OpenFDM

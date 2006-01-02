@@ -36,19 +36,34 @@ Summer::~Summer(void)
 bool
 Summer::init(void)
 {
-  for (unsigned i = 0; i < getNumInputPorts(); ++i)
-    OpenFDMAssert(getInputPort(i)->isConnected());
-  
   // Make sure it is invalid if sizes do not match.
   mSum.resize(0, 0);
-  // Check if the sizes match.
-  Matrix a0 = getInputPort(0)->getValue().toMatrix();
-  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i)->getValue().toMatrix();
-    if (size(a0) != size(a))
+
+  mPositiveSummandPorts.clear();
+  mNegativeSummandPorts.clear();
+  for (unsigned i = 0; i < getNumInputPorts(); ++i) {
+    if (!getInputPort(i)->isConnected()) {
+      Log(Model, Error) << "Found unconnected input Port for Summer \""
+                        << getName() << "\"" << endl;
       return false;
+    }
+    if (getInputPortName(i) == "-") {
+      mNegativeSummandPorts.push_back(getInputPort(i)->toMatrixPortHandle());
+    } else {
+      mPositiveSummandPorts.push_back(getInputPort(i)->toMatrixPortHandle());
+    }
+
+    Matrix a = getInputPort(i)->getValue().toMatrix();
+    if (i == 0) {
+      mSum.resize(a);
+    } else {
+      if (size(mSum) != size(a)) {
+        Log(Model, Error) << "Input port sizes for Summer \""
+                          << getName() << "\" do not match." << endl;
+        return false;
+      }
+    }
   }
-  mSum.resize(a0);
   return true;
 }
 
@@ -56,13 +71,16 @@ void
 Summer::output(const TaskInfo&)
 {
   mSum.clear();
-  for (unsigned i = 0; i < getNumInputPorts(); ++i) {
-    /// FIXME could be preevaluated
-    MatrixPortHandle ph = getInputPort(i)->toMatrixPortHandle();
-    if (getInputPortName(i) == "-")
-      mSum -= ph.getMatrixValue();
-    else
-      mSum += ph.getMatrixValue();
+
+  std::vector<MatrixPortHandle>::iterator it = mNegativeSummandPorts.begin();
+  while (it != mNegativeSummandPorts.end()) {
+    mSum -= (*it).getMatrixValue();
+    ++it;
+  }
+  it = mPositiveSummandPorts.begin();
+  while (it != mPositiveSummandPorts.end()) {
+    mSum += (*it).getMatrixValue();
+    ++it;
   }
 }
 
