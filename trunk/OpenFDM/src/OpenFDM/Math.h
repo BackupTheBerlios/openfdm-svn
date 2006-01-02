@@ -53,7 +53,7 @@ using std::max;
 
 template<typename T>
 inline int
-sign(T val)
+sign(const T& val)
 {
   if (val <= -Limits<T>::min())
     return -1;
@@ -62,9 +62,33 @@ sign(T val)
   return 0;
 }
 
+template<typename T>
+inline T
+saturate(const T& val, const T& saturation)
+{
+  if (val <= -saturation)
+    return -saturation;
+  if (saturation <= val)
+    return saturation;
+  return val;
+}
+
+template<typename T>
+inline T
+smoothSaturate(const T& val, const T& saturation)
+{
+  /// FIXME
+#define PI static_cast<real_type>(3.1415926535897932384626433832795029L)
+  if (saturation < Limits<T>::min())
+    return 0;
+  else
+    return atan(val*0.5*PI/saturation)*2*saturation/PI;
+#undef PI
+}
+
 template<typename S, typename T>
 inline S
-interpolate(T x, T x0, const S& y0, T x1, const S& y1)
+interpolate(const T& x, const T& x0, const S& y0, T x1, const S& y1)
 {
   // If called in the wrong order, simply call with the correct order ...
   if (x1 < x0)

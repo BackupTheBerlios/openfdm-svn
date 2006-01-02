@@ -118,7 +118,8 @@ RevoluteActuator::jointArticulation(SpatialInertia& artI, Vector6& artF,
 
   real_type posErr = desiredPos - mRevoluteActuatorFrame->getJointPos();
 
-  real_type desiredVel = mVelGain*sign(posErr)*min(fabs(posErr), mMaxVel);
+//   real_type desiredVel = saturate(mVelGain*posErr, mMaxVel);
+  real_type desiredVel = smoothSaturate(mVelGain*posErr, mMaxVel);
 
   real_type velErr = desiredVel - mRevoluteActuatorFrame->getJointVel();
 

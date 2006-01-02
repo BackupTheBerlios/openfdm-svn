@@ -63,11 +63,13 @@ DiscBrake::output(const TaskInfo& taskInfo)
   // with this sigma the model is already very crisp and reaches the
   // maximum force relatively fast, thus we do not need to make it even faster
   // with higher speeds
-  vel = sign(vel)*min(1.0, fabs(vel));
+//   vel = saturate(vel, 1.0);
+  vel = smoothSaturate(vel, 1.0);
   // the time derivative of the friction state
   mZDeriv = vel - sigma*fabs(vel)*mZ;
   // this is to limit the stiffness of this model
-  mZDeriv = sign(mZDeriv)*min(10.0, fabs(mZDeriv));
+//   mZDeriv = saturate(mZDeriv, 10.0);
+  mZDeriv = smoothSaturate(mZDeriv, 10.0);
   // now the output force, modulate with the brake input
   mForce = -interpolate(brakeInput, 0.0, mMinForce, 1.0, mMaxForce)*sigma*mZ;
 }
