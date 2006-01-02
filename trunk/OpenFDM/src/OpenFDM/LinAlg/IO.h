@@ -47,12 +47,11 @@ operator<<(std::ostream& os, const MatrixRValue<Impl,m,n>& A)
 
     for (j = 1; j <= cols; ++j) {
       value_type val = A.asImpl()(i, j);
-      value_type absval = fabs(val);
     
-      if (absval == 0.0) {
+      if (val == 0) {
         os << std::setw(width) << '0' << ' ';
       } else {
-        int expo = static_cast<int>(floor(fabs(log10(absval))));
+        int expo = static_cast<int>(floor(fabs(log10(fabs(val)))));
         
         if (expo < 100) {
           os << std::setprecision(width-7);
