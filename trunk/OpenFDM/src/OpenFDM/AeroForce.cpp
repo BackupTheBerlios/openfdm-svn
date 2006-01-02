@@ -7,7 +7,6 @@
 #include "Vector.h"
 #include "Frame.h"
 #include "Force.h"
-#include "Expression.h"
 #include "Atmosphere.h"
 #include "AeroForce.h"
 
@@ -16,12 +15,6 @@ namespace OpenFDM {
 AeroForce::AeroForce(const std::string& name)
   : ExternalForce(name)
 {
-  // Initialize all the expression nodes we will need.
-  for (unsigned i = 0; i < 6; ++i) {
-    mStabilityAxisSummers[i] = new SumExpressionImpl;
-    mBodyAxisSummers[i] = new SumExpressionImpl;
-  }
-
   setPosition(Vector3::zeros());
   setOrientation(Quaternion::unit());
 
@@ -93,6 +86,46 @@ AeroForce::AeroForce(const std::string& name)
               Property(this, &AeroForce::getBodyQ));
   addProperty("r",
               Property(this, &AeroForce::getBodyR));
+
+  addOutputPort("wingSpan", this, &AeroForce::getWingSpan);
+  addOutputPort("wingArea", this, &AeroForce::getWingArea);
+  addOutputPort("coord", this, &AeroForce::getCoord);
+
+  addOutputPort("altitude", this, &AeroForce::getAltitude);
+  addOutputPort("aboveGroundLevel", this, &AeroForce::getAboveGroundLevel);
+
+  addOutputPort("trueSpeed", this, &AeroForce::getTrueSpeed);
+  addOutputPort("dynamicPressure", this, &AeroForce::getDynamicPressure);
+  addOutputPort("alpha", this, &AeroForce::getAlpha);
+  addOutputPort("alphaDot", this, &AeroForce::getAlphaDot);
+  addOutputPort("beta", this, &AeroForce::getBeta);
+  addOutputPort("betaDot", this, &AeroForce::getBetaDot);
+//   addOutputPort("mach", this, &AeroForce::getMach);
+  addOutputPort("machNumber", this, &AeroForce::getMachNumber);
+  addOutputPort("trueSpeedUW", this, &AeroForce::getTrueSpeedUW);
+  addOutputPort("wingSpanOver2Speed", this, &AeroForce::getWingSpanOver2Speed);
+  addOutputPort("coordOver2Speed", this, &AeroForce::getCoordOver2Speed);
+  addOutputPort("hOverWingSpan", this, &AeroForce::getHOverWingSpan);
+
+  addOutputPort("pressure", this, &AeroForce::getPressure);
+  addOutputPort("density", this, &AeroForce::getDensity);
+  addOutputPort("soundSpeed", this, &AeroForce::getSoundSpeed);
+  addOutputPort("temperature", this, &AeroForce::getTemperature);
+
+  addOutputPort("u", this, &AeroForce::getBodyU);
+  addOutputPort("v", this, &AeroForce::getBodyV);
+  addOutputPort("w", this, &AeroForce::getBodyW);
+  addOutputPort("p", this, &AeroForce::getBodyP);
+  addOutputPort("q", this, &AeroForce::getBodyQ);
+  addOutputPort("r", this, &AeroForce::getBodyR);
+
+  setNumInputPorts(6);
+  setInputPortName(0, "roll");
+  setInputPortName(1, "pitch");
+  setInputPortName(2, "yaw");
+  setInputPortName(3, "drag");
+  setInputPortName(4, "side");
+  setInputPortName(5, "lift");
 }
 
 AeroForce::~AeroForce(void)
@@ -105,6 +138,33 @@ AeroForce::init(void)
   mEnvironment = getEnvironment();
   if (!mEnvironment)
     return false;
+
+  if (getInputPort("roll")->isConnected())
+    mBodyAxisTorque[0] = getInputPort("roll")->toRealPortHandle();
+  else
+    mBodyAxisTorque[0] = 0;
+  if (getInputPort("pitch")->isConnected())
+    mBodyAxisTorque[1] = getInputPort("pitch")->toRealPortHandle();
+  else
+    mBodyAxisTorque[1] = 0;
+  if (getInputPort("yaw")->isConnected())
+    mBodyAxisTorque[2] = getInputPort("yaw")->toRealPortHandle();
+  else
+    mBodyAxisTorque[2] = 0;
+
+  if (getInputPort("drag")->isConnected())
+    mStabilityAxisForce[0] = getInputPort("drag")->toRealPortHandle();
+  else
+    mStabilityAxisForce[0] = 0;
+  if (getInputPort("side")->isConnected())
+    mStabilityAxisForce[1] = getInputPort("side")->toRealPortHandle();
+  else
+    mStabilityAxisForce[1] = 0;
+  if (getInputPort("lift")->isConnected())
+    mStabilityAxisForce[2] = getInputPort("lift")->toRealPortHandle();
+  else
+    mStabilityAxisForce[2] = 0;
+
   return ExternalForce::init();
 }
 
@@ -609,14 +669,22 @@ AeroForce::computeForce(void)
 
   // This is simple here. Just collect all summands ...
   Vector6 force = Vector6::zeros();
-  for (int i = 0; i < 6; ++i)
-    force(i+1) = mStabilityAxisSummers[i]->getValue();
+  /// Lift points upward
+  /// Drag points backward
+  /// FIXME: may be we can put that already into the rotation matrix?
+  if (mStabilityAxisForce[0].isConnected())
+    force(4) -= mStabilityAxisForce[0].getRealValue();
+  if (mStabilityAxisForce[1].isConnected())
+    force(5) += mStabilityAxisForce[1].getRealValue();
+  if (mStabilityAxisForce[2].isConnected())
+    force(6) -= mStabilityAxisForce[2].getRealValue();
 
   force.setAngular(Ts2b*force.getAngular());
   force.setLinear(Ts2b*force.getLinear());
 
-  for (int i = 0; i < 6; ++i)
-    force(i+1) += mBodyAxisSummers[i]->getValue();
+  for (int i = 0; i < 3; ++i)
+    if (mBodyAxisTorque[i].isConnected())
+      force(i+1) += mBodyAxisTorque[i].getRealValue();
 
   Log(ArtBody, Debug3) << "AeroForce::computeForce() "
                        << trans(force) << endl;

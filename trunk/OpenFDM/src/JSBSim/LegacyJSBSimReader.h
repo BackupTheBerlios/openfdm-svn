@@ -20,6 +20,9 @@ namespace OpenFDM {
 class XMLDocument;
 class XMLElement;
 
+class Summer;
+class Product;
+
 // Implements a SimGear SGProperty compatible 'path' to 'expression'
 // mapping.
 // It is used to map the value names occuring in JSBSim configuration files
@@ -148,6 +151,7 @@ private:
   void registerExpression(const std::string& name, Port* expr);
   void registerJSBExpression(const std::string& name, Port* expr);
 
+  Port* createAndScheduleAeroProp(const std::string& name);
   Port* createAndScheduleInput(const std::string& name);
 
   Port* addInputModel(const std::string& name, const std::string& propName,
@@ -160,6 +164,11 @@ private:
   Port* addConstModel(const std::string& name, real_type value);
 
   void addFCSModel(Model* model);
+
+  Port* addMultiBodyToUnit(const std::string& name, Unit u, Port* in);
+  Port* addMultiBodyFromUnit(const std::string& name, Unit u, Port* in);
+  Port* addMultiBodyAbsModel(const std::string& name, Port* in);
+  void addMultiBodyModel(Model* model);
   /// </FIXME> document and rethink
 
 
@@ -195,12 +204,9 @@ private:
   bool convertAerodynamics(const XMLElement* aerodynamics);
   /// converts recursively AERODYNAMICS summands, factors and grooups
   bool convertAEROSummands(const XMLElement* aeroSummands,
-                           SumExpressionImpl* sum,
-                           ProductExpressionImpl* prod);
+                           Summer* sum, Product* prod);
 
-  TypedProperty<real_type> convertCoefficient(const std::string& data,
-                                              const std::string& type);
-  void makeAeroprops(void);
+  Port* convertCoefficient(const std::string& data, const std::string& type);
 
 
 

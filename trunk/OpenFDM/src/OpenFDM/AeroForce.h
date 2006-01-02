@@ -14,7 +14,6 @@
 #include "Ground.h"
 #include "Wind.h"
 #include "Planet.h"
-#include "Expression.h"
 #include "Environment.h"
 
 namespace OpenFDM {
@@ -98,23 +97,6 @@ public:
   const Vector3& getUnitDown(void) const;
   const Plane& getLocalGroundPlane(void) const;
 
-  void addStabilityAxisSummand(ForceAxis axis, const RealProperty& prop)
-  {
-    mStabilityAxisSummers[axis-1]->addInputProperty(prop);
-  }
-  void addStabilityAxisSummand(ForceAxis axis, const Property& prop)
-  {
-    mStabilityAxisSummers[axis-1]->addInputProperty(prop);
-  }
-  void addBodyAxisSummand(ForceAxis axis, const RealProperty& prop)
-  {
-    mBodyAxisSummers[axis-1]->addInputProperty(prop);
-  }
-  void addBodyAxisSummand(ForceAxis axis, const Property& prop)
-  {
-    mBodyAxisSummers[axis-1]->addInputProperty(prop);
-  }
-
   // The interface to the mechanical system.
   virtual void computeForce(void);
 
@@ -124,8 +106,8 @@ private:
   void computeSLAtmosphere(void) const;
   void computeCalEquAirspeed(void) const;
 
-  SharedPtr<SumExpressionImpl> mStabilityAxisSummers[6];
-  SharedPtr<SumExpressionImpl> mBodyAxisSummers[6];
+  RealPortHandle mStabilityAxisForce[3];
+  RealPortHandle mBodyAxisTorque[3];
 
   const Atmosphere* getAtmosphere(void) const
   { return mEnvironment->getAtmosphere(); }
