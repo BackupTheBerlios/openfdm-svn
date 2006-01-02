@@ -12,7 +12,7 @@
 
 namespace OpenFDM {
 
-/// Linear spring damper model
+/// A modified Dahl fricion model
 class DiscBrake :
     public Model {
 public:
@@ -22,17 +22,29 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo& taskInfo);
 
+  virtual void setState(const StateStream& state);
+  virtual void getState(StateStream& state) const;
+  virtual void getStateDeriv(StateStream& stateDeriv);
+
   const real_type& getForce(void) const;
 
-  real_type getFrictionConstant(void) const;
-  void setFrictionConstant(real_type frictionConstant);
+  const real_type& getMinForce(void) const;
+  void setMinForce(const real_type& minForce);
+
+  const real_type& getMaxForce(void) const;
+  void setMaxForce(const real_type& maxForce);
 
 private:
-  /// The friction constant for that viscosous friction model
-  real_type mFrictionConstant;
-
   /// The output brake force
   real_type mForce;
+  /// The frictions state
+  real_type mZ;
+  /// The frictions stes derivative
+  real_type mZDeriv;
+  /// The maximum force when brakes are applied
+  real_type mMaxForce;
+  /// The maximum force when brakes are not applied
+  real_type mMinForce;
 
   /// The intput port which must provide the position
   RealPortHandle mBrakePressurePort;

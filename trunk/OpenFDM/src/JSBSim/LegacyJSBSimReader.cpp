@@ -754,7 +754,8 @@ LegacyJSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
   // Add a brake force
   if (brake == "LEFT" || brake == "RIGHT") {
     DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
-    brakeF->setFrictionConstant(-2e3);
+    brakeF->setMinForce(8e1);
+    brakeF->setMaxForce(1e4);
     if (brake == "LEFT") {
       Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
       brakeF->getInputPort(0)->connect(port);

@@ -10,9 +10,12 @@ namespace OpenFDM {
 
 DiscBrake::DiscBrake(const std::string& name) :
   Model(name),
-  mFrictionConstant(-1)
+  mMinForce(0),
+  mMaxForce(1)
 {
   setDirectFeedThrough(true);
+
+  setNumContinousStates(1);
 
   setNumInputPorts(2);
   setInputPortName(0, "brakePressure");
@@ -45,16 +48,46 @@ DiscBrake::init(void)
   }
   mVelocityPort = getInputPort(1)->toRealPortHandle();
 
+  // start with zero friction force
+  mZ = 0;
+
   return true;
 }
 
 void
 DiscBrake::output(const TaskInfo& taskInfo)
 {
+  real_type sigma = 100;
   real_type brakeInput = mBrakePressurePort.getRealValue();
   real_type vel = mVelocityPort.getRealValue();
-  /// Hmm, this seems to be an intermediate model for a disc brake ...
-  mForce = vel*(-1e1 + brakeInput*mFrictionConstant);
+  // with this sigma the model is already very crisp and reaches the
+  // maximum force relatively fast, thus we do not need to make it even faster
+  // with higher speeds
+  vel = sign(vel)*min(1.0, fabs(vel));
+  // the time derivative of the friction state
+  mZDeriv = vel - sigma*fabs(vel)*mZ;
+  // this is to limit the stiffness of this model
+  mZDeriv = sign(mZDeriv)*min(10.0, fabs(mZDeriv));
+  // now the output force, modulate with the brake input
+  mForce = -interpolate(brakeInput, 0.0, mMinForce, 1.0, mMaxForce)*sigma*mZ;
+}
+
+void
+DiscBrake::setState(const StateStream& state)
+{
+  state.readSubState(mZ);
+}
+
+void
+DiscBrake::getState(StateStream& state) const
+{
+  state.writeSubState(mZ);
+}
+
+void
+DiscBrake::getStateDeriv(StateStream& stateDeriv)
+{
+  stateDeriv.writeSubState(mZDeriv);
 }
 
 const real_type&
@@ -63,16 +96,28 @@ DiscBrake::getForce(void) const
   return mForce;
 }
 
-real_type
-DiscBrake::getFrictionConstant(void) const
+const real_type&
+DiscBrake::getMinForce(void) const
 {
-  return mFrictionConstant;
+  return mMinForce;
 }
 
 void
-DiscBrake::setFrictionConstant(real_type frictionConstant)
+DiscBrake::setMinForce(const real_type& minForce)
 {
-  mFrictionConstant = frictionConstant;
+  mMinForce = minForce;
+}
+
+const real_type&
+DiscBrake::getMaxForce(void) const
+{
+  return mMaxForce;
+}
+
+void
+DiscBrake::setMaxForce(const real_type& maxForce)
+{
+  mMaxForce = maxForce;
 }
 
 } // namespace OpenFDM
