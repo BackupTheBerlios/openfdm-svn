@@ -45,6 +45,8 @@ private:
   Matrix mMinSaturation;
   /// Holds the maximum saturation
   Matrix mMaxSaturation;
+  /// Holds a matrix handle to the integrators input
+  MatrixPortHandle mDerivativePort;
 };
 
 } // namespace OpenFDM
