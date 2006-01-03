@@ -679,32 +679,26 @@ AeroForce::computeForce(void)
   real_type sa = sin(getAlpha());
   real_type cb = cos(getBeta());
   real_type sb = sin(getBeta());
-  Matrix33 Ts2b(ca*cb, -ca*sb, -sa,
-                   sb,     cb,   0,
-                sa*cb, -sa*sb,  ca);
+  Matrix33 Ts2b(-ca*cb, -ca*sb,  sa,
+                   -sb,     cb,   0,
+                -sa*cb, -sa*sb, -ca);
 
   // This is simple here. Just collect all summands ...
-  Vector6 force = Vector6::zeros();
+  Vector3 stabilityForce = Vector3::zeros();
   /// Lift points upward
   /// Drag points backward
-  /// FIXME: may be we can put that already into the rotation matrix?
-  if (mStabilityAxisForce[0].isConnected())
-    force(4) -= mStabilityAxisForce[0].getRealValue();
-  if (mStabilityAxisForce[1].isConnected())
-    force(5) += mStabilityAxisForce[1].getRealValue();
-  if (mStabilityAxisForce[2].isConnected())
-    force(6) -= mStabilityAxisForce[2].getRealValue();
+  for (int i = 0; i < 3; ++i)
+    if (mStabilityAxisForce[i].isConnected())
+      stabilityForce(i+1) = mStabilityAxisForce[i].getRealValue();
 
-  force.setAngular(Ts2b*force.getAngular());
-  force.setLinear(Ts2b*force.getLinear());
-
+  Vector3 bodyTorque = Vector3::zeros();
   for (int i = 0; i < 3; ++i)
     if (mBodyAxisTorque[i].isConnected())
-      force(i+1) += mBodyAxisTorque[i].getRealValue();
+      bodyTorque(i+1) = mBodyAxisTorque[i].getRealValue();
 
+  Vector6 force(bodyTorque, Ts2b*stabilityForce);
   Log(ArtBody, Debug3) << "AeroForce::computeForce() "
                        << trans(force) << endl;
-
   applyForce(forceFrom(mPosition, mOrientation, force));
 }
 
