@@ -12,6 +12,7 @@
 #include "ExplicitEuler.h"
 #include "Function.h"
 #include "Newton.h"
+#include "ModelVisitor.h"
 #include "System.h"
 
 namespace OpenFDM {
@@ -235,47 +236,182 @@ System::simulate(real_type tEnd)
   return true;
 }
 
-class TrimFunction
-  : public Function {
+class TrimCollectorVisitor :
+    public ModelVisitor {
 public:
-  TrimFunction(System& system, const Vector& state)
-    : mSystem(system), mState(state) {}
+  TrimCollectorVisitor(unsigned nStates) :
+    mStateStream(nStates)
+  { }
+  virtual ~TrimCollectorVisitor(void)
+  { }
+  virtual void apply(Model& model)
+  { model.getStateDeriv(mStateStream); }
+  virtual void apply(ModelGroup& modelGroup)
+  { traverse(modelGroup); }
+  virtual void apply(MobileRootJoint& mobileRootJoint)
+  {
+    mGeodPos = mobileRootJoint.getGeodPosition();
+    mGeodOr = mobileRootJoint.getGeodOrientation();
+    mVel = mobileRootJoint.getRelVel();
+    mVelDot = mobileRootJoint.getRelVelDot();
+    mPosDot = mobileRootJoint.getPosDot();
+    mQDot = mobileRootJoint.getQDot();
+    mMobileRootJoint = &mobileRootJoint;
+  }
+  Geodetic mGeodPos;
+  Quaternion mGeodOr;
+  Vector6 mVel;
+  Vector6 mVelDot;
+  Vector3 mPosDot;
+  Vector4 mQDot;
+  StateStream mStateStream;
+  MobileRootJoint* mMobileRootJoint;
+};
+
+class TrimFunction :
+    public Function {
+public:
+  TrimFunction(System& system) :
+    mSystem(system)
+  {
+    unsigned nStates = mSystem.getNumContinousStates();
+    TrimCollectorVisitor tcv(nStates);
+    mSystem.accept(tcv);
+    mGeodPos = tcv.mGeodPos;
+    mGeodOr = tcv.mGeodOr;
+    mVel = tcv.mVel;
+    mVelDot = tcv.mVelDot;
+    mPosDot = tcv.mPosDot;
+    mQDot = tcv.mQDot;
+  }
   virtual unsigned inSize(void) const
   { return mSystem.getNumContinousStates(); }
-#if 1
   virtual unsigned outSize(void) const
-  { return 2*mSystem.getNumContinousStates(); }
+  { return mSystem.getNumContinousStates(); }
   virtual void eval(real_type t, const Vector& v, Vector& out)
   {
     unsigned nStates = mSystem.getNumContinousStates();
     Vector deriv(nStates);
     mSystem.evalFunction(t, v, deriv);
 
-    out.resize(2*nStates);
-    out(Range(1, nStates)) = 1e-1*(mState - v);
-    out(Range(nStates + 1, 2*nStates)) = deriv;
+    TrimCollectorVisitor tcv(nStates);
+    mSystem.accept(tcv);
+    Vector3 eo = mGeodOr.getEuler();
+    Vector3 en = tcv.mGeodOr.getEuler();
+
+    /// 3 dof for the position
+    real_type tmp = 1e6*(mGeodPos.longitude - tcv.mGeodPos.longitude);
+    tcv.mStateStream.writeSubState(tmp);
+    tmp = 1e6*(mGeodPos.latitude - tcv.mGeodPos.latitude);
+    tcv.mStateStream.writeSubState(tmp);
+    tmp = smoothDeadBand(mGeodPos.altitude - tcv.mGeodPos.altitude, 10.0);
+    tcv.mStateStream.writeSubState(tmp);
+
+    // The orientation
+    tmp = 1e2*smoothDeadBand(eo(1) - en(1), 20*deg2rad);
+    tcv.mStateStream.writeSubState(tmp);
+    tmp = 1e2*smoothDeadBand(eo(2) - en(2), 20*deg2rad);
+    tcv.mStateStream.writeSubState(tmp);
+    tmp = 1e2*(eo(3) - en(3));
+    tcv.mStateStream.writeSubState(tmp);
+
+    tcv.mStateStream.writeSubState(1e2*norm(tcv.mQDot) + norm(tcv.mPosDot - mPosDot));
+//     tcv.mStateStream.writeSubState(1e2*tcv.mQDot);
+//     tcv.mStateStream.writeSubState(tcv.mPosDot);
+    tcv.mStateStream.writeSubState(1e6*tcv.mVelDot);
+
+    out = tcv.mStateStream.getState();
   }
-#else
-  virtual unsigned outSize(void) const
-  { return mSystem.getNumContinousStates(); }
-  virtual void eval(real_type t, const Vector& v, Vector& out)
-  {
-    mSystem.evalFunction(t, v, out);
-  }
-#endif
 private:
   System& mSystem;
-  Vector mState;
+  Geodetic mGeodPos;
+  Quaternion mGeodOr;
+  Vector6 mVel;
+  Vector6 mVelDot;
+  Vector3 mPosDot;
+  Vector4 mQDot;
+};
+
+class AltitudeFinderTrimFunction :
+    public Function {
+public:
+  AltitudeFinderTrimFunction(System& system, real_type range) :
+    mSystem(system),
+    mRange(range)
+  {
+    unsigned nStates = mSystem.getNumContinousStates();
+    TrimCollectorVisitor tcv(nStates);
+    mSystem.accept(tcv);
+    mGeodPos = tcv.mGeodPos;
+    mGeodOr = tcv.mGeodOr;
+    mVel = tcv.mVel;
+    mVelDot = tcv.mVelDot;
+    mMobileRootJoint = tcv.mMobileRootJoint;
+  }
+  virtual unsigned inSize(void) const
+  { return 1; }
+  virtual unsigned outSize(void) const
+  { return 7; }
+  virtual void eval(real_type t, const Vector& v, Vector& out)
+  {
+    Geodetic geod = mGeodPos;
+    geod.altitude = mGeodPos.altitude - mRange*0.5 + v(1);
+    mMobileRootJoint->setGeodPosition(geod);
+    
+    unsigned nStates = mSystem.getNumContinousStates();
+    StateStream vv(nStates);
+    mSystem.getState(vv);
+    Vector deriv(nStates);
+    mSystem.evalFunction(t, vv.getState(), deriv);
+
+    TrimCollectorVisitor tcv(nStates + 6);
+    mSystem.accept(tcv);
+
+    /// The line search algorithm sees that the gravitation
+    /// is less in higher regions, thus we need to add a 'minimum altitude'
+    /// criterion
+    out.resize(7, 1);
+    out(Range(1, 6)) = tcv.mVelDot;
+//     out(7) = 1e-1*v(1);
+    out(7) = smoothDeadBand(v(1), mRange);
+    
+//     Log(Model,Error) << trans(v) << endl;
+//     Log(Model,Error) << trans(out) << endl;
+//     Log(Model,Error) << mGeodPos << geod << endl << endl;
+  }
+private:
+  System& mSystem;
+  real_type mRange;
+  Geodetic mGeodPos;
+  Quaternion mGeodOr;
+  Vector6 mVel;
+  Vector6 mVelDot;
+  MobileRootJoint* mMobileRootJoint;
 };
 
 bool
 System::trim(void)
 {
   // need to prepare the System especially for the per step tasks
-  TaskInfo taskInfo;
+  TaskInfo taskInfo = mDiscreteTaskList[0];
+//   taskInfo.setTime(getTime());
   taskInfo.addSampleTime(SampleTime::Continous);
   taskInfo.addSampleTime(SampleTime::PerTimestep);
   output(taskInfo);
+
+  /// First try to find an altitude where the acceleration is minimal,
+  /// this is most likely a good starting point for the subsequent total trim
+  real_type range = 20;
+  AltitudeFinderTrimFunction altTrim(*this, range);
+
+  Vector altV(1);
+  altV(1) = 0;
+  Vector dk(1);
+  dk(1) = 1;
+  Vector res = LineSearch(altTrim, getTime(), altV, dk, range, 1e-3);
+  altTrim.eval(getTime(), res, dk /*dummy*/);
+  output(taskInfo);
+
 
   // Get the current state
   StateStream stateStream(getNumContinousStates());
@@ -284,12 +420,13 @@ System::trim(void)
 
   Vector trimState = stateStream.getState();
   // Buld up the trim function
-  TrimFunction trimFunction(*this, trimState);
+  TrimFunction trimFunction(*this);
 
   // Try to find a minimum
-  real_type atol = 1e-3;
+  real_type atol = 1e-7;
   real_type rtol = 1e-8;
   bool ret = GaussNewton(trimFunction, getTime(), trimState, atol, rtol);
+//   bool ret = LevenbergMarquart(trimFunction, getTime(), trimState, atol, rtol);
   if (ret) {
     stateStream.setState(trimState);
     setState(stateStream);

@@ -197,6 +197,24 @@ MobileRootJoint::getGeodOrientation(void) const
   return inverse(hlOr)*getRefOrientation();
 }
 
+Vector4
+MobileRootJoint::getQDot(void) const
+{
+  // Compute the derivative term originating from the angular velocity.
+  // Correction term to keep the quaternion normalized.
+  // That is if |q| < 1 add a little radial component outward,
+  // if |q| > 1 add a little radial component inward
+  Quaternion q = mFrame->getOrientation();
+  Vector3 angVel = mFrame->getRelVel().getAngular();
+  Vector4 qderiv = derivative(q, angVel) + 0.1*(normalize(q) - q);
+  return qderiv;
+}
+
+Vector3 MobileRootJoint::getPosDot(void) const
+{
+  return mFrame->rotToParent(mFrame->getRelVel().getLinear());
+}
+
 void
 MobileRootJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
                              const SpatialInertia& outI,
@@ -234,18 +252,9 @@ MobileRootJoint::getState(StateStream& state) const
 void
 MobileRootJoint::getStateDeriv(StateStream& stateDeriv)
 {
-  Quaternion q = mFrame->getOrientation();
-  Vector3 angVel = mFrame->getRelVel().getAngular();
-  Vector3 vel = mFrame->rotToParent(mFrame->getRelVel().getLinear());
-
-  // Compute the derivative term originating from the angular velocity.
-  // Correction term to keep the quaternion normalized.
-  // That is if |q| < 1 add a little radial component outward,
-  // if |q| > 1 add a little radial component inward
-  Vector4 qderiv = derivative(q, angVel) + 0.1*(normalize(q) - q);
-  stateDeriv.writeSubState(qderiv);
-  stateDeriv.writeSubState(vel);
-  stateDeriv.writeSubState(mFrame->getRelVelDot());
+  stateDeriv.writeSubState(getQDot());
+  stateDeriv.writeSubState(getPosDot());
+  stateDeriv.writeSubState(getRelVelDot());
 }
 
 } // namespace OpenFDM

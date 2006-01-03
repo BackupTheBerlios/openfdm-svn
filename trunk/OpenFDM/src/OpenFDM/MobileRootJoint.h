@@ -70,7 +70,9 @@ public:
   /// Get orientation wrt the geodetic hl frame.
   Quaternion getGeodOrientation(void) const;
 
-private:
+  Vector4 getQDot(void) const;
+  Vector3 getPosDot(void) const;
+
   /** Plugin function for the articulated body algorithm.
    */
   virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
@@ -88,6 +90,7 @@ private:
    */
   virtual void getStateDeriv(StateStream& state);
 
+private:
   /// The commonly used gravity model from the environment class
   /// It is initialized at the init() call
   SharedPtr<const Gravity> mGravity;

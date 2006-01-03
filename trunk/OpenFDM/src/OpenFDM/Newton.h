@@ -22,6 +22,10 @@ Newton(Function& f,
        unsigned maxjac = 2,
        real_type lambdamin = 1e-3);
 
+Vector
+LineSearch(Function& f, real_type t, const Vector& xk, const Vector& dk,
+           real_type maxWide, real_type thresh);
+
 bool
 GaussNewton(Function& f,
             real_type t,
@@ -31,6 +35,14 @@ GaussNewton(Function& f,
             unsigned maxit = 50,
             unsigned maxjac = 20,
             real_type lambdamin = 1e-5);
+
+bool
+LevenbergMarquart(Function& f,
+                  real_type t,
+                  Vector& x,
+                  real_type atol, real_type rtol,
+                  unsigned *itCount = 0,
+                  unsigned maxit = 50);
 
 } // namespace OpenFDM
 

@@ -2,6 +2,8 @@
  *
  */
 
+#undef NDEBUG
+
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
@@ -192,7 +194,6 @@ Newton(Function& f,
                       itCount, maxit, maxjac, lambdamin);
 }
 
-static
 Vector
 LineSearch(Function& f, real_type t, const Vector& xk, const Vector& dk,
            real_type maxWide, real_type thresh)
@@ -202,33 +203,29 @@ LineSearch(Function& f, real_type t, const Vector& xk, const Vector& dk,
 
   thresh = fabs(maxWide)*thresh;
 
-  Vector v = xk;
-  Vector w = xk + maxWide*dk;
-
   Vector fx;
-  while (norm1(v - w) > thresh) {
-    f.eval(t, v, fx);
-    real_type fv = dot(fx, fx);
-    f.eval(t, w, fx);
-    real_type fw = dot(fx, fx);
-    Log(NewtonMethod, Debug2) << " Line Search: errv = " << fv
-                             << ", errw = " << fw << endl;
-  
-    // check for isfinite ...
-//   if failv
-//     v = v + vfac*(w-v);
-//   elseif failw
-//     w = v + wfac*(w-v);
-//   elseif fv > fw
-//     v = v + vfac*(w-v);
-//   else
-//     w = v + wfac*(w-v);
-//   end
 
-    if (fv > fw)
+  Vector v = xk;
+  f.eval(t, v, fx);
+  real_type fv = norm(fx);
+
+  Vector w = xk + maxWide*dk;
+  f.eval(t, w, fx);
+  real_type fw = norm(fx);
+
+  while (norm1(v - w) > thresh) {
+    Log(NewtonMethod, Debug2) << " Line Search: errv = " << fv
+                              << ", errw = " << fw << endl;
+    // check for isfinite ...
+    if (fv > fw) {
       v = v + vfac*(w-v);
-    else
+      f.eval(t, v, fx);
+      fv = norm(fx);
+    } else {
       w = v + wfac*(w-v);
+      f.eval(t, w, fx);
+      fw = norm(fx);
+    }
   }
 
   return 0.5*(v+w);
@@ -246,33 +243,132 @@ GaussNewton(Function& f,
 {
   Vector err, dx;
   Matrix J;
+#define USE_QR
+#ifdef USE_QR
+  LinAlg::MatrixFactors<real_type,0,0,LinAlg::QRTag> jacFactors;
+#else
   LinAlg::MatrixFactors<real_type,0,0,LinAlg::LUTag> jacFactors;
-//   LinAlg::MatrixFactors<real_type,0,0,LinAlg::QRTag> jacFactors;
+#endif
 
   bool converged;
   do {
     // Compute in each step a new jacobian
     f.jac(t, x, J);
+    Log(NewtonMethod, Debug) << "Jacobian is:\n" << J << endl;
+#ifdef USE_QR
+    jacFactors = J;
+#else
     jacFactors = trans(J)*J;
-    
+#endif
+    Log(NewtonMethod, Debug) << "Jacobian is "
+                             << (jacFactors.singular() ? "singular" : "ok")
+                             << endl;
+   
     // Compute the actual error
     f.eval(t, x, err);
 
     // Compute the search direction
+#ifdef USE_QR
+    dx = jacFactors.solve(err);
+#else
     dx = jacFactors.solve(trans(J)*err);
+#endif
+    Log(NewtonMethod, Debug) << "dx residual "
+                             << trans(J*dx - err) << endl
+                             << trans(J*dx - err)*J
+                             << endl;
 
     // Get a better search guess
-//     if (1 < norm(dx))
-//       dx = normalize(dx);
+    if (1 < norm(dx))
+      dx = normalize(dx);
     Vector xnew = LineSearch(f, t, x, -dx, 1.0, atol);
 
     // check convergence
     converged = norm1(xnew - x) < atol;
+    
 
     Log(NewtonMethod, Debug) << "Convergence test: |dx| = " << norm(xnew - x)
                              << ", converged = " << converged << endl;
     // New guess is the better one
     x = xnew;
+  } while (!converged);
+
+  return converged;
+}
+
+bool
+LevenbergMarquart(Function& f,
+                  real_type t,
+                  Vector& x,
+                  real_type atol, real_type rtol,
+                  unsigned *itCount,
+                  unsigned maxit)
+{
+  Matrix J;
+  LinAlg::MatrixFactors<real_type,0,0,LinAlg::LUTag> jacFactors;
+
+  bool converged;
+  real_type tau = 1e-3;
+  real_type nu = 2;
+
+  // Compute in each step a new jacobian
+  f.jac(t, x, J);
+  Log(NewtonMethod, Debug3) << "Jacobian is:\n" << J << endl;
+  real_type mu = tau*norm1(J);
+
+  Vector fx;
+  // Compute the actual error
+  f.eval(t, x, fx);
+  Vector g = trans(J)*fx;
+
+  do {
+    jacFactors = trans(J)*J + mu*LinAlg::Eye<real_type,0,0>(rows(x), rows(x));
+    Log(NewtonMethod, Debug) << "Jacobian is "
+                             << (jacFactors.singular() ? "singular" : "ok")
+                             << endl;
+   
+    // Compute the search direction
+    Vector h = jacFactors.solve(-g);
+    Log(NewtonMethod, Debug) << "Solve Residual "
+                             << norm(trans(J)*J*h + mu*h + g)/norm(g) << endl;
+
+    // check convergence
+    converged = norm1(h) < atol;
+    Log(NewtonMethod, Debug) << "Convergence test: ||h||_1 = " << norm1(h)
+                             << ", converged = " << converged << endl;
+    if (converged)
+      break;
+
+    // Get a better search guess
+    Vector xnew = x + h;
+    f.eval(t, x, fx);
+    real_type Fx = norm(fx);
+    f.eval(t, xnew, fx);
+    real_type Fxnew = norm(fx);
+    real_type rho = (Fx - Fxnew)/(0.5*dot(h, mu*h - g));
+    Log(NewtonMethod, Debug) << "Rho = " << rho
+                             << ", Fxnew = " << Fxnew 
+                             << ", Fx = " << Fx
+                             << endl;
+    if (0 < rho) {
+      // New guess is the better one
+      x = xnew;
+
+      f.jac(t, x, J);
+      Log(NewtonMethod, Debug3) << "Jacobian is:\n" << J << endl;
+      // Compute the actual error
+      f.eval(t, x, fx);
+      g = trans(J)*fx;
+      converged = norm1(g) < atol;
+      Log(NewtonMethod, Debug) << "||g||_1 = " << norm1(g) << endl;
+
+      mu = mu * max(1.0/3, 1-pow(2*rho-1, 3));
+      mu = 2;
+
+    } else {
+      mu = mu * nu;
+      nu = 2 * nu;
+    }
   } while (!converged);
 
   return converged;
