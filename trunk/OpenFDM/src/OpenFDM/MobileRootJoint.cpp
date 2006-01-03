@@ -115,6 +115,12 @@ MobileRootJoint::recheckTopology(void)
   }
 }
 
+const Vector6&
+MobileRootJoint::getRelVel(void) const
+{
+  return mFrame->getRelVel();
+}
+
 void
 MobileRootJoint::setRelVel(const Vector6& vel)
 {
@@ -131,6 +137,12 @@ void
 MobileRootJoint::setAngularRelVel(const Vector3& vel)
 {
   mFrame->setAngularRelVel(vel);
+}
+
+const Vector6&
+MobileRootJoint::getRelVelDot(void) const
+{
+  return mFrame->getRelVelDot();
 }
 
 const Vector3&
@@ -164,6 +176,15 @@ MobileRootJoint::getGeodPosition(void) const
   if (!env)
     return Geodetic();
   return env->getPlanet()->toGeod(getRefPosition());
+}
+
+void
+MobileRootJoint::setGeodPosition(const Geodetic& geod)
+{
+  Environment* env = getEnvironment();
+  if (!env)
+    return;
+  setRefPosition(env->getPlanet()->toCart(geod));
 }
 
 Quaternion

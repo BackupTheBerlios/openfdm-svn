@@ -41,12 +41,17 @@ public:
 
   virtual void recheckTopology(void);
 
+  /// Gets the relative velocity.
+  const Vector6& getRelVel(void) const;
   /// Set the relative velocity.
   void setRelVel(const Vector6& vel);
   /// Set the relative velocity.
   void setLinearRelVel(const Vector3& vel);
   /// Set the relative velocity.
   void setAngularRelVel(const Vector3& vel);
+
+  /// Gets the relative velocity derivative.
+  const Vector6& getRelVelDot(void) const;
 
   /// Get the reference position.
   const Vector3& getRefPosition(void) const;
@@ -60,6 +65,8 @@ public:
 
   /// Get the geodetic position.
   Geodetic getGeodPosition(void) const;
+  /// Set the geodetic position.
+  void setGeodPosition(const Geodetic& geod);
   /// Get orientation wrt the geodetic hl frame.
   Quaternion getGeodOrientation(void) const;
 
