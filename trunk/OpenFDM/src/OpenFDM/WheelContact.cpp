@@ -46,7 +46,7 @@ WheelContact::output(const TaskInfo& taskInfo)
                           SampleTime::PerTimestep)) {
     Log(Model, Debug) << "WheelContact::output(): \"" << getName()
                       << "\" computing ground plane below" << endl;
-    getGround(0 /*FIXME*/);
+    getGround(taskInfo.getTime());
   }
 }
 
