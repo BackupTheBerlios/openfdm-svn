@@ -75,15 +75,33 @@ saturate(const T& val, const T& saturation)
 
 template<typename T>
 inline T
+deadBand(const T& val, const T& saturation)
+{
+  if (val <= -saturation)
+    return val + saturation;
+  if (saturation <= val)
+    return val - saturation;
+  return T(0);
+}
+
+template<typename T>
+inline T
 smoothSaturate(const T& val, const T& saturation)
 {
   /// FIXME
-#define PI static_cast<real_type>(3.1415926535897932384626433832795029L)
+#define PI static_cast<T>(3.1415926535897932384626433832795029L)
   if (saturation < Limits<T>::min())
     return 0;
   else
     return atan(val*0.5*PI/saturation)*2*saturation/PI;
 #undef PI
+}
+
+template<typename T>
+inline T
+smoothDeadBand(const T& val, const T& saturation)
+{
+  return val - smoothSaturate(val, saturation);
 }
 
 template<typename S, typename T>
