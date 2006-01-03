@@ -2262,8 +2262,7 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
       // FIXME
       std::cerr << "Cannot parse " + type + " table" << std::endl;
 
-    Table1D* table1D
-      = new Table1D(prod->getName() + " Table");
+    Table1D* table1D = new Table1D(prod->getName() + " Table");
     addMultiBodyModel(table1D);
     table1D->setTableData(table);
     Port* lPort = getTablePrelookup(prod->getName() + " PreLookup",
@@ -2284,8 +2283,7 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
       // FIXME
       std::cerr << "Cannot parse " + type + " table" << data << std::endl;
 
-    Table2D* table2D
-      = new Table2D(prod->getName() + " Table");
+    Table2D* table2D = new Table2D(prod->getName() + " Table");
     addMultiBodyModel(table2D);
     table2D->setTableData(table);
     for (unsigned i = 0; i < 2; ++i) {
@@ -2309,8 +2307,7 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
       // FIXME
       std::cerr << "Cannot parse " + type + " table" << std::endl;
 
-    Table3D* table3D
-      = new Table3D(prod->getName() + " Table");
+    Table3D* table3D = new Table3D(prod->getName() + " Table");
     addMultiBodyModel(table3D);
     table3D->setTableData(table);
     for (unsigned i = 0; i < 3; ++i) {
