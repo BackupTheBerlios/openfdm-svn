@@ -245,12 +245,16 @@ const Vector3&
 AeroForce::getRefPosition(void) const
 {
   if (mDirtyRefPosition) {
-    const Frame* frame = getParentFrame(0);
-    OpenFDMAssert(frame);
-    if (frame) {
-      // Get the position in the earth centered coordinate frame.
-      mRefPosition = frame->posToRef(getPosition());
-      mDirtyRefPosition = false;
+    const RigidBody* body = getParentRigidBody(0);
+    OpenFDMAssert(body);
+    if (body) {
+      const Frame* frame = body->getFrame();
+      OpenFDMAssert(frame);
+      if (frame) {
+        // Get the position in the earth centered coordinate frame.
+        mRefPosition = frame->posToRef(getPosition());
+        mDirtyRefPosition = false;
+      }
     }
   }
   Log(ArtBody, Debug3) << "AeroForce::getRefPosition()"
@@ -262,22 +266,26 @@ const Vector6&
 AeroForce::getAirSpeed(void) const
 {
   if (mDirtyAirSpeed) {
-    const Frame* frame = getParentFrame(0);
-    OpenFDMAssert(frame);
-    if (frame) {
-      // FIXME temporary workaround
-      if (!mEnvironment) {
-        const_cast<AeroForce*>(this)->mEnvironment = getEnvironment();
+    const RigidBody* body = getParentRigidBody(0);
+    OpenFDMAssert(body);
+    if (body) {
+      const Frame* frame = body->getFrame();
+      OpenFDMAssert(frame);
+      if (frame) {
+        // FIXME temporary workaround
+        if (!mEnvironment) {
+          const_cast<AeroForce*>(this)->mEnvironment = getEnvironment();
+        }
+        // Get the position in the earth centered coordinate frame.
+        Vector3 pos = frame->posToRef(getPosition());
+        Vector3 windVel = mEnvironment->getWind()->getWindVel(pos);
+        windVel = frame->rotFromRef(windVel);
+        Vector6 sAirSpeed = Vector6(Vector3::zeros(), windVel)
+          - frame->motionFromRef(Vector6::zeros());
+        mAirSpeed = motionTo(getPosition(), getOrientation(), sAirSpeed);
+        
+        mDirtyAirSpeed = false;
       }
-      // Get the position in the earth centered coordinate frame.
-      Vector3 pos = frame->posToRef(getPosition());
-      Vector3 windVel = mEnvironment->getWind()->getWindVel(pos);
-      windVel = frame->rotFromRef(windVel);
-      Vector6 sAirSpeed = Vector6(Vector3::zeros(), windVel)
-        - frame->motionFromRef(Vector6::zeros());
-      mAirSpeed = motionTo(getPosition(), getOrientation(), sAirSpeed);
-      
-      mDirtyAirSpeed = false;
     }
   }
   Log(ArtBody, Debug3) << "AeroForce::getAirSpeed()"
@@ -625,16 +633,20 @@ const Vector3&
 AeroForce::getUnitDown(void) const
 {
   if (mDirtyUnitDown) {
-    const Frame* frame = getParentFrame(0);
-    OpenFDMAssert(frame);
-    if (frame) {
-      // Compute the geodetic unit down vector at our current position.
-      // So we will need the orientation of the horizontal local frame at our
-      // current position.
-      Quaternion gcHL = getPlanet()->getGeocHLOrientation(getRefPosition());
-      // Transform that unit down vector to the current frame.
-      mUnitDown = frame->rotFromRef(gcHL.backTransform(Vector3::unit(3)));
-      mDirtyUnitDown = false;
+    const RigidBody* body = getParentRigidBody(0);
+    OpenFDMAssert(body);
+    if (body) {
+      const Frame* frame = body->getFrame();
+      OpenFDMAssert(frame);
+      if (frame) {
+        // Compute the geodetic unit down vector at our current position.
+        // So we will need the orientation of the horizontal local frame at our
+        // current position.
+        Quaternion gcHL = getPlanet()->getGeocHLOrientation(getRefPosition());
+        // Transform that unit down vector to the current frame.
+        mUnitDown = frame->rotFromRef(gcHL.backTransform(Vector3::unit(3)));
+        mDirtyUnitDown = false;
+      }
     }
   }
   return mUnitDown;
@@ -644,12 +656,16 @@ const Plane&
 AeroForce::getLocalGroundPlane(void) const
 {
   if (mDirtyLocalGroundPlane) {
-    const Frame* frame = getParentFrame(0);
-    OpenFDMAssert(frame);
-    if (frame) {
-      // Transform the plane equation to the local frame.
-      mLocalGroundPlane = frame->planeFromRef(mGroundVal.plane);
-      mDirtyLocalGroundPlane = false;
+    const RigidBody* body = getParentRigidBody(0);
+    OpenFDMAssert(body);
+    if (body) {
+      const Frame* frame = body->getFrame();
+      OpenFDMAssert(frame);
+      if (frame) {
+        // Transform the plane equation to the local frame.
+        mLocalGroundPlane = frame->planeFromRef(mGroundVal.plane);
+        mDirtyLocalGroundPlane = false;
+      }
     }
   }
   return mLocalGroundPlane;

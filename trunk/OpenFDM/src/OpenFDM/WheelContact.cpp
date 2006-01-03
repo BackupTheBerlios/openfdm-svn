@@ -55,7 +55,13 @@ WheelContact::computeForce(void)
 {
   // FIXME: check all signs here, I get the feeling that we have
   // just even much minuses here instead of exactly the right ones ...
-  const Frame* frame = getParentFrame(0);
+  const RigidBody* body = getParentRigidBody(0);
+  OpenFDMAssert(body);
+  if (!body) {
+    applyForce(Vector6::zeros());
+    return;
+  }
+  const Frame* frame = body->getFrame();
   OpenFDMAssert(frame);
   if (!frame) {
     applyForce(Vector6::zeros());
@@ -165,7 +171,11 @@ WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
 void
 WheelContact::getGround(real_type t)
 {
-  const Frame* frame = getParentFrame(0);
+  const RigidBody* body = getParentRigidBody(0);
+  OpenFDMAssert(body);
+  if (!body)
+    return;
+  const Frame* frame = body->getFrame();
   OpenFDMAssert(frame);
   if (!frame)
     return;

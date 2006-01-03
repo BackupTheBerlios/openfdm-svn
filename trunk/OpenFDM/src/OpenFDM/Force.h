@@ -50,17 +50,6 @@ protected:
     mForce = force;
   }
 
-  /// FIXME remove
-  const Frame* getParentFrame(unsigned id = 0) const
-  {
-    return getParentRigidBody(id)->getFrame();
-  }
-  /// FIXME remove
-  Frame* getParentFrame(unsigned id = 0)
-  {
-    return getParentRigidBody(id)->getFrame();
-  }
-
 private:
   Vector6 mForce;
 };

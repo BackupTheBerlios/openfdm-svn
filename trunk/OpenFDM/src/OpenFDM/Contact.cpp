@@ -61,9 +61,20 @@ Contact::output(const TaskInfo& taskInfo)
 void
 Contact::computeForce(void)
 {
-  const Frame* frame = getParentFrame(0);
+  if (!mEnabled) {
+    applyForce(Vector6::zeros());
+    return;
+  }
+
+  const RigidBody* body = getParentRigidBody(0);
+  OpenFDMAssert(body);
+  if (!body) {
+    applyForce(Vector6::zeros());
+    return;
+  }
+  const Frame* frame = body->getFrame();
   OpenFDMAssert(frame);
-  if (!frame || !mEnabled) {
+  if (!frame) {
     applyForce(Vector6::zeros());
     return;
   }
@@ -127,7 +138,11 @@ Contact::computeFrictionForce(real_type normForce, const Vector3& vel,
 void
 Contact::getGround(real_type t)
 {
-  const Frame* frame = getParentFrame(0);
+  const RigidBody* body = getParentRigidBody(0);
+  OpenFDMAssert(body);
+  if (!body)
+    return;
+  const Frame* frame = body->getFrame();
   OpenFDMAssert(frame);
   if (!frame)
     return;
