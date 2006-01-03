@@ -170,7 +170,10 @@ public:
   virtual ~InputChangeUserData(void)
   {
     // Also deregisters itself at the SGPropertyNode.
-    delete mListener;
+    // is deleted in the property system, don't do here
+    // FIXME: this might be a place where we can use the new refcounting thing
+    // of flightgear
+//     delete mListener;
   }
 private:
   InputChangeListener* mListener;

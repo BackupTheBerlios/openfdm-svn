@@ -304,8 +304,8 @@ void FGOpenFDM::update(double dt)
   if (stateChanged) {
     SG_LOG(SG_FLIGHT, SG_INFO, "State changed ------------------------------");
 //     printVehicle(vehicle);
-//     vehicle->init();
-//     vehicle->trim();
+    vehicle->init();
+    vehicle->trim();
 //     printVehicle(vehicle);
   }
 
