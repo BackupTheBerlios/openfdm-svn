@@ -21,14 +21,6 @@ namespace OpenFDM {
 class AeroForce
   : public ExternalForce {
 public:
-  enum ForceAxis {
-    RollAxis = 1,
-    PitchAxis = 2,
-    YawAxis = 3,
-    DragAxis = 4,
-    SideAxis = 5,
-    LiftAxis = 6
-  };
   AeroForce(const std::string&);
   virtual ~AeroForce(void);
 
