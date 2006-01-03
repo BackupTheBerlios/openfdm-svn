@@ -82,6 +82,9 @@ Summer::output(const TaskInfo&)
     mSum += (*it).getMatrixValue();
     ++it;
   }
+
+  Log(Model,Debug3) << "Output of Summer \"" << getName() << "\" "
+                    << mSum << endl;
 }
 
 const Matrix&

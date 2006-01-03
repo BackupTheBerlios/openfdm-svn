@@ -307,6 +307,8 @@ public:
   {
     OpenFDMAssert(mInputPortHandle.isConnected());
     mOutput = mTableLookup.lookup(mInputPortHandle.getRealValue());
+    Log(Model,Debug3) << "Output of TablePreLookup \"" << getName() << "\" "
+                      << mOutput << endl;
   }
 
   const real_type& getOutput(void) const
@@ -357,6 +359,8 @@ public:
     TableData<1>::InterpVector interpVec;
     interpVec(1) = mInputPortHandle.getRealValue();
     mOutput = mTableData.interpolate(interpVec);
+    Log(Model,Debug3) << "Output of Table1D \"" << getName() << "\" "
+                      << mOutput << endl;
   }
 
   const real_type& getOutput(void) const
@@ -414,6 +418,8 @@ public:
     interpVec(1) = mInputPortHandle[0].getRealValue();
     interpVec(2) = mInputPortHandle[1].getRealValue();
     mOutput = mTableData.interpolate(interpVec);
+    Log(Model, Debug3) << "Output of Table2D \"" << getName() << "\" "
+                       << mOutput << endl;
   }
 
   const real_type& getOutput(void) const
@@ -474,6 +480,8 @@ public:
     interpVec(2) = mInputPortHandle[1].getRealValue();
     interpVec(3) = mInputPortHandle[2].getRealValue();
     mOutput = mTableData.interpolate(interpVec);
+    Log(Model, Debug3) << "Output of Table3D \"" << getName() << "\" "
+                       << mOutput << endl;
   }
 
   const real_type& getOutput(void) const

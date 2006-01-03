@@ -53,6 +53,8 @@ Product::output(const TaskInfo&)
   mProduct = 1;
   for (unsigned i = 0; i < getNumInputPorts(); ++i)
     mProduct *= mFactorPorts[i].getRealValue();
+  Log(Model,Debug3) << "Output of Product \"" << getName() << "\" "
+                    << mProduct << endl;
 }
 
 const real_type&
