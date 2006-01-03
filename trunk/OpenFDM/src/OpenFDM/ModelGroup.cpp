@@ -383,7 +383,7 @@ ModelGroup::appendModel(const Model* firstModel, SharedPtr<Model> model,
   }
 
   // If the model in question does not have dependencies, stop.
-  if (model->getDirectFeedThrough() || joint) {
+  if (model->getDirectFeedThrough() || joint || interact) {
 
     // Check, all inputs for dependencies.
     unsigned numInputs = model->getNumInputPorts();
@@ -427,6 +427,7 @@ ModelGroup::appendModel(const Model* firstModel, SharedPtr<Model> model,
     }
   }
 
+  Log(Model, Debug) << "Scheduling: \"" << model->getName() << "\"" << endl;
   newList.push_back(model);
   return true;
 }
