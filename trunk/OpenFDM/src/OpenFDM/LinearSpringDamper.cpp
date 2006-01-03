@@ -4,11 +4,11 @@
 
 #include "Model.h"
 #include "Vector.h"
-#include "LinearSpring.h"
+#include "LinearSpringDamper.h"
 
 namespace OpenFDM {
 
-LinearSpring::LinearSpring(const std::string& name) :
+LinearSpringDamper::LinearSpringDamper(const std::string& name) :
   Model(name),
   mSpringReference(0),
   mSpringConstant(0),
@@ -16,12 +16,12 @@ LinearSpring::LinearSpring(const std::string& name) :
 {
 }
 
-LinearSpring::~LinearSpring(void)
+LinearSpringDamper::~LinearSpringDamper(void)
 {
 }
 
 bool
-LinearSpring::init(void)
+LinearSpringDamper::init(void)
 {
   if (!getInputPort(0)->isConnected()) {
     Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
@@ -43,7 +43,7 @@ LinearSpring::init(void)
 }
 
 void
-LinearSpring::output(const TaskInfo& taskInfo)
+LinearSpringDamper::output(const TaskInfo& taskInfo)
 {
   real_type position = mPositionPort.getRealValue();
   real_type vel = mVelocityPort.getRealValue();
@@ -52,43 +52,43 @@ LinearSpring::output(const TaskInfo& taskInfo)
 }
 
 const real_type&
-LinearSpring::getForce(void) const
+LinearSpringDamper::getForce(void) const
 {
   return mForce;
 }
 
 real_type
-LinearSpring::getSpringReference(void) const
+LinearSpringDamper::getSpringReference(void) const
 {
   return mSpringReference;
 }
 
 void
-LinearSpring::setSpringReference(real_type springReference)
+LinearSpringDamper::setSpringReference(real_type springReference)
 {
   mSpringReference = springReference;
 }
 
 real_type
-LinearSpring::getSpringConstant(void) const
+LinearSpringDamper::getSpringConstant(void) const
 {
   return mSpringConstant;
 }
 
 void
-LinearSpring::setSpringConstant(real_type springConstant)
+LinearSpringDamper::setSpringConstant(real_type springConstant)
 {
   mSpringConstant = springConstant;
 }
 
 real_type
-LinearSpring::getDamperConstant(void) const
+LinearSpringDamper::getDamperConstant(void) const
 {
   return mDamperConstant;
 }
 
 void
-LinearSpring::setDamperConstant(real_type damperConstant)
+LinearSpringDamper::setDamperConstant(real_type damperConstant)
 {
   mDamperConstant = damperConstant;
 }

@@ -72,7 +72,7 @@ nobase_OpenFDMinclude_HEADERS = \
   LinAlg/IO.h \
   LinAlg/Misc.h \
   LinAlg/Proxy.h \
-  LinearSpring.h \
+  LinearSpringDamper.h \
   LogStream.h \
   Mass.h \
   Math.h \
@@ -168,7 +168,7 @@ libOpenFDM_la_SOURCES = \
   Interact.cpp \
   ImplicitEuler.cpp \
   Joint.cpp \
-  LinearSpring.cpp \
+  LinearSpringDamper.cpp \
   Logger.cpp \
   Mass.cpp \
   MaxModel.cpp \

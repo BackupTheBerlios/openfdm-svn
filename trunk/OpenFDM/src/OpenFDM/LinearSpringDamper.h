@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_LinearSpring_H
-#define OpenFDM_LinearSpring_H
+#ifndef OpenFDM_LinearSpringDamper_H
+#define OpenFDM_LinearSpringDamper_H
 
 #include <string>
 
@@ -13,11 +13,11 @@
 namespace OpenFDM {
 
 /// Linear spring damper model
-class LinearSpring :
+class LinearSpringDamper :
     public Model {
 public:
-  LinearSpring(const std::string& name);
-  virtual ~LinearSpring(void);
+  LinearSpringDamper(const std::string& name);
+  virtual ~LinearSpringDamper(void);
 
   virtual bool init(void);
   virtual void output(const TaskInfo& taskInfo);
