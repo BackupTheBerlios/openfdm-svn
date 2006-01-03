@@ -12,6 +12,7 @@
 #include "Interact.h"
 #include "Frame.h"
 #include "LogStream.h"
+#include "ModelVisitor.h"
 #include "Joint.h"
 
 namespace OpenFDM {
@@ -23,6 +24,12 @@ Joint::Joint(const std::string& name)
 
 Joint::~Joint(void)
 {
+}
+
+void
+Joint::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
 }
 
 const Joint*

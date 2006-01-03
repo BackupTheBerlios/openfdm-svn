@@ -13,11 +13,13 @@
 #include "Inertia.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "Planet.h"
 #include "Joint.h"
 #include "Environment.h"
 
 namespace OpenFDM {
 
+class ModelVisitor;
 class MobileRootJointFrame;
 
 class MobileRootJoint
@@ -25,6 +27,11 @@ class MobileRootJoint
 public:
   MobileRootJoint(const std::string& name);
   virtual ~MobileRootJoint(void);
+
+  /// Double dispatch helper for the multibody system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the multibody system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
 
   virtual const MobileRootJoint* toMobileRootJoint(void) const;
   virtual MobileRootJoint* toMobileRootJoint(void);
@@ -41,10 +48,20 @@ public:
   /// Set the relative velocity.
   void setAngularRelVel(const Vector3& vel);
 
+  /// Get the reference position.
+  const Vector3& getRefPosition(void) const;
   /// Set the reference position.
   void setRefPosition(const Vector3& p);
+
+  /// Get the reference orientation.
+  const Quaternion& getRefOrientation(void) const;
   /// Set the reference orientation.
   void setRefOrientation(const Quaternion& o);
+
+  /// Get the geodetic position.
+  Geodetic getGeodPosition(void) const;
+  /// Get orientation wrt the geodetic hl frame.
+  Quaternion getGeodOrientation(void) const;
 
 private:
   /** Plugin function for the articulated body algorithm.

@@ -24,6 +24,10 @@ public:
   { apply((ModelGroup&)multiBodySystem); }
   virtual void apply(Interact& interact)
   { apply((Model&)interact); }
+  virtual void apply(Joint& joint)
+  { apply((Interact&)joint); }
+  virtual void apply(MobileRootJoint& mobileRootJoint)
+  { apply((Joint&)mobileRootJoint); }
 protected:
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse downward

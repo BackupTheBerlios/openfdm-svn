@@ -21,11 +21,18 @@ namespace OpenFDM {
 /// FIXME: joint's should be lockable, which means trylock == true and
 /// velocity small enough - keep position ...
 
+class ModelVisitor;
+
 class Joint
   : public Interact {
 public:
   Joint(const std::string& name);
   virtual ~Joint(void);
+
+  /// Double dispatch helper for the multibody system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the multibody system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
 
   virtual const Joint* toJoint(void) const;
   virtual Joint* toJoint(void);

@@ -12,6 +12,7 @@
 #include "Gravity.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "ModelVisitor.h"
 #include "RootFrame.h"
 #include "MobileRootJointFrame.h"
 #include "MobileRootJoint.h"
@@ -28,6 +29,12 @@ MobileRootJoint::MobileRootJoint(const std::string& name)
 
 MobileRootJoint::~MobileRootJoint(void)
 {
+}
+
+void
+MobileRootJoint::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
 }
 
 const MobileRootJoint*
@@ -126,16 +133,47 @@ MobileRootJoint::setAngularRelVel(const Vector3& vel)
   mFrame->setAngularRelVel(vel);
 }
 
+const Vector3&
+MobileRootJoint::getRefPosition(void) const
+{
+  return mFrame->getRefPosition();
+}
+
 void
 MobileRootJoint::setRefPosition(const Vector3& p)
 {
   mFrame->setRefPosition(p);
 }
 
+const Quaternion&
+MobileRootJoint::getRefOrientation(void) const
+{
+  return mFrame->getRefOrientation();
+}
+
 void
 MobileRootJoint::setRefOrientation(const Quaternion& o)
 {
   mFrame->setRefOrientation(o);
+}
+
+Geodetic
+MobileRootJoint::getGeodPosition(void) const
+{
+  Environment* env = getEnvironment();
+  if (!env)
+    return Geodetic();
+  return env->getPlanet()->toGeod(getRefPosition());
+}
+
+Quaternion
+MobileRootJoint::getGeodOrientation(void) const
+{
+  Environment* env = getEnvironment();
+  if (!env)
+    return Quaternion::unit();
+  Quaternion hlOr = env->getPlanet()->getGeodHLOrientation(getRefPosition());
+  return inverse(hlOr)*getRefOrientation();
 }
 
 void
