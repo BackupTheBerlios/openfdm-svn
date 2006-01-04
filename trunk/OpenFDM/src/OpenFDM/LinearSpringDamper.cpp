@@ -14,6 +14,14 @@ LinearSpringDamper::LinearSpringDamper(const std::string& name) :
   mSpringConstant(0),
   mDamperConstant(0)
 {
+  setDirectFeedThrough(true);
+
+  setNumInputPorts(2);
+  setInputPortName(0, "position");
+  setInputPortName(1, "velocity");
+  
+  setNumOutputPorts(1);
+  setOutputPort(0, "force", this, &LinearSpringDamper::getForce);
 }
 
 LinearSpringDamper::~LinearSpringDamper(void)
