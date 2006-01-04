@@ -468,7 +468,7 @@ public:
   Vector3 getRelPosition(const Frame* frame) const
   {
     OpenFDMAssert(frame->getRefFrameId() == getRefFrameId());
-    return getRelOrientation(frame).backTransform(frame->getRefPosition());
+    return posFromRef(frame->getRefPosition());
   }
   Vector6 getRelVel(const Frame* frame) const
   {
