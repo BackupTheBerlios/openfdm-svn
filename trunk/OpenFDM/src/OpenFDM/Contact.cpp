@@ -92,7 +92,9 @@ Contact::computeForce(void)
   }
   
   // The velocity of the ground patch in the current frame.
-  Vector6 groundVel = frame->motionFromRef(mGroundVal.vel);
+  Vector6 groundVel(frame->rotFromRef(mGroundVal.vel.getAngular()),
+                    frame->rotFromRef(mGroundVal.vel.getLinear()));
+  groundVel -= frame->getRefVel();
   // Now get the relative velocity of the ground wrt the contact point
   Vector3 relVel = - motionTo(getPosition(), groundVel).getLinear();
 

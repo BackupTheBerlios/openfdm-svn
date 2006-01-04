@@ -109,7 +109,7 @@ MobileRootJoint::recheckTopology(void)
     Environment* environment = getEnvironment();
     if (environment) {
       Frame* rootFrame = environment->getRootFrame();
-      if (rootFrame)
+      if (rootFrame && !rootFrame->isDirectParentFrameOf(mFrame))
         rootFrame->addChildFrame(mFrame);
     }
   }

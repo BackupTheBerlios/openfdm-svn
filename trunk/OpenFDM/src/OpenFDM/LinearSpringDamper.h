@@ -24,14 +24,14 @@ public:
 
   const real_type& getForce(void) const;
 
-  real_type getSpringReference(void) const;
-  void setSpringReference(real_type springReference);
+  const real_type& getSpringReference(void) const;
+  void setSpringReference(const real_type& springReference);
 
-  real_type getSpringConstant(void) const;
-  void setSpringConstant(real_type springConstant);
+  const real_type& getSpringConstant(void) const;
+  void setSpringConstant(const real_type& springConstant);
 
-  real_type getDamperConstant(void) const;
-  void setDamperConstant(real_type damperConstant);
+  const real_type& getDamperConstant(void) const;
+  void setDamperConstant(const real_type& damperConstant);
 
 private:
   real_type mSpringReference;

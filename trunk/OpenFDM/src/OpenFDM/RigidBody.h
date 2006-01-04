@@ -58,11 +58,15 @@ public:
   const Vector6& getArtForce(void) const
   { return mArtForce; }
 
-  /// Contribute articulated force
+  /// Apply a force to that rigid body
+  void applyForce(const Vector6& force)
+  { mArtForce -= force; }
+
+  /// Contribute articulated force as used in the articulated body algorithm
   void contributeForce(const Vector6& force)
   { mArtForce += force; }
 
-  /// Contribute articulated inertia
+  /// Contribute articulated inertia as used in the articulated body algorithm
   void contributeInertia(const SpatialInertia& inertia)
   { mArtInertia += inertia; }
 

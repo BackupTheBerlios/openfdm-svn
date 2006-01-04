@@ -401,7 +401,7 @@ public:
       @return  The motion vector transformed to the current frame.
    */
   Vector6 motionFromRef(const Vector6& v) const
-  { return motionTo(getRefPosition(), getRefOrientation(), v) - getRefVel(); }
+  { return motionTo(getRefPosition(), getRefOrientation(), v); }
 
   /** Spatial motion vector transform.
       Transforms a spatial motion vector from the current frame to the parent
@@ -410,7 +410,7 @@ public:
       @return  The motion vector transformed to the parent frame.
    */
   Vector6 motionToRef(const Vector6& v) const
-  { return motionFrom(getRefPosition(), getRefOrientation(), v + getRefVel()); }
+  { return motionFrom(getRefPosition(), getRefOrientation(), v); }
 
   Plane planeFromRef(const Plane& plane) const
   { return planeTo(getRefPosition(), getRefOrientation(), plane); }
@@ -463,7 +463,7 @@ public:
   Quaternion getRelOrientation(const Frame* frame) const
   {
     OpenFDMAssert(frame->getRefFrameId() == getRefFrameId());
-    return conjugate(getRefOrientation())*frame->getRefOrientation();
+    return inverse(getRefOrientation())*frame->getRefOrientation();
   }
   Vector3 getRelPosition(const Frame* frame) const
   {
@@ -473,7 +473,7 @@ public:
   Vector6 getRelVel(const Frame* frame) const
   {
     OpenFDMAssert(frame->getRefFrameId() == getRefFrameId());
-    return motionFromRef(frame->motionToRef(frame->getRefVel()));
+    return motionFromRef(frame->motionToRef(frame->getRefVel())) - getRefVel();
   }
 
 protected:

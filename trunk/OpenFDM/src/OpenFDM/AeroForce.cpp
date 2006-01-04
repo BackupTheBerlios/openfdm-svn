@@ -281,7 +281,7 @@ AeroForce::getAirSpeed(void) const
         Vector3 windVel = mEnvironment->getWind()->getWindVel(pos);
         windVel = frame->rotFromRef(windVel);
         Vector6 sAirSpeed = Vector6(Vector3::zeros(), windVel)
-          - frame->motionFromRef(Vector6::zeros());
+          + frame->getRefVel();
         mAirSpeed = motionTo(getPosition(), getOrientation(), sAirSpeed);
         
         mDirtyAirSpeed = false;

@@ -16,6 +16,10 @@ LinearSpringDamper::LinearSpringDamper(const std::string& name) :
 {
   setDirectFeedThrough(true);
 
+  addProperty("springReference", Property(this, &LinearSpringDamper::getSpringReference, &LinearSpringDamper::setSpringReference));
+  addProperty("springConstant", Property(this, &LinearSpringDamper::getSpringConstant, &LinearSpringDamper::setSpringConstant));
+  addProperty("damperConstant", Property(this, &LinearSpringDamper::getDamperConstant, &LinearSpringDamper::setDamperConstant));
+
   setNumInputPorts(2);
   setInputPortName(0, "position");
   setInputPortName(1, "velocity");
@@ -65,38 +69,38 @@ LinearSpringDamper::getForce(void) const
   return mForce;
 }
 
-real_type
+const real_type&
 LinearSpringDamper::getSpringReference(void) const
 {
   return mSpringReference;
 }
 
 void
-LinearSpringDamper::setSpringReference(real_type springReference)
+LinearSpringDamper::setSpringReference(const real_type& springReference)
 {
   mSpringReference = springReference;
 }
 
-real_type
+const real_type&
 LinearSpringDamper::getSpringConstant(void) const
 {
   return mSpringConstant;
 }
 
 void
-LinearSpringDamper::setSpringConstant(real_type springConstant)
+LinearSpringDamper::setSpringConstant(const real_type& springConstant)
 {
   mSpringConstant = springConstant;
 }
 
-real_type
+const real_type&
 LinearSpringDamper::getDamperConstant(void) const
 {
   return mDamperConstant;
 }
 
 void
-LinearSpringDamper::setDamperConstant(real_type damperConstant)
+LinearSpringDamper::setDamperConstant(const real_type& damperConstant)
 {
   mDamperConstant = damperConstant;
 }
