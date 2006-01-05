@@ -2,23 +2,19 @@
  *
  */
 
-#ifndef OpenFDM_Visitor_H
-#define OpenFDM_Visitor_H
+#ifndef OpenFDM_FrameVisitor_H
+#define OpenFDM_FrameVisitor_H
 
 #include "Frame.h"
 
 namespace OpenFDM {
 
-class RigidBody;
-
-class Visitor {
+class FrameVisitor {
 public:
-  virtual ~Visitor(void)
+  virtual ~FrameVisitor(void)
   {}
   virtual void apply(Frame& frame)
   { traverse(frame); }
-  virtual void apply(RigidBody& rigidBody)
-  { apply((Frame&)rigidBody); }
   inline void traverse(Frame& frame)
   { frame.traverse(*this); }
 };

@@ -36,7 +36,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Contact.h \
   ConstantForce.h \
   ConstSystem.h \
-  ConstVisitor.h \
+  ConstFrameVisitor.h \
   CowPtr.h \
   DeadBand.h \
   DefaultGravity.h \
@@ -52,7 +52,7 @@ nobase_OpenFDMinclude_HEADERS = \
   ExplicitEuler.h \
   Force.h \
   Frame.h \
-  MobileRootJoint.h \
+  FrameVisitor.h \
   Function.h \
   Gain.h \
   Gravity.h \
@@ -80,6 +80,7 @@ nobase_OpenFDMinclude_HEADERS = \
   MaxModel.h \
   MidpointRule.h \
   MinModel.h \
+  MobileRootJoint.h \
   MobileRootJointFrame.h \
   Model.h \
   ModelGroup.h \
@@ -127,7 +128,6 @@ nobase_OpenFDMinclude_HEADERS = \
   Variant.h \
   Vector.h \
   Vehicle.h \
-  Visitor.h \
   WheelContact.h \
   Wind.h \
   XML/Tablereader.h \
@@ -158,7 +158,6 @@ libOpenFDM_la_SOURCES = \
   ExplicitEuler.cpp \
   Force.cpp \
   Frame.cpp \
-  MobileRootJoint.cpp \
   Function.cpp \
   Gain.cpp \
   Gravity.cpp \
@@ -174,6 +173,7 @@ libOpenFDM_la_SOURCES = \
   MaxModel.cpp \
   MidpointRule.cpp \
   MinModel.cpp \
+  MobileRootJoint.cpp \
   Model.cpp \
   ModelGroup.cpp \
   MultiBodySystem.cpp \

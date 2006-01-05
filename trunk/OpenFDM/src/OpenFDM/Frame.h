@@ -25,8 +25,8 @@ class RigidBody;
 class Joint;
 class Interact;
 
-class Visitor;
-class ConstVisitor;
+class FrameVisitor;
+class ConstFrameVisitor;
 
 /** 
 The \ref Frame class is the basic tool to model a tree of moving and
@@ -56,13 +56,13 @@ public:
   virtual ~Frame(void);
 
   /// Double dispatch helper for the multibody system visitor
-  virtual void accept(Visitor& visitor);
+  virtual void accept(FrameVisitor& visitor);
   /// Double dispatch helper for the multibody system visitor
-  virtual void traverse(Visitor& visitor);
+  virtual void traverse(FrameVisitor& visitor);
   /// Double dispatch helper for the multibody system visitor
-  virtual void accept(ConstVisitor& visitor) const;
+  virtual void accept(ConstFrameVisitor& visitor) const;
   /// Double dispatch helper for the multibody system visitor
-  virtual void traverse(ConstVisitor& visitor) const;
+  virtual void traverse(ConstFrameVisitor& visitor) const;
 
   /// Return the parent frame.
   Frame* getParentFrame(void)

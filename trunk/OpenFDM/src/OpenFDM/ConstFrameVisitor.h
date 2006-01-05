@@ -2,23 +2,19 @@
  *
  */
 
-#ifndef OpenFDM_ConstVisitor_H
-#define OpenFDM_ConstVisitor_H
+#ifndef OpenFDM_ConstFrameVisitor_H
+#define OpenFDM_ConstFrameVisitor_H
 
 #include "Frame.h"
 
 namespace OpenFDM {
 
-class RigidBody;
-
-class ConstVisitor {
+class ConstFrameVisitor {
 public:
-  virtual ~ConstVisitor(void)
+  virtual ~ConstFrameVisitor(void)
   {}
   virtual void apply(const Frame& frame)
   { traverse(frame); }
-  virtual void apply(const RigidBody& rigidBody)
-  { apply((const Frame&)rigidBody); }
   inline void traverse(const Frame& frame)
   { frame.traverse(*this); }
 };

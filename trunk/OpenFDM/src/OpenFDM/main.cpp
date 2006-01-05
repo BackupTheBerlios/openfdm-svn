@@ -39,8 +39,6 @@ using namespace std;
 #include <OpenFDM/LogStream.h>
 #include <OpenFDM/Variant.h>
 #include <OpenFDM/Property.h>
-#include <OpenFDM/Visitor.h>
-#include <OpenFDM/ConstVisitor.h>
 
 // Model includes
 #include <OpenFDM/Model.h>

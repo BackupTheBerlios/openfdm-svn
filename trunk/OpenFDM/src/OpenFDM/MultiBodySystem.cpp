@@ -10,7 +10,6 @@
 #include "Inertia.h"
 #include "Frame.h"
 #include "RigidBody.h"
-#include "ConstVisitor.h"
 #include "ModelVisitor.h"
 #include "Mass.h"
 #include "Force.h"

@@ -10,8 +10,8 @@
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "Frame.h"
-#include "Visitor.h"
-#include "ConstVisitor.h"
+#include "FrameVisitor.h"
+#include "ConstFrameVisitor.h"
 
 namespace OpenFDM {
 
@@ -43,13 +43,13 @@ Frame::~Frame(void)
 }
 
 void
-Frame::accept(Visitor& visitor)
+Frame::accept(FrameVisitor& visitor)
 {
   visitor.apply(*this);
 }
 
 void
-Frame::traverse(Visitor& visitor)
+Frame::traverse(FrameVisitor& visitor)
 {
   ChildFrameList::iterator it = mChildFrames.begin();
   ChildFrameList::iterator iEnd = mChildFrames.end();
@@ -60,13 +60,13 @@ Frame::traverse(Visitor& visitor)
 }
 
 void
-Frame::accept(ConstVisitor& visitor) const
+Frame::accept(ConstFrameVisitor& visitor) const
 {
   visitor.apply(*this);
 }
 
 void
-Frame::traverse(ConstVisitor& visitor) const
+Frame::traverse(ConstFrameVisitor& visitor) const
 {
   ChildFrameList::const_iterator it = mChildFrames.begin();
   ChildFrameList::const_iterator iEnd = mChildFrames.end();
@@ -142,23 +142,11 @@ Frame::getChildFrame(unsigned i) const
   return mChildFrames[i];
 }
 
-// class PrintVisitor : public ConstVisitor {
-// public:
-//   virtual void apply(const Frame& frame)
-//   {
-//     Log(Model,Error) << frame.getName() << endl;
-//     traverse(frame);
-//   }
-// };
-
 void
 Frame::reparentChildren(Frame* frame)
 {
   if (!frame)
     return;
-
-//   PrintVisitor pv;
-//   frame->accept(pv);
 
   ChildFrameList::iterator it = frame->mChildFrames.begin();
   while (it != frame->mChildFrames.end()) {
@@ -168,8 +156,6 @@ Frame::reparentChildren(Frame* frame)
     mChildFrames.push_back(*it);
     it = frame->mChildFrames.erase(it);
   }
-
-//   frame->accept(pv);
 }
 
 void
