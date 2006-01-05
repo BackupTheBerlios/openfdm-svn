@@ -120,25 +120,18 @@ public:
       frame1->addChildFrame(mMountFrame[1]);
   }
 
-  // Needs to call applyForce once ...
   virtual void interactWith(RigidBody* rigidBody)
   {
-//     Log(Model,Error) << "InternalForce \"" << getName() << "\""
-//                      << " interacting with RigidBody \""
-//                      << rigidBody->getName() << "\"" << endl;
-//     Log(Model,Error) << trans(mForce) << endl;
-
+    // We assume that the given force is a positive force in the
+    // frame 0's coordinates
     if (rigidBody->getFrame()->isDirectParentFrameOf(mMountFrame[0])) {
       Vector6 parentForce = mMountFrame[0]->forceToParent(mForce);
-      //       Log(Model,Error) << trans(parentForce) << endl;
       rigidBody->applyForce(parentForce);
     } else if (rigidBody->getFrame()->isDirectParentFrameOf(mMountFrame[1])) {
       Rotation relOr = mMountFrame[0]->getRelOrientation(mMountFrame[1]);
-//       Log(Model,Error) << relOr << rigidBody->getFrame()->getOrientation() << endl;
       Vector6 force2(relOr.transform(mForce.getAngular()),
                      relOr.transform(mForce.getLinear()));
       Vector6 parentForce = mMountFrame[1]->forceToParent(force2);
-      //      Log(Model,Error) << trans(parentForce) << endl;
       rigidBody->applyForce(-parentForce);
     }
   }
