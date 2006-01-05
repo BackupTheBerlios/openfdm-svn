@@ -123,8 +123,6 @@ public:
   // Needs to call applyForce once ...
   virtual void interactWith(RigidBody* rigidBody)
   {
-#if 1
-    /// ORIG
 //     Log(Model,Error) << "InternalForce \"" << getName() << "\""
 //                      << " interacting with RigidBody \""
 //                      << rigidBody->getName() << "\"" << endl;
@@ -143,18 +141,6 @@ public:
       //      Log(Model,Error) << trans(parentForce) << endl;
       rigidBody->applyForce(-parentForce);
     }
-#else
-    if (rigidBody->getFrame()->isDirectParentFrameOf(mMountFrame[1])) {
-      Vector6 parentForce = mMountFrame[1]->forceToParent(mForce);
-      rigidBody->applyForce(parentForce);
-    } else if (rigidBody->getFrame()->isDirectParentFrameOf(mMountFrame[0])) {
-      Rotation relOr = mMountFrame[1]->getRelOrientation(mMountFrame[0]);
-      Vector6 force2(relOr.backTransform(mForce.getAngular()),
-                     relOr.backTransform(mForce.getLinear()));
-      Vector6 parentForce = mMountFrame[0]->forceToParent(mForce);
-      rigidBody->applyForce(parentForce);
-    }
-#endif
   }
 
   const Vector3& getPosition0(void) const
@@ -224,13 +210,10 @@ public:
       dir = normalize(relVel6.getLinear());
     } else
       dir = (1/nrmRelPos)*relPos;
-    mForce = Vector6(Vector3::zeros(), dir*mForcePort.getRealValue());
-//     Log(Model,Error)
-//       << trans(relPos)
-//       << trans(mMountFrame[0]->getRelVel(mMountFrame[1])) << " "
-//       << mRelPos << " "
-//       << mRelVel
-//       << endl;
+    // Since we assume positive input forces to push the two attached
+    // RigidBodies, we need that minus sign to negate the current position
+    // offset
+    mForce = Vector6(Vector3::zeros(), (-mForcePort.getRealValue())*dir);
   }
 
   const real_type& getRelPos(void) const
