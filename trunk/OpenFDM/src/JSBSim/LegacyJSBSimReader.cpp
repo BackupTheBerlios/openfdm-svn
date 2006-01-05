@@ -1165,6 +1165,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       rj->setPosition(structToBody(compressJointPos));
       rj->setOrientation(Quaternion::unit());
 
+#if 0
       // Well, we use an air spring for that. It is directly in the
       // revolute joint. That is wring, but at the moment aprioriate.
       AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
@@ -1181,6 +1182,30 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       // ... and provides an output force
       rj->getInputPort(0)->connect(aoDamp->getOutputPort(0));
       addMultiBodyModel(aoDamp);
+#else
+      LineForce* lineForce = new LineForce(name + " Air Spring LineForce");
+      /// FIXME that ordering in attachment is messy!
+      lineForce->setPosition0(structToBody(compressJointPos) - Vector3(0.1, 0, 0.5));
+      lineForce->setPosition1(Vector3(-0.5, 0, 0));
+      mVehicle->getTopBody()->addInteract(lineForce);
+      arm->addInteract(lineForce);
+
+      AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
+      aoDamp->setPullPressure(pullPress);
+      aoDamp->setPushPressure(pushPress);
+      aoDamp->setArea(area);
+      aoDamp->setMinCompression(minCompr);
+      aoDamp->setMaxCompression(maxCompr);
+      aoDamp->setMinDamperConstant(minDamp);
+      aoDamp->setMaxDamperConstant(maxDamp);
+      addMultiBodyModel(aoDamp);
+
+      // That one reads the joint position and velocity ...
+      aoDamp->getInputPort(0)->connect(lineForce->getOutputPort(0));
+      aoDamp->getInputPort(1)->connect(lineForce->getOutputPort(1));
+      // ... and provides an output force
+      lineForce->getInputPort(0)->connect(aoDamp->getOutputPort(0));
+#endif
 
       // Attach a wheel to that strut part.
       attachWheel(name, Vector3(-armLength, 0, 0), brake, numStr, wheelDiam,
