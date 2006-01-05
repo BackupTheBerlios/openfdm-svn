@@ -37,19 +37,22 @@ Gain::~Gain(void)
 bool
 Gain::init(void)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  
-  // Make sure it is invalid if sizes do not match.
-  mOutput.resize(getInputPort(0)->getValue().toMatrix());
+  mInputPort = getInputPort(0)->toMatrixPortHandle();
+  if (!mInputPort.isConnected()) {
+    Log(Model, Error) << "Initialization of Gain model \"" << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+  mOutput.resize(mInputPort.getMatrixValue());
 
   return true;
 }
 
 void Gain::output(const TaskInfo&)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
-  mOutput = mh.getMatrixValue();
+  OpenFDMAssert(mInputPort.isConnected());
+  mOutput = mInputPort.getMatrixValue();
   mOutput *= mGain;
 }
 

@@ -32,6 +32,7 @@ public:
 private:
   real_type mGain;
   Matrix mOutput;
+  MatrixPortHandle mInputPort;
 };
 
 } // namespace OpenFDM
