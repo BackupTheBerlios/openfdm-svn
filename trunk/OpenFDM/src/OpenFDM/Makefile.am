@@ -117,6 +117,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Summer.h \
   System.h \
   Table.h \
+  Tank.h \
   TaskInfo.h \
   TimeDerivative.h \
   TransferFunction.h \
@@ -195,6 +196,7 @@ libOpenFDM_la_SOURCES = \
   SimpleGear.cpp \
   Summer.cpp \
   System.cpp \
+  Tank.cpp \
   TimeDerivative.cpp \
   TransferFunction.cpp \
   UnaryFunctionModel.cpp \

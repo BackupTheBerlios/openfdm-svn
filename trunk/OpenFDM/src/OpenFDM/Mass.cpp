@@ -8,8 +8,11 @@ namespace OpenFDM {
 
 Mass::Mass(const std::string& name, const SpatialInertia& inertia) :
   Interact(name, 1),
-  mInertia(inertia)
+  mInertia(inertia),
+  mUntransformedInertia(inertia),
+  mPosition(Vector3::zeros())
 {
+  addProperty("posoition", Property(this, &Mass::getPosition, &Mass::setPosition));
 }
 
 Mass::~Mass(void)
@@ -25,19 +28,33 @@ Mass::interactWith(RigidBody* rigidBody)
 void
 Mass::setInertia(real_type mass)
 {
-  mInertia = SpatialInertia(mass);
+  setInertia(SpatialInertia(mass));
 }
 
 void
 Mass::setInertia(real_type mass, const InertiaMatrix& inertia)
 {
-  mInertia = SpatialInertia(inertia, mass);
+  setInertia(SpatialInertia(inertia, mass));
 }
 
 void
 Mass::setInertia(const SpatialInertia& I)
 {
-  mInertia = I;
+  mUntransformedInertia = I;
+  mInertia = inertiaFrom(mPosition, mUntransformedInertia);
+}
+
+const Vector3&
+Mass::getPosition(void) const
+{
+  return mPosition;
+}
+
+void
+Mass::setPosition(const Vector3& position)
+{
+  mPosition = position;
+  mInertia = inertiaFrom(mPosition, mUntransformedInertia);
 }
 
 } // namespace OpenFDM

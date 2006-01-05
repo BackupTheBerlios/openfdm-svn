@@ -46,8 +46,13 @@ public:
    */
   void setInertia(const SpatialInertia& I);
 
+  const Vector3& getPosition(void) const;
+  void setPosition(const Vector3& position);
+
 private:
   SpatialInertia mInertia;
+  SpatialInertia mUntransformedInertia;
+  Vector3 mPosition;
 };
 
 } // namespace OpenFDM
