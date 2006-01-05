@@ -75,11 +75,14 @@ AirSpring::output(const TaskInfo& taskInfo)
   real_type pullPressure = mPullPressure/(1-pow(pullDispRatio, mGamma));
   real_type pushPressure = mPushPressure/(1-pow(pushDispRatio, mGamma));
   
+  // The output force is the pressure difference times the piston area
   mForce = sign(maxDisp)*mArea*(pullPressure - pushPressure);
   // Add a position dependent damping force
-  mForce += vel*interpolate(position,
-                            mMinCompression, mMinDamperConstant,
-                            mMaxCompression, mMaxDamperConstant);
+  // That sign of the area is just a handy hack to determine
+  // the polarity of the output value
+  mForce += sign(mArea)*vel*interpolate(position,
+                                        mMinCompression, mMinDamperConstant,
+                                        mMaxCompression, mMaxDamperConstant);
 }
 
 const real_type&
