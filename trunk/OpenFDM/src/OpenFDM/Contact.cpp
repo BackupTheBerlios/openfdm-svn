@@ -17,8 +17,6 @@ Contact::Contact(const std::string& name)
   : ExternalForce(name)
 {
   mEnabled = true;
-  setPosition(Vector3::zeros());
-
   unsigned inputPortBase = getNumInputPorts();
   setNumInputPorts(inputPortBase + 1);
   setInputPortName(inputPortBase + 0, "enabled");
@@ -56,47 +54,30 @@ Contact::output(const TaskInfo& taskInfo)
       mEnabled = 0.5 < rh.getRealValue();
     }
   }
-}
 
-void
-Contact::computeForce(void)
-{
   if (!mEnabled) {
-    applyForce(Vector6::zeros());
-    return;
-  }
-
-  const RigidBody* body = getParentRigidBody(0);
-  OpenFDMAssert(body);
-  if (!body) {
-    applyForce(Vector6::zeros());
-    return;
-  }
-  const Frame* frame = body->getFrame();
-  OpenFDMAssert(frame);
-  if (!frame) {
-    applyForce(Vector6::zeros());
+    setForce(Vector6::zeros());
     return;
   }
 
   // Transform the plane equation to the local frame.
-  Plane lp = frame->planeFromRef(mGroundVal.plane);
+  Plane lp = mMountFrame->planeFromRef(mGroundVal.plane);
   
   // Get the intersection length.
-  real_type compressLength = lp.getDist(getPosition());
+  real_type compressLength = lp.getDist(Vector3::zeros());
   
   // Don't bother if we do not intersect the ground.
   if (compressLength < 0) {
-    applyForce(Vector6::zeros());
+    setForce(Vector6::zeros());
     return;
   }
   
   // The velocity of the ground patch in the current frame.
-  Vector6 groundVel(frame->rotFromRef(mGroundVal.vel.getAngular()),
-                    frame->rotFromRef(mGroundVal.vel.getLinear()));
-  groundVel -= frame->getRefVel();
+  Vector6 groundVel(mMountFrame->rotFromRef(mGroundVal.vel.getAngular()),
+                    mMountFrame->rotFromRef(mGroundVal.vel.getLinear()));
+  groundVel -= mMountFrame->getRefVel();
   // Now get the relative velocity of the ground wrt the contact point
-  Vector3 relVel = - motionTo(getPosition(), groundVel).getLinear();
+  Vector3 relVel = - groundVel.getLinear();
 
   // The velocity perpandicular to the plane.
   // Positive when the contact spring is compressed,
@@ -120,7 +101,7 @@ Contact::computeForce(void)
   Vector3 force = fricForce - normForce*lp.getNormal();
   
   // We don't have an angular moment.
-  applyForce(forceFrom(getPosition(), force));
+  setForce(Vector6(Vector3::zeros(), force));
 }
 
 real_type
@@ -140,22 +121,13 @@ Contact::computeFrictionForce(real_type normForce, const Vector3& vel,
 void
 Contact::getGround(real_type t)
 {
-  const RigidBody* body = getParentRigidBody(0);
-  OpenFDMAssert(body);
-  if (!body)
-    return;
-  const Frame* frame = body->getFrame();
-  OpenFDMAssert(frame);
-  if (!frame)
-    return;
-
   // FIXME
   if (!mEnvironment) {
     mEnvironment = getEnvironment();
   }
 
   // Get the position of the contact in the reference system.
-  Vector3 pos = frame->posToRef(getPosition());
+  Vector3 pos = mMountFrame->getRefPosition();
   // Query for the ground parameters at this point.
   mGroundVal = mEnvironment->getGround()->getGroundPlane(t, pos);
 }

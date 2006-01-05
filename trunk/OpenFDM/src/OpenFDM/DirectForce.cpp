@@ -9,52 +9,20 @@ namespace OpenFDM {
 
 DirectForce::DirectForce(const std::string& name, const Vector6& direction) :
   ExternalForce(name),
-  mPosition(Vector3::zeros()),
-  mOrientation(Quaternion::unit()),
   mDirection(direction),
-  mForce(Vector6::zeros()),
   mMagnitude(0)
 {
-  addProperty("position", Property(this, &DirectForce::getPosition, &DirectForce::setPosition));
-  addProperty("orientation", Property(this, &DirectForce::getOrientation, &DirectForce::setOrientation));
   addProperty("direction", Property(this, &DirectForce::getDirection, &DirectForce::setDirection));
   addProperty("magnitude", Property(this, &DirectForce::getMagnitude));
-  addProperty("force", Property(this, &DirectForce::getForce));
 
   setDirectFeedThrough(true);
 
   setNumInputPorts(1);
   setInputPortName(0, "magnitude");
-//   setNumOutputPorts(1);
-//   setOutputPort(0, "force", this, &DirectForce::getForce);
 }
 
 DirectForce::~DirectForce(void)
 {
-}
-
-void
-DirectForce::setPosition(const Vector3& p)
-{
-  mPosition = p;
-}
-
-const Vector3&
-DirectForce::getPosition(void) const
-{
-  return mPosition;
-}
-
-void
-DirectForce::setOrientation(const Quaternion& o)
-{
-  mOrientation = o;
-}
-
-const Quaternion&
-DirectForce::getOrientation(void) const
-{
-  return mOrientation;
 }
 
 void
@@ -75,12 +43,6 @@ DirectForce::getMagnitude(void) const
   return mMagnitude;
 }
 
-const Vector6&
-DirectForce::getForce(void) const
-{
-  return mForce;
-}
-
 bool
 DirectForce::init(void)
 {
@@ -92,13 +54,7 @@ DirectForce::output(const TaskInfo&)
 {
   RealPortHandle rh = getInputPort(0)->toRealPortHandle();
   mMagnitude = rh.getRealValue();
-  mForce = mMagnitude*mDirection;
-}
-
-void
-DirectForce::computeForce(void)
-{
-  applyForce(forceFrom(mPosition, mOrientation, mForce));
+  setForce(mMagnitude*mDirection);
 }
 
 } // namespace OpenFDM

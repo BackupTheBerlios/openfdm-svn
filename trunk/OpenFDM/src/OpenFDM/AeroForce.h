@@ -27,12 +27,6 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo&);
 
-  void setPosition(const Vector3& p);
-  const Vector3& getPosition(void) const;
-
-  void setOrientation(const Quaternion& o);
-  const Rotation& getOrientation(void) const;
-
   void setWingSpan(const real_type& winSpan);
   const real_type& getWingSpan(void) const;
 
@@ -89,9 +83,6 @@ public:
   const Vector3& getUnitDown(void) const;
   const Plane& getLocalGroundPlane(void) const;
 
-  // The interface to the mechanical system.
-  virtual void computeForce(void);
-
 private:
   void dirtyAll(void);
   void computeAtmosphere(void) const;
@@ -107,9 +98,6 @@ private:
   { return mEnvironment->getPlanet(); }
 
   SharedPtr<Environment> mEnvironment;
-
-  Vector3 mPosition;
-  Rotation mOrientation;
 
   real_type mWingSpan;
   real_type mWingArea;

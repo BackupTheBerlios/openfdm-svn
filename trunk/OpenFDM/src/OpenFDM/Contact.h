@@ -24,14 +24,6 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo&);
 
-  Vector3 mPosition;
-  void setPosition(const Vector3& p)
-  { mPosition = p; }
-  const Vector3& getPosition(void) const
-  { return mPosition; }
-
-  virtual void computeForce(void);
-
   // Compute the plane normal force.
   virtual real_type
   computeNormalForce(real_type compressLen, real_type compressVel) const;

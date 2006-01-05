@@ -8,19 +8,13 @@
 namespace OpenFDM {
 
 ConstantForce::ConstantForce(const std::string& name, const Vector6& force)
-  : ExternalForce(name), mForce(force)
+  : ExternalForce(name)
 {
+  setForce(force);
 }
 
 ConstantForce::~ConstantForce(void)
 {
-}
-
-void
-ConstantForce::computeForce(void)
-{
-  // FIXME: do once ...
-  applyForce(forceFrom(mPosition, mOrientation, mForce));
 }
 
 } // namespace OpenFDM

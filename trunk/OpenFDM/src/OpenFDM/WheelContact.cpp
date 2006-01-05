@@ -48,28 +48,9 @@ WheelContact::output(const TaskInfo& taskInfo)
                       << "\" computing ground plane below" << endl;
     getGround(taskInfo.getTime());
   }
-}
-
-void
-WheelContact::computeForce(void)
-{
-  // FIXME: check all signs here, I get the feeling that we have
-  // just even much minuses here instead of exactly the right ones ...
-  const RigidBody* body = getParentRigidBody(0);
-  OpenFDMAssert(body);
-  if (!body) {
-    applyForce(Vector6::zeros());
-    return;
-  }
-  const Frame* frame = body->getFrame();
-  OpenFDMAssert(frame);
-  if (!frame) {
-    applyForce(Vector6::zeros());
-    return;
-  }
 
   // Transform the plane equation to the local frame.
-  Plane lp = frame->planeFromRef(mGroundVal.plane);
+  Plane lp = mMountFrame->planeFromRef(mGroundVal.plane);
   
   // Get the intersection length.
   real_type distHubGround = fabs(lp.getDist(Vector3::zeros()));
@@ -77,21 +58,21 @@ WheelContact::computeForce(void)
   
   // Don't bother if we do not intersect the ground.
   if (compressLength < 0) {
-    applyForce(Vector6::zeros());
+    setForce(Vector6::zeros());
     return;
   }
 
   Vector3 contactPoint = distHubGround*lp.getNormal();
   
   // The velocity of the ground patch in the current frame.
-  Vector6 groundVel(frame->rotFromRef(mGroundVal.vel.getAngular()),
-                    frame->rotFromRef(mGroundVal.vel.getLinear()));
-  groundVel -= frame->getRefVel();
+  Vector6 groundVel(mMountFrame->rotFromRef(mGroundVal.vel.getAngular()),
+                    mMountFrame->rotFromRef(mGroundVal.vel.getLinear()));
+  groundVel -= mMountFrame->getRefVel();
   // Now get the relative velocity of the ground wrt the hub
   Vector6 relVel = - groundVel;
-//   Log(Model,Error) << trans(frame->getRelVel()) << " "
+//   Log(Model,Error) << trans(mMountFrame->getRelVel()) << " "
 //                    << trans(groundVel) << " "
-//                    << trans(frame->motionToParent(relVel)) << endl;
+//                    << trans(mMountFrame->motionToParent(relVel)) << endl;
 
 
   // The velocity perpandicular to the plane.
@@ -138,7 +119,7 @@ WheelContact::computeForce(void)
     - normForce*lp.getNormal();
   
   // We don't have an angular moment.
-  applyForce(forceFrom(contactPoint, force));
+  setForce(forceFrom(contactPoint, force));
 }
 
 real_type
@@ -173,22 +154,13 @@ WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
 void
 WheelContact::getGround(real_type t)
 {
-  const RigidBody* body = getParentRigidBody(0);
-  OpenFDMAssert(body);
-  if (!body)
-    return;
-  const Frame* frame = body->getFrame();
-  OpenFDMAssert(frame);
-  if (!frame)
-    return;
-
   // FIXME
   if (!mEnvironment) {
     mEnvironment = getEnvironment();
   }
 
   // Get the position of the contact in the reference system.
-  Vector3 pos = frame->posToRef(Vector3::zeros());
+  Vector3 pos = mMountFrame->posToRef(Vector3::zeros());
   // Query for the ground parameters at this point.
   mGroundVal = mEnvironment->getGround()->getGroundPlane(t, pos);
 }

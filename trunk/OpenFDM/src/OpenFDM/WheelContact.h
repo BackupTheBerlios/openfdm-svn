@@ -24,8 +24,6 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo&);
 
-  virtual void computeForce(void);
-
   // Compute the plane normal force.
   virtual real_type
   computeNormalForce(real_type compressLen, real_type compressVel) const;

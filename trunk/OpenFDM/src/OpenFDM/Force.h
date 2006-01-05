@@ -52,12 +52,9 @@ public:
   // Needs to call applyForce once ...
   virtual void interactWith(RigidBody* rigidBody)
   {
-    computeForce();
-    rigidBody->applyForce(mForce);
+    OpenFDMAssert(rigidBody->getFrame()->isDirectParentFrameOf(mMountFrame));
+    rigidBody->applyForce(mMountFrame->forceToParent(mForce));
   }
-
-  /// FIXME here for compatibility
-  virtual void computeForce(void) = 0;
 
   const Vector3& getPosition(void) const
   { return mMountFrame->getPosition(); }
@@ -69,18 +66,20 @@ public:
   void setOrientation(const Quaternion& pos)
   { mMountFrame->setOrientation(pos); }
 
+  const Vector6& getForce(void) const
+  { return mForce; }
+
 protected:
   /** Sets the force contribution of this force element.
    * Sets the force contribution of this current force element to
    * the parent rigid body to force.
    */
-  void applyForce(const Vector6& force)
-  {
-    mForce = force;
-  }
+  void setForce(const Vector6& force)
+  { mForce = force; }
+
+  SharedPtr<FreeFrame> mMountFrame;
 
 private:
-  SharedPtr<FreeFrame> mMountFrame;
   Vector6 mForce;
 };
 

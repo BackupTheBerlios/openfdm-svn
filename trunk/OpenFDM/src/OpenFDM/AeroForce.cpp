@@ -15,18 +15,11 @@ namespace OpenFDM {
 AeroForce::AeroForce(const std::string& name)
   : ExternalForce(name)
 {
-  setPosition(Vector3::zeros());
-  setOrientation(Quaternion::unit());
-
   mWingSpan = 0.0;
   mWingArea = 0.0;
   mCoord = 0.0;
 
   dirtyAll();
-
-  addProperty("position",
-              Property(this, &AeroForce::getPosition, &AeroForce::setPosition));
-//   addProperty("orientation", Property(this, &AeroForce::getOrientation, &AeroForce::setOrientation));
 
   addProperty("wingSpan",
               Property(this, &AeroForce::getWingSpan, &AeroForce::setWingSpan));
@@ -179,30 +172,33 @@ AeroForce::output(const TaskInfo& taskInfo)
     mGroundVal = mEnvironment->getGround()->getGroundPlane(t, getRefPosition());
   }
   dirtyAll();
-}
 
-void
-AeroForce::setPosition(const Vector3& p)
-{
-  mPosition = p;
-}
+  // FIXME: they can be computed cheaper ...
+  real_type ca = cos(getAlpha());
+  real_type sa = sin(getAlpha());
+  real_type cb = cos(getBeta());
+  real_type sb = sin(getBeta());
+  Matrix33 Ts2b(-ca*cb, -ca*sb,  sa,
+                   -sb,     cb,   0,
+                -sa*cb, -sa*sb, -ca);
 
-const Vector3&
-AeroForce::getPosition(void) const
-{
-  return mPosition;
-}
+  // This is simple here. Just collect all summands ...
+  Vector3 stabilityForce = Vector3::zeros();
+  /// Lift points upward
+  /// Drag points backward
+  for (int i = 0; i < 3; ++i)
+    if (mStabilityAxisForce[i].isConnected())
+      stabilityForce(i+1) = mStabilityAxisForce[i].getRealValue();
 
-void
-AeroForce::setOrientation(const Quaternion& o)
-{
-  mOrientation = o;
-}
+  Vector3 bodyTorque = Vector3::zeros();
+  for (int i = 0; i < 3; ++i)
+    if (mBodyAxisTorque[i].isConnected())
+      bodyTorque(i+1) = mBodyAxisTorque[i].getRealValue();
 
-const Rotation&
-AeroForce::getOrientation(void) const
-{
-  return mOrientation;
+  Vector6 force(bodyTorque, Ts2b*stabilityForce);
+  Log(ArtBody, Debug3) << "AeroForce::output() "
+                       << trans(force) << endl;
+  setForce(force);
 }
 
 void
@@ -245,17 +241,9 @@ const Vector3&
 AeroForce::getRefPosition(void) const
 {
   if (mDirtyRefPosition) {
-    const RigidBody* body = getParentRigidBody(0);
-    OpenFDMAssert(body);
-    if (body) {
-      const Frame* frame = body->getFrame();
-      OpenFDMAssert(frame);
-      if (frame) {
-        // Get the position in the earth centered coordinate frame.
-        mRefPosition = frame->posToRef(getPosition());
-        mDirtyRefPosition = false;
-      }
-    }
+    // Get the position in the earth centered coordinate frame.
+    mRefPosition = mMountFrame->getRefPosition();
+    mDirtyRefPosition = false;
   }
   Log(ArtBody, Debug3) << "AeroForce::getRefPosition()"
                        << trans(mRefPosition) << endl;
@@ -266,27 +254,15 @@ const Vector6&
 AeroForce::getAirSpeed(void) const
 {
   if (mDirtyAirSpeed) {
-    const RigidBody* body = getParentRigidBody(0);
-    OpenFDMAssert(body);
-    if (body) {
-      const Frame* frame = body->getFrame();
-      OpenFDMAssert(frame);
-      if (frame) {
-        // FIXME temporary workaround
-        if (!mEnvironment) {
-          const_cast<AeroForce*>(this)->mEnvironment = getEnvironment();
-        }
-        // Get the position in the earth centered coordinate frame.
-        Vector3 pos = frame->posToRef(getPosition());
-        Vector3 windVel = mEnvironment->getWind()->getWindVel(pos);
-        windVel = frame->rotFromRef(windVel);
-        Vector6 sAirSpeed = Vector6(Vector3::zeros(), windVel)
-          + frame->getRefVel();
-        mAirSpeed = motionTo(getPosition(), getOrientation(), sAirSpeed);
-        
-        mDirtyAirSpeed = false;
-      }
+    // FIXME temporary workaround
+    if (!mEnvironment) {
+      const_cast<AeroForce*>(this)->mEnvironment = getEnvironment();
     }
+    // Get the position in the earth centered coordinate frame.
+    Vector3 windVel = mEnvironment->getWind()->getWindVel(getRefPosition());
+    windVel = mMountFrame->rotFromRef(windVel);
+    mAirSpeed = Vector6(Vector3::zeros(), windVel) + mMountFrame->getRefVel();
+    mDirtyAirSpeed = false;
   }
   Log(ArtBody, Debug3) << "AeroForce::getAirSpeed()"
                        << trans(mAirSpeed) << endl;
@@ -633,21 +609,13 @@ const Vector3&
 AeroForce::getUnitDown(void) const
 {
   if (mDirtyUnitDown) {
-    const RigidBody* body = getParentRigidBody(0);
-    OpenFDMAssert(body);
-    if (body) {
-      const Frame* frame = body->getFrame();
-      OpenFDMAssert(frame);
-      if (frame) {
-        // Compute the geodetic unit down vector at our current position.
-        // So we will need the orientation of the horizontal local frame at our
-        // current position.
-        Quaternion gcHL = getPlanet()->getGeocHLOrientation(getRefPosition());
-        // Transform that unit down vector to the current frame.
-        mUnitDown = frame->rotFromRef(gcHL.backTransform(Vector3::unit(3)));
-        mDirtyUnitDown = false;
-      }
-    }
+    // Compute the geodetic unit down vector at our current position.
+    // So we will need the orientation of the horizontal local frame at our
+    // current position.
+    Quaternion gcHL = getPlanet()->getGeocHLOrientation(getRefPosition());
+    // Transform that unit down vector to the current frame.
+    mUnitDown = mMountFrame->rotFromRef(gcHL.backTransform(Vector3::unit(3)));
+    mDirtyUnitDown = false;
   }
   return mUnitDown;
 }
@@ -656,50 +624,11 @@ const Plane&
 AeroForce::getLocalGroundPlane(void) const
 {
   if (mDirtyLocalGroundPlane) {
-    const RigidBody* body = getParentRigidBody(0);
-    OpenFDMAssert(body);
-    if (body) {
-      const Frame* frame = body->getFrame();
-      OpenFDMAssert(frame);
-      if (frame) {
-        // Transform the plane equation to the local frame.
-        mLocalGroundPlane = frame->planeFromRef(mGroundVal.plane);
-        mDirtyLocalGroundPlane = false;
-      }
-    }
+    // Transform the plane equation to the local frame.
+    mLocalGroundPlane = mMountFrame->planeFromRef(mGroundVal.plane);
+    mDirtyLocalGroundPlane = false;
   }
   return mLocalGroundPlane;
-}
-
-void
-AeroForce::computeForce(void)
-{
-  // FIXME: they can be computed cheaper ...
-  real_type ca = cos(getAlpha());
-  real_type sa = sin(getAlpha());
-  real_type cb = cos(getBeta());
-  real_type sb = sin(getBeta());
-  Matrix33 Ts2b(-ca*cb, -ca*sb,  sa,
-                   -sb,     cb,   0,
-                -sa*cb, -sa*sb, -ca);
-
-  // This is simple here. Just collect all summands ...
-  Vector3 stabilityForce = Vector3::zeros();
-  /// Lift points upward
-  /// Drag points backward
-  for (int i = 0; i < 3; ++i)
-    if (mStabilityAxisForce[i].isConnected())
-      stabilityForce(i+1) = mStabilityAxisForce[i].getRealValue();
-
-  Vector3 bodyTorque = Vector3::zeros();
-  for (int i = 0; i < 3; ++i)
-    if (mBodyAxisTorque[i].isConnected())
-      bodyTorque(i+1) = mBodyAxisTorque[i].getRealValue();
-
-  Vector6 force(bodyTorque, Ts2b*stabilityForce);
-  Log(ArtBody, Debug3) << "AeroForce::computeForce() "
-                       << trans(force) << endl;
-  applyForce(forceFrom(mPosition, mOrientation, force));
 }
 
 void
