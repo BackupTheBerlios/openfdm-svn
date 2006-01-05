@@ -31,6 +31,7 @@ public:
 private:
   real_type mWidth;
   real_type mOutput;
+  RealPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

@@ -34,17 +34,23 @@ DeadBand::~DeadBand(void)
 bool
 DeadBand::init(void)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  return getInputPort(0)->isConnected();
+  mInputPort = getInputPort(0)->toRealPortHandle();
+  if (!mInputPort.isConnected()) {
+    Log(Model, Error) << "Initialization of DeadBand model \"" << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+
+  return true;
 }
 
 void
 DeadBand::output(const TaskInfo&)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
+  OpenFDMAssert(mInputPort.isConnected());
   
-  RealPortHandle rh = getInputPort(0)->toRealPortHandle();
-  mOutput = rh.getRealValue();
+  mOutput = mInputPort.getRealValue();
   if (mOutput < -mWidth)
     mOutput += mWidth;
   else if (mWidth < mOutput)

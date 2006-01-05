@@ -78,6 +78,7 @@ private:
   Type mType;
   Unit mUnit;
   real_type mValue;
+  RealPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

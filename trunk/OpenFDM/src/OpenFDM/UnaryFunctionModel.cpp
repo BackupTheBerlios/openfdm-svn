@@ -243,12 +243,23 @@ UnitConversionModel::~UnitConversionModel(void)
 bool
 UnitConversionModel::init(void)
 {
+  mInputPort = getInputPort(0)->toRealPortHandle();
+  if (!mInputPort.isConnected()) {
+    Log(Model, Error) << "Initialization of UnitConversion model \""
+                      << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+
+  return true;
 }
 
 void
 UnitConversionModel::output(const TaskInfo&)
 {
-  real_type value = getInputPort(0)->toRealPortHandle().getRealValue();
+  OpenFDMAssert(mInputPort.isConnected());
+  real_type value = mInputPort.getRealValue();
   if (mType == UnitToSi) {
     mValue = convertFrom(mUnit, value);
   } else {

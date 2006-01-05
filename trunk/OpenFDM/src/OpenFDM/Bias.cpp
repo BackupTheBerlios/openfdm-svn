@@ -38,32 +38,31 @@ Bias::init(void)
 {
   // Invalidate outputs
   mOutput.resize(0, 0);
-  
-  // Minimal check of the input port 
-  if (!getInputPort(0)->isConnected()) {
-    Log(Model, Error) << "Input port of \"" << getName()
-                   << "\", is not valid" << endl;
+
+  mInputPort = getInputPort(0)->toMatrixPortHandle();
+  if (!mInputPort.isConnected()) {
+    Log(Model, Error) << "Initialization of Bias model \"" << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
     return false;
   }
 
   // Size compatibility check
-  if (size(getInputPort(0)->getValue().toMatrix()) != size(mBias)) {
+  if (size(mInputPort.getMatrixValue()) != size(mBias)) {
     Log(Model, Error) << "Input port of \"" << getName() << "\", does not "
                       << "match the size of the bias property" << endl;
     return false;
   }
+  mOutput.resize(mInputPort.getMatrixValue());
 
-  // Make sure it is invalid if sizes do not match.
-  mOutput.resize(getInputPort(0)->getValue().toMatrix());
   return true;
 }
 
 void
 Bias::output(const TaskInfo&)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
-  mOutput = mh.getMatrixValue();
+  OpenFDMAssert(mInputPort.isConnected());
+  mOutput = mInputPort.getMatrixValue();
   mOutput += mBias;
 }
 

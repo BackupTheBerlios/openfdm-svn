@@ -32,6 +32,7 @@ public:
 private:
   Matrix mBias;
   Matrix mOutput;
+  MatrixPortHandle mInputPort;
 };
 
 } // namespace OpenFDM
