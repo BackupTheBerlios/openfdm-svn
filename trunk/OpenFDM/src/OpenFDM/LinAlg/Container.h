@@ -165,6 +165,10 @@ public:
   OpenFDM_FORCE_INLINE
   Vector(const Vector& A)
   { directAssign(A); }
+  template<typename Impl2, size_type m2, size_type n2>
+  OpenFDM_FORCE_INLINE
+  Vector(const MatrixRValue<Impl2,m2,n2>& A)
+  { directAssign(A); }
   template<typename Impl2, size_type m2>
   OpenFDM_FORCE_INLINE
   Vector(const MatrixRValue<Impl2,m2,1>& A)
@@ -849,6 +853,11 @@ public:
   Vector2(const Vector2& v)
     : Vector<T,2>(v)
   { }
+  template<typename Impl, size_type m, size_type n>
+  OpenFDM_FORCE_INLINE
+  Vector2(const MatrixRValue<Impl,m,n>& A)
+    : Vector<T,2>(A)
+  { }
   template<typename Impl, size_type m>
   OpenFDM_FORCE_INLINE
   Vector2(const MatrixRValue<Impl,m,1>& v)
@@ -873,6 +882,11 @@ public:
   Vector3(const Vector3& v)
     : Vector<T,3>(v)
   { }
+  template<typename Impl, size_type m, size_type n>
+  OpenFDM_FORCE_INLINE
+  Vector3(const MatrixRValue<Impl,m,n>& A)
+    : Vector<T,3>(A)
+  { }
   template<typename Impl, size_type m>
   OpenFDM_FORCE_INLINE
   Vector3(const MatrixRValue<Impl,m,1>& v)
@@ -896,6 +910,11 @@ public:
   OpenFDM_FORCE_INLINE
   Vector4(const Vector4& v)
     : Vector<T,4>(v)
+  { }
+  template<typename Impl, size_type m, size_type n>
+  OpenFDM_FORCE_INLINE
+  Vector4(const MatrixRValue<Impl,m,n>& A)
+    : Vector<T,4>(A)
   { }
   template<typename Impl, size_type m>
   OpenFDM_FORCE_INLINE
@@ -929,6 +948,11 @@ public:
   OpenFDM_FORCE_INLINE
   Vector6(const Vector6& v)
     : Vector<T,6>(v)
+  { }
+  template<typename Impl, size_type m, size_type n>
+  OpenFDM_FORCE_INLINE
+  Vector6(const MatrixRValue<Impl,m,n>& A)
+    : Vector<T,6>(A)
   { }
   template<typename Impl, size_type m>
   OpenFDM_FORCE_INLINE
