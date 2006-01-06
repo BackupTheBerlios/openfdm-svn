@@ -287,14 +287,14 @@ public:
   virtual unsigned inSize(void) const
   { return mSystem.getNumContinousStates(); }
   virtual unsigned outSize(void) const
-  { return mSystem.getNumContinousStates(); }
+  { return mSystem.getNumContinousStates() + 6; }
   virtual void eval(real_type t, const Vector& v, Vector& out)
   {
     unsigned nStates = mSystem.getNumContinousStates();
     Vector deriv(nStates);
     mSystem.evalFunction(t, v, deriv);
 
-    TrimCollectorVisitor tcv(nStates);
+    TrimCollectorVisitor tcv(nStates + 6);
     mSystem.accept(tcv);
     Vector3 eo = mGeodOr.getEuler();
     Vector3 en = tcv.mGeodOr.getEuler();
@@ -315,14 +315,14 @@ public:
     tmp = 1e2*(eo(3) - en(3));
     tcv.mStateStream.writeSubState(tmp);
 
-    tcv.mStateStream.writeSubState(1e2*norm(tcv.mQDot) + norm(tcv.mPosDot - mPosDot));
-//     tcv.mStateStream.writeSubState(1e2*tcv.mQDot);
-//     tcv.mStateStream.writeSubState(tcv.mPosDot);
+//     tcv.mStateStream.writeSubState(1e2*norm(tcv.mQDot) + norm(tcv.mPosDot - mPosDot));
+    tcv.mStateStream.writeSubState(1e8*tcv.mQDot);
+    tcv.mStateStream.writeSubState(tcv.mPosDot - mPosDot);
     tcv.mStateStream.writeSubState(1e6*tcv.mVelDot);
 
     out = tcv.mStateStream.getState();
   }
-private:
+// private:
   System& mSystem;
   Geodetic mGeodPos;
   Quaternion mGeodOr;
@@ -379,7 +379,7 @@ public:
 //     Log(Model,Error) << trans(out) << endl;
 //     Log(Model,Error) << mGeodPos << geod << endl << endl;
   }
-private:
+// private:
   System& mSystem;
   real_type mRange;
   Geodetic mGeodPos;
@@ -404,6 +404,9 @@ System::trim(void)
   real_type range = 20;
   AltitudeFinderTrimFunction altTrim(*this, range);
 
+  // Buld up the trim function
+  TrimFunction trimFunction(*this);
+
   Vector altV(1);
   altV(1) = 0;
   Vector dk(1);
@@ -412,6 +415,7 @@ System::trim(void)
   altTrim.eval(getTime(), res, dk /*dummy*/);
   output(taskInfo);
 
+  trimFunction.mGeodPos.altitude = altTrim.mGeodPos.altitude;
 
   // Get the current state
   StateStream stateStream(getNumContinousStates());
@@ -419,18 +423,18 @@ System::trim(void)
   Vector state = stateStream.getState();
 
   Vector trimState = stateStream.getState();
-  // Buld up the trim function
-  TrimFunction trimFunction(*this);
 
   // Try to find a minimum
-  real_type atol = 1e-7;
-  real_type rtol = 1e-8;
-  bool ret = GaussNewton(trimFunction, getTime(), trimState, atol, rtol);
-//   bool ret = LevenbergMarquart(trimFunction, getTime(), trimState, atol, rtol);
+  real_type atol = 1e-10;
+  real_type rtol = 1e-13;
+//   bool ret = GaussNewton(trimFunction, getTime(), trimState, atol, rtol);
+  bool ret = LevenbergMarquart(trimFunction, getTime(), trimState, atol, rtol);
   if (ret) {
+    Log(Model, Debug) << "Trim did converge" << endl;
     stateStream.setState(trimState);
     setState(stateStream);
   } else {
+    Log(Model, Warning) << "Trim did NOT converge" << endl;
     stateStream.setState(state);
     setState(stateStream);
   }
