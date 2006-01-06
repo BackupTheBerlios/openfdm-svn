@@ -44,7 +44,7 @@ using namespace std;
 #include <OpenFDM/Model.h>
 #include <OpenFDM/ModelGroup.h>
 #include <OpenFDM/Bias.h>
-#include <OpenFDM/ConstSystem.h>
+#include <OpenFDM/ConstModel.h>
 #include <OpenFDM/DeadBand.h>
 #include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/Gain.h>
@@ -308,7 +308,7 @@ public:
     if (type == "Bias") {
       model = new Bias(name);
     } else if (type == "Const") {
-      model = new ConstSystem(name, Matrix()); // FIXME
+      model = new ConstModel(name, Matrix()); // FIXME
     } else if (type == "DeadBand") {
       model = new DeadBand(name);
     } else if (type == "DiscreteIntegrator") {

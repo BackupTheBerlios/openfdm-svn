@@ -2,19 +2,19 @@
  *
  */
 
-#ifndef OpenFDM_ConstSystem_H
-#define OpenFDM_ConstSystem_H
+#ifndef OpenFDM_ConstModel_H
+#define OpenFDM_ConstModel_H
 
 #include "Model.h"
 #include "Matrix.h"
 
 namespace OpenFDM {
 
-class ConstSystem
+class ConstModel
   : public Model {
 public:
-  ConstSystem(const std::string& name, const Matrix& value);
-  virtual ~ConstSystem(void);
+  ConstModel(const std::string& name, const Matrix& value);
+  virtual ~ConstModel(void);
 
   const Matrix& getValue(void) const;
   void setValue(const Matrix& value);

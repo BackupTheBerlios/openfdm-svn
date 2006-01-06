@@ -33,6 +33,7 @@ public:
   RealPortInterface(unsigned m = 1, unsigned n = 1) : mValue(m, n) {}
   virtual RealPortInterface* toRealPortInterface(void)
   {
+    evaluate();
     if (Size(1, 1) == size(mValue))
       return this;
     else

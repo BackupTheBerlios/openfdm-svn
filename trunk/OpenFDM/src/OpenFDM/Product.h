@@ -21,14 +21,15 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo&);
 
-  const real_type& getProduct(void) const;
+  const Matrix& getProduct(void) const;
 
   unsigned getNumFactors(void) const;
   void setNumFactors(const unsigned& num);
 
 private:
-  real_type mProduct;
-  std::vector<RealPortHandle> mFactorPorts;
+  Matrix mProduct;
+  std::vector<RealPortHandle> mScalarFactorPorts;
+  std::vector<MatrixPortHandle> mMatrixFactorPorts;
 };
 
 } // namespace OpenFDM

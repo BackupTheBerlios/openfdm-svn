@@ -34,14 +34,38 @@ Product::~Product(void)
 bool
 Product::init(void)
 {
-  mFactorPorts.resize(getNumFactors());
+  mScalarFactorPorts.clear();
+  mMatrixFactorPorts.clear();
   for (unsigned i = 0; i < getNumInputPorts(); ++i) {
-    if (!getInputPort(i)->isConnected()) {
-      Log(Model, Error) << "Found unconnected input Port for Product \""
-                        << getName() << "\"" << endl;
-      return false;
+    RealPortHandle scalarHandle = getInputPort(i)->toRealPortHandle();
+    if (scalarHandle.isConnected())
+      mScalarFactorPorts.push_back(scalarHandle);
+    else {
+      MatrixPortHandle matrixHandle = getInputPort(i)->toMatrixPortHandle();
+      if (matrixHandle.isConnected()) {
+        if (!mMatrixFactorPorts.empty()) {
+          unsigned lastCols = cols(mMatrixFactorPorts.back().getMatrixValue());
+          unsigned thisRows = rows(matrixHandle.getMatrixValue());
+          if (lastCols != thisRows) {
+            Log(Model, Error) << "Dimensions for Product \""
+                              << getName() << "\" do not agree!" << endl;
+            return false;
+          }
+        }
+
+        mMatrixFactorPorts.push_back(matrixHandle);
+      } else {
+        Log(Model, Error) << "Found unconnected input Port for Product \""
+                          << getName() << "\"" << endl;
+        return false;
+      }
     }
-    mFactorPorts[i] = getInputPort(i)->toRealPortHandle();
+  }
+  if (mMatrixFactorPorts.empty()) {
+    mProduct.resize(1, 1);
+  } else {
+    mProduct.resize(rows(mMatrixFactorPorts.front().getMatrixValue()),
+                    cols(mMatrixFactorPorts.back().getMatrixValue()));
   }
 
   return true;
@@ -50,14 +74,22 @@ Product::init(void)
 void
 Product::output(const TaskInfo&)
 {
-  mProduct = 1;
-  for (unsigned i = 0; i < getNumInputPorts(); ++i)
-    mProduct *= mFactorPorts[i].getRealValue();
+  real_type scalarFac = 1;
+  for (unsigned i = 0; i < mScalarFactorPorts.size(); ++i)
+    scalarFac *= mScalarFactorPorts[i].getRealValue();
+  if (mMatrixFactorPorts.empty()) {
+    mProduct(1, 1) = scalarFac;
+  } else {
+    mProduct = mMatrixFactorPorts[0].getMatrixValue();
+    for (unsigned i = 1; i < mMatrixFactorPorts.size(); ++i)
+      mProduct = mProduct*mMatrixFactorPorts[i].getMatrixValue();
+    mProduct *= scalarFac;
+  }
   Log(Model,Debug3) << "Output of Product \"" << getName() << "\" "
                     << mProduct << endl;
 }
 
-const real_type&
+const Matrix&
 Product::getProduct(void) const
 {
   return mProduct;

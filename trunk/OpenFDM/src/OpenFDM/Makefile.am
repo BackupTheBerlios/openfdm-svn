@@ -34,15 +34,13 @@ nobase_OpenFDMinclude_HEADERS = \
   CartesianActuatorFrame.h \
   CartesianJointFrame.h \
   Contact.h \
-  ConstantForce.h \
-  ConstSystem.h \
+  ConstModel.h \
   ConstFrameVisitor.h \
   CowPtr.h \
   DeadBand.h \
   DefaultGravity.h \
   DefaultGround.h \
   DefaultPlanet.h \
-  DirectForce.h \
   DiscBrake.h \
   DiscreteIntegrator.h \
   DoPri5.h \
@@ -50,6 +48,7 @@ nobase_OpenFDMinclude_HEADERS = \
   EnvironmentObject.h \
   ExplicitAdams.h \
   ExplicitEuler.h \
+  ExternalForceModel.h \
   Force.h \
   Frame.h \
   FrameVisitor.h \
@@ -143,13 +142,11 @@ libOpenFDM_la_SOURCES = \
   Bias.cpp \
   BinaryFunctionModel.cpp \
   Contact.cpp \
-  ConstantForce.cpp \
-  ConstSystem.cpp \
+  ConstModel.cpp \
   DeadBand.cpp \
   DefaultGravity.cpp \
   DefaultGround.cpp \
   DefaultPlanet.cpp \
-  DirectForce.cpp \
   DiscBrake.cpp \
   DiscreteIntegrator.cpp \
   DoPri5.cpp \
@@ -157,6 +154,7 @@ libOpenFDM_la_SOURCES = \
   EnvironmentObject.cpp \
   ExplicitAdams.cpp \
   ExplicitEuler.cpp \
+  ExternalForceModel.cpp \
   Force.cpp \
   Frame.cpp \
   Function.cpp \

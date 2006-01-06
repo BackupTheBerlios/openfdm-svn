@@ -13,11 +13,11 @@
 
 #include <OpenFDM/AeroForce.h>
 #include <OpenFDM/Bias.h>
-#include <OpenFDM/ConstSystem.h>
+#include <OpenFDM/ConstModel.h>
 #include <OpenFDM/DeadBand.h>
 #include <OpenFDM/DiscreteIntegrator.h>
+#include <OpenFDM/ExternalForceModel.h>
 #include <OpenFDM/TransferFunction.h>
-#include <OpenFDM/DirectForce.h>
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/Input.h>
 #include <OpenFDM/Mass.h>
@@ -674,7 +674,7 @@ LegacyJSBSimReader::addConstModel(const std::string& name, real_type value)
 {
   Matrix m(1, 1);
   m(1, 1) = 0;
-  ConstSystem* cModel = new ConstSystem(name, m);
+  ConstModel* cModel = new ConstModel(name, m);
   addFCSModel(cModel);
   return cModel->getOutputPort(0);
 }
@@ -2097,14 +2097,24 @@ LegacyJSBSimReader::convertEngine(const std::string& data,
       return error("Unknown parameter in engine configuration");
   }
 
+
+
   std::string namestr = "Engine<" + number + ">";
-  DirectForce* engineForce = new DirectForce(namestr);
-  engineForce->setDirection(Vector6(0, 0, 0, 4.4*1.5e4, 0, 0));
+  ConstModel* fullForce = new ConstModel(namestr + " full",
+                                         Vector6(0, 0, 0, 4.4*1.5e4, 0, 0));
+  addMultiBodyModel(fullForce);
+
+  Product* prod = new Product(namestr + " modulation");
+  std::string throttlename = "fcs/throttle-cmd-norm[" + number + "]";
+  prod->getInputPort(0)->connect(lookupJSBExpression(throttlename));
+  prod->getInputPort(1)->connect(fullForce->getOutputPort(0));
+  addMultiBodyModel(prod);
+
+  ExternalForceModel* engineForce = new ExternalForceModel(namestr);
   engineForce->setPosition(structToBody(loc));
   engineForce->setOrientation(Quaternion::fromHeadAttBank(pitch, 0, yaw));
 
-  std::string throttlename = "fcs/throttle-cmd-norm[" + number + "]";
-  engineForce->getInputPort(0)->connect(lookupJSBExpression(throttlename));
+  engineForce->getInputPort(0)->connect(prod->getOutputPort(0));
 
   mVehicle->getTopBody()->addInteract(engineForce);
 
@@ -2270,8 +2280,8 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
   if (ndims == 0) {
     Matrix value(1, 1);
     datastr >> value(1, 1);
-    ConstSystem* constModel
-      = new ConstSystem(prod->getName() + " Factor", value);
+    ConstModel* constModel
+      = new ConstModel(prod->getName() + " Factor", value);
     addMultiBodyModel(constModel);
 
     unsigned nf = prod->getNumFactors();
