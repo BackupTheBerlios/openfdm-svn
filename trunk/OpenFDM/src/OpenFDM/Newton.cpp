@@ -304,11 +304,13 @@ LevenbergMarquart(Function& f,
                   unsigned *itCount,
                   unsigned maxit)
 {
+  Log(NewtonMethod, Debug3) << "Start guess\nx = " << trans(x) << endl;
+
   Matrix J;
   LinAlg::MatrixFactors<real_type,0,0,LinAlg::LUTag> jacFactors;
 
-  bool converged;
-  real_type tau = 1e-3;
+  bool converged = false;
+  real_type tau = 1e-1;
   real_type nu = 2;
 
   // Compute in each step a new jacobian
@@ -332,15 +334,16 @@ LevenbergMarquart(Function& f,
     Log(NewtonMethod, Debug) << "Solve Residual "
                              << norm(trans(J)*J*h + mu*h + g)/norm(g) << endl;
 
+    // Get a better search guess
+    Vector xnew = x + h;
+
     // check convergence
-    converged = norm1(h) < atol;
+    converged = equal(x, xnew, atol, rtol);
     Log(NewtonMethod, Debug) << "Convergence test: ||h||_1 = " << norm1(h)
                              << ", converged = " << converged << endl;
     if (converged)
       break;
 
-    // Get a better search guess
-    Vector xnew = x + h;
     f.eval(t, x, fx);
     real_type Fx = norm(fx);
     f.eval(t, xnew, fx);
@@ -351,6 +354,10 @@ LevenbergMarquart(Function& f,
                              << ", Fx = " << Fx
                              << endl;
     if (0 < rho) {
+      Log(NewtonMethod, Debug) << "Accepted step!" << endl;
+      Log(NewtonMethod, Debug3) << "xnew = " << trans(xnew) << endl;
+      Log(NewtonMethod, Debug3) << "h    = " << trans(h) << endl;
+
       // New guess is the better one
       x = xnew;
 
@@ -363,7 +370,7 @@ LevenbergMarquart(Function& f,
       Log(NewtonMethod, Debug) << "||g||_1 = " << norm1(g) << endl;
 
       mu = mu * max(1.0/3, 1-pow(2*rho-1, 3));
-      mu = 2;
+      nu = 2;
 
     } else {
       mu = mu * nu;
