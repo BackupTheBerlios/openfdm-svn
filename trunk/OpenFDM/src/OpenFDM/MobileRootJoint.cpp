@@ -206,7 +206,7 @@ MobileRootJoint::getQDot(void) const
   // if |q| > 1 add a little radial component inward
   Quaternion q = mFrame->getOrientation();
   Vector3 angVel = mFrame->getRelVel().getAngular();
-  Vector4 qderiv = derivative(q, angVel) + 0.1*(normalize(q) - q);
+  Vector4 qderiv = derivative(q, angVel) + 1e1*(normalize(q) - q);
   return qderiv;
 }
 
