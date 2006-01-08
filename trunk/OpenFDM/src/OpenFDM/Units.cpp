@@ -186,10 +186,10 @@ real_type convertTo(Unit unit, real_type value)
   case uDegC:
     return value - static_cast<real_type>(273.15);
   case uRankine:
-    return value*(static_cast<real_type>(5)/static_cast<real_type>(9));
+    return value*(static_cast<real_type>(9)/static_cast<real_type>(5));
   case uFahrenheit:
-    return value*(static_cast<real_type>(5)/static_cast<real_type>(9))
-      - static_cast<real_type>(5*27315)/static_cast<real_type>(900)
+    return value*(static_cast<real_type>(9)/static_cast<real_type>(5))
+      - static_cast<real_type>(9*27315)/static_cast<real_type>(500)
       + static_cast<real_type>(32);
 
     // Spring stiffness.
@@ -304,11 +304,11 @@ real_type convertFrom(Unit unit, real_type value)
   case uDegC:
     return value + static_cast<real_type>(273.15);
   case uRankine:
-    return value*(static_cast<real_type>(9)/static_cast<real_type>(5));
+    return value*(static_cast<real_type>(5)/static_cast<real_type>(9));
   case uFahrenheit:
-    return value*(static_cast<real_type>(9)/static_cast<real_type>(5))
+    return value*(static_cast<real_type>(5)/static_cast<real_type>(9))
       + static_cast<real_type>(273.15)
-      - static_cast<real_type>(32*9)/static_cast<real_type>(5);
+      - static_cast<real_type>(32*5)/static_cast<real_type>(9);
 
     // Spring stiffness.
   case uNewtonPMeter:
