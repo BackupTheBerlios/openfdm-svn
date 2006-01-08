@@ -129,7 +129,9 @@ private:
   mutable Vector3 mUnitDown;
   mutable Plane mLocalGroundPlane;
   mutable AtmosphereData mAtmos;
+  mutable real_type mSoundSpeed;
   mutable AtmosphereData mSLAtmos;
+  mutable real_type mSLSoundSpeed;
   mutable Vector6 mAirSpeed;
   mutable Vector3 mMach;
   mutable real_type mMachNumber;
