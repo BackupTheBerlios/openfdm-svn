@@ -22,7 +22,12 @@ const real_type AtmosphereSTD1976::mHydrostaticConstant = 34.1631947;
 // Radius of the Earth (km)
 const real_type AtmosphereSTD1976::mEarthRadius = 6369.0;
 
-AtmosphereSTD1976::AtmosphereSTD1976(void)
+#define MOL_WT          28.9644  // kg/kgmol (air)
+#define R_HAT           8314.32  // J/kgmol.K (gas const.)
+#define GAMMA           1.4
+
+AtmosphereSTD1976::AtmosphereSTD1976(void) :
+  Atmosphere(R_HAT/MOL_WT, GAMMA)
 {
   mTable[0.0] = TableData(288.15, 1.0, -6.5);
   mTable[11.0] = TableData(216.65, 2.233611e-1, 0.0);
@@ -92,23 +97,14 @@ AtmosphereSTD1976::getData(real_type alt) const
   // Temperature in kelvin
   data.temperature = slTemperature*theta;
 
-const real_type specific_heat_ratio = 1.4;
-
-#define MOL_WT          28.9644  /*  kg/kgmol (air)         */
-#define R_HAT         8314.32    /*  J/kgmol.K (gas const.) */
-
-
   if (fabs(data.temperature) > Limits<real_type>::min())
-    data.density = data.pressure / ((R_HAT/MOL_WT)*data.temperature);
+    data.density = data.pressure / (getGasConstant()*data.temperature);
   else
     data.density = 0.0;
-  data.soundspeed = sqrt(specific_heat_ratio*data.temperature*(R_HAT/MOL_WT));
-
 
   Log(Environment, Debug) << "p = " << data.pressure << ", T = "
                           << data.temperature << ", rho = "
-                          << data.density << ", soundspeed = "
-                          << data.soundspeed << endl;
+                          << data.density << endl;
   
   return data;
 }

@@ -564,8 +564,8 @@ AeroForce::getSoundSpeed(void) const
 {
   computeAtmosphere();
   Log(ArtBody, Debug3) << "AeroForce::getSoundSpeed() "
-                       << mAtmos.soundspeed << endl;
-  return mAtmos.soundspeed;
+                       << mSoundSpeed << endl;
+  return mSoundSpeed;
 }
 
 const real_type&
@@ -595,7 +595,7 @@ const real_type&
 AeroForce::getSoundSpeedSeaLevel(void) const
 {
   computeSLAtmosphere();
-  return mSLAtmos.soundspeed;
+  return mSLSoundSpeed;
 }
 
 const real_type&
@@ -665,6 +665,7 @@ AeroForce::computeAtmosphere(void) const
   if (mDirtyAtmosphere) {
     // Get the Athmosphere information at this position and the given time.
     mAtmos = getAtmosphere()->getData(getAltitude());
+    mSoundSpeed = getAtmosphere()->getSoundSpeed(mAtmos.temperature);
     mDirtyAtmosphere = false;
   }
 }
@@ -675,6 +676,7 @@ AeroForce::computeSLAtmosphere(void) const
   if (mDirtySLAtmosphere) {
     // Hmm, may be this does not need to be computed each time???
     mSLAtmos = getAtmosphere()->getData(0);
+    mSLSoundSpeed = getAtmosphere()->getSoundSpeed(mSLAtmos.temperature);
     mDirtySLAtmosphere = false;
   }
 }
