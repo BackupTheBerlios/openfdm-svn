@@ -22,26 +22,26 @@ public:
 
   const real_type& getForce(void) const;
 
-  real_type getPushPressure(void) const;
-  void setPushPressure(real_type pushPressure);
+  const real_type& getPushPressure(void) const;
+  void setPushPressure(const real_type& pushPressure);
 
-  real_type getPullPressure(void) const;
-  void setPullPressure(real_type pullPressure);
+  const real_type& getPullPressure(void) const;
+  void setPullPressure(const real_type& pullPressure);
 
-  real_type getArea(void) const;
-  void setArea(real_type area);
+  const real_type& getArea(void) const;
+  void setArea(const real_type& area);
 
-  real_type getMaxCompression(void) const;
-  void setMaxCompression(real_type maxCompression);
+  const real_type& getMaxCompression(void) const;
+  void setMaxCompression(const real_type& maxCompression);
 
-  real_type getMinCompression(void) const;
-  void setMinCompression(real_type minCompression);
+  const real_type& getMinCompression(void) const;
+  void setMinCompression(const real_type& minCompression);
 
-  real_type getMaxDamperConstant(void) const;
-  void setMaxDamperConstant(real_type maxDamperConstant);
+  const real_type& getMaxDamperConstant(void) const;
+  void setMaxDamperConstant(const real_type& maxDamperConstant);
 
-  real_type getMinDamperConstant(void) const;
-  void setMinDamperConstant(real_type minDamperConstant);
+  const real_type& getMinDamperConstant(void) const;
+  void setMinDamperConstant(const real_type& minDamperConstant);
 
   real_type getGamma(void) const;
   void setGamma(real_type gamma);

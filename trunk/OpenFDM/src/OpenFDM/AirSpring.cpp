@@ -17,9 +17,17 @@ AirSpring::AirSpring(const std::string& name) :
   mMaxCompression(0),
   mMinDamperConstant(0),
   mMaxDamperConstant(0),
-  mGamma(1.3)
+  mGamma(1.4)
 {
   setDirectFeedThrough(true);
+
+  addProperty("pushPressure", Property(this, &AirSpring::getPushPressure, &AirSpring::setPushPressure));
+  addProperty("pullPressure", Property(this, &AirSpring::getPullPressure, &AirSpring::setPullPressure));
+  addProperty("area", Property(this, &AirSpring::getArea, &AirSpring::setArea));
+  addProperty("maxCompression", Property(this, &AirSpring::getMaxCompression, &AirSpring::setMaxCompression));
+  addProperty("minCompression", Property(this, &AirSpring::getMinCompression, &AirSpring::setMinCompression));
+  addProperty("maxDamperConstant", Property(this, &AirSpring::getMaxDamperConstant, &AirSpring::setMaxDamperConstant));
+  addProperty("minDamperConstant", Property(this, &AirSpring::getMinDamperConstant, &AirSpring::setMinDamperConstant));
 
   setNumInputPorts(2);
   setInputPortName(0, "position");
@@ -91,86 +99,86 @@ AirSpring::getForce(void) const
   return mForce;
 }
 
-real_type
+const real_type&
 AirSpring::getPushPressure(void) const
 {
   return mPushPressure;
 }
 
 void
-AirSpring::setPushPressure(real_type pushPressure)
+AirSpring::setPushPressure(const real_type& pushPressure)
 {
   mPushPressure = pushPressure;
 }
 
-real_type
+const real_type&
 AirSpring::getPullPressure(void) const
 {
   return mPullPressure;
 }
 
 void
-AirSpring::setPullPressure(real_type pullPressure)
+AirSpring::setPullPressure(const real_type& pullPressure)
 {
   mPullPressure = pullPressure;
 }
 
-real_type
+const real_type&
 AirSpring::getArea(void) const
 {
   return mArea;
 }
 
 void
-AirSpring::setArea(real_type area)
+AirSpring::setArea(const real_type& area)
 {
   mArea = area;
 }
 
-real_type
+const real_type&
 AirSpring::getMaxCompression(void) const
 {
   return mMaxCompression;
 }
 
 void
-AirSpring::setMaxCompression(real_type maxCompression)
+AirSpring::setMaxCompression(const real_type& maxCompression)
 {
   mMaxCompression = maxCompression;
 }
 
-real_type
+const real_type&
 AirSpring::getMinCompression(void) const
 {
   return mMinCompression;
 }
 
 void
-AirSpring::setMinCompression(real_type minCompression)
+AirSpring::setMinCompression(const real_type& minCompression)
 {
   mMinCompression = minCompression;
 }
 
-real_type
+const real_type&
 AirSpring::getMaxDamperConstant(void) const
 {
   return mMaxDamperConstant;
 }
 
 void
-AirSpring::setMaxDamperConstant(real_type maxDamperConstant)
+AirSpring::setMaxDamperConstant(const real_type& maxDamperConstant)
 {
   mMaxDamperConstant = maxDamperConstant;
 }
 
-real_type
+const real_type&
 AirSpring::getMinDamperConstant(void) const
 {
   return mMinDamperConstant;
 }
 
 void
-AirSpring::setMinDamperConstant(real_type minDamperConstant)
+AirSpring::setMinDamperConstant(const real_type& minDamperConstant)
 {
   mMinDamperConstant = minDamperConstant;
 }
