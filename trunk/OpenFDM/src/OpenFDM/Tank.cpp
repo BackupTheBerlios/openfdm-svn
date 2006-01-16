@@ -87,4 +87,16 @@ Tank::setContent(const real_type& content)
   mContent = content;
 }
 
+const real_type&
+Tank::getCapacity(void) const
+{
+  return mCapacity;
+}
+
+void
+Tank::setCapacity(const real_type& capacity)
+{
+  mCapacity = capacity;
+}
+
 } // namespace OpenFDM
