@@ -35,7 +35,7 @@ public:
     Tan
   };
 
-  UnaryFunctionModel(const std::string& name, Type type);
+  UnaryFunctionModel(const std::string& name, Type type = Abs /*FIXME*/);
   virtual ~UnaryFunctionModel(void);
 
   virtual bool init(void);
