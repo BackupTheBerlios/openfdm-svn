@@ -28,16 +28,6 @@ Object::getTypeInfo(void) const
   return 0;
 }
 
-Property
-Object::getProperty(const std::string& name)
-{
-  // Check if this one exists and return its value.
-  if (0 < mProperties.count(name))
-    return mProperties[name];
-  else
-    return Property();
-}
-
 std::list<std::string>
 Object::listProperties(void) const
 {
@@ -53,22 +43,33 @@ Object::listProperties(void) const
 Variant
 Object::getPropertyValue(const std::string& name) const
 {
-  // Just use the current property system for now
-
   // Return an empty variant if this property does not exist.
   if (mProperties.count(name) <= 0)
     return Variant();
 
+  // safety check
+  Property property = mProperties.find(name)->second;
+  if (!property.isValid())
+    return Variant();
+
   // Return the value of the property
-  // FIXME: properties, like they are now, do not preserve constness
-  return ((Property&)(mProperties.find(name)->second)).getValue();
+  return property.getValue();
 }
 
 void
 Object::setPropertyValue(const std::string& name, const Variant& value)
 {
   // Just use the current property system for now
-  getProperty(name).setValue(value);
+  if (mProperties.count(name) <= 0)
+    return;
+
+  // safety check
+  Property property = mProperties[name];
+  if (!property.isValid())
+    return;
+
+  // set the property by the setter
+  property.setValue(value);
 }
 
 void

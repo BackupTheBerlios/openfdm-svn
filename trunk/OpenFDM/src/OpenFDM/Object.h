@@ -34,7 +34,6 @@ public:
   /// Return the typeinfo for that Object.
   virtual const TypeInfo* const getTypeInfo(void) const;
   
-  Property getProperty(const std::string& name);
   std::list<std::string> listProperties(void) const;
 
   /// Returns the objects property named name
