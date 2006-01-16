@@ -1167,7 +1167,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
 #if 0
       // Well, we use an air spring for that. It is directly in the
-      // revolute joint. That is wring, but at the moment aprioriate.
+      // revolute joint. That is wrong, but at the moment aprioriate.
       AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
       aoDamp->setPullPressure(pullPress);
       aoDamp->setPushPressure(pushPress);
@@ -1938,21 +1938,10 @@ LegacyJSBSimReader::convertPropulsion(const XMLElement* pElem)
   std::list<SharedPtr<XMLElement> >::const_iterator it;
   for (it = elems.begin(); it != elems.end(); ++it) {
     if ((*it)->getName() == "AC_ENGINE") {
-//       std::string engineFile = mEnginePath+(*it)->getAttribute("FILE")+".xml";
-//       std::ifstream infile;
-//       infile.open(engineFile.c_str());
-//       if (!infile.is_open())
-//         return;
-
-//       XMLDomParser parser;
-//       if (!parser.parseXML(infile))
-//         return;
-//       infile.close();
-
       std::stringstream sstr;
       sstr << engineNumber;
       ++engineNumber;
-      if (!convertEngine((*it)->getData(), (*it)->getName(), sstr.str()))
+      if (!convertEngine(*it, sstr.str()))
         return error("Cannot parse engine");
     }
     else if ((*it)->getName() == "AC_TANK") {
@@ -2058,12 +2047,10 @@ LegacyJSBSimReader::convertThruster(const std::string& data,
 }
 
 bool
-LegacyJSBSimReader::convertEngine(const std::string& data,
-                                  const std::string& type,
+LegacyJSBSimReader::convertEngine(const XMLElement* engine,
                                   const std::string& number)
 {
-  std::stringstream datastr(data);
-
+  std::stringstream datastr(engine->getData());
   Vector3 loc = Vector3::zeros();
   real_type pitch = 0;
   real_type yaw = 0;
@@ -2096,12 +2083,224 @@ LegacyJSBSimReader::convertEngine(const std::string& data,
     } else
       return error("Unknown parameter in engine configuration");
   }
+  loc = structToBody(loc);
+  Quaternion orientation = Quaternion::fromHeadAttBank(pitch, 0, yaw);
 
 
+  // Engines are distinguished between that turbine model which effectively
+  // moslty produces thrust by itself and the ones having a propeller and an
+  // engine driving that.
+  // The first one has its own single model.
+  // For the second, the engine is modelled with a joint force/driver
+  // the propeller with an aerodynamic table lookup system.
+  std::string engineName = engine->getAttribute("FILE");
+  std::string eFileName = engineName + ".xml";
+  std::ifstream eFileStream;
+  if (!openFile(mEnginePath, eFileName, eFileStream))
+    return error("Can not find engine \"" + engineName + "\"");
+
+  XMLDomParser eParser;
+  if (!eParser.parseXML(eFileStream))
+    return error("Error parsing engine \"" + engineName + "\"");
+  eFileStream.close();
+
+  const XMLDocument* engineDoc = eParser.getDocument();
+  // Be paranoid ...
+  if (!engineDoc)
+    return error("Error reading engine \"" + engineName + "\"");
+
+  const XMLElement* engineTopElem = engineDoc->getElement();
+  if (!engineTopElem)
+    return error("No toplevel xml element found for engine \""
+                 + engineName + "\"");
+
+  if (engineTopElem->getName() == "FG_TURBINE") {
+    if (!convertTurbine(engineTopElem, number, loc, orientation, 0))
+      return error("Error readinge turbine configuration");
+    
+  } else if (engineTopElem->getName() == "FG_PISTON") {
+    if (!convertPiston(engineTopElem, number, 0))
+      return error("Error readinge piston configuration");
+
+  } else if (engineTopElem->getName() == "FG_ROCKET") {
+    return error("FG_ROCKET's are not (yet?) supported!");
+
+  } else if (engineTopElem->getName() == "FG_ELECTRIC") {
+    if (!convertElectric(engineTopElem, number, 0))
+      return error("Error readinge electric configuration");
+
+  } else
+    return error("Unknown toplevel xml element for engine file \""
+                 + eFileName + "\"");
+
+
+  // Thruster
+  const XMLElement* thruster = engine->getElement("AC_THRUSTER");
+  std::string thrusterName = thruster->getAttribute("FILE");
+  std::string tFileName = thrusterName + ".xml";
+  std::ifstream tFileStream;
+  if (!openFile(mEnginePath, tFileName, tFileStream))
+    return error("Can not find thruster \"" + thrusterName + "\"");
+
+  XMLDomParser tParser;
+  if (!tParser.parseXML(tFileStream))
+    return error("Error parsing thruster \"" + thrusterName + "\"");
+  tFileStream.close();
+
+  const XMLDocument* thrusterDoc = tParser.getDocument();
+  // Be paranoid ...
+  if (!thrusterDoc)
+    return error("Error reading thruster \"" + thrusterName + "\"");
+
+  const XMLElement* thrusterTopElem = thrusterDoc->getElement();
+  if (!thrusterTopElem)
+    return error("No toplevel xml element found for thruster \""
+                 + thrusterName + "\"");
+
+  if (thrusterTopElem->getName() == "FG_DIRECT") {
+  } else if (thrusterTopElem->getName() == "FG_NOZZLE") {
+  } else if (thrusterTopElem->getName() == "FG_PROPELLER") {
+  } else
+    return error("Unknown toplevel xml element for thruster file \""
+                 + tFileName + "\"");
+
+
+
+
+
+
+
+
+
+
+
+
+
+//   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
+//   parent->addInteract(wj);
+//   wheel->setInLDoboardJoint(wj);
+//   wj->setJointAxis(Vector3(0, 1, 0));
+//   wj->setPosition(pos);
+//   wj->setOrientation(Quaternion::unit());
+//   wj->setJointPos(0);
+//   wj->setJointVel(0);
+
+//     DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
+//     brakeF->setMinForce(8e1);
+//     brakeF->setMaxForce(1e4);
+//     if (brake == "LEFT") {
+//       Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
+//       brakeF->getInputPort(0)->connect(port);
+//     } else if (brake == "RIGHT") {
+//       Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
+//       brakeF->getInputPort(0)->connect(port);
+//     }
+//     // That one reads the joint position and velocity ...
+//     brakeF->getInputPort(1)->connect(wj->getOutputPort(1));
+//     // ... and provides an output force
+//     wj->getInputPort(0)->connect(brakeF->getOutputPort(0));
+//     addMultiBodyModel(brakeF);
+
+
+
+
+
+
+//   std::string namestr = "Engine<" + number + ">";
+//   ConstModel* fullForce = new ConstModel(namestr + " full",
+//                                          Vector6(0, 0, 0, 4.4*1.5e4, 0, 0));
+//   addMultiBodyModel(fullForce);
+
+//   Product* prod = new Product(namestr + " modulation");
+//   std::string throttlename = "fcs/throttle-cmd-norm[" + number + "]";
+//   prod->getInputPort(0)->connect(lookupJSBExpression(throttlename));
+//   prod->getInputPort(1)->connect(fullForce->getOutputPort(0));
+//   addMultiBodyModel(prod);
+
+//   ExternalForceModel* engineForce = new ExternalForceModel(namestr);
+//   engineForce->setPosition(structToBody(loc));
+//   engineForce->setOrientation(orientation);
+
+//   engineForce->getInputPort(0)->connect(prod->getOutputPort(0));
+
+//   mVehicle->getTopBody()->addInteract(engineForce);
+
+//   return true;
+}
+
+bool
+LegacyJSBSimReader::convertTurbine(const XMLElement* turbine,
+                                   const std::string& number,
+                                   const Vector3& pos,
+                                   const Quaternion& orientation,
+                                   Port* thrusterDriver)
+{
+  // Undercarriage parsing.
+  std::stringstream datastr(turbine->getData());
+
+  // At the moment we have a *very* insufficient engine, just modulate the
+  // thrust between 0 and max
+  real_type maxThrust = 0;
+
+  while (datastr) {
+    std::string token;
+    datastr >> token;
+    if (token.empty())
+      continue;
+
+    if (token == "MILTHRUST") {
+      real_type value;
+      datastr >> value;
+      maxThrust = max(maxThrust, value);
+    } else if (token == "MAXTHRUST") {
+      real_type value;
+      datastr >> value;
+      maxThrust = max(maxThrust, value);
+    } else if (token == "BYPASSRATIO") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "BLEED") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "TSFC") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "ATSFC") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "IDLEN1") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "IDLEN2") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "MAXN1") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "MAXN2") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "AUGMENTED") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "AUGMETHOD") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "INJECTED") {
+      real_type value;
+      datastr >> value;
+    } else if (token == "MINTHROTTLE") {
+      real_type value;
+      datastr >> value;
+    } else
+      return error("unknown tubine configuration token \"" + token + "\"");
+  }
+
+  
 
   std::string namestr = "Engine<" + number + ">";
-  ConstModel* fullForce = new ConstModel(namestr + " full",
-                                         Vector6(0, 0, 0, 4.4*1.5e4, 0, 0));
+  ConstModel* fullForce = new ConstModel(namestr + " full");
+  fullForce->setValue(Vector6(0, 0, 0, convertFrom(uPoundForce, maxThrust), 0, 0));
   addMultiBodyModel(fullForce);
 
   Product* prod = new Product(namestr + " modulation");
@@ -2111,13 +2310,29 @@ LegacyJSBSimReader::convertEngine(const std::string& data,
   addMultiBodyModel(prod);
 
   ExternalForceModel* engineForce = new ExternalForceModel(namestr);
-  engineForce->setPosition(structToBody(loc));
-  engineForce->setOrientation(Quaternion::fromHeadAttBank(pitch, 0, yaw));
+  engineForce->setPosition(pos);
+  engineForce->setOrientation(orientation);
 
   engineForce->getInputPort(0)->connect(prod->getOutputPort(0));
 
   mVehicle->getTopBody()->addInteract(engineForce);
 
+  return true;
+}
+
+bool
+LegacyJSBSimReader::convertElectric(const XMLElement* turbine,
+                                    const std::string& number,
+                                    Port* thrusterDriver)
+{
+  return true;
+}
+
+bool
+LegacyJSBSimReader::convertPiston(const XMLElement* turbine,
+                                  const std::string& number,
+                                  Port* thrusterDriver)
+{
   return true;
 }
 
@@ -2295,7 +2510,7 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     TableLookup lookup;
     if (!parseTable1D(datastr, table, lookup))
       // FIXME
-      std::cerr << "Cannot parse " + type + " table" << std::endl;
+      std::cerr << "Cannot parse " + type + " table" << data << std::endl;
 
     Table1D* table1D = new Table1D(prod->getName() + " Table");
     addMultiBodyModel(table1D);
@@ -2340,7 +2555,7 @@ LegacyJSBSimReader::convertCoefficient(const std::string& data,
     TableLookup lookup[3];
     if (!parseTable3D(datastr, table, lookup))
       // FIXME
-      std::cerr << "Cannot parse " + type + " table" << std::endl;
+      std::cerr << "Cannot parse " + type + " table" << data << std::endl;
 
     Table3D* table3D = new Table3D(prod->getName() + " Table");
     addMultiBodyModel(table3D);

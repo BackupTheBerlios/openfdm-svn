@@ -198,8 +198,17 @@ private:
   bool convertThruster(const std::string& data, const std::string& type,
                        const std::string& number);
   /// converts FG_ENGINE data
-  bool convertEngine(const std::string& data, const std::string& type,
-                     const std::string& number);
+  bool convertEngine(const XMLElement* engine, const std::string& number);
+  /// converts FG_TURBINE data
+  bool convertTurbine(const XMLElement* turbine, const std::string& number,
+                      const Vector3& pos, const Quaternion& orientation,
+                      Port* thrusterDriver);
+  /// converts FG_PISTON data
+  bool convertPiston(const XMLElement* turbine, const std::string& number,
+                      Port* thrusterDriver);
+  /// converts FG_ELECTRIC data
+  bool convertElectric(const XMLElement* turbine, const std::string& number,
+                      Port* thrusterDriver);
   /// converts AERODYNAMICS elements
   bool convertAerodynamics(const XMLElement* aerodynamics);
   /// converts recursively AERODYNAMICS summands, factors and grooups
