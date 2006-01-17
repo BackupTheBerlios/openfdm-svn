@@ -18,12 +18,27 @@ class SharedPtr;
 template<typename T>
 class WeakPtr;
 
-class TypeInfo;
+/// Macros for the reflection stuff
+#define OPENFDM_OBJECT(classname, baseclassname)                \
+public: virtual const char* getTypeName(void) const
 
-class Object
-  : public Referenced {
+#define BEGIN_OPENFDM_OBJECT_DEF(classname)                     \
+const char*                                                     \
+classname::getTypeName(void) const                              \
+{                                                               \
+  return #classname ;                                           \
+}                                                               \
+
+#define END_OPENFDM_OBJECT_DEF
+
+
+/// The OpenFDM object base class.
+/// Every class 
+class Object :
+    public Referenced {
 public:
   Object(const std::string& name = std::string());
+  virtual ~Object(void);
 
   /// Returns the systems name.
   const std::string& getName(void) const
@@ -32,7 +47,7 @@ public:
   { mName = name; }
 
   /// Return the typeinfo for that Object.
-  virtual const TypeInfo* const getTypeInfo(void) const;
+  virtual const char* getTypeName(void) const;
   
   std::list<std::string> listProperties(void) const;
 
@@ -55,11 +70,7 @@ protected:
   /// Defines the map carrying the properties for this object.
   typedef std::map<std::string,Property> PropertyMap;
 
-  // Only destructable by the reference counted pointers.
-  virtual ~Object(void);
-
   void addProperty(const std::string& name, const Property& property);
-  void removeProperty(const std::string& name);
 
 private:
   /// Such objects can not be copied.

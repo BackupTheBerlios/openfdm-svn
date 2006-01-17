@@ -17,6 +17,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(System)
+  END_OPENFDM_OBJECT_DEF
+
 System::System(const std::string& name) :
   ModelGroup(name),
   mTime(0)
@@ -27,6 +30,12 @@ System::System(const std::string& name) :
 
 System::~System(void)
 {
+}
+
+void
+System::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
 }
 
 bool

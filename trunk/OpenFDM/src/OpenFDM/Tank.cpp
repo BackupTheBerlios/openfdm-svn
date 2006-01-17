@@ -6,6 +6,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Tank)
+  END_OPENFDM_OBJECT_DEF
+
 Tank::Tank(const std::string& name) :
   Mass(name),
   mContent(0),

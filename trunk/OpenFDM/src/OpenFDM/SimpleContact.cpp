@@ -12,6 +12,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(SimpleContact)
+  END_OPENFDM_OBJECT_DEF
+
 SimpleContact::SimpleContact(const std::string& name)
   : Contact(name)
 {

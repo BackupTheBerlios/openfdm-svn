@@ -14,16 +14,16 @@
 
 namespace OpenFDM {
 
-class Force :
-    public Interact {
+class Force : public Interact {
+  OPENFDM_OBJECT(Force, Interact);
 public:
   Force(const std::string& name, unsigned numParents);
   virtual ~Force(void);
 
 };
 
-class ExternalForce :
-    public Force {
+class ExternalForce : public Force {
+  OPENFDM_OBJECT(ExternalForce, Force);
 public:
   ExternalForce(const std::string& name) :
     Force(name, 1),
@@ -83,8 +83,8 @@ private:
   Vector6 mForce;
 };
 
-class InternalForce :
-    public Force {
+class InternalForce : public Force {
+  OPENFDM_OBJECT(InternalForce, Force);
 public:
   InternalForce(const std::string& name) :
     Force(name, 2),

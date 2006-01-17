@@ -7,6 +7,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Integrator)
+  END_OPENFDM_OBJECT_DEF
+
 Integrator::Integrator(const std::string& name) :
   Model(name)
 {

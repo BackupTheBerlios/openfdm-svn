@@ -16,8 +16,8 @@ namespace OpenFDM {
 class BinaryFunctionModelImpl;
 
 /// Class representing a model with exactly two inputs.
-class BinaryFunctionModel :
-    public Model {
+class BinaryFunctionModel : public Model {
+  OPENFDM_OBJECT(BinaryFunctionModel, Model);
 public:
   enum Type {
     Atan2,

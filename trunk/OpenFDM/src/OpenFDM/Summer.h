@@ -12,8 +12,8 @@
 
 namespace OpenFDM {
 
-class Summer :
-    public Model {
+class Summer : public Model {
+  OPENFDM_OBJECT(Summer, Model);
 public:
   Summer(const std::string& name);
   virtual ~Summer(void);

@@ -10,8 +10,8 @@
 
 namespace OpenFDM {
 
-class Mass :
-    public Interact {
+class Mass : public Interact {
+  OPENFDM_OBJECT(Mass, Interact);
 public:
   Mass(const std::string& name,
        const SpatialInertia& inertia = SpatialInertia(0));

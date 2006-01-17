@@ -16,6 +16,7 @@
 namespace OpenFDM {
 
 class DeadBand : public Model {
+  OPENFDM_OBJECT(DeadBand, Model);
 public:
   DeadBand(const std::string& name);
   virtual ~DeadBand(void);

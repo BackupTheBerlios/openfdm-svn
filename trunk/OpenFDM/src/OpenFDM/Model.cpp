@@ -12,6 +12,9 @@ const SampleTime SampleTime::PerTimestep(-2);
 const SampleTime SampleTime::Inherited(-1);
 const SampleTime SampleTime::Continous(0);
 
+BEGIN_OPENFDM_OBJECT_DEF(Model)
+  END_OPENFDM_OBJECT_DEF
+
 Model::Model(const std::string& name) :
   Object(name),
   mNumContinousStates(0l),

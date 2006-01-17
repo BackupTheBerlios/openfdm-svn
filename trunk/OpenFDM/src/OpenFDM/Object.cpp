@@ -22,10 +22,10 @@ Object::~Object(void)
   }
 }
 
-const TypeInfo* const
-Object::getTypeInfo(void) const
+const char*
+Object::getTypeName(void) const
 {
-  return 0;
+  return "Object";
 }
 
 std::list<std::string>
@@ -76,12 +76,6 @@ void
 Object::addProperty(const std::string& name, const Property& property)
 {
   mProperties[name] = property;
-}
-
-void
-Object::removeProperty(const std::string& name)
-{
-  mProperties.erase(name);
 }
 
 void

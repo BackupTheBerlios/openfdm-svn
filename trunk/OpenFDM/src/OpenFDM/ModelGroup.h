@@ -16,8 +16,8 @@ namespace OpenFDM {
 
 class Joint;
 
-class ModelGroup
-  : public Model {
+class ModelGroup : public Model {
+  OPENFDM_OBJECT(ModelGroup, Model);
 public:
   ModelGroup(const std::string& name);
   virtual ~ModelGroup(void);

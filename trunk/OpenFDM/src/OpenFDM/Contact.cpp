@@ -13,6 +13,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Contact)
+  END_OPENFDM_OBJECT_DEF
+
 Contact::Contact(const std::string& name)
   : ExternalForce(name)
 {

@@ -20,8 +20,8 @@
 
 namespace OpenFDM {
 
-class MultiBodySystem :
-    public ModelGroup {
+class MultiBodySystem : public ModelGroup {
+  OPENFDM_OBJECT(MultiBodySystem, ModelGroup);
 public:
   MultiBodySystem(const std::string& name);
   virtual ~MultiBodySystem(void);

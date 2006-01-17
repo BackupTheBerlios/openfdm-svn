@@ -10,8 +10,8 @@
 
 namespace OpenFDM {
 
-class ConstModel
-  : public Model {
+class ConstModel : public Model {
+  OPENFDM_OBJECT(ConstModel, Model);
 public:
   ConstModel(const std::string& name, const Matrix& value = Matrix());
   virtual ~ConstModel(void);

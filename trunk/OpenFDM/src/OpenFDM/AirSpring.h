@@ -11,8 +11,8 @@
 namespace OpenFDM {
 
 /// AirSpring
-class AirSpring :
-    public Model {
+class AirSpring : public Model {
+  OPENFDM_OBJECT(AirSpring, Model);
 public:
   AirSpring(const std::string& name);
   virtual ~AirSpring(void);

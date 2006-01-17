@@ -17,6 +17,7 @@
 namespace OpenFDM {
 
 class Gain : public Model {
+  OPENFDM_OBJECT(Gain, Model);
 public:
   Gain(const std::string& name);
   virtual ~Gain(void);

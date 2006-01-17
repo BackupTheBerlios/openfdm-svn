@@ -6,6 +6,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(ConstModel)
+  END_OPENFDM_OBJECT_DEF
+
 ConstModel::ConstModel(const std::string& name, const Matrix& value) :
   Model(name), mValue(value)
 {

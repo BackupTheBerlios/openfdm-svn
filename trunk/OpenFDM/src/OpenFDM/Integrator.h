@@ -10,8 +10,8 @@
 
 namespace OpenFDM {
 
-class Integrator :
-    public Model {
+class Integrator : public Model {
+  OPENFDM_OBJECT(Integrator, Model);
 public:
   Integrator(const std::string& name);
   virtual ~Integrator(void);

@@ -19,8 +19,8 @@ namespace OpenFDM {
 
 class PrismaticJointFrame;
 
-class PrismaticJoint
-  : public Joint {
+class PrismaticJoint : public Joint {
+  OPENFDM_OBJECT(PrismaticJoint, Joint);
 public:
   PrismaticJoint(const std::string& name);
   virtual ~PrismaticJoint(void);

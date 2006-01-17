@@ -21,8 +21,8 @@
 
 namespace OpenFDM {
 
-class Interact :
-    public Model {
+class Interact : public Model {
+  OPENFDM_OBJECT(Interact, Model);
 public:
   Interact(const std::string& name, unsigned numParents);
   virtual ~Interact(void);

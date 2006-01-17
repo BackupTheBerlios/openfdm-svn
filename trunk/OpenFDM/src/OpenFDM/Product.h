@@ -12,8 +12,8 @@
 
 namespace OpenFDM {
 
-class Product :
-    public Model {
+class Product : public Model {
+  OPENFDM_OBJECT(Product, Model);
 public:
   Product(const std::string& name);
   virtual ~Product(void);

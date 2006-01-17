@@ -17,6 +17,12 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuator)
+  END_OPENFDM_OBJECT_DEF
+
+BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuatorFrame)
+  END_OPENFDM_OBJECT_DEF
+
 RevoluteActuator::RevoluteActuator(const std::string& name) :
   Joint(name),
   mMaxVel(1),

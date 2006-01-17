@@ -42,6 +42,10 @@ private:
   { return mRealPortHandle[0].getRealValue() / mRealPortHandle[1].getRealValue(); }
 };
 
+
+BEGIN_OPENFDM_OBJECT_DEF(BinaryFunctionModel)
+  END_OPENFDM_OBJECT_DEF
+
 BinaryFunctionModel::BinaryFunctionModel(const std::string& name, Type type) :
   Model(name)
 {

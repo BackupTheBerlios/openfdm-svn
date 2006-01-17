@@ -34,8 +34,8 @@ class MobileRootJoint;
 
 class ModelVisitor;
 
-class Model
-  : public Object {
+class Model : public Object {
+  OPENFDM_OBJECT(Model, Object);
 public:
   Model(const std::string& name);
   virtual ~Model(void);

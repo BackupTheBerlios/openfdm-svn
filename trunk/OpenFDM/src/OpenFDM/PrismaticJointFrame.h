@@ -9,8 +9,8 @@
 
 namespace OpenFDM {
 
-class PrismaticJointFrame :
-    public CartesianJointFrame<1> {
+class PrismaticJointFrame : public CartesianJointFrame<1> {
+  OPENFDM_OBJECT(PrismaticJointFrame, CartesianJointFrame<1>);
 public:
   PrismaticJointFrame(const std::string& name) :
     CartesianJointFrame<1>(name),

@@ -14,8 +14,8 @@
 
 namespace OpenFDM {
 
-class SimpleContact
-  : public Contact {
+class SimpleContact : public Contact {
+  OPENFDM_OBJECT(SimpleContact, Contact);
 public:
   SimpleContact(const std::string& name);
   virtual ~SimpleContact(void);

@@ -8,6 +8,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(AirSpring)
+  END_OPENFDM_OBJECT_DEF
+
 AirSpring::AirSpring(const std::string& name) :
   Model(name),
   mPushPressure(2e5),

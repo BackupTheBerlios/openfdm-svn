@@ -15,8 +15,8 @@ namespace OpenFDM {
 class UnaryFunctionModelImpl;
 
 /// Class representing a model with exactly one input.
-class UnaryFunctionModel :
-    public Model {
+class UnaryFunctionModel : public Model {
+  OPENFDM_OBJECT(UnaryFunctionModel, Model);
 public:
   enum Type {
     Abs,
@@ -52,8 +52,8 @@ private:
   real_type mFunctionValue;
 };
 
-class UnitConversionModel :
-    public Model {
+class UnitConversionModel : public Model {
+  OPENFDM_OBJECT(UnitConversionModel, Model);
 public:
   enum Type {
     UnitToSi,

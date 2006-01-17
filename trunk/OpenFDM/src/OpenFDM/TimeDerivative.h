@@ -10,8 +10,8 @@
 
 namespace OpenFDM {
 
-class TimeDerivative :
-    public Model {
+class TimeDerivative : public Model {
+  OPENFDM_OBJECT(TimeDerivative, Model);
 public:
   TimeDerivative(const std::string& name);
   virtual ~TimeDerivative(void);

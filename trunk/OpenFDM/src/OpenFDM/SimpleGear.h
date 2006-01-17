@@ -15,8 +15,8 @@
 
 namespace OpenFDM {
 
-class SimpleGear
-  : public Contact {
+class SimpleGear : public Contact {
+  OPENFDM_OBJECT(SimpleGear, Contact);
 public:
   SimpleGear(const std::string& name);
   virtual ~SimpleGear(void);

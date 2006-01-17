@@ -13,8 +13,8 @@
 namespace OpenFDM {
 
 /// A modified Dahl fricion model
-class DiscBrake :
-    public Model {
+class DiscBrake : public Model {
+  OPENFDM_OBJECT(DiscBrake, Model);
 public:
   DiscBrake(const std::string& name);
   virtual ~DiscBrake(void);

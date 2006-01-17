@@ -18,8 +18,8 @@
 
 namespace OpenFDM {
 
-class AeroForce
-  : public ExternalForce {
+class AeroForce : public ExternalForce {
+  OPENFDM_OBJECT(AeroForce, ExternalForce);
 public:
   AeroForce(const std::string&);
   virtual ~AeroForce(void);

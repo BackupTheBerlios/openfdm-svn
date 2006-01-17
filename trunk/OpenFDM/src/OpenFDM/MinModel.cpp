@@ -12,6 +12,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(MinModel)
+  END_OPENFDM_OBJECT_DEF
+
 MinModel::MinModel(const std::string& name) :
   Model(name)
 {

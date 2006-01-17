@@ -23,8 +23,8 @@ namespace OpenFDM {
 
 class ModelVisitor;
 
-class Joint
-  : public Interact {
+class Joint : public Interact {
+  OPENFDM_OBJECT(Joint, Interact);
 public:
   Joint(const std::string& name);
   virtual ~Joint(void);

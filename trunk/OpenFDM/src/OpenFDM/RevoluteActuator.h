@@ -19,8 +19,8 @@ namespace OpenFDM {
 
 class RevoluteActuatorFrame;
 
-class RevoluteActuator :
-    public Joint {
+class RevoluteActuator : public Joint {
+  OPENFDM_OBJECT(RevoluteActuator, Joint);
 public:
   RevoluteActuator(const std::string& name);
   virtual ~RevoluteActuator(void);

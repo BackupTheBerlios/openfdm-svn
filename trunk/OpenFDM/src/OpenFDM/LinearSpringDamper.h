@@ -13,8 +13,8 @@
 namespace OpenFDM {
 
 /// Linear spring damper model
-class LinearSpringDamper :
-    public Model {
+class LinearSpringDamper : public Model {
+  OPENFDM_OBJECT(LinearSpringDamper, Model);
 public:
   LinearSpringDamper(const std::string& name);
   virtual ~LinearSpringDamper(void);

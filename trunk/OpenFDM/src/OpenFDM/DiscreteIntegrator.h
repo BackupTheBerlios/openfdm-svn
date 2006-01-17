@@ -10,8 +10,8 @@
 
 namespace OpenFDM {
 
-class DiscreteIntegrator :
-    public Model {
+class DiscreteIntegrator : public Model {
+  OPENFDM_OBJECT(DiscreteIntegrator, Model);
 public:
   DiscreteIntegrator(const std::string& name);
   virtual ~DiscreteIntegrator(void);

@@ -13,8 +13,8 @@
 
 namespace OpenFDM {
 
-class ExternalForceModel
-  : public ExternalForce {
+class ExternalForceModel : public ExternalForce {
+  OPENFDM_OBJECT(ExternalForceModel, ExternalForce);
 public:
   ExternalForceModel(const std::string& name);
   virtual ~ExternalForceModel(void);

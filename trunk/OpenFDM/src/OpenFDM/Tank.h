@@ -9,8 +9,8 @@
 
 namespace OpenFDM {
 
-class Tank :
-    public Mass {
+class Tank : public Mass {
+  OPENFDM_OBJECT(Tank, Mass);
 public:
   Tank(const std::string& name);
   virtual ~Tank(void);

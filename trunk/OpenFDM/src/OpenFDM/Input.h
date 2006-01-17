@@ -10,6 +10,7 @@
 namespace OpenFDM {
 
 class Input : public Model {
+  OPENFDM_OBJECT(Input, Model);
 public:
   Input(const std::string& name);
   virtual ~Input(void);
@@ -39,6 +40,7 @@ private:
 };
 
 class Output : public Model {
+  OPENFDM_OBJECT(Output, Model);
 public:
   Output(const std::string& name);
   virtual ~Output(void);

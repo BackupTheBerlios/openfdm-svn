@@ -12,8 +12,8 @@
 
 namespace OpenFDM {
 
-class MinModel :
-    public Model {
+class MinModel : public Model {
+  OPENFDM_OBJECT(MinModel, Model);
 public:
   MinModel(const std::string& name);
   virtual ~MinModel(void);

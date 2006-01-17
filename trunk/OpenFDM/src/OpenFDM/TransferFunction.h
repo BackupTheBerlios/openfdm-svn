@@ -11,8 +11,8 @@
 
 namespace OpenFDM {
 
-class DiscreteTransferFunction :
-    public Model {
+class DiscreteTransferFunction : public Model {
+  OPENFDM_OBJECT(DiscreteTransferFunction, Model);
 public:
   /// As always, we need a name in the constructor
   DiscreteTransferFunction(const std::string& name);

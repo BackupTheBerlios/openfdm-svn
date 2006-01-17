@@ -15,6 +15,13 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Frame)
+  END_OPENFDM_OBJECT_DEF
+
+/// FIXME
+BEGIN_OPENFDM_OBJECT_DEF(FreeFrame)
+  END_OPENFDM_OBJECT_DEF
+
 Frame::Frame(const std::string& name) :
   Object(name),
   mDirtyPos(true),

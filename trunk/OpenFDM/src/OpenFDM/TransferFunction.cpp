@@ -8,6 +8,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(DiscreteTransferFunction)
+  END_OPENFDM_OBJECT_DEF
+
 DiscreteTransferFunction::DiscreteTransferFunction(const std::string& name) :
   Model(name),
   mDen(1),

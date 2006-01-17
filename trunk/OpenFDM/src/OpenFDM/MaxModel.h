@@ -12,8 +12,8 @@
 
 namespace OpenFDM {
 
-class MaxModel :
-    public Model {
+class MaxModel : public Model {
+  OPENFDM_OBJECT(MaxModel, Model);
 public:
   MaxModel(const std::string& name);
   virtual ~MaxModel(void);

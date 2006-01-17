@@ -17,6 +17,7 @@
 namespace OpenFDM {
 
 class Bias : public Model {
+  OPENFDM_OBJECT(Bias, Model);
 public:
   Bias(const std::string& name);
   virtual ~Bias(void);

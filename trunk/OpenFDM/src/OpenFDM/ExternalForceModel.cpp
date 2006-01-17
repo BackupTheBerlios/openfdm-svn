@@ -7,6 +7,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(ExternalForceModel)
+  END_OPENFDM_OBJECT_DEF
+
 ExternalForceModel::ExternalForceModel(const std::string& name)
   : ExternalForce(name)
 {

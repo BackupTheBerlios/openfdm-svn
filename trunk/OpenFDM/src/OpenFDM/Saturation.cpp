@@ -15,6 +15,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Saturation)
+  END_OPENFDM_OBJECT_DEF
+
 Saturation::Saturation(const std::string& name) : Model(name)
 {
   setDirectFeedThrough(true);

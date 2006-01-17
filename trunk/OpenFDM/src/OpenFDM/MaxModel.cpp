@@ -12,6 +12,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(MaxModel)
+  END_OPENFDM_OBJECT_DEF
+
 MaxModel::MaxModel(const std::string& name) :
   Model(name)
 {

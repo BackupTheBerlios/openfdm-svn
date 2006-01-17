@@ -17,6 +17,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(MultiBodySystem)
+  END_OPENFDM_OBJECT_DEF
+
 MultiBodySystem::MultiBodySystem(const std::string& name) :
   ModelGroup(name)
 {

@@ -15,8 +15,8 @@
 
 namespace OpenFDM {
 
-class Contact
-  : public ExternalForce {
+class Contact : public ExternalForce {
+  OPENFDM_OBJECT(Contact, ExternalForce);
 public:
   Contact(const std::string& name);
   virtual ~Contact(void);

@@ -19,10 +19,16 @@ namespace OpenFDM {
 class TaskInfo;
 
 class System : public ModelGroup {
+  OPENFDM_OBJECT(System, ModelGroup);
 public:
   /// Constructor, we need a name
   System(const std::string& name);
   virtual ~System(void);
+
+  /// Double dispatch helper for the multibody system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the multibody system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
 
   /// Set the system to its initial state
   virtual bool init(void);

@@ -14,6 +14,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(DeadBand)
+  END_OPENFDM_OBJECT_DEF
+
 DeadBand::DeadBand(const std::string& name) : Model(name)
 {
   setDirectFeedThrough(true);

@@ -42,8 +42,8 @@ Each frame can have a linear and angular velocity with respect to its
 parent frame.
 */
 
-class Frame :
-    public Object {
+class Frame : public Object {
+  OPENFDM_OBJECT(Frame, Object);
 public:
   /// FIXME: store a 'path' to the current frame, check that by comparing the
   /// first path element
@@ -571,8 +571,8 @@ private:
   static const Vector6 mZeroVector;
 };
 
-class FreeFrame
-  : public Frame {
+class FreeFrame : public Frame {
+  OPENFDM_OBJECT(FreeFrame, Frame);
 public:
   FreeFrame(const std::string& name = std::string())
     : Frame(name)

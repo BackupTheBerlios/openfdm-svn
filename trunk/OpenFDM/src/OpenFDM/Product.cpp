@@ -12,6 +12,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Product)
+  END_OPENFDM_OBJECT_DEF
+
 Product::Product(const std::string& name) :
   Model(name)
 {

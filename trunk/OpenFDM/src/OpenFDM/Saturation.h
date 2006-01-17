@@ -18,6 +18,7 @@
 namespace OpenFDM {
 
 class Saturation : public Model {
+  OPENFDM_OBJECT(Saturation, Model);
 public:
   Saturation(const std::string& name);
   virtual ~Saturation(void);

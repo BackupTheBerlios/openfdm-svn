@@ -15,6 +15,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Bias)
+  END_OPENFDM_OBJECT_DEF
+
 Bias::Bias(const std::string& name) : Model(name)
 {
   setDirectFeedThrough(true);

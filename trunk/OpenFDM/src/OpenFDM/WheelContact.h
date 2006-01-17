@@ -15,8 +15,8 @@
 
 namespace OpenFDM {
 
-class WheelContact
-  : public ExternalForce {
+class WheelContact : public ExternalForce {
+  OPENFDM_OBJECT(WheelContact, ExternalForce);
 public:
   WheelContact(const std::string& name);
   virtual ~WheelContact(void);

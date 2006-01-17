@@ -8,6 +8,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(DiscBrake)
+  END_OPENFDM_OBJECT_DEF
+
 DiscBrake::DiscBrake(const std::string& name) :
   Model(name),
   mMinForce(0),

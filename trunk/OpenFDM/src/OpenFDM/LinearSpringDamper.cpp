@@ -8,6 +8,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(LinearSpringDamper)
+  END_OPENFDM_OBJECT_DEF
+
 LinearSpringDamper::LinearSpringDamper(const std::string& name) :
   Model(name),
   mSpringReference(0),

@@ -18,6 +18,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Interact)
+  END_OPENFDM_OBJECT_DEF
+
 Interact::Interact(const std::string& name, unsigned numParents) :
   Model(name),
   mParents(numParents)

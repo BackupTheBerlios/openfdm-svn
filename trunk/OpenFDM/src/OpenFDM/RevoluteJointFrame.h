@@ -9,8 +9,8 @@
 
 namespace OpenFDM {
 
-class RevoluteJointFrame :
-    public CartesianJointFrame<1> {
+class RevoluteJointFrame : public CartesianJointFrame<1> {
+  OPENFDM_OBJECT(RevoluteJointFrame, CartesianJointFrame<1>);
 public:
   RevoluteJointFrame(const std::string& name) :
     CartesianJointFrame<1>(name),

@@ -17,6 +17,12 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(RevoluteJoint)
+  END_OPENFDM_OBJECT_DEF
+
+BEGIN_OPENFDM_OBJECT_DEF(RevoluteJointFrame)
+  END_OPENFDM_OBJECT_DEF
+
 RevoluteJoint::RevoluteJoint(const std::string& name) :
   Joint(name)
 {

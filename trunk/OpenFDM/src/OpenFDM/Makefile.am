@@ -130,6 +130,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Vehicle.h \
   WheelContact.h \
   Wind.h \
+  XMLDumpModelVisitor.h \
   XML/Tablereader.h \
   XML/XMLReader.h
 
