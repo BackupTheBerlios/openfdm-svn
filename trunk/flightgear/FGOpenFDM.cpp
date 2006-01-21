@@ -15,8 +15,10 @@
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/Input.h>
 #include <OpenFDM/Ground.h>
+#include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/Model.h>
 #include <OpenFDM/ModelGroup.h>
+#include <OpenFDM/XMLDumpModelVisitor.h>
 
 #include "FGPropertyAdapter.h"
 
@@ -140,19 +142,6 @@ public:
 //     turbulence_rate = fgGetNode("/environment/turbulence/rate-hz",true);
 
 
-
-class FGPropertyImpl : public PropertyImpl<real_type> {
-public:
-  FGPropertyImpl(SGPropertyNode* ptr) : mPropertyNode(ptr) {}
-  virtual void setValue(const real_type& value) { if (mPropertyNode.valid()) mPropertyNode->setDoubleValue(value); }
-  virtual const Object* getObject(void) const { return 0; }
-  virtual Object* getObject(void) { return 0; }
-  virtual bool isValid(void) const { return true; }
-  virtual real_type getValue(void) const { if (mPropertyNode.valid()) return mPropertyNode->getDoubleValue(); else return 0; }
-private:
-  SGPropertyNode_ptr mPropertyNode;
-};
-
 void printVehicle(Vehicle* vehicle)
 {
   cout << "T = " << vehicle->getTime()
@@ -197,7 +186,7 @@ void FGOpenFDM::init()
   LegacyJSBSimReader reader;
   reader.addAircraftPath(fgGetString("/sim/aircraft-dir"));
   reader.addEnginePath(std::string(fgGetString("/sim/aircraft-dir"))
-                       + "/Engine");
+                       + "/Engines");
   reader.loadAircraft(std::string(fgGetString("/sim/aero")) + ".xml");
   if (reader.getErrorState()) {
     SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() cannot read aircraft!");
@@ -210,16 +199,58 @@ void FGOpenFDM::init()
   }
 
   mData->vehicle = reader.getVehicle();
+  Vehicle* vehicle = mData->vehicle;
   mData->ground = new FGGround(this);
-  mData->vehicle->setGround(mData->ground);
-  mData->vehicle->setPlanet(new FGPlanet);
-  mData->vehicle->setWind(new FGWind);
+  vehicle->setGround(mData->ground);
+  vehicle->setPlanet(new FGPlanet);
+  vehicle->setWind(new FGWind);
 
-  // Call what needs to be done ... ;-(
+  // Call what needs to be done ... ;-)
   common_init();
 
   // Hmm, twice ??
-  mData->vehicle->init();
+  vehicle->init();
+
+  MobileRootJoint* mobileRootJoint = vehicle->getMobileRootJoint();
+  // Check the position
+  Geodetic gp = Geodetic(get_Latitude(),
+                         get_Longitude(),
+                         convertFrom(uFoot, get_Altitude()));
+  SG_LOG(SG_FLIGHT, SG_INFO, "Geod Pos " << gp << " set.");
+  mobileRootJoint->setGeodPosition(gp);
+
+  // Orientation
+  Quaternion go = Quaternion::fromHeadAttBank(get_Psi(),
+                                              get_Theta(),
+                                              get_Phi());
+  SG_LOG(SG_FLIGHT, SG_INFO, "Geod Orientation " << go << " set!");
+  vehicle->setGeodOrientation(go);
+
+  // Velocity
+  std::string speed_set = fgGetString("/sim/presets/speed-set", "UVW");
+  if (speed_set == "UVW") {
+    Vector3 bodyVel(get_uBody(), get_vBody(), get_wBody());
+    mobileRootJoint->setAngularRelVel(Vector3::zeros());
+    mobileRootJoint->setLinearRelVel(convertFrom(uFeetPSecond, bodyVel));
+//   } else if (speed_set == "NED") {
+//   } else if (speed_set == "KNOTS") {
+//   } else if (speed_set == "MACH") {
+  } else {
+    mobileRootJoint->setRelVel(Vector6::zeros());
+  }
+
+  // Try to find a stable set of states
+  if (!vehicle->trim())
+    SG_LOG(SG_FLIGHT, SG_WARN, "Trimming failed!");
+
+  // Copy the trim results back
+  gp = vehicle->getGeodPosition();
+  _updateGeodeticPosition(gp.latitude, gp.longitude,
+                          convertTo(uFoot, gp.altitude));
+
+  Rotation geodOr = vehicle->getGeodOrientation();
+  Vector3 euler = geodOr.getEuler();
+  _set_Euler_Angles(euler(1), euler(2), euler(3));
 
   set_inited(true);
 }
@@ -245,30 +276,25 @@ void FGOpenFDM::unbind()
   FGInterface::unbind();
 }
 
-void FGOpenFDM::update(double dt)
+void
+FGOpenFDM::update(double dt)
 {
   if (is_suspended() || dt == 0)
     return;
 
   // Get a local vehicle pointer
   Vehicle* vehicle = mData->vehicle;
-
   if (!vehicle) {
     SG_LOG(SG_FLIGHT, SG_ALERT,
            "FGOpenFDM::update(double) is called without an aircraft loaded!");
     return;
   }
 
-
-  // Check if somebody has fiddled with the state values since the past step...
-  bool stateChanged = false;
-
   // Check the position
   Geodetic gp = Geodetic(get_Latitude(),
                          get_Longitude(),
                          convertFrom(uFoot, get_Altitude()));
   if (!equal(vehicle->getPlanet()->toCart(gp), vehicle->getCartPosition())) {
-    stateChanged = true;
     SG_LOG(SG_FLIGHT, SG_INFO,
            "Geod Pos set, error = "
            << norm(vehicle->getPlanet()->toCart(gp)-vehicle->getCartPosition())
@@ -280,7 +306,6 @@ void FGOpenFDM::update(double dt)
   // Check the orientation 
   Vector3 euler = vehicle->getGeodOrientation().getEuler();
   if (!equal(euler, Vector3(get_Phi(), get_Theta(), get_Psi()))) {
-    stateChanged = true;
     Quaternion
       go = Quaternion::fromHeadAttBank(get_Psi(), get_Theta(), get_Phi());
     SG_LOG(SG_FLIGHT, SG_INFO,
@@ -301,19 +326,9 @@ void FGOpenFDM::update(double dt)
     SG_LOG(SG_FLIGHT, SG_WARN,
            "FGInterface is beeing called without scenery below the aircraft!");
 
-  if (stateChanged) {
-    SG_LOG(SG_FLIGHT, SG_INFO, "State changed ------------------------------");
-//     printVehicle(vehicle);
-    vehicle->init();
-    vehicle->trim();
-//     printVehicle(vehicle);
-  }
-
   // Here a miracle occures :)
   vehicle->output();
   vehicle->update(dt);
-
-//   printVehicle(vehicle);
 
   // Now write the newly computed values into the interface class.
   gp = vehicle->getGeodPosition();
@@ -376,7 +391,7 @@ FGOpenFDM::tieObject(SGPropertyNode* base, Object* object)
   if (outputModel) {
     std::string pName = outputModel->getOutputName();
     SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
-    sgProp->tie(FGRealPropertyAdapter(outputModel, "value"));
+    sgProp->tie(FGOutputReflector(outputModel));
   }
 
   // Check for input models
@@ -390,6 +405,17 @@ FGOpenFDM::tieObject(SGPropertyNode* base, Object* object)
     // That adds a change listener to the property node which in turn
     // writes changes to the property back to the input model.
     inputModel->setUserData(new InputChangeUserData(inputModel, sgProp));
+  }
+
+  // Reflect all output ports
+  Model* model = dynamic_cast<Model*>(object);
+  if (model && model->getNumOutputPorts()) {
+    SGPropertyNode* outputBase = base->getNode("outputs", true);
+    for (unsigned i = 0; i < model->getNumOutputPorts(); ++i) {
+      std::string name = model->getOutputPortName(i);
+      SGPropertyNode* sgProp = outputBase->getNode(name.c_str(), true);
+      sgProp->tie(FGRealPortReflector(model->getOutputPort(i)));
+    }
   }
 
   // The usual, whole object reflection so that one can take a look into

@@ -80,8 +80,8 @@ public:
   virtual bool setValue(double value)
   {
     Matrix m = getPropertyValue().toMatrix();
-    unsigned r = mIndex % rows(m);
-    unsigned c = mIndex / rows(m);
+    unsigned r = mIndex % rows(m) + 1;
+    unsigned c = mIndex / rows(m) + 1;
     if (r < 1 || rows(m) < r)
       return false;
     if (c < 1 || cols(m) < c)
@@ -97,8 +97,8 @@ public:
       return getPropertyValue().toReal();
     else {
       Matrix m = getPropertyValue().toMatrix();
-      unsigned r = mIndex % rows(m);
-      unsigned c = mIndex / rows(m);
+      unsigned r = mIndex % rows(m) + 1;
+      unsigned c = mIndex / rows(m) + 1;
       if (r < 1 || rows(m) < r)
         return 0;
       if (c < 1 || cols(m) < c)
@@ -177,6 +177,80 @@ public:
   }
 private:
   InputChangeListener* mListener;
+};
+
+class FGOutputReflector :
+    public SGRawValue<double> {
+public:
+  FGOutputReflector(Output* output) :
+    mOutputModel(output)
+  {}
+
+  virtual bool setValue(double value)
+  { return false; }
+  
+  virtual double getValue(void) const
+  {
+    if (!mOutputModel)
+      return 0;
+    return mOutputModel->getValue();
+  }
+
+  virtual FGOutputReflector* clone(void) const
+  { return new FGOutputReflector(*this); }
+
+private:
+  // Holds the output model where it should write the value
+  // Note that this shal not be a SharedPtr, since we get a recursive
+  // ref count loop in that case.
+  WeakPtr<Output> mOutputModel;
+};
+
+class FGRealPortReflector :
+    public SGRawValue<double> {
+public:
+  FGRealPortReflector(Port* port, unsigned index = 1u) :
+    mPort(port), mIndex(index)
+  {}
+
+  /// Implements the SimGear property interface.
+  virtual bool setValue(double value)
+  { return false; }
+  /// Implements the SimGear property interface.
+  virtual double getValue(void) const
+  {
+    if (!mPort)
+      return 0;
+    if (mIndex == 1) {
+      const Port* port = mPort;
+      RealPortHandle realPortHandle = const_cast<Port*>(port)->toRealPortHandle();
+      if (realPortHandle.isConnected())
+        return realPortHandle.getRealValue();
+      else
+        return 0;
+    } else {
+      const Port* port = mPort;
+      MatrixPortHandle matrixPortHandle = const_cast<Port*>(port)->toMatrixPortHandle();
+      if (matrixPortHandle.isConnected()) {
+        Matrix m = matrixPortHandle.getMatrixValue();
+        unsigned r = mIndex % rows(m) + 1;
+        unsigned c = mIndex / rows(m) + 1;
+        if (r < 1 || rows(m) < r)
+          return 0;
+        if (c < 1 || cols(m) < c)
+          return 0;
+        return m(r, c);
+      } else
+        return 0;
+    }
+  }
+  
+  virtual FGRealPortReflector* clone(void) const
+  { return new FGRealPortReflector(*this); }
+
+private:
+  unsigned mIndex;
+  WeakPtr<Port> mPort;
 };
 
 } // namespace OpenFDM
