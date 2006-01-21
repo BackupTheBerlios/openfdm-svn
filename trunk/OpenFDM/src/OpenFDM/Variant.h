@@ -263,6 +263,55 @@ Variant::isTable3D() const
   return mData && mData->toTable3DVariant();
 }
 
+/// Hmmm, .... FIXME
+template<typename T>
+inline void
+variant_copy(const Variant& variant, T& value)
+{}
+
+template<>
+inline void
+variant_copy(const Variant& variant, std::string& value)
+{ value = variant.toString(); }
+
+template<>
+inline void
+variant_copy(const Variant& variant, real_type& value)
+{ value = variant.toReal(); }
+
+template<>
+inline void
+variant_copy(const Variant& variant, int& value)
+{ value = variant.toInteger(); }
+
+template<>
+inline void
+variant_copy(const Variant& variant, unsigned& value)
+{ value = variant.toUnsigned(); }
+
+template<typename Impl, LinAlg::size_type m, LinAlg::size_type n> 
+inline void
+variant_copy(const Variant& variant, LinAlg::MatrixLValue<Impl,m,n>& value)
+{ value = variant.toMatrix(); }
+
+template<> 
+inline void
+variant_copy(const Variant& variant, TableLookup& value)
+{ value = variant.toTableLookup(); }
+
+template<> 
+inline void
+variant_copy(const Variant& variant, TableData<1>& value)
+{ value = variant.toTable1D(); }
+template<> 
+inline void
+variant_copy(const Variant& variant, TableData<2>& value)
+{ value = variant.toTable2D(); }
+template<> 
+inline void
+variant_copy(const Variant& variant, TableData<3>& value)
+{ value = variant.toTable3D(); }
+
 } // namespace OpenFDM
 
 #endif

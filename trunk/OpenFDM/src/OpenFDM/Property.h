@@ -18,138 +18,32 @@ namespace OpenFDM {
 
 class Object;
 
-template<typename T>
-class PropertyImpl;
-
-typedef PropertyImpl<int> IntegerPropertyImpl;
-typedef PropertyImpl<unsigned> UnsignedPropertyImpl;
-typedef PropertyImpl<real_type> RealPropertyImpl;
-typedef PropertyImpl<Vector2> Vector2PropertyImpl;
-typedef PropertyImpl<Vector3> Vector3PropertyImpl;
-typedef PropertyImpl<Quaternion> QuaternionPropertyImpl;
-typedef PropertyImpl<Plane> PlanePropertyImpl;
-typedef PropertyImpl<Vector6> Vector6PropertyImpl;
-typedef PropertyImpl<Matrix> MatrixPropertyImpl;
-typedef PropertyImpl<std::string> StringPropertyImpl;
-
-typedef PropertyImpl<TableLookup> TableLookupPropertyImpl;
-typedef PropertyImpl<TableData<1> > Table1DPropertyImpl;
-typedef PropertyImpl<TableData<2> > Table2DPropertyImpl;
-typedef PropertyImpl<TableData<3> > Table3DPropertyImpl;
-
-class UntypedPropertyImpl :
+class PropertyImpl :
     public Referenced {
 public:
-  UntypedPropertyImpl(bool isStored = false) : mIsStored(isStored) {}
-  virtual ~UntypedPropertyImpl(void);
+  PropertyImpl(bool isStored = false) : mIsStored(isStored) {}
+  virtual ~PropertyImpl(void);
 
-  /// Can always do that via Variants.
-  /// Take care that this is costly ...
-  Variant getValue(void) /*const FIXME*/;
-  void setValue(const Variant& value);
+  virtual Variant getValue(void) = 0;
+  virtual void setValue(const Variant& value) = 0;
+
+  virtual bool isValid(void) const = 0;
 
   void setStoredProperty(bool isStored)
   { mIsStored = isStored; }
   bool isStoredProperty(void) const
   { return mIsStored; }
 
-  virtual bool isValid(void) const = 0;
-
-  virtual IntegerPropertyImpl* toIntegerPropertyImpl(void);
-  virtual UnsignedPropertyImpl* toUnsignedPropertyImpl(void);
-  virtual RealPropertyImpl* toRealPropertyImpl(void);
-  virtual Vector2PropertyImpl* toVector2PropertyImpl(void);
-  virtual Vector3PropertyImpl* toVector3PropertyImpl(void);
-  virtual QuaternionPropertyImpl* toQuaternionPropertyImpl(void);
-  virtual PlanePropertyImpl* toPlanePropertyImpl(void);
-  virtual Vector6PropertyImpl* toVector6PropertyImpl(void);
-  virtual MatrixPropertyImpl* toMatrixPropertyImpl(void);
-  virtual StringPropertyImpl* toStringPropertyImpl(void);
-
-  virtual TableLookupPropertyImpl* toTableLookupPropertyImpl(void);
-  virtual Table1DPropertyImpl* toTable1DPropertyImpl(void);
-  virtual Table2DPropertyImpl* toTable2DPropertyImpl(void);
-  virtual Table3DPropertyImpl* toTable3DPropertyImpl(void);
-
 private:
   bool mIsStored;
 
   /// Properties are not assignable.
-  UntypedPropertyImpl(const UntypedPropertyImpl&);
-  UntypedPropertyImpl& operator=(const UntypedPropertyImpl&);
-};
-
-template<typename T>
-class PropertyImplInterface : public UntypedPropertyImpl {
-public:
-  /// Retrieve property from the given object.
-  virtual T getValue(void) const = 0;
-  /// Set property of the given object.
-  virtual void setValue(const T&) = 0;
-};
-
-template<typename T>
-class PropertyImpl : public PropertyImplInterface<T> {};
-template<>
-class PropertyImpl<int> : public PropertyImplInterface<int> {
-  virtual IntegerPropertyImpl* toIntegerPropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<unsigned> : public PropertyImplInterface<unsigned> {
-  virtual UnsignedPropertyImpl* toUnsignedPropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<real_type> : public PropertyImplInterface<real_type> {
-  virtual RealPropertyImpl* toRealPropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<Vector2> : public PropertyImplInterface<Vector2> {
-  virtual Vector2PropertyImpl* toVector2PropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<Vector3> : public PropertyImplInterface<Vector3> {
-  virtual Vector3PropertyImpl* toVector3PropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<Quaternion> : public PropertyImplInterface<Quaternion> {
-  virtual QuaternionPropertyImpl* toQuaternionPropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<Plane> : public PropertyImplInterface<Plane> {
-  virtual PlanePropertyImpl* toPlanePropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<Vector6> : public PropertyImplInterface<Vector6> {
-  virtual Vector6PropertyImpl* toVector6PropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<Matrix> : public PropertyImplInterface<Matrix> {
-  virtual MatrixPropertyImpl* toMatrixPropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<std::string> : public PropertyImplInterface<std::string> {
-  virtual StringPropertyImpl* toStringPropertyImpl(void) { return this; }
-};
-
-template<>
-class PropertyImpl<TableLookup> : public PropertyImplInterface<TableLookup> {
-  virtual TableLookupPropertyImpl* toTableLookupPropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<TableData<1> > : public PropertyImplInterface<TableData<1> > {
-  virtual Table1DPropertyImpl* toTable1DPropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<TableData<2> > : public PropertyImplInterface<TableData<2> > {
-  virtual Table2DPropertyImpl* toTable2DPropertyImpl(void) { return this; }
-};
-template<>
-class PropertyImpl<TableData<3> > : public PropertyImplInterface<TableData<3> > {
-  virtual Table3DPropertyImpl* toTable3DPropertyImpl(void) { return this; }
+  PropertyImpl(const PropertyImpl&);
+  PropertyImpl& operator=(const PropertyImpl&);
 };
 
 template<typename O, typename T>
-class ObjectPropertyImpl : public PropertyImpl<T> {
+class ObjectPropertyImpl : public PropertyImpl {
 public:
   typedef const T& (O::*GetRefMethod)(void) const;
   typedef T (O::*GetMethod)(void) const;
@@ -177,25 +71,27 @@ public:
   {}
 
   /// Retrieve property from the given object.
-  virtual T getValue(void) const
+  virtual Variant getValue(void)
   {
     const O* object = mObject;
     OpenFDMAssert(object);
     if (mGetRefMethod && object)
-      return (object->*mGetRefMethod)();
+      return Variant((object->*mGetRefMethod)());
     else if (mGetMethod && object)
-      return (object->*mGetMethod)();
+      return Variant((object->*mGetMethod)());
     else
-      return T();
+      return Variant();
   }
 
   /// Set property to the given object.
-  virtual void setValue(const T& value)
+  virtual void setValue(const Variant& value)
   {
+    T typedValue;
+    variant_copy(value, typedValue);
     O* object = mObject;
     OpenFDMAssert(object);
     if (mSetMethod && object)
-      (object->*mSetMethod)(value);
+      (object->*mSetMethod)(typedValue);
   }
 
   virtual bool isValid(void) const { return mObject; }
@@ -207,77 +103,10 @@ private:
   SetMethod mSetMethod;
 };
 
-template<typename T>
-class TypedProperty {
-public:
-  typedef PropertyImpl<T> implementation_t;
-
-  TypedProperty(implementation_t* propertyImpl = 0) :
-    mPropertyImpl(propertyImpl)
-  {}
-  template<typename O>
-  TypedProperty(O* object, T (O::*getter) () const) :
-    mPropertyImpl(new ObjectPropertyImpl<O,T>(object, getter))
-  {}
-  template<typename O>
-  TypedProperty(O* object, const T& (O::*getter) () const) :
-    mPropertyImpl(new ObjectPropertyImpl<O,T>(object, getter))
-  {}
-  template<typename O>
-  TypedProperty(O* object, void (O::*setter) (const T&)) :
-    mPropertyImpl(new ObjectPropertyImpl<O,T>(object, setter))
-  {}
-  template<typename O>
-  TypedProperty(O* object, T (O::*getter) () const, void (O::*setter) (const T&)) :
-    mPropertyImpl(new ObjectPropertyImpl<O,T>(object, getter, setter))
-  {}
-  template<typename O>
-  TypedProperty(O* object, const T& (O::*getter) () const, void (O::*setter) (const T&)) :
-    mPropertyImpl(new ObjectPropertyImpl<O,T>(object, getter, setter))
-  {}
-
-  /// Returns if the property contains a valid property reference and
-  /// references an existing object.
-  bool isValid(void) const
-  { return mPropertyImpl && mPropertyImpl->isValid(); }
-
-  T getValue(void) /*const FIXME*/
-  {
-    if (mPropertyImpl)
-      return mPropertyImpl->getValue();
-    else
-      return T();
-  }
-  void setValue(const T& value)
-  {
-    if (mPropertyImpl)
-      mPropertyImpl->setValue(value);
-  }
-
-private:
-  SharedPtr<implementation_t> mPropertyImpl;
-};
-
-typedef TypedProperty<int> IntegerProperty;
-typedef TypedProperty<unsigned> UnsignedProperty;
-typedef TypedProperty<real_type> RealProperty;
-typedef TypedProperty<Vector2> Vector2Property;
-typedef TypedProperty<Vector3> Vector3Property;
-typedef TypedProperty<Quaternion> QuaternionProperty;
-typedef TypedProperty<Plane> PlaneProperty;
-typedef TypedProperty<Vector6> Vector6Property;
-typedef TypedProperty<Matrix> MatrixProperty;
-typedef TypedProperty<std::string> StringProperty;
-
-typedef TypedProperty<TableLookup> TableLookupProperty;
-typedef TypedProperty<TableData<1> > Table1DProperty;
-typedef TypedProperty<TableData<2> > Table2DProperty;
-typedef TypedProperty<TableData<3> > Table3DProperty;
-
 class Property {
 public:
   Property(void) {}
-  Property(UntypedPropertyImpl* propertyImpl) :
+  Property(PropertyImpl* propertyImpl) :
     mPropertyImpl(propertyImpl)
   {}
   template<typename O, typename T>
@@ -303,7 +132,7 @@ public:
 
   /// Can always do that via Variants.
   /// Take care that this is costly ...
-  Variant getValue(void) /*const FIXME*/
+  Variant getValue(void)
   {
     if (mPropertyImpl)
       return mPropertyImpl->getValue();
@@ -326,83 +155,8 @@ public:
   bool isStoredProperty(void) const
   { return mPropertyImpl && mPropertyImpl->isStoredProperty(); }
 
-  bool isIntegerProperty(void)
-  { return mPropertyImpl->toIntegerPropertyImpl(); }
-  TypedProperty<int> toIntegerProperty(void)
-  { return TypedProperty<int>(mPropertyImpl->toIntegerPropertyImpl()); }
-
-  bool isUnsignedProperty(void)
-  { return mPropertyImpl->toUnsignedPropertyImpl(); }
-  TypedProperty<unsigned> toUnsignedProperty(void)
-  { return TypedProperty<unsigned>(mPropertyImpl->toUnsignedPropertyImpl()); }
-
-  bool isRealProperty(void)
-  { return mPropertyImpl->toRealPropertyImpl(); }
-  TypedProperty<real_type> toRealProperty(void)
-  { return TypedProperty<real_type>(mPropertyImpl->toRealPropertyImpl()); }
-
-  bool isVector2Property(void)
-  { return mPropertyImpl->toVector2PropertyImpl(); }
-  TypedProperty<Vector2> toVector2Property(void)
-  { return TypedProperty<Vector2>(mPropertyImpl->toVector2PropertyImpl()); }
-
-  bool isVector3Property(void)
-  { return mPropertyImpl->toVector3PropertyImpl(); }
-  TypedProperty<Vector3> toVector3Property(void)
-  { return TypedProperty<Vector3>(mPropertyImpl->toVector3PropertyImpl()); }
-
-  bool isQuaternionProperty(void)
-  { return mPropertyImpl->toQuaternionPropertyImpl(); }
-  TypedProperty<Quaternion> toQuaternionProperty(void)
-  { return TypedProperty<Quaternion>(mPropertyImpl->toQuaternionPropertyImpl()); }
-
-  bool isPlaneProperty(void)
-  { return mPropertyImpl->toPlanePropertyImpl(); }
-  TypedProperty<Plane> toPlaneProperty(void)
-  { return TypedProperty<Plane>(mPropertyImpl->toPlanePropertyImpl()); }
-
-  bool isVector6Property(void)
-  { return mPropertyImpl->toVector6PropertyImpl(); }
-  TypedProperty<Vector6> toVector6Property(void)
-  { return TypedProperty<Vector6>(mPropertyImpl->toVector6PropertyImpl()); }
-
-  bool isMatrixProperty(void)
-  { return mPropertyImpl->toMatrixPropertyImpl(); }
-  TypedProperty<Matrix> toMatrixProperty(void)
-  { return TypedProperty<Matrix>(mPropertyImpl->toMatrixPropertyImpl()); }
-
-  bool isStringProperty(void)
-  { return mPropertyImpl->toStringPropertyImpl(); }
-  TypedProperty<std::string> toStringProperty(void)
-  { return TypedProperty<std::string>(mPropertyImpl->toStringPropertyImpl()); }
-
-  bool isTableLookupProperty(void)
-  { return mPropertyImpl->toTableLookupPropertyImpl(); }
-  TypedProperty<TableLookup> toTableLookupProperty(void)
-  { return TypedProperty<TableLookup>(mPropertyImpl->toTableLookupPropertyImpl()); }
-
-  bool isTable1DProperty(void)
-  { return mPropertyImpl->toTable1DPropertyImpl(); }
-  TypedProperty<TableData<1> > toTable1DProperty(void)
-  { return TypedProperty<TableData<1> >(mPropertyImpl->toTable1DPropertyImpl()); }
-  bool isTable2DProperty(void)
-  { return mPropertyImpl->toTable2DPropertyImpl(); }
-  TypedProperty<TableData<2> > toTable2DProperty(void)
-  { return TypedProperty<TableData<2> >(mPropertyImpl->toTable2DPropertyImpl()); }
-  bool isTable3DProperty(void)
-  { return mPropertyImpl->toTable3DPropertyImpl(); }
-  TypedProperty<TableData<3> > toTable3DProperty(void)
-  { return TypedProperty<TableData<3> >(mPropertyImpl->toTable3DPropertyImpl()); }
-
-  template<typename T>
-  TypedProperty<T> toTypedProperty(void)
-  {
-    UntypedPropertyImpl* impl = mPropertyImpl;
-    return TypedProperty<T>(dynamic_cast<PropertyImpl<T>*>(impl));
-  }
-
 private:
-  SharedPtr<UntypedPropertyImpl> mPropertyImpl;
+  SharedPtr<PropertyImpl> mPropertyImpl;
 };
 
 } // namespace OpenFDM
