@@ -30,7 +30,7 @@ AirSpring::AirSpring(const std::string& name) :
   addStoredProperty("maxCompression", Property(this, &AirSpring::getMaxCompression, &AirSpring::setMaxCompression));
   addStoredProperty("minCompression", Property(this, &AirSpring::getMinCompression, &AirSpring::setMinCompression));
   addStoredProperty("maxDamperConstant", Property(this, &AirSpring::getMaxDamperConstant, &AirSpring::setMaxDamperConstant));
-  addProperty("minDamperConstant", Property(this, &AirSpring::getMinDamperConstant, &AirSpring::setMinDamperConstant));
+  addStoredProperty("minDamperConstant", Property(this, &AirSpring::getMinDamperConstant, &AirSpring::setMinDamperConstant));
 
   setNumInputPorts(2);
   setInputPortName(0, "position");

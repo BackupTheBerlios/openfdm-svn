@@ -33,24 +33,24 @@ public:
   computeFrictionForce(real_type normForce, const Vector2& vel,
                        real_type omegaR, real_type friction) const;
 
-  void setWheelRadius(real_type wheelRadius)
+  void setWheelRadius(const real_type& wheelRadius)
   { mWheelRadius = wheelRadius; }
-  real_type getWheelRadius(void) const
+  const real_type& getWheelRadius(void) const
   { return mWheelRadius; }
 
-  void setSpringConstant(real_type springConstant)
+  void setSpringConstant(const real_type& springConstant)
   { mSpringConstant = springConstant; }
-  real_type getSpringConstant(void) const
+  const real_type& getSpringConstant(void) const
   { return mSpringConstant; }
 
-  void setSpringDamping(real_type springDamping)
+  void setSpringDamping(const real_type& springDamping)
   { mSpringDamping = springDamping; }
-  real_type getSpringDamping(void) const
+  const real_type& getSpringDamping(void) const
   { return mSpringDamping; }
 
-  void setFrictionCoeficient(real_type frictionCoeficient)
+  void setFrictionCoeficient(const real_type& frictionCoeficient)
   { mFrictionCoeficient = frictionCoeficient; }
-  real_type getFrictionCoeficient(void) const
+  const real_type& getFrictionCoeficient(void) const
   { return mFrictionCoeficient; }
 private:
   void getGround(real_type t);

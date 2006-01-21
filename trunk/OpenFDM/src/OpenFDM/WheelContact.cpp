@@ -24,6 +24,11 @@ WheelContact::WheelContact(const std::string& name)
   mSpringDamping = 0;
   mFrictionCoeficient = 0.8;
 
+  addStoredProperty("wheelRadius", Property(this, &WheelContact::getWheelRadius, &WheelContact::setWheelRadius));
+  addStoredProperty("springConstant", Property(this, &WheelContact::getSpringConstant, &WheelContact::setSpringConstant));
+  addStoredProperty("springDamping", Property(this, &WheelContact::getSpringDamping, &WheelContact::setSpringDamping));
+  addStoredProperty("frictionCoeficient", Property(this, &WheelContact::getFrictionCoeficient, &WheelContact::setFrictionCoeficient));
+
   // FIXME??
   addSampleTime(SampleTime::PerTimestep);
   addSampleTime(SampleTime::Continous);

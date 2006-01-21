@@ -25,7 +25,7 @@ BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuatorFrame)
 
 RevoluteActuator::RevoluteActuator(const std::string& name) :
   Joint(name),
-  mMaxVel(1),
+  mMaxVel(10),
   mVelGain(1e2),
   mVelDotGain(1e2)
 {

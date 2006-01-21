@@ -20,19 +20,19 @@ public:
   SimpleContact(const std::string& name);
   virtual ~SimpleContact(void);
 
-  real_type getSpringConstant(void) const
+  const real_type& getSpringConstant(void) const
   { return mSpringConst; }
-  void setSpringConstant(real_type springConst)
+  void setSpringConstant(const real_type& springConst)
   { mSpringConst = springConst; }
 
-  real_type getSpringDamping(void) const
+  const real_type& getSpringDamping(void) const
   { return mSpringDamp; }
-  void setSpringDamping(real_type springDamp)
+  void setSpringDamping(const real_type& springDamp)
   { mSpringDamp = springDamp; }
 
-  real_type getFrictionCoeficient(void) const
+  const real_type& getFrictionCoeficient(void) const
   { return mFrictionCoef; }
-  void setFrictionCoeficient(real_type frictionCoef)
+  void setFrictionCoeficient(const real_type& frictionCoef)
   { mFrictionCoef = frictionCoef; }
 
   // Compute the plane normal force.

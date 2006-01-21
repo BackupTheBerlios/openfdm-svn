@@ -16,8 +16,6 @@ Input::Input(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Input::getOutputValue);
 
-  addProperty("inputValue",
-              Property(this, &Input::getInputValue, &Input::setInputValue));
   addStoredProperty("inputGain",
                     Property(this, &Input::getInputGain, &Input::setInputGain));
   addStoredProperty("inputName",
@@ -109,7 +107,6 @@ Output::Output(const std::string& name) :
   setNumInputPorts(1);
   setInputPortName(0, "input");
 
-  addProperty("value", Property(this, &Output::getValue));
   addStoredProperty("outputGain",
                     Property(this, &Output::getOutputGain, &Output::setOutputGain));
   addStoredProperty("outputName",

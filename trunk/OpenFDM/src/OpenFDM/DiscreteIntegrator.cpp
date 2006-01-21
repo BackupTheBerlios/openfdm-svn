@@ -20,9 +20,9 @@ DiscreteIntegrator::DiscreteIntegrator(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &DiscreteIntegrator::getIntegralOutput);
 
-  addProperty("initialValue", Property(this, &DiscreteIntegrator::getInitialValue, &DiscreteIntegrator::setInitialValue));
-  addProperty("minSaturation", Property(this, &DiscreteIntegrator::getMinSaturation, &DiscreteIntegrator::setMinSaturation));
-  addProperty("maxSaturation", Property(this, &DiscreteIntegrator::getMaxSaturation, &DiscreteIntegrator::setMaxSaturation));
+  addStoredProperty("initialValue", Property(this, &DiscreteIntegrator::getInitialValue, &DiscreteIntegrator::setInitialValue));
+  addStoredProperty("minSaturation", Property(this, &DiscreteIntegrator::getMinSaturation, &DiscreteIntegrator::setMinSaturation));
+  addStoredProperty("maxSaturation", Property(this, &DiscreteIntegrator::getMaxSaturation, &DiscreteIntegrator::setMaxSaturation));
 }
 
 DiscreteIntegrator::~DiscreteIntegrator(void)

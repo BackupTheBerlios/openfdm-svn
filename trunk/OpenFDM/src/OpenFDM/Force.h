@@ -31,8 +31,8 @@ public:
   {
     mMountFrame = new FreeFrame(name);
 
-    addProperty("position", Property(this, &ExternalForce::getPosition, &ExternalForce::setPosition));
-    addProperty("orientation", Property(this, &ExternalForce::getOrientation, &ExternalForce::setOrientation));
+    addStoredProperty("position", Property(this, &ExternalForce::getPosition, &ExternalForce::setPosition));
+    addStoredProperty("orientation", Property(this, &ExternalForce::getOrientation, &ExternalForce::setOrientation));
   }
   virtual ~ExternalForce(void) {}
 
@@ -93,10 +93,10 @@ public:
     mMountFrame[0] = new FreeFrame(name  + "<0>");
     mMountFrame[1] = new FreeFrame(name  + "<1>");
 
-    addProperty("position0", Property(this, &InternalForce::getPosition0, &InternalForce::setPosition0));
-    addProperty("orientation0", Property(this, &InternalForce::getOrientation0, &InternalForce::setOrientation0));
-    addProperty("position1", Property(this, &InternalForce::getPosition1, &InternalForce::setPosition1));
-    addProperty("orientation1", Property(this, &InternalForce::getOrientation1, &InternalForce::setOrientation1));
+    addStoredProperty("position0", Property(this, &InternalForce::getPosition0, &InternalForce::setPosition0));
+    addStoredProperty("orientation0", Property(this, &InternalForce::getOrientation0, &InternalForce::setOrientation0));
+    addStoredProperty("position1", Property(this, &InternalForce::getPosition1, &InternalForce::setPosition1));
+    addStoredProperty("orientation1", Property(this, &InternalForce::getOrientation1, &InternalForce::setOrientation1));
 
   }
   virtual ~InternalForce(void) {}
@@ -160,15 +160,12 @@ protected:
   Vector6 mForce;
 };
 
-class LineForce :
-    public InternalForce {
+class LineForce : public InternalForce {
+  OPENFDM_OBJECT(LineForce, InternalForce);
 public:
   LineForce(const std::string& name) :
     InternalForce(name)
   {
-    addProperty("relPos", Property(this, &LineForce::getRelPos));
-    addProperty("relVel", Property(this, &LineForce::getRelVel));
-
     addOutputPort("relPos", this, &LineForce::getRelPos);
     addOutputPort("relVel", this, &LineForce::getRelVel);
 

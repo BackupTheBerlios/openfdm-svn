@@ -30,59 +30,6 @@ AeroForce::AeroForce(const std::string& name)
                     Property(this, &AeroForce::getWingArea, &AeroForce::setWingArea));
   addStoredProperty("coord",
                     Property(this, &AeroForce::getCoord, &AeroForce::setCoord));
-
-  addProperty("altitude",
-              Property(this, &AeroForce::getAltitude));
-  addProperty("aboveGroundLevel",
-              Property(this, &AeroForce::getAboveGroundLevel));
-
-  addProperty("trueSpeed",
-              Property(this, &AeroForce::getTrueSpeed));
-  addProperty("dynamicPressure",
-              Property(this, &AeroForce::getDynamicPressure));
-  addProperty("alpha",
-              Property(this, &AeroForce::getAlpha));
-  addProperty("alphaDot",
-              Property(this, &AeroForce::getAlphaDot));
-  addProperty("beta",
-              Property(this, &AeroForce::getBeta));
-  addProperty("betaDot",
-              Property(this, &AeroForce::getBetaDot));
-  addProperty("mach",
-              Property(this, &AeroForce::getMach));
-  addProperty("machNumber",
-              Property(this, &AeroForce::getMachNumber));
-  addProperty("trueSpeedUW",
-              Property(this, &AeroForce::getTrueSpeedUW));
-  addProperty("wingSpanOver2Speed",
-              Property(this, &AeroForce::getWingSpanOver2Speed));
-  addProperty("coordOver2Speed",
-              Property(this, &AeroForce::getCoordOver2Speed));
-  addProperty("hOverWingSpan",
-              Property(this, &AeroForce::getHOverWingSpan));
-
-  addProperty("pressure",
-              Property(this, &AeroForce::getPressure));
-  addProperty("density",
-              Property(this, &AeroForce::getDensity));
-  addProperty("soundSpeed",
-              Property(this, &AeroForce::getSoundSpeed));
-  addProperty("temperature",
-              Property(this, &AeroForce::getTemperature));
-
-  addProperty("u",
-              Property(this, &AeroForce::getBodyU));
-  addProperty("v",
-              Property(this, &AeroForce::getBodyV));
-  addProperty("w",
-              Property(this, &AeroForce::getBodyW));
-  addProperty("p",
-              Property(this, &AeroForce::getBodyP));
-  addProperty("q",
-              Property(this, &AeroForce::getBodyQ));
-  addProperty("r",
-              Property(this, &AeroForce::getBodyR));
-
   addOutputPort("wingSpan", this, &AeroForce::getWingSpan);
   addOutputPort("wingArea", this, &AeroForce::getWingArea);
   addOutputPort("coord", this, &AeroForce::getCoord);

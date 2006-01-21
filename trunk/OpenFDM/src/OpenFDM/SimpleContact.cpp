@@ -21,6 +21,10 @@ SimpleContact::SimpleContact(const std::string& name)
   mSpringConst = 0;
   mSpringDamp = 0;
   mFrictionCoef = 0;
+
+  addStoredProperty("springConstant", Property(this, &SimpleContact::getSpringConstant, &SimpleContact::setSpringConstant));
+  addStoredProperty("springDamping", Property(this, &SimpleContact::getSpringDamping, &SimpleContact::setSpringDamping));
+  addStoredProperty("frictionCoeficient", Property(this, &SimpleContact::getFrictionCoeficient, &SimpleContact::setFrictionCoeficient));
 }
 
 SimpleContact::~SimpleContact(void)

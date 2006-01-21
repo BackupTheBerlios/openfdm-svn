@@ -26,20 +26,23 @@ SimpleGear::SimpleGear(const std::string& name)
   mSpringDamp = 0;
   mFrictionCoef = 0;
 
+  // ??? FIXME
   addProperty("steeringAngle",
               Property(this, &SimpleGear::getSteeringAngle,
                        &SimpleGear::setSteeringAngle));
   addProperty("brake",
               Property(this, &SimpleGear::getBrake, &SimpleGear::setBrake));
-  addProperty("springConstant",
-              Property(this, &SimpleGear::getSpringConstant,
-                       &SimpleGear::setSpringConstant));
-  addProperty("springDamping",
-              Property(this, &SimpleGear::getSpringDamping,
-                       &SimpleGear::setSpringDamping));
-  addProperty("frictionCoeficient",
-              Property(this, &SimpleGear::getFrictionCoeficient,
-                       &SimpleGear::setFrictionCoeficient));
+
+
+  addStoredProperty("springConstant",
+                    Property(this, &SimpleGear::getSpringConstant,
+                             &SimpleGear::setSpringConstant));
+  addStoredProperty("springDamping",
+                    Property(this, &SimpleGear::getSpringDamping,
+                             &SimpleGear::setSpringDamping));
+  addStoredProperty("frictionCoeficient",
+                    Property(this, &SimpleGear::getFrictionCoeficient,
+                             &SimpleGear::setFrictionCoeficient));
 
   unsigned inputPortBase = getNumInputPorts();
   setNumInputPorts(inputPortBase + 2);
