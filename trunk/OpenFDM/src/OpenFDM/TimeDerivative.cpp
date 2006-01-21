@@ -18,8 +18,6 @@ TimeDerivative::TimeDerivative(const std::string& name) :
 
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &TimeDerivative::getDerivativeOutput);
-
-  addProperty("output", Property(this, &TimeDerivative::getDerivativeOutput));
 }
 
 TimeDerivative::~TimeDerivative(void)

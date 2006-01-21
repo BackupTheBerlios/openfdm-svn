@@ -26,8 +26,7 @@ Product::Product(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Product::getProduct);
 
-  addProperty("output", Property(this, &Product::getProduct));
-  addProperty("numFactors", Property(this, &Product::getNumFactors, &Product::setNumFactors));
+  addStoredProperty("numFactors", Property(this, &Product::getNumFactors, &Product::setNumFactors));
 }
 
 Product::~Product(void)

@@ -28,8 +28,6 @@ Gain::Gain(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Gain::getOutput);
 
-  addProperty("output", Property(this, &Gain::getOutput));
-  
   addStoredProperty("gain", Property(this, &Gain::getGain, &Gain::setGain));
 }
 

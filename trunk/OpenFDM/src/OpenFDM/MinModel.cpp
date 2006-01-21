@@ -27,9 +27,7 @@ MinModel::MinModel(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &MinModel::getMin);
 
-  addProperty("output", Property(this, &MinModel::getMin));
-
-  addProperty("numMinInputs", Property(this, &MinModel::getNumMinInputs, &MinModel::setNumMinInputs));
+  addStoredProperty("numMinInputs", Property(this, &MinModel::getNumMinInputs, &MinModel::setNumMinInputs));
 }
 
 MinModel::~MinModel(void)

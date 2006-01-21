@@ -28,7 +28,6 @@ Bias::Bias(const std::string& name) : Model(name)
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Bias::getOutput);
 
-  addProperty("output", Property(this, &Bias::getOutput));
   addStoredProperty("bias", Property(this, &Bias::getBias, &Bias::setBias));
 }
 

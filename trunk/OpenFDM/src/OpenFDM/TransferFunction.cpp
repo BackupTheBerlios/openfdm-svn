@@ -19,9 +19,8 @@ DiscreteTransferFunction::DiscreteTransferFunction(const std::string& name) :
   mNum(1) = 1;
   mDen(1) = 1;
 
-  addProperty("numerator", Property(this, &DiscreteTransferFunction::getNumerator, &DiscreteTransferFunction::setNumerator));
-  addProperty("denominator", Property(this, &DiscreteTransferFunction::getDenominator, &DiscreteTransferFunction::setDenominator));
-  addProperty("output", Property(this, &DiscreteTransferFunction::getOutput));
+  addStoredProperty("numerator", Property(this, &DiscreteTransferFunction::getNumerator, &DiscreteTransferFunction::setNumerator));
+  addStoredProperty("denominator", Property(this, &DiscreteTransferFunction::getDenominator, &DiscreteTransferFunction::setDenominator));
 
   setDirectFeedThrough(true);
 

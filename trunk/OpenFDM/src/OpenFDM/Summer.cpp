@@ -27,9 +27,7 @@ Summer::Summer(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Summer::getSum);
 
-  addProperty("output", Property(this, &Summer::getSum));
-
-  addProperty("numSummands", Property(this, &Summer::getNumSummands, &Summer::setNumSummands));
+  addStoredProperty("numSummands", Property(this, &Summer::getNumSummands, &Summer::setNumSummands));
 }
 
 Summer::~Summer(void)

@@ -27,9 +27,7 @@ MaxModel::MaxModel(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &MaxModel::getMax);
 
-  addProperty("output", Property(this, &MaxModel::getMax));
-
-  addProperty("numMaxInputs", Property(this, &MaxModel::getNumMaxInputs, &MaxModel::setNumMaxInputs));
+  addStoredProperty("numMaxInputs", Property(this, &MaxModel::getNumMaxInputs, &MaxModel::setNumMaxInputs));
 }
 
 MaxModel::~MaxModel(void)

@@ -25,7 +25,6 @@ TablePreLookup::TablePreLookup(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &TablePreLookup::getOutput);
   
-  addProperty("output", Property(this, &TablePreLookup::getOutput));
   addStoredProperty("lookupVector", Property(this, &TablePreLookup::getTableLookup, &TablePreLookup::setTableLookup));
 }
 
@@ -74,7 +73,6 @@ Table1D::Table1D(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Table1D::getOutput);
   
-  addProperty("output", Property(this, &Table1D::getOutput));
   addStoredProperty("data", Property(this, &Table1D::getTableData, &Table1D::setTableData));
 }
 
@@ -126,7 +124,6 @@ Table2D::Table2D(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Table2D::getOutput);
   
-  addProperty("output", Property(this, &Table2D::getOutput));
   addStoredProperty("data", Property(this, &Table2D::getTableData, &Table2D::setTableData));
 }
 
@@ -183,7 +180,6 @@ Table3D::Table3D(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Table3D::getOutput);
   
-  addProperty("output", Property(this, &Table3D::getOutput));
   addStoredProperty("data", Property(this, &Table3D::getTableData, &Table3D::setTableData));
 }
 

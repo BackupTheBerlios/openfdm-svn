@@ -28,10 +28,8 @@ Saturation::Saturation(const std::string& name) : Model(name)
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Saturation::getOutput);
 
-  addProperty("output", Property(this, &Saturation::getOutput));
-
-  addProperty("minSaturation", Property(this, &Saturation::getMinSaturation, &Saturation::setMinSaturation));
-  addProperty("maxSaturation", Property(this, &Saturation::getMaxSaturation, &Saturation::setMaxSaturation));
+  addStoredProperty("minSaturation", Property(this, &Saturation::getMinSaturation, &Saturation::setMinSaturation));
+  addStoredProperty("maxSaturation", Property(this, &Saturation::getMaxSaturation, &Saturation::setMaxSaturation));
 }
 
 Saturation::~Saturation(void)
