@@ -15,7 +15,7 @@ Mass::Mass(const std::string& name, const SpatialInertia& inertia) :
   mUntransformedInertia(inertia),
   mPosition(Vector3::zeros())
 {
-  addProperty("position", Property(this, &Mass::getPosition, &Mass::setPosition));
+  addStoredProperty("position", Property(this, &Mass::getPosition, &Mass::setPosition));
 }
 
 Mass::~Mass(void)

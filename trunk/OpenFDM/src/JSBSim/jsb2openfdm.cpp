@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <OpenFDM/ReaderWriter.h>
+#include <OpenFDM/XMLDumpModelVisitor.h>
 #include "LegacyJSBSimReader.h"
 
 using OpenFDM::ReaderWriter;
@@ -32,7 +33,10 @@ main(int argc, char *argv[])
   // Ok, now the Vehicle here contains the imported data
   // When the reflection stuff is ready, we can dump that data to a
   // native format ...
-  // reader.getVehicle();
+  reader.getVehicle()->getSystem()->init();
+
+  OpenFDM::XMLDumpModelVisitor debugDumpVisitor(std::cout);
+  reader.getVehicle()->getSystem()->accept(debugDumpVisitor);
 
   return 0;
 }

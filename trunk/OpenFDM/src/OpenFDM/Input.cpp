@@ -18,10 +18,10 @@ Input::Input(const std::string& name) :
 
   addProperty("inputValue",
               Property(this, &Input::getInputValue, &Input::setInputValue));
-  addProperty("inputGain",
-              Property(this, &Input::getInputGain, &Input::setInputGain));
-  addProperty("inputName",
-              Property(this, &Input::getInputName, &Input::setInputName));
+  addStoredProperty("inputGain",
+                    Property(this, &Input::getInputGain, &Input::setInputGain));
+  addStoredProperty("inputName",
+                    Property(this, &Input::getInputName, &Input::setInputName));
 }
 
 Input::~Input(void)
@@ -110,10 +110,10 @@ Output::Output(const std::string& name) :
   setInputPortName(0, "input");
 
   addProperty("value", Property(this, &Output::getValue));
-  addProperty("outputGain",
-              Property(this, &Output::getOutputGain, &Output::setOutputGain));
-  addProperty("outputName",
-              Property(this, &Output::getOutputName, &Output::setOutputName));
+  addStoredProperty("outputGain",
+                    Property(this, &Output::getOutputGain, &Output::setOutputGain));
+  addStoredProperty("outputName",
+                    Property(this, &Output::getOutputName, &Output::setOutputName));
 }
 
 Output::~Output(void)

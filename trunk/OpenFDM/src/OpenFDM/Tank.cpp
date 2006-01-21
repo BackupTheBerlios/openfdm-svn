@@ -22,8 +22,8 @@ Tank::Tank(const std::string& name) :
   setNumOutputPorts(1);
   setOutputPort(0, "content", this, &Tank::getContent);
 
-  addProperty("content", Property(this, &Tank::getContent, &Tank::setContent));
-  addProperty("capacity", Property(this, &Tank::getCapacity, &Tank::setCapacity));
+  addStoredProperty("content", Property(this, &Tank::getContent, &Tank::setContent));
+  addStoredProperty("capacity", Property(this, &Tank::getCapacity, &Tank::setCapacity));
 }
 
 Tank::~Tank(void)

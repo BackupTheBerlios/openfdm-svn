@@ -29,7 +29,7 @@ Bias::Bias(const std::string& name) : Model(name)
   setOutputPort(0, "output", this, &Bias::getOutput);
 
   addProperty("output", Property(this, &Bias::getOutput));
-  addProperty("bias", Property(this, &Bias::getBias, &Bias::setBias));
+  addStoredProperty("bias", Property(this, &Bias::getBias, &Bias::setBias));
 }
 
 Bias::~Bias(void)

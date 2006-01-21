@@ -20,6 +20,9 @@ DiscBrake::DiscBrake(const std::string& name) :
 
   setNumContinousStates(1);
 
+  addStoredProperty("minForce", Property(this, &DiscBrake::getMinForce, &DiscBrake::setMinForce));
+  addStoredProperty("maxForce", Property(this, &DiscBrake::getMaxForce, &DiscBrake::setMaxForce));
+
   setNumInputPorts(2);
   setInputPortName(0, "brakePressure");
   setInputPortName(1, "velocity");

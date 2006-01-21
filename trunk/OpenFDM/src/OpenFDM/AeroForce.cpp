@@ -24,12 +24,12 @@ AeroForce::AeroForce(const std::string& name)
 
   dirtyAll();
 
-  addProperty("wingSpan",
-              Property(this, &AeroForce::getWingSpan, &AeroForce::setWingSpan));
-  addProperty("wingArea",
-              Property(this, &AeroForce::getWingArea, &AeroForce::setWingArea));
-  addProperty("coord",
-              Property(this, &AeroForce::getCoord, &AeroForce::setCoord));
+  addStoredProperty("wingSpan",
+                    Property(this, &AeroForce::getWingSpan, &AeroForce::setWingSpan));
+  addStoredProperty("wingArea",
+                    Property(this, &AeroForce::getWingArea, &AeroForce::setWingArea));
+  addStoredProperty("coord",
+                    Property(this, &AeroForce::getCoord, &AeroForce::setCoord));
 
   addProperty("altitude",
               Property(this, &AeroForce::getAltitude));

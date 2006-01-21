@@ -10,7 +10,7 @@ namespace OpenFDM {
 Object::Object(const std::string& name) :
   mName(name)
 {
-  addProperty("name", Property(this, &Object::getName, &Object::setName));
+  addStoredProperty("name", Property(this, &Object::getName, &Object::setName));
 }
 
 Object::~Object(void)
@@ -72,10 +72,34 @@ Object::setPropertyValue(const std::string& name, const Variant& value)
   property.setValue(value);
 }
 
+bool
+Object::isStoredProperty(const std::string& name) const
+{
+  // Return an empty variant if this property does not exist.
+  if (mProperties.count(name) <= 0)
+    return false;
+
+  // safety check
+  Property property = mProperties.find(name)->second;
+  if (!property.isValid())
+    return false;
+
+  // Return the value of the property
+  return property.isStoredProperty();
+}
+
 void
 Object::addProperty(const std::string& name, const Property& property)
 {
   mProperties[name] = property;
+}
+
+void
+Object::addStoredProperty(const std::string& name, const Property& property)
+{
+  mProperties[name] = property;
+  // FIXME, weak implementation
+  mProperties[name].setStoredProperty(true);
 }
 
 void

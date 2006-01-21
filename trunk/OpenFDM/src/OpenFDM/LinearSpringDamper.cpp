@@ -19,9 +19,9 @@ LinearSpringDamper::LinearSpringDamper(const std::string& name) :
 {
   setDirectFeedThrough(true);
 
-  addProperty("springReference", Property(this, &LinearSpringDamper::getSpringReference, &LinearSpringDamper::setSpringReference));
-  addProperty("springConstant", Property(this, &LinearSpringDamper::getSpringConstant, &LinearSpringDamper::setSpringConstant));
-  addProperty("damperConstant", Property(this, &LinearSpringDamper::getDamperConstant, &LinearSpringDamper::setDamperConstant));
+  addStoredProperty("springReference", Property(this, &LinearSpringDamper::getSpringReference, &LinearSpringDamper::setSpringReference));
+  addStoredProperty("springConstant", Property(this, &LinearSpringDamper::getSpringConstant, &LinearSpringDamper::setSpringConstant));
+  addStoredProperty("damperConstant", Property(this, &LinearSpringDamper::getDamperConstant, &LinearSpringDamper::setDamperConstant));
 
   setNumInputPorts(2);
   setInputPortName(0, "position");

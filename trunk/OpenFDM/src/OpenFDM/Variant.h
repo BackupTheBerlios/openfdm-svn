@@ -11,6 +11,7 @@
 #include "Referenced.h"
 #include "SharedPtr.h"
 #include "Matrix.h"
+#include "TableData.h"
 
 namespace OpenFDM {
 
@@ -46,6 +47,20 @@ public:
     mData(new StringVariantData(value))
   {}
 
+  // FIXME: just to hack reflection for now
+  Variant(const TableLookup& value) :
+    mData(new TableLookupVariantData(value))
+  {}
+  Variant(const TableData<1>& value) :
+    mData(new Table1DVariantData(value))
+  {}
+  Variant(const TableData<2>& value) :
+    mData(new Table2DVariantData(value))
+  {}
+  Variant(const TableData<3>& value) :
+    mData(new Table3DVariantData(value))
+  {}
+
   /// Assignment operator
   /// Variant follows the copy on copy sematics, that is in this operator
   /// the contents of the Variant is copied.
@@ -61,6 +76,12 @@ public:
   inline bool isUnsigned(void) const;
   inline bool isMatrix(void) const;
 
+  // FIXME: just to hack reflection for now
+  inline bool isTableLookup(void) const;
+  inline bool isTable1D(void) const;
+  inline bool isTable2D(void) const;
+  inline bool isTable3D(void) const;
+
   /// Extraction function.
   std::string toString(void) const;
   /// Extraction function.
@@ -72,6 +93,12 @@ public:
   /// Extraction function.
   Matrix toMatrix(void) const;
 
+  // FIXME: just to hack reflection for now
+  TableLookup toTableLookup(void) const;
+  TableData<1> toTable1D(void) const;
+  TableData<2> toTable2D(void) const;
+  TableData<3> toTable3D(void) const;
+
 private:
 
   struct IntegerVariantData;
@@ -79,6 +106,11 @@ private:
   struct RealVariantData;
   struct MatrixVariantData;
   struct StringVariantData;
+
+  struct TableLookupVariantData;
+  struct Table1DVariantData;
+  struct Table2DVariantData;
+  struct Table3DVariantData;
   
   struct VariantData : public Referenced {
     VariantData() {}
@@ -93,6 +125,15 @@ private:
     virtual const MatrixVariantData* toMatrixVariant(void) const
     { return 0; }
     virtual const StringVariantData* toStringVariant(void) const
+    { return 0; }
+
+    virtual const TableLookupVariantData* toTableLookupVariant(void) const
+    { return 0; }
+    virtual const Table1DVariantData* toTable1DVariant(void) const
+    { return 0; }
+    virtual const Table2DVariantData* toTable2DVariant(void) const
+    { return 0; }
+    virtual const Table3DVariantData* toTable3DVariant(void) const
     { return 0; }
   };
   
@@ -128,6 +169,27 @@ private:
   struct StringVariantData : VariantDataImpl<std::string> {
     StringVariantData(const std::string& data) { mData = data; }
     virtual const StringVariantData* toStringVariant(void) const
+    { return this; }
+  };
+
+  struct TableLookupVariantData : VariantDataImpl<TableLookup> {
+    TableLookupVariantData(const TableLookup& data) { mData = data; }
+    virtual const TableLookupVariantData* toTableLookupVariant(void) const
+    { return this; }
+  };
+  struct Table1DVariantData : VariantDataImpl<TableData<1> > {
+    Table1DVariantData(const TableData<1>& data) { mData = data; }
+    virtual const Table1DVariantData* toTable1DVariant(void) const
+    { return this; }
+  };
+  struct Table2DVariantData : VariantDataImpl<TableData<2> > {
+    Table2DVariantData(const TableData<2>& data) { mData = data; }
+    virtual const Table2DVariantData* toTable2DVariant(void) const
+    { return this; }
+  };
+  struct Table3DVariantData : VariantDataImpl<TableData<3> > {
+    Table3DVariantData(const TableData<3>& data) { mData = data; }
+    virtual const Table3DVariantData* toTable3DVariant(void) const
     { return this; }
   };
   
@@ -175,6 +237,30 @@ inline bool
 Variant::isMatrix() const
 {
   return mData && mData->toMatrixVariant();
+}
+
+inline bool
+Variant::isTableLookup() const
+{
+  return mData && mData->toTableLookupVariant();
+}
+
+inline bool
+Variant::isTable1D() const
+{
+  return mData && mData->toTable1DVariant();
+}
+
+inline bool
+Variant::isTable2D() const
+{
+  return mData && mData->toTable2DVariant();
+}
+
+inline bool
+Variant::isTable3D() const
+{
+  return mData && mData->toTable3DVariant();
 }
 
 } // namespace OpenFDM

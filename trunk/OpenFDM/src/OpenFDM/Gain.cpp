@@ -30,7 +30,7 @@ Gain::Gain(const std::string& name) :
 
   addProperty("output", Property(this, &Gain::getOutput));
   
-  addProperty("gain", Property(this, &Gain::getGain, &Gain::setGain));
+  addStoredProperty("gain", Property(this, &Gain::getGain, &Gain::setGain));
 }
 
 Gain::~Gain(void)

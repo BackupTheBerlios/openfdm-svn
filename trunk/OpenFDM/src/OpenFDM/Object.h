@@ -56,6 +56,9 @@ public:
   /// Set an objects property named name to the given value
   void setPropertyValue(const std::string& name, const Variant& value);
 
+  /// Returns true if the property must be stored to reflect this given object
+  bool isStoredProperty(const std::string& name) const;
+
   /// Returns the objects attached user data
   Object* getUserData(void)
   { return mUserData; }
@@ -71,6 +74,7 @@ protected:
   typedef std::map<std::string,Property> PropertyMap;
 
   void addProperty(const std::string& name, const Property& property);
+  void addStoredProperty(const std::string& name, const Property& property);
 
 private:
   /// Such objects can not be copied.

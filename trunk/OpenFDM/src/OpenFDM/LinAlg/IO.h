@@ -18,9 +18,10 @@ namespace LinAlg {
     @param os Stream to write to.
     @param A Matrix to write.
 */
-template<typename Impl, size_type m, size_type n>
-std::ostream&
-operator<<(std::ostream& os, const MatrixRValue<Impl,m,n>& A)
+template<typename char_type, typename traits_type, typename Impl, size_type m, size_type n> 
+inline
+std::basic_ostream<char_type, traits_type>&
+operator<<(std::basic_ostream<char_type, traits_type>& os, const MatrixRValue<Impl,m,n>& A)
 {
   typedef Impl implementation_type;
   typedef typename implementation_type::value_type value_type;

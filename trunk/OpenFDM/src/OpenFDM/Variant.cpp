@@ -47,6 +47,34 @@ Variant::toString() const
       sstr << matrixData->mData;
       return sstr.str();
     }
+
+    const TableLookupVariantData* tableLookupData = mData->toTableLookupVariant();
+    if (tableLookupData) {
+      std::stringstream sstr;
+      sstr << tableLookupData->mData;
+      return sstr.str();
+    }
+
+    const Table1DVariantData* table1DData = mData->toTable1DVariant();
+    if (table1DData) {
+      std::stringstream sstr;
+      sstr << table1DData->mData;
+      return sstr.str();
+    }
+
+    const Table2DVariantData* table2DData = mData->toTable2DVariant();
+    if (table2DData) {
+      std::stringstream sstr;
+      sstr << table2DData->mData;
+      return sstr.str();
+    }
+
+    const Table3DVariantData* table3DData = mData->toTable3DVariant();
+    if (table3DData) {
+      std::stringstream sstr;
+      sstr << table3DData->mData;
+      return sstr.str();
+    }
   }
 
   return std::string();
@@ -143,6 +171,42 @@ Variant::toMatrix() const
   }
 
   return Matrix();
+}
+
+TableLookup
+Variant::toTableLookup(void) const
+{
+  const TableLookupVariantData* data = mData->toTableLookupVariant();
+  if (data)
+    return data->mData;
+  return TableLookup();
+}
+
+TableData<1>
+Variant::toTable1D(void) const
+{
+  const Table1DVariantData* data = mData->toTable1DVariant();
+  if (data)
+    return data->mData;
+  return TableData<1>();
+}
+
+TableData<2>
+Variant::toTable2D(void) const
+{
+  const Table2DVariantData* data = mData->toTable2DVariant();
+  if (data)
+    return data->mData;
+  return TableData<2>();
+}
+
+TableData<3>
+Variant::toTable3D(void) const
+{
+  const Table3DVariantData* data = mData->toTable3DVariant();
+  if (data)
+    return data->mData;
+  return TableData<3>();
 }
 
 } // namespace OpenFDM

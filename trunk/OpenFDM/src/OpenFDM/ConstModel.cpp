@@ -12,7 +12,7 @@ BEGIN_OPENFDM_OBJECT_DEF(ConstModel)
 ConstModel::ConstModel(const std::string& name, const Matrix& value) :
   Model(name), mValue(value)
 {
-  addProperty("value", Property(this, &ConstModel::getValue, &ConstModel::setValue));
+  addStoredProperty("value", Property(this, &ConstModel::getValue, &ConstModel::setValue));
 
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &ConstModel::getValue);

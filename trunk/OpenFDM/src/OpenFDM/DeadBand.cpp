@@ -27,7 +27,7 @@ DeadBand::DeadBand(const std::string& name) : Model(name)
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &DeadBand::getOutput);
   
-  addProperty("width", Property(this, &DeadBand::getWidth, &DeadBand::setWidth));
+  addStoredProperty("width", Property(this, &DeadBand::getWidth, &DeadBand::setWidth));
 }
 
 DeadBand::~DeadBand(void)

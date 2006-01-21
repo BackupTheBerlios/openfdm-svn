@@ -60,17 +60,17 @@ public:
 
   const real_type& getMaxVel(void) const
   { return mMaxVel; }
-  void setMaxVel(real_type maxVel)
+  void setMaxVel(const real_type& maxVel)
   { mMaxVel = maxVel; }
 
   const real_type& getVelGain(void) const
   { return mVelGain; }
-  void setVelGain(real_type velGain)
+  void setVelGain(const real_type& velGain)
   { mVelGain = velGain; }
 
   const real_type& getVelDotGain(void) const
   { return mVelDotGain; }
-  void setVelDotGain(real_type velDotGain)
+  void setVelDotGain(const real_type& velDotGain)
   { mVelDotGain = velDotGain; }
 
 private:

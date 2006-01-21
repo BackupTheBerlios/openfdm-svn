@@ -33,6 +33,11 @@ RevoluteActuator::RevoluteActuator(const std::string& name) :
 
   mRevoluteActuatorFrame = new RevoluteActuatorFrame(name);
 
+  addStoredProperty("maxVel", Property(this, &RevoluteActuator::getMaxVel, &RevoluteActuator::setMaxVel));
+  addStoredProperty("velGain", Property(this, &RevoluteActuator::getVelGain, &RevoluteActuator::setVelGain));
+  addStoredProperty("velDotGain", Property(this, &RevoluteActuator::getVelDotGain, &RevoluteActuator::setVelDotGain));
+
+
   setNumInputPorts(1);
   setInputPortName(0, "position");
 

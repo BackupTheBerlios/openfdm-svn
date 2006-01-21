@@ -60,6 +60,19 @@ UntypedPropertyImpl::getValue(void) /*const*/
   if (stringProperty)
     return Variant(stringProperty->getValue());
 
+  TableLookupPropertyImpl* tlProperty = toTableLookupPropertyImpl();
+  if (tlProperty)
+    return Variant(tlProperty->getValue());
+  Table1DPropertyImpl* t1Property = toTable1DPropertyImpl();
+  if (t1Property)
+    return Variant(t1Property->getValue());
+  Table2DPropertyImpl* t2Property = toTable2DPropertyImpl();
+  if (t2Property)
+    return Variant(t2Property->getValue());
+  Table3DPropertyImpl* t3Property = toTable3DPropertyImpl();
+  if (t3Property)
+    return Variant(t3Property->getValue());
+
   return Variant();
 }
 
@@ -121,6 +134,19 @@ UntypedPropertyImpl::setValue(const Variant& value)
   StringPropertyImpl* stringProperty = toStringPropertyImpl();
   if (stringProperty)
     stringProperty->setValue(value.toString());
+
+  TableLookupPropertyImpl* tlProperty = toTableLookupPropertyImpl();
+  if (tlProperty)
+    tlProperty->setValue(value.toTableLookup());
+  Table1DPropertyImpl* t1Property = toTable1DPropertyImpl();
+  if (t1Property)
+    t1Property->setValue(value.toTable1D());
+  Table2DPropertyImpl* t2Property = toTable2DPropertyImpl();
+  if (t2Property)
+    t2Property->setValue(value.toTable2D());
+  Table3DPropertyImpl* t3Property = toTable3DPropertyImpl();
+  if (t3Property)
+    t3Property->setValue(value.toTable3D());
 }
 
 IntegerPropertyImpl*
@@ -179,6 +205,30 @@ UntypedPropertyImpl::toMatrixPropertyImpl(void)
 
 StringPropertyImpl*
 UntypedPropertyImpl::toStringPropertyImpl(void)
+{
+  return 0;
+}
+
+TableLookupPropertyImpl*
+UntypedPropertyImpl::toTableLookupPropertyImpl(void)
+{
+  return 0;
+}
+
+Table1DPropertyImpl*
+UntypedPropertyImpl::toTable1DPropertyImpl(void)
+{
+  return 0;
+}
+
+Table2DPropertyImpl*
+UntypedPropertyImpl::toTable2DPropertyImpl(void)
+{
+  return 0;
+}
+
+Table3DPropertyImpl*
+UntypedPropertyImpl::toTable3DPropertyImpl(void)
 {
   return 0;
 }
