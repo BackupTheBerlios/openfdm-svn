@@ -10,7 +10,7 @@
 
 namespace OpenFDM {
 
-UntypedPropertyImpl::~UntypedPropertyImpl(void)
+PropertyImpl::~PropertyImpl(void)
 {
 }
 
