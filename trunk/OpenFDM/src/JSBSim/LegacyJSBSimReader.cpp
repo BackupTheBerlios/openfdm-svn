@@ -108,8 +108,11 @@ LegacyJSBSimReader::loadAircraft(const std::string& acFileName)
 
   // Parse the file and generate a dom like representation of it
   XMLDomParser parser;
-  if (!parser.parseXML(fixedAcStream))
+  if (!parser.parseXML(fixedAcStream)) {
+    std::cerr << "Parsing XML failed:" << std::endl;
+    std::cerr << parser.getErrorMessage() << std::endl;
     return false;
+  }
 
   return convertDocument(parser.getDocument());
 }
@@ -2101,7 +2104,8 @@ LegacyJSBSimReader::convertEngine(const XMLElement* engine,
 
   XMLDomParser eParser;
   if (!eParser.parseXML(eFileStream))
-    return error("Error parsing engine \"" + engineName + "\"");
+    return error("Error parsing engine \"" + engineName + "\":"
+                 + eParser.getErrorMessage());
   eFileStream.close();
 
   const XMLDocument* engineDoc = eParser.getDocument();
@@ -2225,7 +2229,7 @@ LegacyJSBSimReader::convertEngine(const XMLElement* engine,
 
 //   mVehicle->getTopBody()->addInteract(engineForce);
 
-//   return true;
+  return true;
 }
 
 bool
