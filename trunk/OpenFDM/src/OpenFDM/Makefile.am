@@ -1,14 +1,11 @@
 
 INCLUDES = -I$(srcdir)/..
 
-noinst_PROGRAMS = main units
+noinst_PROGRAMS = units
 
 # define some unit tests
 check_PROGRAMS = quattest
 TESTS          = $(check_PROGRAMS)
-
-main_SOURCES = main.cpp
-main_LDADD = libOpenFDM.la
 
 units_SOURCES = units.cpp
 units_LDADD = libOpenFDM.la
