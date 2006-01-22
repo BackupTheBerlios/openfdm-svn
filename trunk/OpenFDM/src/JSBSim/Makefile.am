@@ -13,7 +13,9 @@ OpenFDMinclude_HEADERS = \
   JSBSimAerosurfaceScale.h \
   JSBSimKinemat.h \
   JSBSimScheduledGain.h \
-  LegacyJSBSimReader.h
+  LegacyJSBSimReader.h \
+  Tablereader.h \
+  XMLReader.h
 
 lib_LTLIBRARIES = libJSBReader.la
 libJSBReader_la_SOURCES = \
@@ -21,4 +23,6 @@ libJSBReader_la_SOURCES = \
   JSBSimAerosurfaceScale.cpp \
   JSBSimKinemat.cpp \
   JSBSimScheduledGain.cpp \
-  LegacyJSBSimReader.cpp
+  LegacyJSBSimReader.cpp \
+  Tablereader.cpp \
+  XMLReader.cpp

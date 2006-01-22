@@ -41,8 +41,8 @@
 #include <OpenFDM/DiscBrake.h>
 
 #include <OpenFDM/ReaderWriter.h>
-#include <OpenFDM/XML/Tablereader.h>
-#include <OpenFDM/XML/XMLReader.h>
+#include "Tablereader.h"
+#include "XMLReader.h"
 
 #include "JSBSimAerosurfaceScale.h"
 #include "JSBSimKinemat.h"

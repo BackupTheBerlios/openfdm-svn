@@ -128,9 +128,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Vehicle.h \
   WheelContact.h \
   Wind.h \
-  XMLDumpModelVisitor.h \
-  XML/Tablereader.h \
-  XML/XMLReader.h
+  XMLDumpModelVisitor.h
 
 libOpenFDM_la_SOURCES = \
   AeroForce.cpp \
@@ -201,6 +199,4 @@ libOpenFDM_la_SOURCES = \
   Units.cpp \
   Variant.cpp \
   Vehicle.cpp \
-  WheelContact.cpp \
-  XML/Tablereader.cpp \
-  XML/XMLReader.cpp
+  WheelContact.cpp
