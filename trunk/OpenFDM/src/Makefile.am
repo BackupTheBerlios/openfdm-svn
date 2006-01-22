@@ -1,1 +1,4 @@
-SUBDIRS = OpenFDM JSBSim builder
+SUBDIRS = OpenFDM JSBSim
+if ENABLE_BUILDER
+SUBDIRS += builder
+endif

@@ -1,3 +1,4 @@
+SUBDIRS = XML
 
 INCLUDES = -I$(srcdir)/..
 
@@ -19,7 +20,6 @@ OpenFDMincludedir = $(includedir)/OpenFDM
 lib_LTLIBRARIES = libOpenFDM.la
 
 # Will need these at the moment ...
-libOpenFDM_la_LIBADD = -lsgxml -lsgstructure
 nobase_OpenFDMinclude_HEADERS = \
   AeroForce.h \
   AirSpring.h \

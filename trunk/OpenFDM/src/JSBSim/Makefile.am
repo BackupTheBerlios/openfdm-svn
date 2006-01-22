@@ -26,3 +26,4 @@ libJSBReader_la_SOURCES = \
   LegacyJSBSimReader.cpp \
   Tablereader.cpp \
   XMLReader.cpp
+libJSBReader_la_LIBADD = -lsgxml -lsgstructure

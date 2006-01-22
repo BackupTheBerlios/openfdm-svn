@@ -42,18 +42,54 @@ esac
 ]
 AC_SUBST(enable_range_checking)
 
+dnl Since OpenFDM is c++ ...
+AC_LANG_PUSH(C++)
+
 dnl Check for headers and symbols required for better speaking backtraces ...
 AC_CHECK_HEADERS([execinfo.h cxxabi.h])
 AC_CHECK_FUNCS([backtrace backtrace_symbols])
 
-AM_CONFIG_HEADER([src/OpenFDM/config.h])
+dnl Choice of used xml parsers
+dnl Check for expat
+AC_CHECK_HEADERS([expat.h],
+  [AC_CHECK_LIB([expat],[XML_ExpatVersion],
+     [openfdm_expat_enabled="1"])
+  ])
+AC_CHECK_FUNC([XML_SetSkippedEntityHandler])
+AM_CONDITIONAL([ENABLE_EXPAT], [test "x$openfdm_expat_enabled" = "x1"])
+AC_SUBST(openfdm_expat_enabled)
+
+dnl Check for SimGear and easyxml
+AC_CHECK_HEADERS([simgear/xml/easyxml.hxx],[openfdm_easyxml_enabled="1"])
+AM_CONDITIONAL([ENABLE_EASYXML], [test "x$openfdm_easyxml_enabled" = "x1"])
+AC_SUBST(openfdm_easyxml_enabled)
+
+dnl Check for libxml2 - this is the prefered one, since it does validation
+dnl not yet implemented
+AM_CONDITIONAL([ENABLE_LIBXML2], [test "x$openfdm_libxml2_enabled" = "x1"])
+AC_SUBST(openfdm_libxml2_enabled)
+
+dnl simple check for qt4
+AC_CHECK_HEADERS([Qt/QtGlobal],[openfdm_have_qt4="yes"])
+dnl simple check for osg
+AC_CHECK_HEADERS([osg/Object],[openfdm_have_osg="yes"])
+dnl avoid trying to build the editor if qt4 or osg is missing
+if test "x$openfdm_have_qt4" = "xyes" && test "x$openfdm_have_osg" = "xyes"
+then
+  openfdm_builder_enabled="yes"
+else
+  openfdm_builder_enabled="no"
+fi
+AM_CONDITIONAL([ENABLE_BUILDER], [test "x$openfdm_builder_enabled" = "xyes"])
 
 dnl write makefiles and config.h
+AM_CONFIG_HEADER([src/OpenFDM/config.h])
 AC_OUTPUT([
   src/OpenFDM/OpenFDMConfig.h
   Makefile
   src/Makefile
   src/OpenFDM/Makefile
+  src/OpenFDM/XML/Makefile
   src/JSBSim/Makefile
   src/builder/Makefile
   share/Makefile
