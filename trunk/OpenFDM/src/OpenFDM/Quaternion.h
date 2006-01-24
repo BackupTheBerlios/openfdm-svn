@@ -112,13 +112,15 @@ public:
     value_type sqrQ3 = q3*q3;
     value_type sqrQ4 = q4*q4;
 
-    value_type tmp = sqrQ1 - sqrQ2 - sqrQ3 + sqrQ4;
-    if (fabs(tmp) < Limits<value_type>::min())
-      angles(1) = pi05;
+    value_type den = sqrQ1 - sqrQ2 - sqrQ3 + sqrQ4;
+    value_type num = 2*(q3*q4 + q1*q2);
+    if (fabs(den) < Limits<value_type>::min() &&
+        fabs(num) < Limits<value_type>::min())
+      angles(1) = 0;
     else
-      angles(1) = atan2(2*(q3*q4 + q1*q2), tmp);
+      angles(1) = atan2(num, den);
     
-    tmp = 2*(q2*q4 - q1*q3);
+    value_type tmp = 2*(q2*q4 - q1*q3);
     if (tmp < -1.0)
       angles(2) = pi05;
     else if (1.0 < tmp)
@@ -126,11 +128,13 @@ public:
     else
       angles(2) = -asin(tmp);
     
-    tmp = sqrQ1 + sqrQ2 - sqrQ3 - sqrQ4;
-    if (fabs(tmp) < Limits<value_type>::min())
-      angles(3) = pi05;
+    den = sqrQ1 + sqrQ2 - sqrQ3 - sqrQ4;
+    num = 2*(q2*q3 + q1*q4);
+    if (fabs(den) < Limits<value_type>::min() &&
+        fabs(num) < Limits<value_type>::min())
+      angles(3) = 0;
     else {
-      value_type psi = atan2(2*(q2*q3 + q1*q4), tmp);
+      value_type psi = atan2(num, den);
       if (psi < 0.0)
         psi += pi2;
       angles(3) = psi;
