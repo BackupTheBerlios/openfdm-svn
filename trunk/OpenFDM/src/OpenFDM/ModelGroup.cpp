@@ -93,6 +93,20 @@ ModelGroup::getModelIndex(const std::string& name) const
 }
 
 unsigned
+ModelGroup::getModelIndex(const Model* model) const
+{
+  unsigned idx = 0u;
+  ModelList::const_iterator it = mModels.begin();
+  while (it != mModels.end()) {
+    if ((*it) == model)
+      return idx;
+    ++it;
+    ++idx;
+  }
+  return idx;
+}
+
+unsigned
 ModelGroup::addModel(Model* model)
 {
   // cannot add no model ...

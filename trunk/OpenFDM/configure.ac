@@ -53,21 +53,44 @@ dnl Choice of used xml parsers
 dnl Check for expat
 AC_CHECK_HEADERS([expat.h],
   [AC_CHECK_LIB([expat],[XML_ExpatVersion],
-     [openfdm_expat_enabled="1"])
+     [openfdm_expat_enabled="yes"])
   ])
-AC_CHECK_FUNC([XML_SetSkippedEntityHandler])
-AM_CONDITIONAL([ENABLE_EXPAT], [test "x$openfdm_expat_enabled" = "x1"])
-AC_SUBST(openfdm_expat_enabled)
+save_LIBS=$LIBS
+LIBS=-lexpat
+AC_CHECK_FUNC([XML_SetSkippedEntityHandler],
+              AC_DEFINE([HAVE_XML_SETSKIPPEDENTITYHANDLER], [1],
+                        [Define if expat provides XML_SetSkippedEntityHandler]))
+LIBS=$save_LIBS
+AM_CONDITIONAL([ENABLE_EXPAT], [test "x$openfdm_expat_enabled" = "xyes"])
+if test "x$openfdm_expat_enabled" = "xyes"
+then
+  OpenFDM_HAVE_EXPAT_XMLREADER=1
+else
+  OpenFDM_HAVE_EXPAT_XMLREADER=0
+fi
+AC_SUBST(OpenFDM_HAVE_EXPAT_XMLREADER)
 
 dnl Check for SimGear and easyxml
-AC_CHECK_HEADERS([simgear/xml/easyxml.hxx],[openfdm_easyxml_enabled="1"])
-AM_CONDITIONAL([ENABLE_EASYXML], [test "x$openfdm_easyxml_enabled" = "x1"])
-AC_SUBST(openfdm_easyxml_enabled)
+AC_CHECK_HEADERS([simgear/xml/easyxml.hxx],[openfdm_easyxml_enabled="yes"])
+AM_CONDITIONAL([ENABLE_EASYXML], [test "x$openfdm_easyxml_enabled" = "xyes"])
+if test "x$openfdm_easyxml_enabled" = "xyes"
+then
+  OpenFDM_HAVE_EASYXML_XMLREADER=1
+else
+  OpenFDM_HAVE_EASYXML_XMLREADER=0
+fi
+AC_SUBST(OpenFDM_HAVE_EASYXML_XMLREADER)
 
 dnl Check for libxml2 - this is the prefered one, since it does validation
 dnl not yet implemented
-AM_CONDITIONAL([ENABLE_LIBXML2], [test "x$openfdm_libxml2_enabled" = "x1"])
-AC_SUBST(openfdm_libxml2_enabled)
+AM_CONDITIONAL([ENABLE_LIBXML2], [test "x$openfdm_libxml2_enabled" = "xyes"])
+if test "x$openfdm_libxml2_enabled" = "xyes"
+then
+  OpenFDM_HAVE_LIBXML2_XMLREADER=1
+else
+  OpenFDM_HAVE_LIBXML2_XMLREADER=0
+fi
+AC_SUBST(OpenFDM_HAVE_LIBXML2_XMLREADER)
 
 dnl simple check for qt4
 AC_CHECK_HEADERS([Qt/QtGlobal],[openfdm_have_qt4="yes"])

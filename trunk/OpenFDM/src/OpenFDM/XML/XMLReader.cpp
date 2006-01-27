@@ -7,10 +7,6 @@
 namespace OpenFDM {
 namespace XML {
 
-Attributes::~Attributes(void)
-{
-}
-
 XMLReader::~XMLReader(void)
 {
 }

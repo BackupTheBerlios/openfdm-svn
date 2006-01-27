@@ -135,6 +135,9 @@ public:
   Port* getOutputPort(const std::string& name);
   const std::string& getOutputPortName(unsigned i) const;
 
+  const Model* getParent(void) const { return mParentModel; }
+  Model* getParent(void) { return mParentModel; }
+
 protected:
   void setNumContinousStates(unsigned numContinousStates);
   void setNumDiscreteStates(unsigned numDiscreteStates);
@@ -186,8 +189,6 @@ protected:
 private:
   // Sets the parent model.
   // That is the one which is informed if the number of states changes.
-  const Model* getParent(void) const { return mParentModel; }
-  Model* getParent(void) { return mParentModel; }
   void setParent(Model* model);
   void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
   void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);

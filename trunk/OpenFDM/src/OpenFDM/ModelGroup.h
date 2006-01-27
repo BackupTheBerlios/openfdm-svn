@@ -45,6 +45,7 @@ public:
   const Model* getModel(const std::string& name) const;
   Model* getModel(const std::string& name);
   unsigned getModelIndex(const std::string& name) const;
+  unsigned getModelIndex(const Model* model) const;
   unsigned addModel(Model* model);
   void removeModel(Model* model);
 

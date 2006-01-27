@@ -5,6 +5,7 @@
 #include <iostream>
 #include <expat.h>
 #include "ExpatXMLReader.h"
+#include "config.h"
 
 namespace OpenFDM {
 namespace XML {
