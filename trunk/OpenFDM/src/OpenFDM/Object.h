@@ -33,9 +33,7 @@ classname::getTypeName(void) const                              \
 
 
 /// The OpenFDM object base class.
-/// Every class 
-class Object :
-    public Referenced {
+class Object : public Referenced {
 public:
   Object(const std::string& name = std::string());
   virtual ~Object(void);
@@ -81,19 +79,27 @@ private:
   Object(const Object&);
   const Object& operator=(const Object&);
 
-  /// Register and deregister a managed reference to this object.
-  void reg(Object** mp);
-  void dereg(Object** mp);
-
   /// The objects name
   std::string mName;
 
   /// The map of all properties of this object.
   PropertyMap mProperties;
 
+  /// Userdata ...
   SharedPtr<Object> mUserData;
 
-  mutable std::list<Object**> _ptrList;
+  /// Support for weak references, not increasing the reference count
+  /// that is done through that small helper class which holds an uncounted
+  /// reference which is zeroed out on destruction of the current object
+  struct WeakData : public Referenced {
+    WeakData(Object* o) : object(o) {}
+    Object* object;
+  private:
+    WeakData(void);
+    WeakData(const WeakData&);
+    WeakData& operator=(const WeakData&);
+  };
+  SharedPtr<WeakData> mWeakDataPtr;
 
   template<typename T>
   friend class SharedPtr;
@@ -105,56 +111,54 @@ private:
 /// FIXME: remove the direct accessors, only copy to a SharedPtr
 /// where you can access then, may be similar to the std::tr2::weak_ptr::lock()
 /// function. That is to avoid deletion of a currently used object
-/// FIXME make const correct ...
 template<typename T>
 class WeakPtr {
 public:
-  WeakPtr(void) : _ptr(0)
+  WeakPtr(void)
   {}
-  WeakPtr(T* ptr) : _ptr(ptr)
-  { reg(); }
-  WeakPtr(const WeakPtr& p) : _ptr(p._ptr)
-  { reg(); }
+  WeakPtr(T* ptr)
+  { assign(ptr); }
+  WeakPtr(const WeakPtr& p) : mWeakDataPtr(p.mWeakDataPtr)
+  { }
   template<typename U>
-  WeakPtr(const SharedPtr<U>& p) : _ptr(p._ptr)
-  { reg(); }
+  WeakPtr(const SharedPtr<U>& p)
+  { assign(p.ptr()); }
   ~WeakPtr(void)
-  { dereg(); }
+  { }
   
   template<typename U>
   WeakPtr& operator=(const SharedPtr<U>& p)
-  { assign(p._ptr); return *this; }
+  { assign(p.ptr()); return *this; }
   template<typename U>
   WeakPtr& operator=(U* p)
   { assign(p); return *this; }
   WeakPtr& operator=(const WeakPtr& p)
-  { assign(p._ptr); return *this; }
-  template<typename U>
-  WeakPtr& operator=(const WeakPtr<U>& p)
-  { assign(p._ptr); return *this; }
+  { mWeakDataPtr = p.mWeakDataPtr; return *this; }
 
   T* operator->(void) const
-  { return reinterpret_cast<T*>(_ptr); }
+  { return ptr(); }
 
   T& operator*(void) const
-  { return *reinterpret_cast<T*>(_ptr); }
+  { return *ptr(); }
 
   operator T*(void) const
-  { return reinterpret_cast<T*>(_ptr); }
+  { return ptr(); }
 
 private:
-  template<typename U>
-  void assign(U* p)
-  { dereg(); _ptr = p; reg(); }
+  Object* objectPtr(void) const
+  { return mWeakDataPtr ? mWeakDataPtr->object : 0; }
+  T* ptr(void) const
+  { return reinterpret_cast<T*>(objectPtr()); }
+  void assign(T* p)
+  {
+    if (p)
+      mWeakDataPtr = p->mWeakDataPtr;
+    else
+      mWeakDataPtr = 0;
+  }
   
-  void reg(void)
-  { if (_ptr) _ptr->reg(&_ptr); }
-
-  void dereg(void)
-  { if (_ptr) _ptr->dereg(&_ptr); }
-
-  // The reference itself.
-  Object* _ptr;
+  // The indirect reference itself.
+  SharedPtr<Object::WeakData> mWeakDataPtr;
 
   template<typename U>
   friend class SharedPtr;

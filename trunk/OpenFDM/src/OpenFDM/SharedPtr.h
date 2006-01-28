@@ -14,22 +14,21 @@ class SharedPtr;
 template<typename T>
 class WeakPtr;
 
-/// FIXME make const correct ...
 template<typename T>
 class SharedPtr {
 public:
   SharedPtr(void) : _ptr(0)
   {}
   SharedPtr(T* ptr) : _ptr(ptr)
-  { get(_ptr); }
+  { Referenced::get(_ptr); }
   SharedPtr(const SharedPtr& p) : _ptr(p._ptr)
-  { get(_ptr); }
+  { Referenced::get(_ptr); }
   template<typename U>
   SharedPtr(const SharedPtr<U>& p) : _ptr(p._ptr)
-  { get(_ptr); }
+  { Referenced::get(_ptr); }
   template<typename U>
-  SharedPtr(const WeakPtr<U>& p) : _ptr(p._ptr)
-  { get(_ptr); }
+  SharedPtr(const WeakPtr<U>& p) : _ptr(p.ptr())
+  { Referenced::get(_ptr); }
   ~SharedPtr(void)
   { put(); }
   
@@ -43,7 +42,7 @@ public:
   { assign(p); return *this; }
   template<typename U>
   SharedPtr& operator=(const WeakPtr<U>& p)
-  { assign(p._ptr); return *this; }
+  { assign(p.ptr()); return *this; }
 
   T* operator->(void) const
   { return _ptr; }
@@ -60,13 +59,12 @@ public:
   { return Referenced::count(_ptr); }
 
 private:
-  template<typename U>
-  void assign(U* p)
-  { get(p); put(); _ptr = p; }
+  T* ptr(void) const
+  { return _ptr; }
 
-  template<typename U>
-  void get(const U* p) const
-  { Referenced::get(p); }
+  void assign(T* p)
+  { Referenced::get(p); put(); _ptr = p; }
+
   void put(void)
   { if (!Referenced::put(_ptr)) { delete _ptr; _ptr = 0; } }
   
