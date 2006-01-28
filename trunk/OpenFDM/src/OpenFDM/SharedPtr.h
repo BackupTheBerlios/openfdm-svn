@@ -45,18 +45,13 @@ public:
   SharedPtr& operator=(const WeakPtr<U>& p)
   { assign(p._ptr); return *this; }
 
-  T* operator->(void)
+  T* operator->(void) const
   { return _ptr; }
-  const T* operator->(void) const
-  { return _ptr; }
-  T& operator*(void)
-  { return *_ptr; }
-  const T& operator*(void) const
+
+  T& operator*(void) const
   { return *_ptr; }
 
-  operator T*(void)
-  { return _ptr; }
-  operator const T*(void) const
+  operator T*(void) const
   { return _ptr; }
 
   bool isShared(void) const

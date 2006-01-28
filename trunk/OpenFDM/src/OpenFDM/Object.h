@@ -133,19 +133,14 @@ public:
   WeakPtr& operator=(const WeakPtr<U>& p)
   { assign(p._ptr); return *this; }
 
-  T* operator->(void)
+  T* operator->(void) const
   { return reinterpret_cast<T*>(_ptr); }
-  const T* operator->(void) const
-  { return reinterpret_cast<const T*>(_ptr); }
-  T& operator*(void)
-  { return *reinterpret_cast<T*>(_ptr); }
-  const T& operator*(void) const
-  { return *reinterpret_cast<const T*>(_ptr); }
 
-  operator T*(void)
+  T& operator*(void) const
+  { return *reinterpret_cast<T*>(_ptr); }
+
+  operator T*(void) const
   { return reinterpret_cast<T*>(_ptr); }
-  operator const T*(void) const
-  { return reinterpret_cast<const T*>(_ptr); }
 
 private:
   template<typename U>
