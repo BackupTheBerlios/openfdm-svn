@@ -149,6 +149,20 @@ Frame::getChildFrame(unsigned i) const
   return mChildFrames[i];
 }
 
+unsigned
+Frame::getChildFrameIndex(const Frame* child) const
+{
+  if (!child)
+    return mChildFrames.size();
+
+  unsigned i = 0;
+  for (; i < mChildFrames.size(); ++i) {
+    if (mChildFrames[i] == child)
+      return i;
+  }
+  return i;
+}
+
 void
 Frame::reparentChildren(Frame* frame)
 {

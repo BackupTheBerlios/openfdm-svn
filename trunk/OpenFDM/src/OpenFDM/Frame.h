@@ -108,6 +108,8 @@ public:
   Frame* getChildFrame(unsigned i);
   /// Get the i-th child frame. Returns a 0 pointer if i is out of range.
   const Frame* getChildFrame(unsigned i) const;
+  /// Returns the child frame index of the given frame
+  unsigned getChildFrameIndex(const Frame* child) const;
   /// Returns the number of child frames
   unsigned getNumChildFrames(void) const
   { return mChildFrames.size(); }

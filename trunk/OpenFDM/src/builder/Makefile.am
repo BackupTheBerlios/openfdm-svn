@@ -16,12 +16,18 @@ openfdm_SOURCES = \
 	main.cpp \
 	Configuration.h \
 	Configuration.cpp \
+	FrameItem.h \
+	FrameItem.cpp \
 	Geometries.h \
 	Geometries.cpp \
+	MainWindow.h \
+	MainWindow.cpp \
+	ModelItem.h \
+	ModelItem.cpp \
 	QOsgWidget.h \
 	QOsgWidget.cpp
 
-openfdm_LDADD = ../OpenFDM/libOpenFDM.la \
+openfdm_LDADD = ../JSBSim/libJSBReader.la ../OpenFDM/libOpenFDM.la \
                 -losgGA -losgUtil -losgDB -losg -lOpenThreads \
                 -lQtGui -lQtOpenGL -lQtCore \
                 -lGL -lGLU
