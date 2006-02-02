@@ -2,6 +2,9 @@
  *
  */
 
+#ifndef OpenFDM_XML_ExpatXMLReader_H
+#define OpenFDM_XML_ExpatXMLReader_H
+
 #include "XMLReader.h"
 
 namespace OpenFDM {
@@ -17,3 +20,5 @@ public:
 
 } // namespace XML
 } // namespace OpenFDM
+
+#endif
