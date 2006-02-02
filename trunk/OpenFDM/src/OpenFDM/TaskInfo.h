@@ -5,7 +5,6 @@
 #ifndef OpenFDM_TaskInfo_H
 #define OpenFDM_TaskInfo_H
 
-#include "Assert.h"
 #include "SampleTime.h"
 
 namespace OpenFDM {
