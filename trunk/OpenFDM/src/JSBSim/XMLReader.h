@@ -11,100 +11,95 @@
 #include <stack>
 #include <map>
 
-#include <simgear/xml/easyxml.hxx>
+#include <OpenFDM/Referenced.h>
+#include <OpenFDM/SharedPtr.h>
 
-#include <OpenFDM/Object.h>
+#include <OpenFDM/XML/XMLReader.h>
+#include <OpenFDM/XML/ContentHandler.h>
+#include <OpenFDM/XML/ErrorHandler.h>
+#include <OpenFDM/XML/Attributes.h>
+
+#include <OpenFDM/XML/EasyXMLReader.h> // FIXME
+
 
 namespace OpenFDM {
 
-class XMLDomParser;
-
-class XMLElement
-  : public Object {
+class XMLElement : public Referenced {
 public:
-  typedef SharedPtr<XMLElement> pointer;
-  typedef SharedPtr<const XMLElement> const_pointer;
+  XMLElement(const char* n, const XML::Attributes* a);
+  ~XMLElement(void);
 
-  XMLElement(const std::string& name);
-  virtual ~XMLElement(void);
-
-  void setName(const std::string& name);
   const std::string& getName(void) const;
 
-  void setAttribute(const std::string& name, const std::string& val);
   std::string getAttribute(const std::string& name) const;
-  void removeAttribute(const std::string& name);
   const std::map<std::string,std::string>& getAttributes(void) const;
 
   const std::string& getData(void) const;
-  void setData(const std::string& data);
 
-  XMLElement* getElement(const std::string& tagName);
   const XMLElement* getElement(const std::string& tagName) const;
 
 
   /// Returns the number if child elements with the given tagName.
   unsigned getNumElements(const std::string& tagName) const;
 
-  std::list<const_pointer> getElements(const std::string& tagName) const;
+  std::list<const XMLElement*> getElements(const std::string& tagName) const;
+  std::list<const XMLElement*> getElements(void) const;
 
-  std::list<pointer> getElements(const std::string& tagName);
-
-  const std::list<pointer>& getElements(void) const;
-
+  void appendData(const char* data, unsigned len);
   void appendChild(XMLElement* child);
-
 private:
   std::string mName;
   std::string mData;
   std::map<std::string,std::string> mAttributes;
-  std::list<pointer> mChildEntities;
-
-  friend class XMLDomParser;
+  std::list<SharedPtr<XMLElement> > mChildEntities;
 };
 
-class XMLDocument
-  : public Object {
+class SimpleContentHandler : public XML::ContentHandler {
 public:
-  typedef SharedPtr<XMLDocument> pointer;
-  typedef SharedPtr<const XMLDocument> const_pointer;
+  virtual ~SimpleContentHandler(void)
+  {}
+  virtual void characters(const char* data, unsigned length)
+  { mElementStack.top()->appendData(data, length); }
+  virtual void startDocument(void)
+  { while (!mElementStack.empty()) mElementStack.pop(); mTopElement = 0; }
+  virtual void endDocument(void)
+  { while (!mElementStack.empty()) mElementStack.pop(); }
+  virtual void startElement(const char* uri, const char* localName,
+                            const char* qName, const XML::Attributes* atts)
+  { mElementStack.push(new XMLElement(qName, atts)); }
+  virtual void endElement(const char* uri, const char* localName,
+                          const char* qName)
+  {
+    SharedPtr<XMLElement> current = mElementStack.top();
+    mElementStack.pop();
+    if (mElementStack.empty())
+      mTopElement = current;
+    else
+      mElementStack.top()->appendChild(current);
+  }
 
-  XMLElement* getElement(void);
-  const XMLElement* getElement(void) const;
-  void setElement(XMLElement* top);
-
+  SharedPtr<XMLElement> getTopElement(void) const
+  { return mTopElement; }
 private:
-  SharedPtr<XMLElement> mTop;
-
-  friend class XMLDomParser;
+  SharedPtr<XMLElement> mTopElement;
+  std::stack<SharedPtr<XMLElement> > mElementStack;
 };
 
-class XMLDomParser
-  : public XMLVisitor {
+class SimpleErrorHandler : public XML::ErrorHandler {
 public:
-  XMLDomParser(void);
-  virtual ~XMLDomParser(void);
+  virtual ~SimpleErrorHandler(void)
+  {}
+  virtual void error(const char* msg, unsigned line, unsigned col)
+  { mMessage = msg; mLine = line; mColumn = col; }
+  virtual void fatalError(const char* msg, unsigned line, unsigned col)
+  { mMessage = msg; mLine = line; mColumn = col; }
+  virtual void warning(const char* msg, unsigned line, unsigned col)
+  { mMessage = msg; mLine = line; mColumn = col; }
 
-  virtual void startElement(const char *name, const XMLAttributes& atts);
-  virtual void endElement(const char *name);
-  virtual void data(const char *s, int length);
-
-  XMLDocument* getDocument(void)
-  { return mDoc; }
-
-  bool parseXML(std::istream& is);
-
-  const std::string& getErrorMessage(void) const;
-
-private:
-  SharedPtr<XMLDocument> mDoc;
-  std::stack<XMLElement::pointer> mElementStack;
-
-  std::string mErrorMessage;
+  std::string mMessage;
+  unsigned mLine;
+  unsigned mColumn;
 };
-
-std::ostream&
-operator<<(std::ostream& os, const XMLDocument& doc);
 
 } // namespace OpenFDM
 

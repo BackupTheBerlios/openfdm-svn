@@ -32,14 +32,14 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   tmp(1, 1) = 1;
   inputSaturation->setMaxSaturation(tmp);
 
-  TablePreLookup* tablePreLookup = new TablePreLookup("Table Lookup");
+  mTablePreLookup = new TablePreLookup("Table Lookup");
   TableLookup tl;
   tl.setAtIndex(1, -1);
   tl.setAtIndex(2, 0);
   tl.setAtIndex(3, 1);
-  tablePreLookup->setTableLookup(tl);
-  tablePreLookup->getInputPort(0)->connect(inputSaturation->getOutputPort(0));
-  getModelGroup()->addModel(tablePreLookup);
+  mTablePreLookup->setTableLookup(tl);
+  mTablePreLookup->getInputPort(0)->connect(inputSaturation->getOutputPort(0));
+  getModelGroup()->addModel(mTablePreLookup);
 
   mTable = new Table1D("Table");
   TableData<1>::SizeVector sv;
@@ -53,7 +53,7 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   iv(1) = 3;
   tableData(iv) = 1;
   mTable->setTableData(tableData);
-  mTable->getInputPort(0)->connect(tablePreLookup->getOutputPort(0));
+  mTable->getInputPort(0)->connect(mTablePreLookup->getOutputPort(0));
   getModelGroup()->addModel(mTable);
 
   // Now connect the input and the output to this groups in and outputs
@@ -67,6 +67,38 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
 
 JSBSimAerosurfaceScale::~JSBSimAerosurfaceScale(void)
 {
+}
+
+void
+JSBSimAerosurfaceScale::setMinDomain(real_type minDomain)
+{
+  TableLookup tl = mTablePreLookup->getTableLookup();
+  tl.setAtIndex(1, minDomain);
+  mTablePreLookup->setTableLookup(tl);
+}
+
+void
+JSBSimAerosurfaceScale::setMaxDomain(real_type maxDomain)
+{
+  TableLookup tl = mTablePreLookup->getTableLookup();
+  tl.setAtIndex(tl.size(), maxDomain);
+  mTablePreLookup->setTableLookup(tl);
+}
+
+void
+JSBSimAerosurfaceScale::setCentered(bool centered)
+{
+  TableLookup tlOld = mTablePreLookup->getTableLookup();
+  TableLookup tl;
+  if (centered) {
+    tl.setAtIndex(1, tlOld.getAtIndex(1));
+    tl.setAtIndex(2, 0);
+    tl.setAtIndex(3, tlOld.getAtIndex(tlOld.size()));
+  } else {
+    tl.setAtIndex(1, tlOld.getAtIndex(1));
+    tl.setAtIndex(2, tlOld.getAtIndex(tlOld.size()));
+  }
+  mTablePreLookup->setTableLookup(tl);
 }
 
 void

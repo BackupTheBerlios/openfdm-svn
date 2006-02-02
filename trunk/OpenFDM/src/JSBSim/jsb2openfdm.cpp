@@ -3,9 +3,13 @@
 #include <OpenFDM/ReaderWriter.h>
 #include <OpenFDM/XMLDumpModelVisitor.h>
 #include "LegacyJSBSimReader.h"
+#include "JSBSimReader.h"
 
 using OpenFDM::ReaderWriter;
 using OpenFDM::LegacyJSBSimReader;
+using OpenFDM::JSBSimReader;
+using OpenFDM::Vehicle;
+using OpenFDM::SharedPtr;
 
 int
 main(int argc, char *argv[])
@@ -13,30 +17,44 @@ main(int argc, char *argv[])
   if (argc < 3)
     return 1;
 
-  // Try to read JSBSim legacy files.
-  LegacyJSBSimReader reader;
+  SharedPtr<Vehicle> vehicle;
+  std::string aircraftDir = argv[1];
+  std::string engineDir = aircraftDir + "/Engines";
+  std::string aircraftFile = argv[2];
 
-  reader.addAircraftPath(argv[1]);
-  reader.addEnginePath(std::string(argv[1]) + "Engines/");
+  JSBSimReader reader;
+  reader.addAircraftPath(aircraftDir);
+  reader.addEnginePath(engineDir);
+  reader.loadAircraft(aircraftFile);
+  if (!reader.getErrorState()) {
+    vehicle = reader.getVehicle();
+  } else {
+    // Try to read JSBSim legacy files.
+    LegacyJSBSimReader legReader;
+    legReader.addAircraftPath(aircraftDir);
+    legReader.addEnginePath(engineDir);
+    legReader.loadAircraft(aircraftFile);
+    if (legReader.getErrorState()) {
+      std::cerr << "Cannot read aircraft!" << std::endl;
+      ReaderWriter::StringList errors = reader.getErrors();
+      ReaderWriter::StringList::const_iterator it;
+      for (it = errors.begin(); it != errors.end(); ++it)
+        std::cerr << (*it) << std::endl;
 
-  reader.loadAircraft(argv[2]);
-  if (reader.getErrorState()) {
-    std::cerr << "FGOpenFDM::init() cannot read aircraft!" << std::endl;
-    const ReaderWriter::StringList errors = reader.getErrors();
-    ReaderWriter::StringList::const_iterator it;
-    for (it = errors.begin(); it != errors.end(); ++it)
-      std::cerr << *it << std::endl;
+      errors = legReader.getErrors();
+      for (it = errors.begin(); it != errors.end(); ++it)
+        std::cerr << (*it) << std::endl;
 
-    return 1;
+      return EXIT_FAILURE;
+    }
+    vehicle = legReader.getVehicle();
   }
 
   // Ok, now the Vehicle here contains the imported data
   // When the reflection stuff is ready, we can dump that data to a
   // native format ...
-  reader.getVehicle()->getSystem()->init();
-
   OpenFDM::XMLDumpModelVisitor debugDumpVisitor(std::cout);
-  reader.getVehicle()->getSystem()->accept(debugDumpVisitor);
+  vehicle->getSystem()->accept(debugDumpVisitor);
 
   return 0;
 }

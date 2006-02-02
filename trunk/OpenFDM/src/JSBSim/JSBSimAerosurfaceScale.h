@@ -19,10 +19,15 @@ public:
   JSBSimAerosurfaceScale(const std::string& name);
   virtual ~JSBSimAerosurfaceScale(void);
 
+  void setMinDomain(real_type minDomain);
+  void setMaxDomain(real_type maxDomain);
+  void setCentered(bool centered);
+
   void setMinValue(real_type minValue);
   void setMaxValue(real_type maxValue);
 
 private:
+  SharedPtr<TablePreLookup> mTablePreLookup;
   SharedPtr<Table1D> mTable;
 };
 

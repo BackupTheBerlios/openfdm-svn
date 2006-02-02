@@ -9,9 +9,11 @@ jsb2openfdm_LDADD = libJSBReader.la ../OpenFDM/libOpenFDM.la
 OpenFDMincludedir = $(includedir)/JSBSim
 
 OpenFDMinclude_HEADERS = \
-  JSBSimFCSComponent.h \
   JSBSimAerosurfaceScale.h \
+  JSBSimFCSComponent.h \
   JSBSimKinemat.h \
+  JSBSimReader.h \
+  JSBSimReaderBase.h \
   JSBSimScheduledGain.h \
   LegacyJSBSimReader.h \
   Tablereader.h \
@@ -19,11 +21,15 @@ OpenFDMinclude_HEADERS = \
 
 lib_LTLIBRARIES = libJSBReader.la
 libJSBReader_la_SOURCES = \
-  JSBSimFCSComponent.cpp \
   JSBSimAerosurfaceScale.cpp \
+  JSBSimFCSComponent.cpp \
   JSBSimKinemat.cpp \
+  JSBSimReader.cpp \
+  JSBSimReaderBase.cpp \
   JSBSimScheduledGain.cpp \
   LegacyJSBSimReader.cpp \
   Tablereader.cpp \
   XMLReader.cpp
-libJSBReader_la_LIBADD = -lsgxml -lsgstructure
+libJSBReader_la_LIBADD = ../OpenFDM/XML/libOpenFDMeasyxmlXML.la \
+                         ../OpenFDM/XML/libOpenFDMXML.la \
+                         ../OpenFDM/libOpenFDM.la
