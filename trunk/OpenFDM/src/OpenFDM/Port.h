@@ -142,9 +142,19 @@ public:
   bool hasSameSource(const Port* otherPort) const;
 
   RealPortHandle toRealPortHandle(void)
-  { return RealPortHandle(mPortInterface->toRealPortInterface()); }
+  {
+    if (mPortInterface)
+      return RealPortHandle(mPortInterface->toRealPortInterface());
+    else
+      return RealPortHandle(0);
+  }
   MatrixPortHandle toMatrixPortHandle(void)
-  { return MatrixPortHandle(mPortInterface->toMatrixPortInterface()); }
+  {
+    if (mPortInterface)
+      return MatrixPortHandle(mPortInterface->toMatrixPortInterface());
+    else
+      return MatrixPortHandle(0);
+  }
 
   /// Retrieve the value of this port
   /// Note that we don't need a setValue method since we attach a getter of a
