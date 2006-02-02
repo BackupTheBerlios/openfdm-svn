@@ -31,7 +31,7 @@ ReaderWriter::reset(void)
 bool
 ReaderWriter::error(const std::string& message)
 {
-  mErrors.push_front(message);
+  mErrors.push_back(message);
   return false;
 }
 
