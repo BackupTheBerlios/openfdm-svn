@@ -135,8 +135,13 @@ public:
   Port* getOutputPort(const std::string& name);
   const std::string& getOutputPortName(unsigned i) const;
 
+  std::string getPathString(void) /* FIXME const*/;
+
   const Model* getParent(void) const { return mParentModel; }
   Model* getParent(void) { return mParentModel; }
+
+  /// FIXME: have function returning the input ports a given output
+  /// port depends on
 
 protected:
   void setNumContinousStates(unsigned numContinousStates);
@@ -190,6 +195,8 @@ private:
   // Sets the parent model.
   // That is the one which is informed if the number of states changes.
   void setParent(Model* model);
+
+  /// FIXME: use visitor for that
   void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
   void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);
 

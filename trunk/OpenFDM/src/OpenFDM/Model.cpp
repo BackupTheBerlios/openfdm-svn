@@ -256,6 +256,24 @@ Model::getOutputPortName(unsigned i) const
   return mOutputPorts[i]->getName();
 }
 
+class ModelPathCollector :
+    public ModelVisitor {
+public:
+  virtual ~ModelPathCollector(void)
+  { }
+  virtual void apply(Model& model)
+  { ascend(model); path += "/"; path += model.getName(); }
+  std::string path;
+};
+
+std::string
+Model::getPathString(void)
+{
+  ModelPathCollector modelPathCollector;
+  accept(modelPathCollector);
+  return modelPathCollector.path;
+}
+
 void
 Model::setNumInputPorts(unsigned num)
 {
