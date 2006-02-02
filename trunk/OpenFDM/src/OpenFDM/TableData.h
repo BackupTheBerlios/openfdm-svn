@@ -186,9 +186,13 @@ public:
     if (ndarray.mData) {
       mSize = ndarray.size();
       unsigned totalLen = product(mSize);
-      mData = new real_type[totalLen];
-      for (unsigned i = 0; i < totalLen; ++i)
-        mData[i] = ndarray.mData[i];
+      if (0 < totalLen) {
+        mData = new real_type[totalLen];
+        for (unsigned i = 0; i < totalLen; ++i)
+          mData[i] = ndarray.mData[i];
+      } else {
+        mData = 0;
+      }
     } else {
       mData = 0;
     }
