@@ -11,6 +11,7 @@
 #include <Main/fg_props.hxx>
 
 #include <JSBSim/LegacyJSBSimReader.h>
+#include <JSBSim/JSBSimReader.h>
 #include <OpenFDM/Units.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/Input.h>
@@ -182,23 +183,34 @@ void FGOpenFDM::init()
 {
   SG_LOG(SG_FLIGHT, SG_INFO, "FGOpenFDM::init()");
 
-  // Try to read JSBSim legacy files.
-  LegacyJSBSimReader reader;
-  reader.addAircraftPath(fgGetString("/sim/aircraft-dir"));
-  reader.addEnginePath(std::string(fgGetString("/sim/aircraft-dir"))
-                       + "/Engines");
-  reader.loadAircraft(std::string(fgGetString("/sim/aero")) + ".xml");
-  if (reader.getErrorState()) {
-    SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() cannot read aircraft!");
-    const ReaderWriter::StringList errors = reader.getErrors();
-    ReaderWriter::StringList::const_iterator it;
-    for (it = errors.begin(); it != errors.end(); ++it) {
-      SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
+  std::string aircraftDir = fgGetString("/sim/aircraft-dir");
+  std::string engineDir = aircraftDir + "/Engines";
+  std::string aircraftFile = std::string(fgGetString("/sim/aero")) + ".xml";
+
+  JSBSimReader reader;
+  reader.addAircraftPath(aircraftDir);
+  reader.addEnginePath(engineDir);
+  reader.loadAircraft(aircraftFile);
+  if (!reader.getErrorState()) {
+    mData->vehicle = reader.getVehicle();
+  } else {
+    // Try to read JSBSim legacy files.
+    LegacyJSBSimReader legReader;
+    legReader.addAircraftPath(aircraftDir);
+    legReader.addEnginePath(engineDir);
+    legReader.loadAircraft(aircraftFile);
+    if (legReader.getErrorState()) {
+      SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() cannot read aircraft!");
+      const ReaderWriter::StringList errors = legReader.getErrors();
+      ReaderWriter::StringList::const_iterator it;
+      for (it = errors.begin(); it != errors.end(); ++it) {
+        SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
+      }
+      return;
     }
-    return;
+    mData->vehicle = legReader.getVehicle();
   }
 
-  mData->vehicle = reader.getVehicle();
   Vehicle* vehicle = mData->vehicle;
   mData->ground = new FGGround(this);
   vehicle->setGround(mData->ground);
