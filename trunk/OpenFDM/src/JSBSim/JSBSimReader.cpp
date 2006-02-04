@@ -326,35 +326,35 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   const XMLElement* iwElem = metricsElem->getElement("wing_incidence");
   if (iwElem) {
     real_type iw = realData(iwElem, 0);
-    Port* port = addConstModel("Wing Incidence Constant", iw);
+    Port* port = addMultiBodyConstModel("Wing Incidence Constant", iw);
     registerJSBExpression("metrics/iw-deg", port);
   }
 
   const XMLElement* htareaElem = metricsElem->getElement("htailarea");
   if (htareaElem) {
     real_type htailarea = realData(htareaElem, 0);
-    Port* port = addConstModel("HTail Area Constant", htailarea);
+    Port* port = addMultiBodyConstModel("HTail Area Constant", htailarea);
     registerJSBExpression("metrics/Sh-sqft", port);
   }
 
   const XMLElement* htarmElem = metricsElem->getElement("htailarm");
   if (htarmElem) {
     real_type htailarm = realData(htarmElem, 0);
-    Port* port = addConstModel("HTail Arm Constant", htailarm);
+    Port* port = addMultiBodyConstModel("HTail Arm Constant", htailarm);
     registerJSBExpression("metrics/lh-ft", port);
   }
 
   const XMLElement* vtareaElem = metricsElem->getElement("vtailarea");
   if (vtareaElem) {
     real_type vtailarea = realData(vtareaElem, 0);
-    Port* port = addConstModel("VTail Area Constant", vtailarea);
+    Port* port = addMultiBodyConstModel("VTail Area Constant", vtailarea);
     registerJSBExpression("metrics/Sv-sqft", port);
   }
 
   const XMLElement* vtarmElem = metricsElem->getElement("vtailarm");
   if (vtarmElem) {
     real_type vtailarm = realData(vtarmElem, 0);
-    Port* port = addConstModel("VTail Arm Constant", vtailarm);
+    Port* port = addMultiBodyConstModel("VTail Arm Constant", vtailarm);
     registerJSBExpression("metrics/lv-ft", port);
   }
 
@@ -1252,7 +1252,6 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
 
   // The final output property.
   SharedPtr<Port> out;
-  SharedPtr<Port> normOut;
 
   // JSBSim FCS output values contain some implicit rules.
   // From the component name a default output property is formed.
@@ -1338,7 +1337,6 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model->getInputPort(0)->connect(lookupJSBExpression(token));
     addFCSModel(model);
     out = kinemat->getOutputPort();
-    normOut = kinemat->getOutputNormPort();
 
   } else if (type == "PURE_GAIN" || type == "pure_gain") {
     SharedPtr<Gain> gain = new Gain(name);
@@ -1374,12 +1372,12 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     }
     std::string token = stringData(fcsComponent->getElement("zero_centered"));
     asScale->setCentered(!(token == "0" || token == "false"));
+    asScale->setGain(realData(fcsComponent->getElement("gain"), 1));
     model = asScale->getModelGroup();
     token = stringData(fcsComponent->getElement("input"));
     model->getInputPort(0)->connect(lookupJSBExpression(token));
     addFCSModel(model);
     out = asScale->getOutputPort();
-    normOut = asScale->getOutputNormPort();
 
   } else if (type == "SCHEDULED_GAIN" || type == "scheduled_gain") {
     SharedPtr<JSBSimScheduledGain> sGain = new JSBSimScheduledGain(name);
@@ -1512,36 +1510,14 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
                  + "\". Ignoring whole FCS component \"" + name + "\"" );
 
   OpenFDMAssert(out->isConnected());
-  if (!normOut || !normOut->isConnected())
-    normOut = out;
 
   // Register all output property names.
-  std::list<std::string> outlist;
-  outlist.push_back(std::string("fcs/") + normalizeComponentName(name));
-  if (fcsComponent->getElement("output"))
-    outlist.push_back(stringData(fcsComponent->getElement("output")));
-  std::list<std::string>::iterator it;
-  for (it = outlist.begin(); it != outlist.end(); ++it) {
-    std::string propName = *it;
-    registerJSBExpression(propName, out);
-
-    // Well, just an other kind of black magic ...
-    if (propName == "fcs/elevator-pos-rad") {
-      registerJSBExpression("fcs/elevator-pos-norm", normOut);
-    } else if (propName == "fcs/left-aileron-pos-rad" ||
-               propName == "fcs/aileron-pos-rad") {
-      registerJSBExpression("fcs/left-aileron-pos-norm", normOut);
-    } else if (propName == "fcs/right-aileron-pos-rad") {
-      registerJSBExpression("fcs/right-aileron-pos-norm", normOut);
-    } else if (propName == "fcs/rudder-pos-rad") {
-      registerJSBExpression("fcs/rudder-pos-norm", normOut);
-    } else if (propName == "fcs/speedbrake-pos-rad") {
-      registerJSBExpression("fcs/speedbrake-pos-norm", normOut);
-    } else if (propName == "fcs/spoiler-pos-rad") {
-      registerJSBExpression("fcs/spoiler-pos-norm", normOut);
-    } else if (propName == "fcs/flap-pos-deg") {
-      registerJSBExpression("fcs/flap-pos-norm", normOut);
-    }
+  std::string implicitOutname = normalizeComponentName(name);
+  registerJSBExpression(std::string("fcs/") + implicitOutname, out);
+  if (fcsComponent->getElement("output")) {
+    std::string outname = stringData(fcsComponent->getElement("output"));
+    if (outname != implicitOutname)
+      registerJSBExpression(outname, out);
   }
 
   return true;
@@ -1657,13 +1633,10 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
   std::list<const XMLElement*>::const_iterator ait;
   for (ait = args.begin(); ait != args.end(); ++ait) {
     if ((*ait)->getName() == "value") {
-      SharedPtr<ConstModel> constModel = new ConstModel(name + " Constant");
-      addMultiBodyModel(constModel);
       std::stringstream stream((*ait)->getData());
-      Matrix v(1, 1);
-      stream >> v(1, 1);
-      constModel->setValue(v);
-      inputs.push_back(constModel->getOutputPort(0));
+      real_type value;
+      stream >> value;
+      inputs.push_back(addMultiBodyConstModel(name + " Constant", value));
     } else if ((*ait)->getName() == "property") {
       inputs.push_back(lookupJSBExpression(stringData(*ait)));
     } else if ((*ait)->getName() == "table") {
@@ -1677,8 +1650,7 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
         }
         std::string token = stringData((*ait)->getElement("independentVar"));
         Port* port = getTablePrelookup(name + " lookup",
-                                       lookupJSBExpression(token),
-                                       lookup);
+                                       lookupJSBExpression(token), lookup);
 
         SharedPtr<Table1D> table = new Table1D(name + " Table");
         table->getInputPort(0)->connect(port);

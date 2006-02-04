@@ -26,9 +26,13 @@ public:
   void setMinValue(real_type minValue);
   void setMaxValue(real_type maxValue);
 
+  void setGain(real_type gain);
+
 private:
+  SharedPtr<Saturation> mInputSaturation;
   SharedPtr<TablePreLookup> mTablePreLookup;
   SharedPtr<Table1D> mTable;
+  real_type mGain;
 };
 
 } //namespace OpenFDM

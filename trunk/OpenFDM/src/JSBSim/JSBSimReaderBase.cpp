@@ -175,15 +175,17 @@ JSBSimReaderBase::normalizeComponentName(const std::string& name)
 }
 
 Port*
-JSBSimReaderBase::lookupJSBExpression(const std::string& name)
+JSBSimReaderBase::lookupJSBExpression(const std::string& name,
+                                      bool recheckAeroProp)
 {
   // Convert to something being able to look up
   std::string propName = propNameFromJSBSim(name);
   
-  Port* port;
+  Port* port = 0;
   if (mExpressionTable.count(propName) <= 0) {
     // Not yet available, so look and see if it is an input
-    port = createAndScheduleAeroProp(propName);
+    if (recheckAeroProp)
+      port = createAndScheduleAeroProp(propName);
 
     if (!port || !port->isConnected()) {
       // Not yet available, so look and see if it is an input
@@ -402,6 +404,46 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
 
       addFCSModel(maxModel);
       port = maxModel->getOutputPort(0);
+
+    } else if (propName == "fdm/jsbsim/fcs/elevator-pos-rad") {
+      port = lookupJSBExpression("fcs/elevator-pos-deg", false);
+      port = addFromUnit("elevator-pos-rad unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/elevator-pos-deg") {
+      port = lookupJSBExpression("fcs/elevator-pos-rad", false);
+      port = addToUnit("elevator-pos-deg unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/left-aileron-pos-rad") {
+      port = lookupJSBExpression("fcs/left-aileron-pos-deg", false);
+      port = addFromUnit("left-aileron-pos-rad unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/left-aileron-pos-deg") {
+      port = lookupJSBExpression("fcs/left-aileron-pos-rad", false);
+      port = addToUnit("left-aileron-pos-deg unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/right-aileron-pos-rad") {
+      port = lookupJSBExpression("fcs/right-aileron-pos-deg", false);
+      port = addFromUnit("right-aileron-pos-rad unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/right-aileron-pos-deg") {
+      port = lookupJSBExpression("fcs/right-aileron-pos-rad", false);
+      port = addToUnit("right-aileron-pos-deg unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/aileron-pos-rad") {
+      port = lookupJSBExpression("fcs/aileron-pos-deg", false);
+      port = addFromUnit("aileron-pos-rad unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/aileron-pos-deg") {
+      port = lookupJSBExpression("fcs/aileron-pos-rad", false);
+      port = addToUnit("aileron-pos-deg unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/rudder-pos-rad") {
+      port = lookupJSBExpression("fcs/rudder-pos-deg", false);
+      port = addFromUnit("rudder-pos-rad unit", uDegree, port);
+
+    } else if (propName == "fdm/jsbsim/fcs/rudder-pos-deg") {
+      port = lookupJSBExpression("fcs/rudder-pos-rad", false);
+      port = addToUnit("rudder-pos-deg unit", uDegree, port);
 
     } else if (propName.substr(0, 19) == "fdm/jsbsim/fcs/mag-") {
       // Special absolute modules for fcs/mag-*
@@ -643,6 +685,30 @@ JSBSimReaderBase::addConstModel(const std::string& name, real_type value)
   return cModel->getOutputPort(0);
 }
 
+Port*
+JSBSimReaderBase::addToUnit(const std::string& name, Unit u, Port* in)
+{
+  if (!in)
+    return 0;
+  UnitConversionModel* unitConv
+    = new UnitConversionModel(name, UnitConversionModel::SiToUnit, u);
+  addFCSModel(unitConv);
+  unitConv->getInputPort(0)->connect(in);
+  return unitConv->getOutputPort(0);
+}
+
+Port*
+JSBSimReaderBase::addFromUnit(const std::string& name, Unit u, Port* in)
+{
+  if (!in)
+    return 0;
+  UnitConversionModel* unitConv
+    = new UnitConversionModel(name, UnitConversionModel::UnitToSi, u);
+  addFCSModel(unitConv);
+  unitConv->getInputPort(0)->connect(in);
+  return unitConv->getOutputPort(0);
+}
+
 void
 JSBSimReaderBase::addFCSModel(Model* model)
 {
@@ -684,6 +750,16 @@ JSBSimReaderBase::addMultiBodyAbsModel(const std::string& name, Port* in)
   unary->getInputPort(0)->connect(in);
   addMultiBodyModel(unary);
   return unary->getOutputPort(0);
+}
+
+Port*
+JSBSimReaderBase::addMultiBodyConstModel(const std::string& name, real_type value)
+{
+  Matrix m(1, 1);
+  m(1, 1) = value;
+  ConstModel* cModel = new ConstModel(name, m);
+  addMultiBodyModel(cModel);
+  return cModel->getOutputPort(0);
 }
 
 void

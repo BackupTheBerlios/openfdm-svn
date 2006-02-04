@@ -146,7 +146,8 @@ protected:
 
 
   /// <FIXME> document and rethink
-  Port* lookupJSBExpression(const std::string& name);
+  Port* lookupJSBExpression(const std::string& name,
+                            bool recheckAeroProp = true);
 
   void registerExpression(const std::string& name, Port* expr);
   void registerJSBExpression(const std::string& name, Port* expr);
@@ -162,12 +163,15 @@ protected:
   Port* addInverterModel(const std::string& name, Port* in);
   Port* addAbsModel(const std::string& name, Port* in);
   Port* addConstModel(const std::string& name, real_type value);
+  Port* addToUnit(const std::string& name, Unit u, Port* in);
+  Port* addFromUnit(const std::string& name, Unit u, Port* in);
 
   void addFCSModel(Model* model);
 
   Port* addMultiBodyToUnit(const std::string& name, Unit u, Port* in);
   Port* addMultiBodyFromUnit(const std::string& name, Unit u, Port* in);
   Port* addMultiBodyAbsModel(const std::string& name, Port* in);
+  Port* addMultiBodyConstModel(const std::string& name, real_type value);
   void addMultiBodyModel(Model* model);
   /// </FIXME> document and rethink
   Port* getTablePrelookup(const std::string& name, Port* in, const TableLookup& tl);
