@@ -146,7 +146,15 @@ public:
 
   bool operator==(const TableLookup& tl) const
   {
-    mTable == tl.mTable;
+    Table::const_iterator i1 = mTable.begin();
+    Table::const_iterator i2 = tl.mTable.begin();
+    while (i1 != mTable.end() && i2 != tl.mTable.end()) {
+      if (i1->first != i2->first || i1->second != i2->second)
+        return false;
+      ++i1;
+      ++i2;
+    }
+    return i1 == mTable.end() && i2 == tl.mTable.end();
   }
 
 private:
