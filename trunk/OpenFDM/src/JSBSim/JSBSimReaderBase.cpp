@@ -274,54 +274,54 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
   if (propName.substr(0, 9) == "controls/") {
 //     std::string inputName = propName.substr(propName.rfind('/'));
     std::string inputName = propName;
-    return addInputModel("Control Input " + inputName, propName);
+    return addInputModel("Control " + inputName, propName);
   } else {
     Port* port = 0;
     if (propName == "fdm/jsbsim/fcs/aileron-cmd-norm") {
-      port = addInputModel("Aileron Input",
+      port = addInputModel("Aileron",
                            "controls/flight/aileron");
 
     } else if (propName == "fdm/jsbsim/fcs/roll-trim-cmd-norm") {
-      port = addInputModel("Aileron Trim Input",
+      port = addInputModel("Aileron Trim",
                            "controls/flight/aileron-trim");
 
     } else if (propName == "fdm/jsbsim/fcs/elevator-cmd-norm") {
-      port = addInputModel("Elevator Input",
+      port = addInputModel("Elevator",
                            "controls/flight/elevator");
 
     } else if (propName == "fdm/jsbsim/fcs/pitch-trim-cmd-norm") {
-      port = addInputModel("Elevator Trim Input",
+      port = addInputModel("Elevator Trim",
                            "controls/flight/elevator-trim");
 
     } else if (propName == "fdm/jsbsim/fcs/rudder-cmd-norm") {
       // FIXME is inverted in JSBSim ...
-      port = addInputModel("Rudder Input",
+      port = addInputModel("Rudder",
                            "controls/flight/rudder");
 
     } else if (propName == "fdm/jsbsim/fcs/yaw-trim-cmd-norm") {
       // FIXME also with a minus
-      port = addInputModel("Yaw Trim Input",
+      port = addInputModel("Yaw Trim",
                            "controls/flight/rudder-trim");
 
     } else if (propName == "fdm/jsbsim/fcs/steer-cmd-norm") {
       // FIXME is seperate in flightgear ???
-      // port = addInputModel("Steering Input", "controls/gear/steering");
-      port = addInputModel("Steering Input",
+      // port = addInputModel("Steering", "controls/gear/steering");
+      port = addInputModel("Steering",
                            "controls/flight/rudder");
 
     } else if (propName.substr(0, 28) == "fdm/jsbsim/fcs/steer-pos-deg") {
       return lookupJSBExpression("fcs/steer-cmd-norm");
 
     } else if (propName == "fdm/jsbsim/fcs/flap-cmd-norm") {
-      port = addInputModel("Flaps Input",
+      port = addInputModel("Flaps",
                            "controls/flight/flaps");
 
     } else if (propName == "fdm/jsbsim/fcs/speedbrake-cmd-norm") {
-      port = addInputModel("Speedbrake Input",
+      port = addInputModel("Speedbrake",
                            "controls/flight/speedbrake");
 
     } else if (propName == "fdm/jsbsim/fcs/spoiler-cmd-norm") {
-      port = addInputModel("Spoiler Input",
+      port = addInputModel("Spoiler",
                            "controls/flight/spoiler");
 
 
@@ -357,25 +357,25 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
       return lookupJSBExpression(cmd);
 
     } else if (propName == "fdm/jsbsim/gear/gear-cmd-norm") {
-      port = addInputModel("Gear Retract Input",
+      port = addInputModel("Gear Retract",
                            "controls/gear/gear-down");
 
     } else if (propName == "fdm/jsbsim/gear/gear-pos-norm") {
       return lookupJSBExpression("gear/gear-cmd-norm");
 
     } else if (propName == "controls/gear/brake-parking") {
-      port = addInputModel("Parking Brake Input",
+      port = addInputModel("Parking Brake",
                            "controls/gear/brake-parking");
 
     } else if (propName == "fdm/jsbsim/gear/right-brake-pos-norm") {
       MaxModel* maxModel = new MaxModel("Right Brake Max");
       maxModel->setNumMaxInputs(3);
 
-      Port* pilotBr = addInputModel("Right Brake Input",
+      Port* pilotBr = addInputModel("Right Brake",
                                     "controls/gear/brake-right");
       maxModel->getInputPort(0)->connect(pilotBr);
 
-      Port* copilotBr = addInputModel("Right Copilot Brake Input",
+      Port* copilotBr = addInputModel("Right Copilot Brake",
                                       "controls/gear/copilot-brake-right");
       maxModel->getInputPort(1)->connect(copilotBr);
 
@@ -389,11 +389,11 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
       MaxModel* maxModel = new MaxModel("Left Brake Max");
       maxModel->setNumMaxInputs(3);
 
-      Port* pilotBr = addInputModel("Left Brake Input",
+      Port* pilotBr = addInputModel("Left Brake",
                                     "controls/gear/brake-left");
       maxModel->getInputPort(0)->connect(pilotBr);
 
-      Port* copilotBr = addInputModel("Left Copilot Brake Input",
+      Port* copilotBr = addInputModel("Left Copilot Brake",
                                       "controls/gear/copilot-brake-left");
       maxModel->getInputPort(1)->connect(copilotBr);
       
@@ -560,7 +560,7 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName)
   } else if (propName == "fdm/jsbsim/metrics/Sw-sqft") {
     /// FIXME, just schedule a constant block for that??
     port = mAeroForce->getOutputPort("wingArea");
-    port = addMultiBodyToUnit("Wingarea ft", uFoot2, port);
+    port = addMultiBodyToUnit("Wingarea ft2", uFoot2, port);
 
   } else if (propName == "fdm/jsbsim/metrics/cbarw-ft") {
     /// FIXME, just schedule a constant block for that??
@@ -699,6 +699,8 @@ Port*
 JSBSimReaderBase::getTablePrelookup(const std::string& name, Port* in,
                                     const TableLookup& tl)
 {
+  if (!in)
+    return 0;
   // First check if we already have a table lookup for this port/brakepoint
   // combination. If so return that output port
   std::vector<SharedPtr<TablePreLookup> >::iterator it;

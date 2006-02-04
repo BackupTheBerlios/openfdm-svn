@@ -318,7 +318,7 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
 //   epFrame->addInteract(accelSensor);
   mVehicle->getTopBody()->addInteract(accelSensor);
   mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
-  addOutputModel(port, "Normalized load value", "/accelerations/nlf");
+  addOutputModel(port, "Normalized load value", "accelerations/nlf");
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
@@ -457,7 +457,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
           sg->getInputPort("enabled")->connect(port);
           // Well, connect that directly to the input
           addOutputModel(port, "Gear " + numStr + " Position",
-                         "/gear/gear[" + numStr + "]/position-norm");
+                         "gear/gear[" + numStr + "]/position-norm");
         }
 
         if (type == "STEERABLE") {
@@ -469,7 +469,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
           gain->getInputPort(0)->connect(port);
           addFCSModel(gain);
           addOutputModel(port, "Gear " + numStr + " Steering Output",
-                         "/gear/gear[" + numStr + "]/steering-norm");
+                         "gear/gear[" + numStr + "]/steering-norm");
 
 
           UnitConversionModel* unitConv
@@ -598,12 +598,12 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
       Port* port = rj->getOutputPort(0);
       addOutputModel(port, "Gear " + numStr + " Compression",
-                     "/gear/gear[" + numStr + "]/compression-rad");
+                     "gear/gear[" + numStr + "]/compression-rad");
 
       /// FIXME add a retract joint ...
       port = lookupJSBExpression("gear/gear-pos-norm");
       addOutputModel(port, "Gear " + numStr + " Position",
-                     "/gear/gear[" + numStr + "]/position-norm");
+                     "gear/gear[" + numStr + "]/position-norm");
 
     } else if (uctype == "AC_CLG") {
       std::string name, brake, steer;
@@ -666,14 +666,14 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
         port = sj->getOutputPort(0);
         std::string nameBase = "Steering " + numStr + " Position";
         addOutputModel(port, nameBase,
-                       "/gear/gear[" + numStr + "]/steering-pos-rad");
+                       "gear/gear[" + numStr + "]/steering-pos-rad");
         UnitConversionModel* unitModel
           = new UnitConversionModel(nameBase + " converter",
                                     UnitConversionModel::SiToUnit, uDegree);
         unitModel->getInputPort(0)->connect(port);
         addFCSModel(unitModel);
         addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
-                       "/gear/gear[" + numStr + "]/steering-pos-deg");
+                       "gear/gear[" + numStr + "]/steering-pos-deg");
       }
 
 
@@ -713,11 +713,11 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
       // Prepare some outputs ...
       Port* port = pj->getOutputPort(0);
       addOutputModel(port, "Gear " + numStr + " Compression",
-                     "/gear/gear[" + numStr + "]/compression-m");
+                     "gear/gear[" + numStr + "]/compression-m");
 
       port = lookupJSBExpression("gear/gear-pos-norm");
       addOutputModel(port, "Gear " + numStr + " Position",
-                     "/gear/gear[" + numStr + "]/position-norm");
+                     "gear/gear[" + numStr + "]/position-norm");
 
     } else if (uctype == "AC_CONTACT") {
       std::string name, type, brake, retract;

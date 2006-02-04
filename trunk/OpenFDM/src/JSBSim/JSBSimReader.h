@@ -52,7 +52,8 @@ private:
                       Port* thrusterDriver);
   bool convertAerodynamics(const XMLElement* aero);
   bool convertFunction(const XMLElement* function, Summer* sum);
-  std::list<Port*> readFunctionInputs(const XMLElement* operationTag);
+  std::list<Port*> readFunctionInputs(const XMLElement* operationTag,
+                                      const std::string& name);
 
   unsigned getNumTableDims(const XMLElement* tableElem);
   bool readTable1D(const XMLElement* tableElem,

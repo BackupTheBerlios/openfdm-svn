@@ -360,7 +360,7 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
 
 
   std::list<const XMLElement*> locList = metricsElem->getElements("location");
-  Vector3 ap = locationData(locList, "AEROPROP", Vector3(0, 0, 0));
+  Vector3 ap = locationData(locList, "AERORP", Vector3(0, 0, 0));
   Vector3 ep = locationData(locList, "EYEPOINT", Vector3(0, 0, 0));
   Vector3 vrp = locationData(locList, "VRP", Vector3(0, 0, 0));
 
@@ -381,7 +381,7 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
 //   epFrame->addInteract(accelSensor);
   mVehicle->getTopBody()->addInteract(accelSensor);
   mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
-  addOutputModel(port, "Normalized load value", "/accelerations/nlf");
+  addOutputModel(port, "Normalized load value", "accelerations/nlf");
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
@@ -557,12 +557,12 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         // missing output properties are "wow" and "tire-pressure-norm"
 
         std::string retract = stringData((*it)->getElement("retractable"));
-        if (retract == "RETRACT") {
+        if (retract == "RETRACT" || retract == "1") {
           Port* port = lookupJSBExpression("gear/gear-pos-norm");
           sg->getInputPort("enabled")->connect(port);
           // Well, connect that directly to the input
           addOutputModel(port, "Gear " + numStr + " Position",
-                         "/gear/gear[" + numStr + "]/position-norm");
+                         "gear/gear[" + numStr + "]/position-norm");
         }
 
         real_type maxSteer = realData((*it)->getElement("max_steer"), 0);
@@ -575,7 +575,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           gain->getInputPort(0)->connect(port);
           addFCSModel(gain);
           addOutputModel(port, "Gear " + numStr + " Steering Output",
-                         "/gear/gear[" + numStr + "]/steering-norm");
+                         "gear/gear[" + numStr + "]/steering-norm");
 
           UnitConversionModel* unitConv
             = new UnitConversionModel(name + " Degree Conversion",
@@ -691,7 +691,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 //           sg->getInputPort("enabled")->connect(port);
 //           // Well, connect that directly to the input
 //           addOutputModel(port, "Gear " + numStr + " Position",
-//                          "/gear/gear[" + numStr + "]/position-norm");
+//                          "gear/gear[" + numStr + "]/position-norm");
 //         }
 
 //         if (type == "STEERABLE") {
@@ -703,7 +703,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 //           gain->getInputPort(0)->connect(port);
 //           addFCSModel(gain);
 //           addOutputModel(port, "Gear " + numStr + " Steering Output",
-//                          "/gear/gear[" + numStr + "]/steering-norm");
+//                          "gear/gear[" + numStr + "]/steering-norm");
 
 
 //           UnitConversionModel* unitConv
@@ -832,12 +832,12 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 
 //       Port* port = rj->getOutputPort(0);
 //       addOutputModel(port, "Gear " + numStr + " Compression",
-//                      "/gear/gear[" + numStr + "]/compression-rad");
+//                      "gear/gear[" + numStr + "]/compression-rad");
 
 //       /// FIXME add a retract joint ...
 //       port = lookupJSBExpression("gear/gear-pos-norm");
 //       addOutputModel(port, "Gear " + numStr + " Position",
-//                      "/gear/gear[" + numStr + "]/position-norm");
+//                      "gear/gear[" + numStr + "]/position-norm");
 
 //     } else if (uctype == "AC_CLG") {
 //       std::string name, brake, steer;
@@ -900,14 +900,14 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 //         port = sj->getOutputPort(0);
 //         std::string nameBase = "Steering " + numStr + " Position";
 //         addOutputModel(port, nameBase,
-//                        "/gear/gear[" + numStr + "]/steering-pos-rad");
+//                        "gear/gear[" + numStr + "]/steering-pos-rad");
 //         UnitConversionModel* unitModel
 //           = new UnitConversionModel(nameBase + " converter",
 //                                     UnitConversionModel::SiToUnit, uDegree);
 //         unitModel->getInputPort(0)->connect(port);
 //         addFCSModel(unitModel);
 //         addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
-//                        "/gear/gear[" + numStr + "]/steering-pos-deg");
+//                        "gear/gear[" + numStr + "]/steering-pos-deg");
 //       }
 
 
@@ -947,11 +947,11 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 //       // Prepare some outputs ...
 //       Port* port = pj->getOutputPort(0);
 //       addOutputModel(port, "Gear " + numStr + " Compression",
-//                      "/gear/gear[" + numStr + "]/compression-m");
+//                      "gear/gear[" + numStr + "]/compression-m");
 
 //       port = lookupJSBExpression("gear/gear-pos-norm");
 //       addOutputModel(port, "Gear " + numStr + " Position",
-//                      "/gear/gear[" + numStr + "]/position-norm");
+//                      "gear/gear[" + numStr + "]/position-norm");
 
 //     } else if (uctype == "AC_CONTACT") {
 //       std::string name, type, brake, retract;
@@ -1209,17 +1209,17 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
 }
 
 // bool
-// JSBSimReader::convertElectric(const Element* turbine,
-//                                     const std::string& number,
-//                                     Port* thrusterDriver)
+// JSBSimReader::convertElectric(const XMLElement* turbine,
+//                               const std::string& number,
+//                               Port* thrusterDriver)
 // {
 //   return true;
 // }
 
 // bool
-// JSBSimReader::convertPiston(const Element* turbine,
-//                                   const std::string& number,
-//                                   Port* thrusterDriver)
+// JSBSimReader::convertPiston(const XMLElement* turbine,
+//                             const std::string& number,
+//                             Port* thrusterDriver)
 // {
 //   return true;
 // }
@@ -1319,10 +1319,11 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     std::list<const XMLElement*> setting = traverse->getElements("setting");
     std::list<const XMLElement*>::iterator it = setting.begin();
     while (it != setting.end()) {
-      real_type val = realData(fcsComponent->getElement("position"), 0);
+      real_type val = realData((*it)->getElement("position"), 0);
       minVal = min(minVal, val);
       maxVal = max(maxVal, val);
-      allTime += realData(fcsComponent->getElement("time"), 0);
+      if (it != setting.begin())
+        allTime += realData((*it)->getElement("time"), 0);
       ++it;
     }
     if (allTime != 0)
@@ -1606,6 +1607,10 @@ JSBSimReader::convertFunction(const XMLElement* function,
                               Summer* sum)
 {
   std::string bindName = function->getAttribute("name");
+  std::string name = bindName;
+  std::string::size_type slachPos = bindName.rfind('/');
+  if (slachPos != std::string::npos)
+    name = name.substr(slachPos+1);
   Port* port = 0;
   std::list<const XMLElement*> elems = function->getElements();
   std::list<const XMLElement*>::const_iterator it;
@@ -1613,9 +1618,9 @@ JSBSimReader::convertFunction(const XMLElement* function,
     if ((*it)->getName() == "description") {
       // Just ignore
     } else if ((*it)->getName() == "product") {
-      SharedPtr<Product> prod = new Product(bindName);
+      SharedPtr<Product> prod = new Product(name + " product");
       addMultiBodyModel(prod);
-      std::list<Port*> inputs = readFunctionInputs(*it);
+      std::list<Port*> inputs = readFunctionInputs(*it, name);
       if (inputs.empty())
         return error("Cannot read product inputs!");
       unsigned i = 0;
@@ -1644,14 +1649,15 @@ JSBSimReader::convertFunction(const XMLElement* function,
 }
 
 std::list<Port*>
-JSBSimReader::readFunctionInputs(const XMLElement* operationTag)
+JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
+                                 const std::string& name)
 {
   std::list<Port*> inputs;
   std::list<const XMLElement*> args = operationTag->getElements();
   std::list<const XMLElement*>::const_iterator ait;
   for (ait = args.begin(); ait != args.end(); ++ait) {
     if ((*ait)->getName() == "value") {
-      SharedPtr<ConstModel> constModel = new ConstModel("FIXME");
+      SharedPtr<ConstModel> constModel = new ConstModel(name + " Constant");
       addMultiBodyModel(constModel);
       std::stringstream stream((*ait)->getData());
       Matrix v(1, 1);
@@ -1670,10 +1676,11 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag)
           return std::list<Port*>();
         }
         std::string token = stringData((*ait)->getElement("independentVar"));
-        Port* port = getTablePrelookup("TblLook", lookupJSBExpression(token),
+        Port* port = getTablePrelookup(name + " lookup",
+                                       lookupJSBExpression(token),
                                        lookup);
 
-        SharedPtr<Table1D> table = new Table1D("Table");
+        SharedPtr<Table1D> table = new Table1D(name + " Table");
         table->getInputPort(0)->connect(port);
         table->setTableData(data);
         addMultiBodyModel(table);
@@ -1696,12 +1703,14 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag)
         std::string rowInput = indepData(indeps, "row");
         std::string colInput = indepData(indeps, "column");
 
-        Port* rPort = getTablePrelookup("TblLk", lookupJSBExpression(rowInput),
+        Port* rPort = getTablePrelookup(name + " row lookup",
+                                        lookupJSBExpression(rowInput),
                                         lookup[0]);
-        Port* cPort = getTablePrelookup("TblLk", lookupJSBExpression(colInput),
+        Port* cPort = getTablePrelookup(name + " column lookup",
+                                        lookupJSBExpression(colInput),
                                         lookup[1]);
 
-        SharedPtr<Table2D> table = new Table2D("Table");
+        SharedPtr<Table2D> table = new Table2D(name  + " Table");
         table->getInputPort(0)->connect(rPort);
         table->getInputPort(1)->connect(cPort);
         table->setTableData(data);
@@ -1779,7 +1788,7 @@ JSBSimReader::readTable1D(const XMLElement* tableElem,
   sv(1) = sz;
   data = TableData<1>(sv);
   for (unsigned idx = 0; idx < sz; ++idx) {
-    lookup.setAtIndex(idx, values[idx*2]);
+    lookup.setAtIndex(idx+1, values[idx*2]);
     TableData<1>::Index iv;
     iv(1) = idx + 1;
     data(iv) = values[idx*2+1];
