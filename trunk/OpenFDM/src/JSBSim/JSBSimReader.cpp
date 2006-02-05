@@ -53,7 +53,7 @@
 namespace OpenFDM {
 
 static real_type
-realData(const XMLElement* element, real_type def)
+realData(const XMLElement* element, real_type def = 0)
 {
   if (!element)
     return def;
@@ -66,7 +66,7 @@ realData(const XMLElement* element, real_type def)
 }
 
 static Vector3
-locationData(const XMLElement* element, const Vector3& def)
+locationData(const XMLElement* element, const Vector3& def = Vector3(0, 0, 0))
 {
   if (!element)
     return def;
@@ -103,7 +103,7 @@ locationData(const XMLElement* element, const Vector3& def)
 
 static Vector3
 locationData(const std::list<const XMLElement*>& locList, const char* name,
-             const Vector3& def)
+             const Vector3& def = Vector3(0, 0, 0))
 {
   const XMLElement* element = 0;
   std::list<const XMLElement*>::const_iterator it;
@@ -118,7 +118,7 @@ locationData(const std::list<const XMLElement*>& locList, const char* name,
 }
 
 static Vector3
-orientationData(const XMLElement* element, const Vector3& def)
+orientationData(const XMLElement* element, const Vector3& def = Vector3(0, 0, 0))
 {
   if (!element)
     return def;
@@ -151,6 +151,20 @@ orientationData(const XMLElement* element, const Vector3& def)
     //     return def;
   }
   return value;
+}
+
+static InertiaMatrix
+inertiaData(const XMLElement* element,
+            const InertiaMatrix& def = InertiaMatrix(1, 0, 0, 1, 0, 1))
+{
+  InertiaMatrix I;
+  I(1, 1) = realData(element->getElement("ixx"), def(1, 1));
+  I(1, 2) = realData(element->getElement("ixy"), def(1, 2));
+  I(1, 3) = realData(element->getElement("ixz"), def(1, 3));
+  I(2, 2) = realData(element->getElement("iyy"), def(2, 2));
+  I(2, 3) = realData(element->getElement("iyz"), def(2, 3));
+  I(3, 3) = realData(element->getElement("izz"), def(3, 3));
+  return I;
 }
 
 static std::string
@@ -202,6 +216,34 @@ getInputs(const XMLElement* element)
   return ret;
 }
 
+static AirSpring*
+getAirSpring(const XMLElement* airSpringElem, const std::string& name)
+{
+  AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
+  real_type pullPress
+    = realData(airSpringElem->getElement("pullPressure"), 1e5);
+  aoDamp->setPullPressure(pullPress);
+  real_type pushPress
+    = realData(airSpringElem->getElement("pushPressure"), 5e5);
+  aoDamp->setPushPressure(pushPress);
+  real_type area
+    = realData(airSpringElem->getElement("area"), 0.01);
+  aoDamp->setArea(area);
+  real_type minCompr
+    = realData(airSpringElem->getElement("minCompression"), 0);
+  aoDamp->setMinCompression(minCompr);
+  real_type maxCompr
+    = realData(airSpringElem->getElement("maxCompression"), 0.2);
+  aoDamp->setMaxCompression(maxCompr);
+  real_type minDamp
+    = realData(airSpringElem->getElement("minDamping"), 1e3);
+  aoDamp->setMinDamperConstant(minDamp);
+  real_type maxDamp
+    = realData(airSpringElem->getElement("maxDamping"), 1e3);
+  aoDamp->setMaxDamperConstant(maxDamp);
+  return aoDamp;
+}
+  
 JSBSimReader::JSBSimReader(void)
 {
 }
@@ -450,74 +492,82 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
   return true;
 }
 
-// void
-// JSBSimReader::attachWheel(const std::string& name, const Vector3& pos,
-//                                 const std::string& brake,
-//                                 const std::string& numStr, real_type wheelDiam,
-//                                 real_type tireSpring, real_type tireDamp,
-//                                 RigidBody* parent)
-// {
-//   RigidBody* wheel = new RigidBody(name + " Wheel");
-//   InertiaMatrix wheelInertia(10, 0, 0, 30, 0, 10);
-//   wheel->addInteract(new Mass(name + " Wheel Inertia",
-//                               SpatialInertia(wheelInertia, 30)));
-//   mVehicle->getMultiBodySystem()->addRigidBody(wheel);
+bool
+JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
+                          const std::string& numStr, RigidBody* parent,
+                          const Vector3& parentDesignPos)
+{
+  RigidBody* wheel = new RigidBody(name + " Wheel");
+  InertiaMatrix wheelInertia = inertiaData(wheelElem->getElement("inertia"),
+                                           InertiaMatrix(10, 0, 0, 30, 0, 10));
+  real_type wheelMass = realData(wheelElem->getElement("mass"), 30);
+  wheel->addInteract(new Mass(name + " Wheel Inertia",
+                              SpatialInertia(wheelInertia, wheelMass)));
+  mVehicle->getMultiBodySystem()->addRigidBody(wheel);
   
-//   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
-//   parent->addInteract(wj);
-//   wheel->setInboardJoint(wj);
-//   wj->setJointAxis(Vector3(0, 1, 0));
-//   wj->setPosition(pos);
-//   wj->setOrientation(Quaternion::unit());
-//   wj->setJointPos(0);
-//   wj->setJointVel(0);
+  RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
+  parent->addInteract(wj);
+  wheel->setInboardJoint(wj);
+  wj->setJointAxis(Vector3(0, 1, 0));
+  Vector3 pos = structToBody(locationData(wheelElem->getElement("location")));
+  wj->setPosition(pos - parentDesignPos);
+  wj->setOrientation(Quaternion::unit());
+  wj->setJointPos(0);
+  wj->setJointVel(0);
 
-//   // Add a brake force
-//   if (brake == "LEFT" || brake == "RIGHT") {
-//     DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
-//     brakeF->setMinForce(8e1);
-//     brakeF->setMaxForce(1e4);
-//     if (brake == "LEFT") {
-//       Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
-//       brakeF->getInputPort(0)->connect(port);
-//     } else if (brake == "RIGHT") {
-//       Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
-//       brakeF->getInputPort(0)->connect(port);
-//     }
-//     // That one reads the joint position and velocity ...
-//     brakeF->getInputPort(1)->connect(wj->getOutputPort(1));
-//     // ... and provides an output force
-//     wj->getInputPort(0)->connect(brakeF->getOutputPort(0));
-//     addMultiBodyModel(brakeF);
-//   } else {
-//     // Just some 'rolloing friction' FIXME: does this belong here?
-//     Gain* rollingFric = new Gain(name + " Rolling Friction Force");
-//     rollingFric->setGain(-10);
-//     rollingFric->getInputPort(0)->connect(wj->getOutputPort(1));
-//     // ... and provides an output force
-//     wj->getInputPort(0)->connect(rollingFric->getOutputPort(0));
-//     addMultiBodyModel(rollingFric);
-//   }
+  std::string brake = stringData(wheelElem->getElement("brake_group"));
+  // Add a brake force
+  if (brake == "LEFT" || brake == "RIGHT") {
+    DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
+    real_type minForce = realData(wheelElem->getElement("minBrakeTorque"), 8e1);
+    brakeF->setMinForce(minForce);
+    real_type maxForce = realData(wheelElem->getElement("maxBrakeTorque"), 1e4);
+    brakeF->setMaxForce(maxForce);
+    if (brake == "LEFT") {
+      Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
+      brakeF->getInputPort(0)->connect(port);
+    } else if (brake == "RIGHT") {
+      Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
+      brakeF->getInputPort(0)->connect(port);
+    }
+    // That one reads the joint position and velocity ...
+    brakeF->getInputPort(1)->connect(wj->getOutputPort(1));
+    // ... and provides an output force
+    wj->getInputPort(0)->connect(brakeF->getOutputPort(0));
+    addMultiBodyModel(brakeF);
+  } else {
+    // Just some 'bearing friction'
+    Gain* rollingFric = new Gain(name + " Bearing Friction Force");
+    rollingFric->setGain(-10);
+    rollingFric->getInputPort(0)->connect(wj->getOutputPort(1));
+    // ... and provides an output force
+    wj->getInputPort(0)->connect(rollingFric->getOutputPort(0));
+    addMultiBodyModel(rollingFric);
+  }
   
-//   WheelContact* wc = new WheelContact(name + " Wheel Contact");
-//   wc->setWheelRadius(0.5*wheelDiam);
-//   wc->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
-//   wc->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
-//   wc->setFrictionCoeficient(0.9);
-//   wheel->addInteract(wc);
+  real_type wheelDiam = realData(wheelElem->getElement("wheelDiameter"));
+  WheelContact* wc = new WheelContact(name + " Wheel Contact");
+  wc->setWheelRadius(0.5*wheelDiam);
+  real_type tireSpring = realData(wheelElem->getElement("tireSpring"));
+  wc->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
+  real_type tireDamp = realData(wheelElem->getElement("tireDamping"));
+  wc->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
+  real_type fc = realData(wheelElem->getElement("frictionCoef"), 0.9);
+  wc->setFrictionCoeficient(fc);
+  wheel->addInteract(wc);
   
-//   Port* port = wj->getOutputPort(0);
-//   std::string nameBase = "Wheel " + numStr + " Position";
-//   addOutputModel(port, nameBase,
-//                  "gear/gear[" + numStr + "]/wheel-position-rad");
-//   UnitConversionModel* unitModel
-//     = new UnitConversionModel(nameBase + " converter",
-//                               UnitConversionModel::SiToUnit, uDegree);
-//   unitModel->getInputPort(0)->connect(port);
-//   addFCSModel(unitModel);
-//   addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
-//                  "gear/gear[" + numStr + "]/wheel-position-deg");
-// }
+  Port* port = wj->getOutputPort(0);
+  std::string nameBase = "Wheel " + numStr + " Position";
+  addOutputModel(port, nameBase,
+                 "gear/gear[" + numStr + "]/wheel-position-rad");
+  UnitConversionModel* unitModel
+    = new UnitConversionModel(nameBase + " converter",
+                              UnitConversionModel::SiToUnit, uDegree);
+  unitModel->getInputPort(0)->connect(port);
+  addFCSModel(unitModel);
+  addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
+                 "gear/gear[" + numStr + "]/wheel-position-deg");
+}
 
 bool
 JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
@@ -620,6 +670,149 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         
         mVehicle->getTopBody()->addInteract(sc);
 
+      } else if (type == "NOSEGEAR") {
+        // Ok, a compressable gear like the F-18's main gear is.
+        // Some kind of hardcoding here ...
+        std::stringstream sstr;
+        sstr << gearNumber++;
+        std::string numStr = sstr.str();
+        std::string name = (*it)->getAttribute("name");
+
+        Vector3 compressJointPos = locationData((*it)->getElement("location"));
+        // Model steering here ...
+        // normally we connect the compressible part to the top level body, but
+        // in case of steering this is no longer true.
+        RigidBody* strutParent = mVehicle->getTopBody();
+        std::string steerable = stringData((*it)->getElement("steerable"));
+        if (steerable == "true" || steerable == "1") {
+          // A new part modelling the steering
+          RigidBody* steer = new RigidBody(name + " Steer");
+          mVehicle->getMultiBodySystem()->addRigidBody(steer);
+          
+          // connect that via a revolute joint to the toplevel body.
+          // Note the 0.05m below, most steering wheels have some kind of
+          // castering auto line up behavour. That is doe with this 0.05m.
+          RevoluteActuator* sj = new RevoluteActuator(name + " Steer Joint");
+          strutParent->addInteract(sj);
+          steer->setInboardJoint(sj);
+          sj->setJointAxis(Vector3(0, 0, 1));
+          sj->setJointPos(0);
+          sj->setJointVel(0);
+          sj->setPosition(structToBody(compressJointPos)
+                          + Vector3(0.05, 0, 0));
+          sj->setOrientation(Quaternion::unit());
+          
+          Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
+          sj->getInputPort(0)->connect(port);
+          
+          strutParent = steer;
+          
+          // Prepare outputs
+          port = sj->getOutputPort(0);
+          std::string nameBase = "Steering " + numStr + " Position";
+          addOutputModel(port, nameBase,
+                         "gear/gear[" + numStr + "]/steering-pos-rad");
+          UnitConversionModel* unitModel
+            = new UnitConversionModel(nameBase + " converter",
+                                      UnitConversionModel::SiToUnit, uDegree);
+          unitModel->getInputPort(0)->connect(port);
+          addFCSModel(unitModel);
+          addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
+                         "gear/gear[" + numStr + "]/steering-pos-deg");
+        }
+        
+        
+        // Now the compressible part of the strut
+        RigidBody* arm = new RigidBody(name + " Strut");
+        mVehicle->getMultiBodySystem()->addRigidBody(arm);
+        arm->addInteract(new Mass(name + " Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(100))));
+        
+        // This time it is a prismatic joint
+        PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
+        strutParent->addInteract(pj);
+        arm->setInboardJoint(pj);
+        pj->setJointAxis(Vector3(0, 0, -1));
+        if (strutParent == mVehicle->getTopBody())
+          pj->setPosition(structToBody(compressJointPos));
+        else
+          pj->setPosition(Vector3(-0.05, 0, 0));
+        
+        // The damper element
+        const XMLElement* airSpringElem = (*it)->getElement("damper");
+        AirSpring* aoDamp = getAirSpring(airSpringElem, name);
+        pj->getInputPort(0)->connect(aoDamp->getOutputPort(0));
+        aoDamp->getInputPort(0)->connect(pj->getOutputPort(0));
+        aoDamp->getInputPort(1)->connect(pj->getOutputPort(1));
+        addMultiBodyModel(aoDamp);
+        
+        // Attach a wheel to that strut part.
+        attachWheel((*it)->getElement("wheel"), name, numStr, arm,
+                    structToBody(compressJointPos));
+        
+        // Prepare some outputs ...
+        Port* port = pj->getOutputPort(0);
+        addOutputModel(port, "Gear " + numStr + " Compression",
+                       "gear/gear[" + numStr + "]/compression-m");
+        
+        port = lookupJSBExpression("gear/gear-pos-norm");
+        addOutputModel(port, "Gear " + numStr + " Position",
+                       "gear/gear[" + numStr + "]/position-norm");
+        
+        
+      } else if (type == "F18_MLG") {
+        /// Ok, a compressable gear like the F-18's main gear is.
+        /// Some kind of hardcoding here ...
+        std::stringstream sstr;
+        sstr << gearNumber++;
+        std::string numStr = sstr.str();
+        std::string name = (*it)->getAttribute("name");
+
+        // This is the movable part of the strut, doing the compression
+        RigidBody* arm = new RigidBody(name + " Arm");
+        mVehicle->getMultiBodySystem()->addRigidBody(arm);
+        arm->addInteract(new Mass(name + " Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(80))));
+        
+        // Connect that with a revolute joint to the main body
+        RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
+        mVehicle->getTopBody()->addInteract(rj);
+        arm->setInboardJoint(rj);
+        rj->setJointAxis(Vector3(0, 1, 0));
+        rj->setJointPos(0);
+        rj->setJointVel(0);
+        Vector3 compressJointPos = locationData((*it)->getElement("location"));
+        rj->setPosition(structToBody(compressJointPos));
+        rj->setOrientation(Quaternion::unit());
+        
+        LineForce* lineForce = new LineForce(name + " Air Spring LineForce");
+        /// FIXME that ordering in attachment is messy!
+        lineForce->setPosition0(structToBody(compressJointPos) - Vector3(0.1, 0, 0.5));
+        lineForce->setPosition1(Vector3(-0.5, 0, 0));
+        mVehicle->getTopBody()->addInteract(lineForce);
+        arm->addInteract(lineForce);
+        
+        // The damper element
+        const XMLElement* airSpringElem = (*it)->getElement("damper");
+        AirSpring* aoDamp = getAirSpring(airSpringElem, name);
+        addMultiBodyModel(aoDamp);
+        // That one reads the joint position and velocity ...
+        aoDamp->getInputPort(0)->connect(lineForce->getOutputPort(0));
+        aoDamp->getInputPort(1)->connect(lineForce->getOutputPort(1));
+        // ... and provides an output force
+        lineForce->getInputPort(0)->connect(aoDamp->getOutputPort(0));
+        
+        // Attach a wheel to that strut part.
+        attachWheel((*it)->getElement("wheel"), name, numStr, arm,
+                    structToBody(compressJointPos));
+        
+        Port* port = rj->getOutputPort(0);
+        addOutputModel(port, "Gear " + numStr + " Compression",
+                       "gear/gear[" + numStr + "]/compression-rad");
+        
+        /// FIXME add a retract joint ...
+        port = lookupJSBExpression("gear/gear-pos-norm");
+        addOutputModel(port, "Gear " + numStr + " Position",
+                       "gear/gear[" + numStr + "]/position-norm");
+        
       } else if (type == "TAILHOOK") /*FIXME*/ {
       } else if (type == "LAUNCHBAR") {
       } else {
@@ -629,351 +822,6 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
       return error("Unknown groundreactions tag " + (*it)->getName());
     }
   }
-  
-
-
-//   // Undercarriage parsing.
-//   std::stringstream datastr(data);
-//   unsigned gearNumber = 0;
-
-//   while (datastr) {
-//     std::string uctype;
-//     datastr >> uctype;
-    
-//     std::stringstream sstr;
-//     sstr << gearNumber;
-//     std::string numStr = sstr.str();
-//     // Increment the gear number
-//     ++gearNumber;
-
-//     if (uctype == "AC_GEAR") {
-//       std::string name, type, brake, retract;
-//       real_type x, y, z, k, d, fs, fd, rr, sa;
-//       datastr >> name >> x >> y >> z >> k >> d >> fs >> fd >> rr
-//               >> type >> brake >> sa >> retract;
-
-//       if (type == "CASTERING") {
-//         // Modelling castering gars as simple contacs without a special
-//         // direction
-//         SimpleContact* sc = new SimpleContact(name);
-//         sc->setPosition(structToBody(Vector3(x, y, z)));
-
-//         sc->setSpringConstant(convertFrom(uPoundForcePFt, k));
-//         // FIXME: conversion factor:
-//         // Works since it is used as N/(m/s)=Ns/m (seconds don't change)
-//         // Note that friction coefficients are different from that but
-//         // viscosous friction is just used in that way ...
-//         sc->setSpringDamping(convertFrom(uPoundForcePFt, d));
-//         sc->setFrictionCoeficient(0.1*fs);
-        
-//         mVehicle->getTopBody()->addInteract(sc);
-
-//       } else {
-//         // For jsbsim use simple gears
-//         SimpleGear* sg = new SimpleGear(name);
-//         sg->setPosition(structToBody(Vector3(x, y, z)));
-        
-//         sg->setSpringConstant(convertFrom(uPoundForcePFt, k));
-//         // FIXME: conversion factor:
-//         // Works since it is used as N/(m/s)=Ns/m (seconds don't change)
-//         // Note that friction coefficients are different from that but
-//         // viscosous friction is just used in that way ...
-//         sg->setSpringDamping(convertFrom(uPoundForcePFt, d));
-//         sg->setFrictionCoeficient(fs);
-        
-//         // Connect apprioriate input and output models
-
-//         // FIXME
-//         // missing output properties are "wow" and "tire-pressure-norm"
-
-//         if (retract == "RETRACT") {
-//           Port* port = lookupJSBExpression("gear/gear-pos-norm");
-//           sg->getInputPort("enabled")->connect(port);
-//           // Well, connect that directly to the input
-//           addOutputModel(port, "Gear " + numStr + " Position",
-//                          "gear/gear[" + numStr + "]/position-norm");
-//         }
-
-//         if (type == "STEERABLE") {
-//           // FIXME: FCS might later define something for that gain ...
-// //           prop = lookupJSBExpression("fcs/steer-pos-deg[" + numStr + "]");
-//           Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
-//           Gain* gain = new Gain(name + " Steer Gain");
-//           gain->setGain(sa);
-//           gain->getInputPort(0)->connect(port);
-//           addFCSModel(gain);
-//           addOutputModel(port, "Gear " + numStr + " Steering Output",
-//                          "gear/gear[" + numStr + "]/steering-norm");
-
-
-//           UnitConversionModel* unitConv
-//             = new UnitConversionModel(name + " Degree Conversion",
-//                                       UnitConversionModel::UnitToSi,
-//                                       uDegree);
-//           unitConv->getInputPort(0)->connect(gain->getOutputPort(0));
-//           addFCSModel(unitConv);
-
-//           sg->getInputPort("steeringAngle")->connect(unitConv->getOutputPort(0));
-//         }
-        
-//         if (brake == "LEFT") {
-//           Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
-//           sg->getInputPort("brakeCommand")->connect(port);
-//         } else if (brake == "RIGHT") {
-//           Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
-//           sg->getInputPort("brakeCommand")->connect(port);
-//         }
-        
-//         mVehicle->getTopBody()->addInteract(sg);
-//       }
-      
-//     } else if (uctype == "AC_LAUNCHBAR") {
-//       std::string d;
-//       datastr >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d;
-
-//     } else if (uctype == "AC_HOOK") {
-//       std::string d;
-//       datastr >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d >> d;
-
-//     } else if (uctype == "AC_F18MLG") { 
-//       /// Well, that here is exactly how it should not be,
-//       /// but for initial testing of a new unfinished fdm ...
-//       std::string name, brake;
-//       Vector3 compressJointPos;
-//       real_type pullPress;
-//       real_type pushPress;
-//       real_type area;
-//       real_type minCompr;
-//       real_type maxCompr;
-//       real_type minDamp;
-//       real_type maxDamp;
-//       real_type armLength;
-//       real_type wheelDiam;
-//       real_type tireSpring, tireDamp;
-
-
-//       datastr >> name >> brake
-//               >> compressJointPos(1)
-//               >> compressJointPos(2)
-//               >> compressJointPos(3)
-//               >> pullPress >> pushPress
-//               >> area
-//               >> minCompr
-//               >> maxCompr
-//               >> minDamp
-//               >> maxDamp
-//               >> armLength
-//               >> wheelDiam
-//               >> tireSpring >> tireDamp;
-
-//       // Well this is come hardcoding, but as a demo built from within the
-//       // legacy JSBSim format this is ok :)
-
-//       // This is the movable part of the strut, doing the compression
-//       RigidBody* arm = new RigidBody(name + " Arm");
-//       mVehicle->getMultiBodySystem()->addRigidBody(arm);
-//       arm->addInteract(new Mass(name + " Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(80))));
-
-//       // Connect that with a revolute joint to the main body
-//       RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
-//       mVehicle->getTopBody()->addInteract(rj);
-//       arm->setInboardJoint(rj);
-//       rj->setJointAxis(Vector3(0, 1, 0));
-//       rj->setJointPos(0);
-//       rj->setJointVel(0);
-//       rj->setPosition(structToBody(compressJointPos));
-//       rj->setOrientation(Quaternion::unit());
-
-// #if 0
-//       // Well, we use an air spring for that. It is directly in the
-//       // revolute joint. That is wrong, but at the moment aprioriate.
-//       AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
-//       aoDamp->setPullPressure(pullPress);
-//       aoDamp->setPushPressure(pushPress);
-//       aoDamp->setArea(area);
-//       aoDamp->setMinCompression(minCompr);
-//       aoDamp->setMaxCompression(maxCompr);
-//       aoDamp->setMinDamperConstant(minDamp);
-//       aoDamp->setMaxDamperConstant(maxDamp);
-//       // That one reads the joint position and velocity ...
-//       aoDamp->getInputPort(0)->connect(rj->getOutputPort(0));
-//       aoDamp->getInputPort(1)->connect(rj->getOutputPort(1));
-//       // ... and provides an output force
-//       rj->getInputPort(0)->connect(aoDamp->getOutputPort(0));
-//       addMultiBodyModel(aoDamp);
-// #else
-//       LineForce* lineForce = new LineForce(name + " Air Spring LineForce");
-//       /// FIXME that ordering in attachment is messy!
-//       lineForce->setPosition0(structToBody(compressJointPos) - Vector3(0.1, 0, 0.5));
-//       lineForce->setPosition1(Vector3(-0.5, 0, 0));
-//       mVehicle->getTopBody()->addInteract(lineForce);
-//       arm->addInteract(lineForce);
-
-//       AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
-//       aoDamp->setPullPressure(pullPress);
-//       aoDamp->setPushPressure(pushPress);
-//       aoDamp->setArea(area);
-//       aoDamp->setMinCompression(minCompr);
-//       aoDamp->setMaxCompression(maxCompr);
-//       aoDamp->setMinDamperConstant(minDamp);
-//       aoDamp->setMaxDamperConstant(maxDamp);
-//       addMultiBodyModel(aoDamp);
-
-//       // That one reads the joint position and velocity ...
-//       aoDamp->getInputPort(0)->connect(lineForce->getOutputPort(0));
-//       aoDamp->getInputPort(1)->connect(lineForce->getOutputPort(1));
-//       // ... and provides an output force
-//       lineForce->getInputPort(0)->connect(aoDamp->getOutputPort(0));
-// #endif
-
-//       // Attach a wheel to that strut part.
-//       attachWheel(name, Vector3(-armLength, 0, 0), brake, numStr, wheelDiam,
-//                   tireSpring, tireDamp, arm);
-
-//       Port* port = rj->getOutputPort(0);
-//       addOutputModel(port, "Gear " + numStr + " Compression",
-//                      "gear/gear[" + numStr + "]/compression-rad");
-
-//       /// FIXME add a retract joint ...
-//       port = lookupJSBExpression("gear/gear-pos-norm");
-//       addOutputModel(port, "Gear " + numStr + " Position",
-//                      "gear/gear[" + numStr + "]/position-norm");
-
-//     } else if (uctype == "AC_CLG") {
-//       std::string name, brake, steer;
-//       Vector3 compressJointPos;
-//       real_type pullPress;
-//       real_type pushPress;
-//       real_type area;
-//       real_type minCompr;
-//       real_type maxCompr;
-//       real_type minDamp;
-//       real_type maxDamp;
-//       real_type wheelDiam;
-//       real_type tireSpring, tireDamp;
-
-//       datastr >> name >> brake
-//               >> compressJointPos(1)
-//               >> compressJointPos(2)
-//               >> compressJointPos(3)
-//               >> pullPress >> pushPress
-//               >> area
-//               >> minCompr
-//               >> maxCompr
-//               >> minDamp
-//               >> maxDamp
-//               >> wheelDiam
-//               >> tireSpring >> tireDamp
-//               >> steer;
-
-//       // Well this is come hardcoding, but as a demo built from within the
-//       // legacy JSBSim format this is ok :)
-
-//       // Model steering here ...
-//       // normally we connect the compressible part to the top level body, but
-//       // in case of steering this is no longer true.
-//       RigidBody* strutParent = mVehicle->getTopBody();
-//       if (steer == "STEERABLE") {
-//         // A new part modelling the steering
-//         RigidBody* steer = new RigidBody(name + " Steer");
-//         mVehicle->getMultiBodySystem()->addRigidBody(steer);
-
-//         // connect that via a revolute joint to the toplevel body.
-//         // Note the 0.05m below, most steering wheels have some kind of
-//         // castering auto line up behavour. That is doe with this 0.05m.
-//         RevoluteActuator* sj = new RevoluteActuator(name + " Steer Joint");
-//         strutParent->addInteract(sj);
-//         steer->setInboardJoint(sj);
-//         sj->setJointAxis(Vector3(0, 0, 1));
-//         sj->setJointPos(0);
-//         sj->setJointVel(0);
-//         sj->setPosition(structToBody(compressJointPos)
-//                         + Vector3(0.05, 0, 0));
-//         sj->setOrientation(Quaternion::unit());
-
-//         Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
-//         sj->getInputPort(0)->connect(port);
-        
-//         strutParent = steer;
-        
-//         // Prepare outputs
-//         port = sj->getOutputPort(0);
-//         std::string nameBase = "Steering " + numStr + " Position";
-//         addOutputModel(port, nameBase,
-//                        "gear/gear[" + numStr + "]/steering-pos-rad");
-//         UnitConversionModel* unitModel
-//           = new UnitConversionModel(nameBase + " converter",
-//                                     UnitConversionModel::SiToUnit, uDegree);
-//         unitModel->getInputPort(0)->connect(port);
-//         addFCSModel(unitModel);
-//         addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
-//                        "gear/gear[" + numStr + "]/steering-pos-deg");
-//       }
-
-
-//       // Now the compressible part of the strut
-//       RigidBody* arm = new RigidBody(name + " Strut");
-//       mVehicle->getMultiBodySystem()->addRigidBody(arm);
-//       arm->addInteract(new Mass(name + " Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(100))));
-
-//       // This time it is a prismatic joint
-//       PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
-//       strutParent->addInteract(pj);
-//       arm->setInboardJoint(pj);
-//       pj->setJointAxis(Vector3(0, 0, -1));
-//       if (strutParent == mVehicle->getTopBody())
-//         pj->setPosition(structToBody(compressJointPos));
-//       else
-//         pj->setPosition(Vector3(-0.05, 0, 0));
-
-//       // With an air spring
-//       AirSpring* aoDamp = new AirSpring(name + " Air Spring Force");
-//       aoDamp->setPullPressure(pullPress);
-//       aoDamp->setPushPressure(pushPress);
-//       aoDamp->setArea(area);
-//       aoDamp->setMinCompression(minCompr);
-//       aoDamp->setMaxCompression(maxCompr);
-//       aoDamp->setMinDamperConstant(minDamp);
-//       aoDamp->setMaxDamperConstant(maxDamp);
-//       pj->getInputPort(0)->connect(aoDamp->getOutputPort(0));
-//       aoDamp->getInputPort(0)->connect(pj->getOutputPort(0));
-//       aoDamp->getInputPort(1)->connect(pj->getOutputPort(1));
-//       addMultiBodyModel(aoDamp);
-
-//       // Attach a wheel to that strut part.
-//       attachWheel(name, Vector3::zeros(), brake, numStr, wheelDiam,
-//                   tireSpring, tireDamp, arm);
-
-//       // Prepare some outputs ...
-//       Port* port = pj->getOutputPort(0);
-//       addOutputModel(port, "Gear " + numStr + " Compression",
-//                      "gear/gear[" + numStr + "]/compression-m");
-
-//       port = lookupJSBExpression("gear/gear-pos-norm");
-//       addOutputModel(port, "Gear " + numStr + " Position",
-//                      "gear/gear[" + numStr + "]/position-norm");
-
-//     } else if (uctype == "AC_CONTACT") {
-//       std::string name, type, brake, retract;
-//       real_type x, y, z, k, d, fs, fd, rr, sa;
-//       datastr >> name >> x >> y >> z >> k >> d >> fs >> fd >> rr
-//               >> type >> brake >> sa >> retract;
-
-//       // Very simple contact force. Penalty method.
-//       SimpleContact* sc = new SimpleContact(name);
-//       sc->setPosition(structToBody(Vector3(x, y, z)));
-
-//       sc->setSpringConstant(convertFrom(uPoundForcePFt, k));
-//       // FIXME: conversion factor:
-//       // Works since it is used as N/(m/s)=Ns/m (seconds don't change)
-//       // Note that friction coefficients are different from that but
-//       // viscosous friction is just used in that way ...
-//       sc->setSpringDamping(convertFrom(uPoundForcePFt, d));
-//       sc->setFrictionCoeficient(fs);
-
-//       mVehicle->getTopBody()->addInteract(sc);
-//     }
-//   }
 
   return true;
 }
