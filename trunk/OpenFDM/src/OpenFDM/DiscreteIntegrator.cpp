@@ -7,7 +7,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(DiscreteIntegrator)
+BEGIN_OPENFDM_OBJECT_DEF(DiscreteIntegrator, Model)
   END_OPENFDM_OBJECT_DEF
 
 DiscreteIntegrator::DiscreteIntegrator(const std::string& name) :

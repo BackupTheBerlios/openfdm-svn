@@ -8,7 +8,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(AirSpring)
+BEGIN_OPENFDM_OBJECT_DEF(AirSpring, Model)
   END_OPENFDM_OBJECT_DEF
 
 AirSpring::AirSpring(const std::string& name) :

@@ -14,7 +14,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(DeadBand)
+BEGIN_OPENFDM_OBJECT_DEF(DeadBand, Model)
   END_OPENFDM_OBJECT_DEF
 
 DeadBand::DeadBand(const std::string& name) : Model(name)

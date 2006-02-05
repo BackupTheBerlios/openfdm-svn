@@ -15,7 +15,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Saturation)
+BEGIN_OPENFDM_OBJECT_DEF(Saturation, Model)
   END_OPENFDM_OBJECT_DEF
 
 Saturation::Saturation(const std::string& name) : Model(name)

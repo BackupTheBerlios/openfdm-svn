@@ -15,7 +15,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Bias)
+BEGIN_OPENFDM_OBJECT_DEF(Bias, Model)
   END_OPENFDM_OBJECT_DEF
 
 Bias::Bias(const std::string& name) : Model(name)

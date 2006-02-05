@@ -12,7 +12,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(ModelGroup)
+BEGIN_OPENFDM_OBJECT_DEF(ModelGroup, Model)
   END_OPENFDM_OBJECT_DEF
 
 ModelGroup::ModelGroup(const std::string& name) :

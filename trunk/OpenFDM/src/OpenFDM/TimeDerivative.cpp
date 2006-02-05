@@ -7,7 +7,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(TimeDerivative)
+BEGIN_OPENFDM_OBJECT_DEF(TimeDerivative, Model)
   END_OPENFDM_OBJECT_DEF
 
 TimeDerivative::TimeDerivative(const std::string& name) :

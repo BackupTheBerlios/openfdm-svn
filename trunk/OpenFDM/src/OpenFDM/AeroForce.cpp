@@ -12,7 +12,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(AeroForce)
+BEGIN_OPENFDM_OBJECT_DEF(AeroForce, ExternalForce)
   END_OPENFDM_OBJECT_DEF
 
 AeroForce::AeroForce(const std::string& name)

@@ -17,7 +17,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Joint)
+BEGIN_OPENFDM_OBJECT_DEF(Joint, Interact)
   END_OPENFDM_OBJECT_DEF
 
 Joint::Joint(const std::string& name)

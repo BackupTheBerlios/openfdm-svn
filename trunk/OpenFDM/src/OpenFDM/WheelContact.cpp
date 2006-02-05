@@ -13,7 +13,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(WheelContact)
+BEGIN_OPENFDM_OBJECT_DEF(WheelContact, ExternalForce)
   END_OPENFDM_OBJECT_DEF
 
 WheelContact::WheelContact(const std::string& name)

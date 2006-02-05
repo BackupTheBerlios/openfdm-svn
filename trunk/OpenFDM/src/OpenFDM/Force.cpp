@@ -6,15 +6,15 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Force)
+BEGIN_OPENFDM_OBJECT_DEF(Force, Interact)
   END_OPENFDM_OBJECT_DEF
 
 // FIXME
-BEGIN_OPENFDM_OBJECT_DEF(ExternalForce)
+BEGIN_OPENFDM_OBJECT_DEF(ExternalForce, Force)
   END_OPENFDM_OBJECT_DEF
-BEGIN_OPENFDM_OBJECT_DEF(InternalForce)
+BEGIN_OPENFDM_OBJECT_DEF(InternalForce, Force)
   END_OPENFDM_OBJECT_DEF
-BEGIN_OPENFDM_OBJECT_DEF(LineForce)
+BEGIN_OPENFDM_OBJECT_DEF(LineForce, InternalForce)
   END_OPENFDM_OBJECT_DEF
 
 Force::Force(const std::string& name, unsigned numParents) :

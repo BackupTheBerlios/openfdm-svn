@@ -11,7 +11,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(TablePreLookup)
+BEGIN_OPENFDM_OBJECT_DEF(TablePreLookup, Model)
   END_OPENFDM_OBJECT_DEF
 
 TablePreLookup::TablePreLookup(const std::string& name) :
@@ -59,7 +59,7 @@ TablePreLookup::getOutput(void) const
   return mOutput;
 }
 
-BEGIN_OPENFDM_OBJECT_DEF(Table1D)
+BEGIN_OPENFDM_OBJECT_DEF(Table1D, Model)
   END_OPENFDM_OBJECT_DEF
 
 Table1D::Table1D(const std::string& name) :
@@ -109,7 +109,7 @@ Table1D::getOutput(void) const
   return mOutput;
 }
 
-BEGIN_OPENFDM_OBJECT_DEF(Table2D)
+BEGIN_OPENFDM_OBJECT_DEF(Table2D, Model)
   END_OPENFDM_OBJECT_DEF
 
 Table2D::Table2D(const std::string& name) :
@@ -164,7 +164,7 @@ Table2D::getOutput(void) const
   return mOutput;
 }
 
-BEGIN_OPENFDM_OBJECT_DEF(Table3D)
+BEGIN_OPENFDM_OBJECT_DEF(Table3D, Model)
   END_OPENFDM_OBJECT_DEF
 
 Table3D::Table3D(const std::string& name) :

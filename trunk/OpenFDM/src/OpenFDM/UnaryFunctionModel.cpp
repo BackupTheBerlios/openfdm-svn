@@ -120,7 +120,7 @@ private:
   { return tan(mRealPortHandle.getRealValue()); }
 };
 
-BEGIN_OPENFDM_OBJECT_DEF(UnaryFunctionModel)
+BEGIN_OPENFDM_OBJECT_DEF(UnaryFunctionModel, Model)
   END_OPENFDM_OBJECT_DEF
 
 UnaryFunctionModel::UnaryFunctionModel(const std::string& name, Type type) :
@@ -222,7 +222,7 @@ UnaryFunctionModel::getType(void) const
   return mType;
 }
 
-BEGIN_OPENFDM_OBJECT_DEF(UnitConversionModel)
+BEGIN_OPENFDM_OBJECT_DEF(UnitConversionModel, Model)
   END_OPENFDM_OBJECT_DEF
 
 UnitConversionModel::UnitConversionModel(const std::string& name,

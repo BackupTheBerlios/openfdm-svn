@@ -15,11 +15,11 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Frame)
+BEGIN_OPENFDM_OBJECT_DEF(Frame, Object)
   END_OPENFDM_OBJECT_DEF
 
 /// FIXME
-BEGIN_OPENFDM_OBJECT_DEF(FreeFrame)
+BEGIN_OPENFDM_OBJECT_DEF(FreeFrame, Frame)
   END_OPENFDM_OBJECT_DEF
 
 Frame::Frame(const std::string& name) :

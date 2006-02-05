@@ -43,7 +43,7 @@ private:
 };
 
 
-BEGIN_OPENFDM_OBJECT_DEF(BinaryFunctionModel)
+BEGIN_OPENFDM_OBJECT_DEF(BinaryFunctionModel, Model)
   END_OPENFDM_OBJECT_DEF
 
 BinaryFunctionModel::BinaryFunctionModel(const std::string& name, Type type) :

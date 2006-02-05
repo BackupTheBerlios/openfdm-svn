@@ -14,7 +14,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(SimpleGear)
+BEGIN_OPENFDM_OBJECT_DEF(SimpleGear, Contact)
   END_OPENFDM_OBJECT_DEF
 
 SimpleGear::SimpleGear(const std::string& name)

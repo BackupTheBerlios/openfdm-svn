@@ -12,7 +12,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Summer)
+BEGIN_OPENFDM_OBJECT_DEF(Summer, Model)
   END_OPENFDM_OBJECT_DEF
 
 Summer::Summer(const std::string& name) :

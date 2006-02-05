@@ -14,7 +14,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Gain)
+BEGIN_OPENFDM_OBJECT_DEF(Gain, Model)
   END_OPENFDM_OBJECT_DEF
 
 Gain::Gain(const std::string& name) :

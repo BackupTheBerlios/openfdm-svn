@@ -17,10 +17,10 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(PrismaticJoint)
+BEGIN_OPENFDM_OBJECT_DEF(PrismaticJoint, Joint)
   END_OPENFDM_OBJECT_DEF
 
-BEGIN_OPENFDM_OBJECT_DEF(PrismaticJointFrame)
+BEGIN_OPENFDM_OBJECT_DEF(PrismaticJointFrame, Frame)
   END_OPENFDM_OBJECT_DEF
 
 PrismaticJoint::PrismaticJoint(const std::string& name)

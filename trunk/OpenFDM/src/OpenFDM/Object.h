@@ -22,7 +22,7 @@ class WeakPtr;
 #define OPENFDM_OBJECT(classname, baseclassname)                \
 public: virtual const char* getTypeName(void) const
 
-#define BEGIN_OPENFDM_OBJECT_DEF(classname)                     \
+#define BEGIN_OPENFDM_OBJECT_DEF(classname, baseclassname)      \
 const char*                                                     \
 classname::getTypeName(void) const                              \
 {                                                               \

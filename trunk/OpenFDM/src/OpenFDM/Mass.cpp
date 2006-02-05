@@ -6,7 +6,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Mass)
+BEGIN_OPENFDM_OBJECT_DEF(Mass, Interact)
   END_OPENFDM_OBJECT_DEF
 
 Mass::Mass(const std::string& name, const SpatialInertia& inertia) :

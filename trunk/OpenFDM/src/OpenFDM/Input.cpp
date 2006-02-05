@@ -6,7 +6,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Input)
+BEGIN_OPENFDM_OBJECT_DEF(Input, Model)
   END_OPENFDM_OBJECT_DEF
 
 Input::Input(const std::string& name) :
@@ -97,7 +97,7 @@ Input::getOutputValue(void) const
 
 
 /// FIXME
-BEGIN_OPENFDM_OBJECT_DEF(Output)
+BEGIN_OPENFDM_OBJECT_DEF(Output, Model)
   END_OPENFDM_OBJECT_DEF
 
 Output::Output(const std::string& name) :
