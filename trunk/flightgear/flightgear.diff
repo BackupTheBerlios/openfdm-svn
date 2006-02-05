@@ -1,11 +1,11 @@
 Index: configure.ac
 ===================================================================
 RCS file: /var/cvs/FlightGear-0.9/source/configure.ac,v
-retrieving revision 1.96
-diff -u -r1.96 configure.ac
---- configure.ac	24 Sep 2005 12:31:41 -0000	1.96
-+++ configure.ac	5 Oct 2005 15:17:44 -0000
-@@ -444,6 +444,14 @@
+retrieving revision 1.110
+diff -u -r1.110 configure.ac
+--- configure.ac	21 Jan 2006 10:06:09 -0000	1.110
++++ configure.ac	5 Feb 2006 12:39:39 -0000
+@@ -459,6 +468,14 @@
  fi
  AM_CONDITIONAL(ENABLE_JPEG_SERVER, test "x$ac_cv_header_simgear_screen_jpgfactory_hxx" = "xyes")
  
@@ -20,9 +20,9 @@ diff -u -r1.96 configure.ac
  AC_LANG_POP
  
  dnl Check for system installed zlib
-@@ -519,6 +527,7 @@
- 	src/FDM/JSBSim/Makefile \
- 	src/FDM/JSBSim/filtersjb/Makefile \
+@@ -539,6 +556,7 @@
+ 	src/FDM/JSBSim/models/atmosphere/Makefile \
+ 	src/FDM/JSBSim/models/propulsion/Makefile \
  	src/FDM/LaRCsim/Makefile \
 +	src/FDM/OpenFDM/Makefile \
  	src/FDM/SP/Makefile \
@@ -34,7 +34,7 @@ RCS file: /var/cvs/FlightGear-0.9/source/src/FDM/Makefile.am,v
 retrieving revision 1.7
 diff -u -r1.7 Makefile.am
 --- src/FDM/Makefile.am	22 Nov 2004 10:10:33 -0000	1.7
-+++ src/FDM/Makefile.am	5 Oct 2005 15:17:44 -0000
++++ src/FDM/Makefile.am	5 Feb 2006 12:39:41 -0000
 @@ -4,8 +4,14 @@
  SP_DIR =
  endif
@@ -54,10 +54,10 @@ diff -u -r1.7 Makefile.am
 Index: src/FDM/flight.hxx
 ===================================================================
 RCS file: /var/cvs/FlightGear-0.9/source/src/FDM/flight.hxx,v
-retrieving revision 1.9
-diff -u -r1.9 flight.hxx
---- src/FDM/flight.hxx	3 Jul 2005 09:39:14 -0000	1.9
-+++ src/FDM/flight.hxx	5 Oct 2005 15:17:45 -0000
+retrieving revision 1.11
+diff -u -r1.11 flight.hxx
+--- src/FDM/flight.hxx	20 Jan 2006 17:19:02 -0000	1.11
++++ src/FDM/flight.hxx	5 Feb 2006 12:39:42 -0000
 @@ -433,7 +433,10 @@
  	FG_PARACHUTE = 9,
  
@@ -73,17 +73,17 @@ diff -u -r1.9 flight.hxx
 Index: src/Main/Makefile.am
 ===================================================================
 RCS file: /var/cvs/FlightGear-0.9/source/src/Main/Makefile.am,v
-retrieving revision 1.54
-diff -u -r1.54 Makefile.am
---- src/Main/Makefile.am	25 Jun 2005 11:21:18 -0000	1.54
-+++ src/Main/Makefile.am	5 Oct 2005 15:17:45 -0000
+retrieving revision 1.63
+diff -u -r1.63 Makefile.am
+--- src/Main/Makefile.am	20 Jan 2006 17:19:02 -0000	1.63
++++ src/Main/Makefile.am	5 Feb 2006 12:39:43 -0000
 @@ -13,6 +13,13 @@
  SP_FDM_LIBS = 
  endif
  
 +if ENABLE_OpenFDM_FDM
 +OpenFDM_LIBS = $(top_builddir)/src/FDM/OpenFDM/libFGOpenFDM.a \
-+               -lJSBReader -lOpenFDM
++               -lOpenFDMJSBReader -lOpenFDMeasyxmlXML -lOpenFDMXML -lOpenFDM
 +else
 +OpenFDM_LIBS = 
 +endif
@@ -91,7 +91,7 @@ diff -u -r1.54 Makefile.am
  if WITH_THREADS
  THREAD_LIBS = -lsgthreads $(thread_LIBS)
  else
-@@ -70,6 +77,7 @@
+@@ -84,6 +91,7 @@
  	$(top_builddir)/src/FDM/LaRCsim/libLaRCsim.a \
  	$(top_builddir)/src/FDM/UIUCModel/libUIUCModel.a \
  	$(SP_FDM_LIBS) \
@@ -102,11 +102,11 @@ diff -u -r1.54 Makefile.am
 Index: src/Main/fg_init.cxx
 ===================================================================
 RCS file: /var/cvs/FlightGear-0.9/source/src/Main/fg_init.cxx,v
-retrieving revision 1.131
-diff -u -r1.131 fg_init.cxx
---- src/Main/fg_init.cxx	4 Oct 2005 20:36:38 -0000	1.131
-+++ src/Main/fg_init.cxx	5 Oct 2005 15:17:46 -0000
-@@ -91,6 +91,9 @@
+retrieving revision 1.150
+diff -u -r1.150 fg_init.cxx
+--- src/Main/fg_init.cxx	30 Jan 2006 13:29:50 -0000	1.150
++++ src/Main/fg_init.cxx	5 Feb 2006 12:39:44 -0000
+@@ -90,6 +90,9 @@
  #include <FDM/UFO.hxx>
  #include <FDM/NullFDM.hxx>
  #include <FDM/YASim/YASim.hxx>
@@ -116,7 +116,7 @@ diff -u -r1.131 fg_init.cxx
  #include <GUI/new_gui.hxx>
  #include <Include/general.hxx>
  #include <Input/input.hxx>
-@@ -1382,6 +1385,10 @@
+@@ -1361,6 +1364,10 @@
              cur_fdm_state = new FGNullFDM( dt );
          } else if ( model == "yasim" ) {
              cur_fdm_state = new YASim( dt );
