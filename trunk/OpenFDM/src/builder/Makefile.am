@@ -27,7 +27,7 @@ openfdm_SOURCES = \
 	QOsgWidget.h \
 	QOsgWidget.cpp
 
-openfdm_LDADD = ../JSBSim/libJSBReader.la ../OpenFDM/libOpenFDM.la \
+openfdm_LDADD = ../JSBSim/libOpenFDMJSBReader.la ../OpenFDM/libOpenFDM.la \
                 -losgGA -losgUtil -losgDB -losg -lOpenThreads \
                 -lQtGui -lQtOpenGL -lQtCore \
                 -lGL -lGLU
