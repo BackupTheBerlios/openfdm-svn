@@ -19,11 +19,11 @@ public:
   { return *this; }
 
   static unsigned get(const Referenced* ref)
-  { if (ref) return ++(ref->_refcount); else return ~0u; }
+  { if (ref) return ++(ref->_refcount); else return 0u; }
   static unsigned put(const Referenced* ref)
   { if (ref) return --(ref->_refcount); else return ~0u; }
   static unsigned count(const Referenced* ref)
-  { if (ref) return ref->_refcount; else return ~0u; }
+  { if (ref) return ref->_refcount; else return 0u; }
   static bool shared(const Referenced* ref)
   { if (ref) return 1u < ref->_refcount; else return false; }
 
