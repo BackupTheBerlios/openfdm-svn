@@ -460,6 +460,14 @@ protected:
     else
       setPosition(p);
   }
+  void setRefVel(const Vector6& vel)
+  {
+    if (hasParent()) {
+      setRelVel(vel - motionFromParent(getParentFrame()->getRefVel()));
+    } else {
+      setRelVel(vel);
+    }
+  }
 
 public:
   Quaternion getRelOrientation(const Frame* frame) const
@@ -609,6 +617,9 @@ public:
   { Frame::setRefPosition(p); }
   void setRefOrientation(const Quaternion& o)
   { Frame::setRefOrientation(o); }
+
+  void setRefVel(const Vector6& vel)
+  { Frame::setRefVel(vel); }
 
 private:
   // The spatial acceleration of this frame wrt the parent frame.
