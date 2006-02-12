@@ -55,6 +55,41 @@ public:
     return GroundValues(p, v, ff);
   }
 
+  virtual bool
+  getCatapultValues(real_type t, const Vector3& refPos,
+                    CatapultValues& catVal) const
+  {
+    if (!mIfce)
+      return Limits<real_type>::max();
+
+    double pt[3] = { refPos(1), refPos(2), refPos(3) };
+    double end[2][3];
+    double vel[2][3];
+    real_type dist = mIfce->get_cat_m(t, pt, end, vel);
+
+    Vector3 p0 = Vector3(end[0][0], end[0][1], end[0][2]);
+    Vector3 p1 = Vector3(end[1][0], end[1][1], end[1][2]);
+
+    catVal.position = p0;
+    catVal.orientation = Quaternion::fromRotateTo(p1 - p0, Vector3::unit(1));
+    /// FIXME: wrong ...
+    catVal.velocity = Vector6(Vector3::zeros(),
+                              Vector3(vel[0][0], vel[0][1], vel[0][2]));
+    catVal.length = norm(p1 - p0);
+
+    return dist < 5;
+  }
+
+//     // the FDM calls release_wire().
+//     bool caught_wire(double t, const double pt[4][3]);
+  
+//     // Return the location and speed of the wire endpoints.
+//     bool get_wire_ends(double t, double end[2][3], double vel[2][3]);
+
+//     // Tell the cache code that it does no longer need to care for
+//     // the wire end position.
+//     void release_wire(void);
+
   void setInterface(FGInterface *ifce)
   { mIfce = ifce; }
   
