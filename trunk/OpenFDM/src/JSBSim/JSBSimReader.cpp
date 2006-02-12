@@ -22,6 +22,7 @@
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/Input.h>
 #include <OpenFDM/Mass.h>
+#include <OpenFDM/Launchbar.h>
 #include <OpenFDM/LinearSpringDamper.h>
 #include <OpenFDM/MaxModel.h>
 #include <OpenFDM/AirSpring.h>
@@ -678,6 +679,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         std::string numStr = sstr.str();
         std::string name = (*it)->getAttribute("name");
 
+        Vector3 parentPos = structToBody(Vector3::zeros());
         Vector3 compressJointPos = locationData((*it)->getElement("location"));
         // Model steering here ...
         // normally we connect the compressible part to the top level body, but
@@ -698,13 +700,13 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           sj->setJointAxis(Vector3(0, 0, 1));
           sj->setJointPos(0);
           sj->setJointVel(0);
-          sj->setPosition(structToBody(compressJointPos)
-                          + Vector3(0.05, 0, 0));
+          parentPos = structToBody(compressJointPos) + Vector3(0.05, 0, 0);
+          sj->setPosition(parentPos);
           sj->setOrientation(Quaternion::unit());
           
           Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
           sj->getInputPort(0)->connect(port);
-          
+  
           strutParent = steer;
           
           // Prepare outputs
@@ -721,6 +723,40 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
                          "gear/gear[" + numStr + "]/steering-pos-deg");
         }
         
+        const XMLElement* launchbarElem = (*it)->getElement("launchbar");
+        if (launchbarElem) {
+          Launchbar* launchbar = new Launchbar(name + " Launchbar");
+          real_type length = realData(launchbarElem->getElement("length"), 0.5);
+          launchbar->setLength(length);
+          real_type upAngle = realData(launchbarElem->getElement("upAngle"), 30);
+          launchbar->setUpAngle(convertFrom(uDegree, upAngle));
+          real_type downAngle = realData(launchbarElem->getElement("downAngle"), -50);
+          launchbar->setDownAngle(convertFrom(uDegree, downAngle));
+          real_type force = realData(launchbarElem->getElement("launchForce"), 1000);
+          launchbar->setLaunchForce(force);
+          Vector3 loc = structToBody(locationData(launchbarElem->getElement("location")));
+          launchbar->setPosition(loc - parentPos);
+          addMultiBodyModel(launchbar);
+          strutParent->addInteract(launchbar);
+
+          Port* port = lookupJSBExpression("/controls/gear/launchbar");
+          launchbar->getInputPort("tryMount")->connect(port);
+          port = lookupJSBExpression("/controls/gear/catapult-launch-cmd");
+          launchbar->getInputPort("launchCommand")->connect(port);
+
+          // expose the launchbar position
+          port = launchbar->getOutputPort(0);
+          std::string nameBase = "Launchbar Position";
+          addOutputModel(port, nameBase, "gear/launchbar-pos-rad");
+          UnitConversionModel* unitModel
+            = new UnitConversionModel(nameBase + " converter",
+                                      UnitConversionModel::SiToUnit, uDegree);
+          unitModel->getInputPort(0)->connect(port);
+          addFCSModel(unitModel);
+          addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
+                         "gear/launchbar-pos-deg");
+        }
+
         
         // Now the compressible part of the strut
         RigidBody* arm = new RigidBody(name + " Strut");
@@ -732,10 +768,8 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         strutParent->addInteract(pj);
         arm->setInboardJoint(pj);
         pj->setJointAxis(Vector3(0, 0, -1));
-        if (strutParent == mVehicle->getTopBody())
-          pj->setPosition(structToBody(compressJointPos));
-        else
-          pj->setPosition(Vector3(-0.05, 0, 0));
+        pj->setPosition(structToBody(compressJointPos) - parentPos);
+        parentPos = structToBody(compressJointPos);
         
         // The damper element
         const XMLElement* airSpringElem = (*it)->getElement("damper");
@@ -746,8 +780,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         addMultiBodyModel(aoDamp);
         
         // Attach a wheel to that strut part.
-        attachWheel((*it)->getElement("wheel"), name, numStr, arm,
-                    structToBody(compressJointPos));
+        attachWheel((*it)->getElement("wheel"), name, numStr, arm, parentPos);
         
         // Prepare some outputs ...
         Port* port = pj->getOutputPort(0);

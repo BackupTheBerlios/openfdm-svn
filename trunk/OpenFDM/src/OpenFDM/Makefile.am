@@ -59,6 +59,7 @@ nobase_OpenFDMinclude_HEADERS = \
   ImplicitEuler.h \
   Inertia.h \
   Joint.h \
+  Launchbar.h \
   Limits.h \
   LinAlg/Algorithm.h \
   LinAlg/Array.h \
@@ -163,6 +164,7 @@ libOpenFDM_la_SOURCES = \
   Interact.cpp \
   ImplicitEuler.cpp \
   Joint.cpp \
+  Launchbar.cpp \
   LinearSpringDamper.cpp \
   Logger.cpp \
   Mass.cpp \
