@@ -8,15 +8,13 @@
 namespace OpenFDM {
 
 Object::Object(const std::string& name) :
-  mName(name),
-  mWeakDataPtr(new WeakData(this))
+  mName(name)
 {
   addStoredProperty("name", Property(this, &Object::getName, &Object::setName));
 }
 
 Object::~Object(void)
 {
-  mWeakDataPtr->object = 0;
 }
 
 const char*

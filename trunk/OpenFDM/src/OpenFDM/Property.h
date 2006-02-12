@@ -7,6 +7,7 @@
 
 #include "Assert.h"
 #include "Referenced.h"
+#include "WeakPtr.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "Quaternion.h"

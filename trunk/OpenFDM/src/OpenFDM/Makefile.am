@@ -127,6 +127,8 @@ nobase_OpenFDMinclude_HEADERS = \
   Variant.h \
   Vector.h \
   Vehicle.h \
+  WeakPtr.h \
+  WeakReferenced.h \
   WheelContact.h \
   Wind.h \
   XMLDumpModelVisitor.h
