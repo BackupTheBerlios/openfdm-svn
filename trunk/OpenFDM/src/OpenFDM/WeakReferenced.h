@@ -24,7 +24,7 @@ public:
   { mWeakDataPtr->object = 0; }
 
   /// Do not copy the weak backward references ...
-  WeakReferenced& operator=(const WeakReferenced& wr)
+  WeakReferenced& operator=(const WeakReferenced&)
   { return *this; }
 
 private:

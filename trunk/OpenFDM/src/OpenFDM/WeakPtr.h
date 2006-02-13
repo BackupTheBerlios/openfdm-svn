@@ -36,6 +36,9 @@ public:
   WeakPtr& operator=(const WeakPtr& p)
   { mWeakDataPtr = p.mWeakDataPtr; return *this; }
 
+  SharedPtr<T> lock(void) const
+  { return SharedPtr<T>(ptr()); }
+
   T* operator->(void) const
   { return ptr(); }
 
@@ -47,12 +50,22 @@ public:
 
 private:
   T* ptr(void) const
-  { return reinterpret_cast<T*>(objectPtr()); }
+  { return static_cast<T*>(objectPtr()); }
 
   WeakReferenced* objectPtr(void) const
-  { return mWeakDataPtr ? mWeakDataPtr->object : 0; }
+  {
+    if (mWeakDataPtr)
+      return mWeakDataPtr->object;
+    else
+      return 0;
+  }
   void assign(T* p)
-  { mWeakDataPtr = p ? p->mWeakDataPtr : 0; }
+  {
+    if (p)
+      mWeakDataPtr = p->mWeakDataPtr;
+    else
+      mWeakDataPtr = 0;
+  }
   
   // The indirect reference itself.
   SharedPtr<WeakReferenced::WeakData> mWeakDataPtr;
