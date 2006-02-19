@@ -218,6 +218,9 @@ void FGOpenFDM::init()
 {
   SG_LOG(SG_FLIGHT, SG_INFO, "FGOpenFDM::init()");
 
+  // FIXME: this is clearly wrong, but avoids ending in an endless init loop
+  set_inited(true);
+
   std::string aircraftDir = fgGetString("/sim/aircraft-dir");
   std::string engineDir = aircraftDir + "/Engines";
   std::string aircraftFile = std::string(fgGetString("/sim/aero")) + ".xml";
@@ -236,8 +239,16 @@ void FGOpenFDM::init()
     legReader.loadAircraft(aircraftFile);
     if (legReader.getErrorState()) {
       SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() cannot read aircraft!");
-      const ReaderWriter::StringList errors = legReader.getErrors();
+
+      SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() Error messages from JSBSim reader:");
+      ReaderWriter::StringList errors = reader.getErrors();
       ReaderWriter::StringList::const_iterator it;
+      for (it = errors.begin(); it != errors.end(); ++it) {
+        SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
+      }
+
+      SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() Error messages from legacy JSBSim reader:");
+      errors = legReader.getErrors();
       for (it = errors.begin(); it != errors.end(); ++it) {
         SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
       }
@@ -298,8 +309,6 @@ void FGOpenFDM::init()
   Rotation geodOr = vehicle->getGeodOrientation();
   Vector3 euler = geodOr.getEuler();
   _set_Euler_Angles(euler(1), euler(2), euler(3));
-
-  set_inited(true);
 }
 
 void FGOpenFDM::bind()
@@ -308,10 +317,12 @@ void FGOpenFDM::bind()
 
   FGInterface::bind();
 
-  SGPropertyNode* sgProp = mAircraftRootNode->getChild("fdm", 0, true);
-  sgProp = sgProp->getChild("vehicle", 0, true);
-  sgProp = sgProp->getChild("system", 0, true);
-  tieModelGroup(sgProp, mData->vehicle->getSystem());
+  if (mData->vehicle) {
+    SGPropertyNode* sgProp = mAircraftRootNode->getChild("fdm", 0, true);
+    sgProp = sgProp->getChild("vehicle", 0, true);
+    sgProp = sgProp->getChild("system", 0, true);
+    tieModelGroup(sgProp, mData->vehicle->getSystem());
+  }
 }
 
 void FGOpenFDM::unbind()
@@ -332,7 +343,7 @@ FGOpenFDM::update(double dt)
   // Get a local vehicle pointer
   Vehicle* vehicle = mData->vehicle;
   if (!vehicle) {
-    SG_LOG(SG_FLIGHT, SG_ALERT,
+    SG_LOG(SG_FLIGHT, SG_WARN,
            "FGOpenFDM::update(double) is called without an aircraft loaded!");
     return;
   }
