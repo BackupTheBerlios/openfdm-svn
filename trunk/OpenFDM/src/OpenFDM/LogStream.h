@@ -120,7 +120,7 @@ protected:
   static Logger* Instance(void);
 
 private:
-  Logger(std::basic_ostream<char>* stream);
+  Logger(std::basic_ostream<char>* stream = 0);
 
   std::basic_ostream<char>* mStream;
   unsigned mCategory;
