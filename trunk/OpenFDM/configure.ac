@@ -55,15 +55,16 @@ AC_CHECK_HEADERS([expat.h],
   [AC_CHECK_LIB([expat],[XML_ExpatVersion],
      [openfdm_expat_enabled="yes"])
   ])
-save_LIBS=$LIBS
-LIBS=-lexpat
-AC_CHECK_FUNC([XML_SetSkippedEntityHandler],
-              AC_DEFINE([HAVE_XML_SETSKIPPEDENTITYHANDLER], [1],
-                        [Define if expat provides XML_SetSkippedEntityHandler]))
-LIBS=$save_LIBS
 AM_CONDITIONAL([ENABLE_EXPAT], [test "x$openfdm_expat_enabled" = "xyes"])
 if test "x$openfdm_expat_enabled" = "xyes"
 then
+  save_LIBS=$LIBS
+  LIBS=-lexpat
+  AC_CHECK_FUNC([XML_SetSkippedEntityHandler],
+    AC_DEFINE([HAVE_XML_SETSKIPPEDENTITYHANDLER], [1],
+              [Define if expat provides XML_SetSkippedEntityHandler]))
+  LIBS=$save_LIBS
+
   OpenFDM_HAVE_EXPAT_XMLREADER=1
 else
   OpenFDM_HAVE_EXPAT_XMLREADER=0
