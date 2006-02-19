@@ -7,13 +7,12 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(ConstModel, Model)
+  DEF_OPENFDM_PROPERTY(Matrix, Value, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 ConstModel::ConstModel(const std::string& name, const Matrix& value) :
   Model(name), mValue(value)
 {
-  addStoredProperty("value", Property(this, &ConstModel::getValue, &ConstModel::setValue));
-
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &ConstModel::getValue);
 }

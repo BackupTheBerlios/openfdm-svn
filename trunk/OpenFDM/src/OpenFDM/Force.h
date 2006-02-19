@@ -30,9 +30,6 @@ public:
     mForce(0, 0, 0, 0, 0, 0)
   {
     mMountFrame = new FreeFrame(name);
-
-    addStoredProperty("position", Property(this, &ExternalForce::getPosition, &ExternalForce::setPosition));
-    addStoredProperty("orientation", Property(this, &ExternalForce::getOrientation, &ExternalForce::setOrientation));
   }
   virtual ~ExternalForce(void) {}
 
@@ -92,12 +89,6 @@ public:
   {
     mMountFrame[0] = new FreeFrame(name  + "<0>");
     mMountFrame[1] = new FreeFrame(name  + "<1>");
-
-    addStoredProperty("position0", Property(this, &InternalForce::getPosition0, &InternalForce::setPosition0));
-    addStoredProperty("orientation0", Property(this, &InternalForce::getOrientation0, &InternalForce::setOrientation0));
-    addStoredProperty("position1", Property(this, &InternalForce::getPosition1, &InternalForce::setPosition1));
-    addStoredProperty("orientation1", Property(this, &InternalForce::getOrientation1, &InternalForce::setOrientation1));
-
   }
   virtual ~InternalForce(void) {}
 

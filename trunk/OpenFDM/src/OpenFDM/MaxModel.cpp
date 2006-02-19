@@ -6,13 +6,13 @@
 
 #include "Types.h"
 #include "Matrix.h"
-#include "Property.h"
 #include "Model.h"
 #include "MaxModel.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(MaxModel, Model)
+  DEF_OPENFDM_PROPERTY(Unsigned, NumMaxInputs, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 MaxModel::MaxModel(const std::string& name) :
@@ -26,8 +26,6 @@ MaxModel::MaxModel(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &MaxModel::getMax);
-
-  addStoredProperty("numMaxInputs", Property(this, &MaxModel::getNumMaxInputs, &MaxModel::setNumMaxInputs));
 }
 
 MaxModel::~MaxModel(void)
@@ -77,7 +75,7 @@ MaxModel::getNumMaxInputs(void) const
 }
 
 void
-MaxModel::setNumMaxInputs(const unsigned& num)
+MaxModel::setNumMaxInputs(unsigned num)
 {
   setNumInputPorts(num);
 }

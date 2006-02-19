@@ -11,6 +11,7 @@
 
 #include "LogStream.h"
 #include "Object.h"
+#include "WeakPtr.h"
 #include "Variant.h"
 
 namespace OpenFDM {

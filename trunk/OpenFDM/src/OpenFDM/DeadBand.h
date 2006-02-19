@@ -10,7 +10,6 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "Property.h"
 #include "Model.h"
 
 namespace OpenFDM {

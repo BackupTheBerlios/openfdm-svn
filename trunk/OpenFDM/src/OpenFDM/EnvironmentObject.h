@@ -6,6 +6,7 @@
 #define OpenFDM_EnvironmentObject_H
 
 #include "Object.h"
+#include "WeakPtr.h"
 #include "Environment.h"
 
 namespace OpenFDM {

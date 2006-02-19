@@ -5,7 +5,6 @@
 #include <string>
 
 #include "Types.h"
-#include "Property.h"
 #include "BinaryFunctionModel.h"
 
 namespace OpenFDM {

@@ -83,6 +83,7 @@ nobase_OpenFDMinclude_HEADERS = \
   ModelGroup.h \
   ModelVisitor.h \
   MultiBodySystem.h \
+  Mutex.h \
   Newton.h \
   Object.h \
   ODESolver.h \
@@ -90,7 +91,6 @@ nobase_OpenFDMinclude_HEADERS = \
   Plane.h \
   Planet.h \
   Port.h \
-  Property.h \
   Product.h \
   PrismaticJoint.h \
   PrismaticJointFrame.h \
@@ -106,8 +106,9 @@ nobase_OpenFDMinclude_HEADERS = \
   RootFrame.h \
   SampleTime.h \
   Saturation.h \
-  SharedPtr.h \
+  ScopeLock.h \
   Sensor.h \
+  SharedPtr.h \
   SimpleContact.h \
   SimpleGear.h \
   StateStream.h \
@@ -121,6 +122,7 @@ nobase_OpenFDMinclude_HEADERS = \
   TransferFunction.h \
   Transform.h \
   Turbulence.h \
+  TypeInfo.h \
   Types.h \
   UnaryFunctionModel.h \
   Units.h \
@@ -184,7 +186,6 @@ libOpenFDM_la_SOURCES = \
   Port.cpp \
   PrismaticJoint.cpp \
   Product.cpp \
-  Property.cpp \
   ReaderWriter.cpp \
   RevoluteActuator.cpp \
   RevoluteJoint.cpp \

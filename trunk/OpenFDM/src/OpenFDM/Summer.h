@@ -24,7 +24,7 @@ public:
   const Matrix& getSum(void) const;
 
   unsigned getNumSummands(void) const;
-  void setNumSummands(const unsigned& num);
+  void setNumSummands(unsigned num);
 
 private:
   Matrix mSum;

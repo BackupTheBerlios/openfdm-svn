@@ -7,7 +7,6 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "Property.h"
 #include "Vector.h"
 #include "Model.h"
 #include "Gain.h"
@@ -15,6 +14,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Gain, Model)
+  DEF_OPENFDM_PROPERTY(Real, Gain, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Gain::Gain(const std::string& name) :
@@ -28,8 +28,6 @@ Gain::Gain(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Gain::getOutput);
-
-  addStoredProperty("gain", Property(this, &Gain::getGain, &Gain::setGain));
 }
 
 Gain::~Gain(void)

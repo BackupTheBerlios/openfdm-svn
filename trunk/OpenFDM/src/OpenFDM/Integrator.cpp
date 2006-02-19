@@ -8,6 +8,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Integrator, Model)
+  DEF_OPENFDM_PROPERTY(Matrix, InitialValue, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Integrator::Integrator(const std::string& name) :
@@ -20,10 +21,6 @@ Integrator::Integrator(const std::string& name) :
 
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Integrator::getIntegralOutput);
-
-  addStoredProperty("initialValue",
-                    Property(this, &Integrator::getInitialValue,
-                             &Integrator::setInitialValue));
 }
 
 Integrator::~Integrator(void)

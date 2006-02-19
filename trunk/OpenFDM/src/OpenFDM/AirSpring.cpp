@@ -9,6 +9,13 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(AirSpring, Model)
+  DEF_OPENFDM_PROPERTY(Real, Area, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, PushPressure, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, PullPressure, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, MaxCompression, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, MinCompression, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, MaxDamperConstant, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, MinDamperConstant, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 AirSpring::AirSpring(const std::string& name) :
@@ -23,14 +30,6 @@ AirSpring::AirSpring(const std::string& name) :
   mGamma(1.4)
 {
   setDirectFeedThrough(true);
-
-  addStoredProperty("pushPressure", Property(this, &AirSpring::getPushPressure, &AirSpring::setPushPressure));
-  addStoredProperty("pullPressure", Property(this, &AirSpring::getPullPressure, &AirSpring::setPullPressure));
-  addStoredProperty("area", Property(this, &AirSpring::getArea, &AirSpring::setArea));
-  addStoredProperty("maxCompression", Property(this, &AirSpring::getMaxCompression, &AirSpring::setMaxCompression));
-  addStoredProperty("minCompression", Property(this, &AirSpring::getMinCompression, &AirSpring::setMinCompression));
-  addStoredProperty("maxDamperConstant", Property(this, &AirSpring::getMaxDamperConstant, &AirSpring::setMaxDamperConstant));
-  addStoredProperty("minDamperConstant", Property(this, &AirSpring::getMinDamperConstant, &AirSpring::setMinDamperConstant));
 
   setNumInputPorts(2);
   setInputPortName(0, "position");

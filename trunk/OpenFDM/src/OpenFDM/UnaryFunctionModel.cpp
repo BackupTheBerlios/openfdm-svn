@@ -5,7 +5,6 @@
 #include <string>
 
 #include "Types.h"
-#include "Property.h"
 #include "UnaryFunctionModel.h"
 
 namespace OpenFDM {

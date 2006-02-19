@@ -6,13 +6,13 @@
 
 #include "Types.h"
 #include "Matrix.h"
-#include "Property.h"
 #include "Model.h"
 #include "MinModel.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(MinModel, Model)
+  DEF_OPENFDM_PROPERTY(Unsigned, NumMinInputs, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 MinModel::MinModel(const std::string& name) :
@@ -26,8 +26,6 @@ MinModel::MinModel(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &MinModel::getMin);
-
-  addStoredProperty("numMinInputs", Property(this, &MinModel::getNumMinInputs, &MinModel::setNumMinInputs));
 }
 
 MinModel::~MinModel(void)
@@ -77,7 +75,7 @@ MinModel::getNumMinInputs(void) const
 }
 
 void
-MinModel::setNumMinInputs(const unsigned& num)
+MinModel::setNumMinInputs(unsigned num)
 {
   setNumInputPorts(num);
 }

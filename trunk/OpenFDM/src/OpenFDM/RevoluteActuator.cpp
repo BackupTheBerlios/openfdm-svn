@@ -18,6 +18,9 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuator, Joint)
+  DEF_OPENFDM_PROPERTY(Real, MaxVel, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, VelGain, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, VelDotGain, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuatorFrame, Frame)
@@ -32,11 +35,6 @@ RevoluteActuator::RevoluteActuator(const std::string& name) :
   setNumContinousStates(2);
 
   mRevoluteActuatorFrame = new RevoluteActuatorFrame(name);
-
-  addStoredProperty("maxVel", Property(this, &RevoluteActuator::getMaxVel, &RevoluteActuator::setMaxVel));
-  addStoredProperty("velGain", Property(this, &RevoluteActuator::getVelGain, &RevoluteActuator::setVelGain));
-  addStoredProperty("velDotGain", Property(this, &RevoluteActuator::getVelDotGain, &RevoluteActuator::setVelDotGain));
-
 
   setNumInputPorts(1);
   setInputPortName(0, "position");

@@ -14,6 +14,11 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(WheelContact, ExternalForce)
+  DEF_OPENFDM_PROPERTY(Real, WheelRadius, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
+/// FIXME want to have similar names than with linearspringdamper
+  DEF_OPENFDM_PROPERTY(Real, SpringDamping, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, FrictionCoeficient, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 WheelContact::WheelContact(const std::string& name)
@@ -23,11 +28,6 @@ WheelContact::WheelContact(const std::string& name)
   mSpringConstant = 0;
   mSpringDamping = 0;
   mFrictionCoeficient = 0.8;
-
-  addStoredProperty("wheelRadius", Property(this, &WheelContact::getWheelRadius, &WheelContact::setWheelRadius));
-  addStoredProperty("springConstant", Property(this, &WheelContact::getSpringConstant, &WheelContact::setSpringConstant));
-  addStoredProperty("springDamping", Property(this, &WheelContact::getSpringDamping, &WheelContact::setSpringDamping));
-  addStoredProperty("frictionCoeficient", Property(this, &WheelContact::getFrictionCoeficient, &WheelContact::setFrictionCoeficient));
 
   // FIXME??
   addSampleTime(SampleTime::PerTimestep);

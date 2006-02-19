@@ -16,7 +16,6 @@
 #include "ImplicitEuler.h"
 #include "MidpointRule.h"
 #include "DoPri5.h"
-#include "Property.h"
 #include "ModelGroup.h"
 #include "System.h"
 #include "Vehicle.h"
@@ -44,9 +43,6 @@ Vehicle::Vehicle(void)
 
   mSystem->addModel(mModelGroup);
   mSystem->addModel(mMultiBodySystem);
-
-  // Now register the local properties.
-  addProperty("cartPosition", Property(this, &Vehicle::getCartPosition, &Vehicle::setCartPosition));
 }
 
 Vehicle::~Vehicle(void)

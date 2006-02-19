@@ -13,6 +13,9 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(AeroForce, ExternalForce)
+  DEF_OPENFDM_PROPERTY(Real, WingSpan, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, WingArea, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, Coord, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 AeroForce::AeroForce(const std::string& name)
@@ -24,12 +27,6 @@ AeroForce::AeroForce(const std::string& name)
 
   dirtyAll();
 
-  addStoredProperty("wingSpan",
-                    Property(this, &AeroForce::getWingSpan, &AeroForce::setWingSpan));
-  addStoredProperty("wingArea",
-                    Property(this, &AeroForce::getWingArea, &AeroForce::setWingArea));
-  addStoredProperty("coord",
-                    Property(this, &AeroForce::getCoord, &AeroForce::setCoord));
   addOutputPort("wingSpan", this, &AeroForce::getWingSpan);
   addOutputPort("wingArea", this, &AeroForce::getWingArea);
   addOutputPort("coord", this, &AeroForce::getCoord);

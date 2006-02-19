@@ -8,6 +8,7 @@
 #include "Types.h"
 #include "EnvironmentObject.h"
 #include "Plane.h"
+#include "Quaternion.h"
 
 namespace OpenFDM {
 

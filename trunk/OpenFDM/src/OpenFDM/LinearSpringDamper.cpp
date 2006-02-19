@@ -9,6 +9,9 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(LinearSpringDamper, Model)
+  DEF_OPENFDM_PROPERTY(Real, SpringReference, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, DamperConstant, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 LinearSpringDamper::LinearSpringDamper(const std::string& name) :
@@ -18,10 +21,6 @@ LinearSpringDamper::LinearSpringDamper(const std::string& name) :
   mDamperConstant(0)
 {
   setDirectFeedThrough(true);
-
-  addStoredProperty("springReference", Property(this, &LinearSpringDamper::getSpringReference, &LinearSpringDamper::setSpringReference));
-  addStoredProperty("springConstant", Property(this, &LinearSpringDamper::getSpringConstant, &LinearSpringDamper::setSpringConstant));
-  addStoredProperty("damperConstant", Property(this, &LinearSpringDamper::getDamperConstant, &LinearSpringDamper::setDamperConstant));
 
   setNumInputPorts(2);
   setInputPortName(0, "position");

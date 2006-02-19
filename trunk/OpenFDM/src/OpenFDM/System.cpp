@@ -4,7 +4,6 @@
 
 #include "Object.h"
 #include "Model.h"
-#include "Property.h"
 #include "Vector.h"
 #include "Environment.h"
 #include "LogStream.h"

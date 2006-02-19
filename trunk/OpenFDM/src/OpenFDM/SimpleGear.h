@@ -25,19 +25,19 @@ public:
   virtual void output(const TaskInfo&);
 
   real_type getSteeringAngle(void) const;
-  void setSteeringAngle(const real_type& steeringAngle);
+  void setSteeringAngle(real_type steeringAngle);
 
   real_type getBrake(void) const;
-  void setBrake(const real_type& brake);
+  void setBrake(real_type brake);
 
   real_type getSpringConstant(void) const;
-  void setSpringConstant(const real_type& springConst);
+  void setSpringConstant(real_type springConst);
 
   real_type getSpringDamping(void) const;
-  void setSpringDamping(const real_type& springDamp);
+  void setSpringDamping(real_type springDamp);
 
   real_type getFrictionCoeficient(void) const;
-  void setFrictionCoeficient(const real_type& frictionCoef);
+  void setFrictionCoeficient(real_type frictionCoef);
 
   // Compute the plane normal force.
   virtual real_type

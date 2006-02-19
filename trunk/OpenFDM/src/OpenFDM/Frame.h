@@ -11,6 +11,7 @@
 
 #include "Assert.h"
 #include "Object.h"
+#include "WeakPtr.h"
 #include "Vector.h"
 #include "Plane.h"
 #include "Transform.h"

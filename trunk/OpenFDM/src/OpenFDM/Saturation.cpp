@@ -7,7 +7,6 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "Property.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "Model.h"
@@ -16,6 +15,8 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Saturation, Model)
+  DEF_OPENFDM_PROPERTY(Matrix, MinSaturation, Serialized)
+  DEF_OPENFDM_PROPERTY(Matrix, MaxSaturation, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Saturation::Saturation(const std::string& name) : Model(name)
@@ -27,9 +28,6 @@ Saturation::Saturation(const std::string& name) : Model(name)
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Saturation::getOutput);
-
-  addStoredProperty("minSaturation", Property(this, &Saturation::getMinSaturation, &Saturation::setMinSaturation));
-  addStoredProperty("maxSaturation", Property(this, &Saturation::getMaxSaturation, &Saturation::setMaxSaturation));
 }
 
 Saturation::~Saturation(void)

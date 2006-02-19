@@ -12,48 +12,97 @@
 #include "SharedPtr.h"
 #include "WeakReferenced.h"
 #include "Variant.h"
-#include "Property.h"
+
+#include "TypeInfo.h"
 
 namespace OpenFDM {
 
 /// Macros for the reflection stuff
-#define OPENFDM_OBJECT(classname, baseclassname)                \
-public: virtual const char* getTypeName(void) const
+#define OPENFDM_OBJECT(classname, baseclassname)                              \
+private:                                                                      \
+  class classname ## TypeInfo : public TypeInfoTemplate<classname> {          \
+  public:                                                                     \
+    classname ## TypeInfo(void);                                              \
+    ~ classname ## TypeInfo(void);                                            \
+  private:                                                                    \
+    classname ## TypeInfo(const classname ## TypeInfo&);                      \
+    classname ## TypeInfo& operator=(const classname  ## TypeInfo&);          \
+  };                                                                          \
+  static classname ## TypeInfo sTypeInfo;                                     \
+public:                                                                       \
+  virtual const TypeInfo& getTypeInfo(void) const;                            \
+  virtual bool getPropertyValue(const std::string&, Variant&) const;          \
+  virtual bool setPropertyValue(const std::string&, const Variant&);          \
+  virtual void getPropertyInfoList(std::vector<PropertyInfo>& props) const
 
-#define BEGIN_OPENFDM_OBJECT_DEF(classname, baseclassname)      \
-const char*                                                     \
-classname::getTypeName(void) const                              \
-{                                                               \
-  return #classname ;                                           \
-}                                                               \
 
-#define END_OPENFDM_OBJECT_DEF
+/// Start a reflected object definition
+#define BEGIN_OPENFDM_OBJECT_DEF(classname, baseclassname)                    \
+const TypeInfo& classname :: getTypeInfo(void) const { return sTypeInfo; }    \
+                                                                              \
+bool                                                                          \
+classname :: getPropertyValue(const std::string& name, Variant& value) const  \
+{                                                                             \
+  if (sTypeInfo.getPropertyValue(this, name, value))                          \
+    return true;                                                              \
+  return baseclassname :: getPropertyValue(name, value);                      \
+}                                                                             \
+                                                                              \
+bool                                                                          \
+classname :: setPropertyValue(const std::string& name, const Variant& value)  \
+{                                                                             \
+  if (sTypeInfo.setPropertyValue(this, name, value))                          \
+    return true;                                                              \
+  return baseclassname :: setPropertyValue(name, value);                      \
+}                                                                             \
+                                                                              \
+void                                                                          \
+classname :: getPropertyInfoList(std::vector<PropertyInfo>& props) const      \
+{                                                                             \
+  baseclassname :: getPropertyInfoList(props);                                \
+  sTypeInfo.getPropertyInfoList(props);                                       \
+}                                                                             \
+                                                                              \
+classname :: classname ## TypeInfo classname :: sTypeInfo;                    \
+                                                                              \
+classname :: classname ## TypeInfo:: ~ classname ## TypeInfo(void)            \
+{}                                                                            \
+                                                                              \
+classname :: classname ## TypeInfo:: classname ## TypeInfo(void) :            \
+  TypeInfoTemplate<classname>(#classname)                                     \
+{                                                                             \
+
+/// Used to define an ordinary property which will be used to
+/// serialize the model into whatever representation
+#define DEF_OPENFDM_PROPERTY(propType, name, serialized)                      \
+  addProperty( #name , PropertyInfo:: serialized,                             \
+               &ReflectedType::get ## name, &ReflectedType::set ## name );
+
+/// Used to define a read only property which is just available
+/// from within the property framework, but is not used to serialize models
+#define DEF_OPENFDM_ROPROP(propType, name)                                    \
+  addProperty( #name , &ReflectedType::get ## name);
+
+#define END_OPENFDM_OBJECT_DEF                                                \
+}
 
 
 /// The OpenFDM object base class.
 class Object : public WeakReferenced {
+  OPENFDM_OBJECT(Object, );
 public:
-  Object(const std::string& name = std::string());
+  Object(const std::string& name = "Unnamed Object");
   virtual ~Object(void);
 
-  /// Returns the systems name.
+  /// Returns the Objects name.
   const std::string& getName(void) const
   { return mName; }
   void setName(const std::string& name)
   { mName = name; }
 
-  /// Return the typeinfo for that Object.
-  virtual const char* getTypeName(void) const;
-  
-  std::list<std::string> listProperties(void) const;
-
-  /// Returns the objects property named name
-  Variant getPropertyValue(const std::string& name) const;
-  /// Set an objects property named name to the given value
-  void setPropertyValue(const std::string& name, const Variant& value);
-
-  /// Returns true if the property must be stored to reflect this given object
-  bool isStoredProperty(const std::string& name) const;
+  /// Returns the objects type name
+  const char* const getTypeName(void) const
+  { return getTypeInfo().getName(); }
 
   /// Returns the objects attached user data
   Object* getUserData(void)
@@ -65,23 +114,13 @@ public:
   void setUserData(Object* userData)
   { mUserData = userData; }
 
-protected:
-  /// Defines the map carrying the properties for this object.
-  typedef std::map<std::string,Property> PropertyMap;
-
-  void addProperty(const std::string& name, const Property& property);
-  void addStoredProperty(const std::string& name, const Property& property);
-
 private:
   /// Such objects can not be copied.
   Object(const Object&);
-  const Object& operator=(const Object&);
+  Object& operator=(const Object&);
 
   /// The objects name
   std::string mName;
-
-  /// The map of all properties of this object.
-  PropertyMap mProperties;
 
   /// Userdata ...
   SharedPtr<Object> mUserData;

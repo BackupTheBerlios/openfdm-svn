@@ -24,7 +24,7 @@ public:
   const Matrix& getMin(void) const;
 
   unsigned getNumMinInputs(void) const;
-  void setNumMinInputs(const unsigned& num);
+  void setNumMinInputs(unsigned num);
 
 private:
   Matrix mMin;

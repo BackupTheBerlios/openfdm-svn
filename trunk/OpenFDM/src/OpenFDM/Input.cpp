@@ -7,6 +7,8 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Input, Model)
+  DEF_OPENFDM_PROPERTY(Real, InputGain, Serialized)
+  DEF_OPENFDM_PROPERTY(String, InputName, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Input::Input(const std::string& name) :
@@ -15,11 +17,6 @@ Input::Input(const std::string& name) :
 {
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Input::getOutputValue);
-
-  addStoredProperty("inputGain",
-                    Property(this, &Input::getInputGain, &Input::setInputGain));
-  addStoredProperty("inputName",
-                    Property(this, &Input::getInputName, &Input::setInputName));
 }
 
 Input::~Input(void)
@@ -98,6 +95,8 @@ Input::getOutputValue(void) const
 
 /// FIXME
 BEGIN_OPENFDM_OBJECT_DEF(Output, Model)
+  DEF_OPENFDM_PROPERTY(Real, OutputGain, Serialized)
+  DEF_OPENFDM_PROPERTY(String, OutputName, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Output::Output(const std::string& name) :
@@ -106,11 +105,6 @@ Output::Output(const std::string& name) :
 {
   setNumInputPorts(1);
   setInputPortName(0, "input");
-
-  addStoredProperty("outputGain",
-                    Property(this, &Output::getOutputGain, &Output::setOutputGain));
-  addStoredProperty("outputName",
-                    Property(this, &Output::getOutputName, &Output::setOutputName));
 }
 
 Output::~Output(void)

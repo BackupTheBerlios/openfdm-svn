@@ -7,6 +7,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Mass, Interact)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Mass::Mass(const std::string& name, const SpatialInertia& inertia) :
@@ -15,7 +16,6 @@ Mass::Mass(const std::string& name, const SpatialInertia& inertia) :
   mUntransformedInertia(inertia),
   mPosition(Vector3::zeros())
 {
-  addStoredProperty("position", Property(this, &Mass::getPosition, &Mass::setPosition));
 }
 
 Mass::~Mass(void)

@@ -6,13 +6,13 @@
 
 #include "Types.h"
 #include "Matrix.h"
-#include "Property.h"
 #include "Model.h"
 #include "Product.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Product, Model)
+  DEF_OPENFDM_PROPERTY(Unsigned, NumFactors, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Product::Product(const std::string& name) :
@@ -25,8 +25,6 @@ Product::Product(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Product::getProduct);
-
-  addStoredProperty("numFactors", Property(this, &Product::getNumFactors, &Product::setNumFactors));
 }
 
 Product::~Product(void)
@@ -104,7 +102,7 @@ Product::getNumFactors(void) const
 }
 
 void
-Product::setNumFactors(const unsigned& num)
+Product::setNumFactors(unsigned num)
 {
   unsigned oldnum = getNumFactors();
   setNumInputPorts(num);

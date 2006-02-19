@@ -9,6 +9,8 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(DiscreteTransferFunction, Model)
+  DEF_OPENFDM_PROPERTY(Vector, Numerator, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector, Denominator, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 DiscreteTransferFunction::DiscreteTransferFunction(const std::string& name) :
@@ -18,9 +20,6 @@ DiscreteTransferFunction::DiscreteTransferFunction(const std::string& name) :
 {
   mNum(1) = 1;
   mDen(1) = 1;
-
-  addStoredProperty("numerator", Property(this, &DiscreteTransferFunction::getNumerator, &DiscreteTransferFunction::setNumerator));
-  addStoredProperty("denominator", Property(this, &DiscreteTransferFunction::getDenominator, &DiscreteTransferFunction::setDenominator));
 
   setDirectFeedThrough(true);
 

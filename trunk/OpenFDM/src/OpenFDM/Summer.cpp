@@ -6,13 +6,13 @@
 
 #include "Types.h"
 #include "Matrix.h"
-#include "Property.h"
 #include "Model.h"
 #include "Summer.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Summer, Model)
+  DEF_OPENFDM_PROPERTY(Unsigned, NumSummands, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Summer::Summer(const std::string& name) :
@@ -26,8 +26,6 @@ Summer::Summer(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Summer::getSum);
-
-  addStoredProperty("numSummands", Property(this, &Summer::getNumSummands, &Summer::setNumSummands));
 }
 
 Summer::~Summer(void)
@@ -101,7 +99,7 @@ Summer::getNumSummands(void) const
 }
 
 void
-Summer::setNumSummands(const unsigned& num)
+Summer::setNumSummands(unsigned num)
 {
   unsigned oldnum = getNumSummands();
   setNumInputPorts(num);

@@ -16,6 +16,15 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Frame, Object)
+  DEF_OPENFDM_ROPROP(Vector3, Position)
+  DEF_OPENFDM_ROPROP(Vector3, RefPosition)
+  DEF_OPENFDM_ROPROP(Quaternion, Orientation)
+  DEF_OPENFDM_ROPROP(Quaternion, RefOrientation)
+  DEF_OPENFDM_ROPROP(Vector6, RelVel)
+  DEF_OPENFDM_ROPROP(Vector6, SpVel)
+  DEF_OPENFDM_ROPROP(Vector6, RefVel)
+  DEF_OPENFDM_ROPROP(Vector6, RelVelDot)
+  DEF_OPENFDM_ROPROP(Vector6, SpAccel)
   END_OPENFDM_OBJECT_DEF
 
 /// FIXME
@@ -32,17 +41,6 @@ Frame::Frame(const std::string& name) :
   setPosition(Vector3::zeros());
   setOrientation(Quaternion::unit());
   setRelVel(Vector6::zeros());
-
-  addProperty("position", Property(this, &Frame::getPosition));
-  addProperty("orienatation", Property(this, &Frame::getOrientation));
-  addProperty("relVel", Property(this, &Frame::getRelVel));
-  addProperty("spVel", Property(this, &Frame::getSpVel));
-  addProperty("refVel", Property(this, &Frame::getRefVel));
-  addProperty("relVelDot", Property(this, &Frame::getRelVelDot));
-  addProperty("spAccel", Property(this, &Frame::getSpAccel));
-  addProperty("classicAccel", Property(this, &Frame::getClassicAccel));
-  addProperty("refPosition", Property(this, &Frame::getRefPosition));
-  addProperty("refOrienatation", Property(this, &Frame::getRefOrientation));
 }
 
 Frame::~Frame(void)

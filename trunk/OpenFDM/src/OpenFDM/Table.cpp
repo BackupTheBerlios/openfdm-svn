@@ -12,6 +12,9 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(TablePreLookup, Model)
+/// FIXME
+//   DEF_OPENFDM_PROPERTY(TablePreLookup, LookupVector, Serialized)
+  DEF_OPENFDM_PROPERTY(TablePreLookup, TableLookup, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 TablePreLookup::TablePreLookup(const std::string& name) :
@@ -24,8 +27,6 @@ TablePreLookup::TablePreLookup(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &TablePreLookup::getOutput);
-  
-  addStoredProperty("lookupVector", Property(this, &TablePreLookup::getTableLookup, &TablePreLookup::setTableLookup));
 }
 
 TablePreLookup::~TablePreLookup(void)
@@ -60,6 +61,7 @@ TablePreLookup::getOutput(void) const
 }
 
 BEGIN_OPENFDM_OBJECT_DEF(Table1D, Model)
+  DEF_OPENFDM_PROPERTY(Table1D, TableData, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Table1D::Table1D(const std::string& name) :
@@ -72,8 +74,6 @@ Table1D::Table1D(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Table1D::getOutput);
-  
-  addStoredProperty("data", Property(this, &Table1D::getTableData, &Table1D::setTableData));
 }
 
 Table1D::~Table1D(void)
@@ -110,6 +110,7 @@ Table1D::getOutput(void) const
 }
 
 BEGIN_OPENFDM_OBJECT_DEF(Table2D, Model)
+  DEF_OPENFDM_PROPERTY(Table2D, TableData, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Table2D::Table2D(const std::string& name) :
@@ -123,8 +124,6 @@ Table2D::Table2D(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Table2D::getOutput);
-  
-  addStoredProperty("data", Property(this, &Table2D::getTableData, &Table2D::setTableData));
 }
 
 Table2D::~Table2D(void)
@@ -165,6 +164,7 @@ Table2D::getOutput(void) const
 }
 
 BEGIN_OPENFDM_OBJECT_DEF(Table3D, Model)
+  DEF_OPENFDM_PROPERTY(Table3D, TableData, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Table3D::Table3D(const std::string& name) :
@@ -179,8 +179,6 @@ Table3D::Table3D(const std::string& name) :
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Table3D::getOutput);
-  
-  addStoredProperty("data", Property(this, &Table3D::getTableData, &Table3D::setTableData));
 }
 
 Table3D::~Table3D(void)

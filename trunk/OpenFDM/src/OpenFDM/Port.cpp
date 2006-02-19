@@ -8,7 +8,6 @@
 
 #include "LogStream.h"
 #include "Object.h"
-#include "Property.h"
 #include "Variant.h"
 #include "Port.h"
 

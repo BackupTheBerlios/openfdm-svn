@@ -24,7 +24,7 @@ public:
   const Matrix& getMax(void) const;
 
   unsigned getNumMaxInputs(void) const;
-  void setNumMaxInputs(const unsigned& num);
+  void setNumMaxInputs(unsigned num);
 
 private:
   Matrix mMax;

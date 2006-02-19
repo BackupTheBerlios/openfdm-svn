@@ -13,18 +13,18 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(SimpleContact, Contact)
+  DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
+/// FIXME want to have similar names than with linearspringdamper
+  DEF_OPENFDM_PROPERTY(Real, SpringDamping, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, FrictionCoeficient, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-SimpleContact::SimpleContact(const std::string& name)
-  : Contact(name)
+SimpleContact::SimpleContact(const std::string& name) :
+  Contact(name),
+  mSpringConst(0),
+  mSpringDamp(0),
+  mFrictionCoef(0)
 {
-  mSpringConst = 0;
-  mSpringDamp = 0;
-  mFrictionCoef = 0;
-
-  addStoredProperty("springConstant", Property(this, &SimpleContact::getSpringConstant, &SimpleContact::setSpringConstant));
-  addStoredProperty("springDamping", Property(this, &SimpleContact::getSpringDamping, &SimpleContact::setSpringDamping));
-  addStoredProperty("frictionCoeficient", Property(this, &SimpleContact::getFrictionCoeficient, &SimpleContact::setFrictionCoeficient));
 }
 
 SimpleContact::~SimpleContact(void)

@@ -8,6 +8,9 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(DiscreteIntegrator, Model)
+  DEF_OPENFDM_PROPERTY(Matrix, InitialValue, Serialized)
+  DEF_OPENFDM_PROPERTY(Matrix, MinSaturation, Serialized)
+  DEF_OPENFDM_PROPERTY(Matrix, MaxSaturation, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 DiscreteIntegrator::DiscreteIntegrator(const std::string& name) :
@@ -19,10 +22,6 @@ DiscreteIntegrator::DiscreteIntegrator(const std::string& name) :
 
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &DiscreteIntegrator::getIntegralOutput);
-
-  addStoredProperty("initialValue", Property(this, &DiscreteIntegrator::getInitialValue, &DiscreteIntegrator::setInitialValue));
-  addStoredProperty("minSaturation", Property(this, &DiscreteIntegrator::getMinSaturation, &DiscreteIntegrator::setMinSaturation));
-  addStoredProperty("maxSaturation", Property(this, &DiscreteIntegrator::getMaxSaturation, &DiscreteIntegrator::setMaxSaturation));
 }
 
 DiscreteIntegrator::~DiscreteIntegrator(void)

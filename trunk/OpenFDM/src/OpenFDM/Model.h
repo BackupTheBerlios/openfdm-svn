@@ -12,7 +12,6 @@
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
-#include "Property.h"
 #include "Variant.h"
 #include "Vector.h"
 #include "SampleTime.h"

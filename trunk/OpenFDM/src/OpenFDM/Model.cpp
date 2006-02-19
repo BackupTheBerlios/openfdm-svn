@@ -13,6 +13,9 @@ const SampleTime SampleTime::Inherited(-1);
 const SampleTime SampleTime::Continous(0);
 
 BEGIN_OPENFDM_OBJECT_DEF(Model, Object)
+  DEF_OPENFDM_ROPROP(Unsigned, NumContinousStates)
+  DEF_OPENFDM_ROPROP(Unsigned, NumDiscreteStates)
+  DEF_OPENFDM_ROPROP(Bool, DirectFeedThrough)
   END_OPENFDM_OBJECT_DEF
 
 Model::Model(const std::string& name) :
@@ -22,12 +25,6 @@ Model::Model(const std::string& name) :
   mDirectFeedThrough(false),
   mMultiBodyAcceleration(false)
 {
-  addProperty("numContinousStates",
-              Property(this, &Model::getNumContinousStates));
-  addProperty("numDiscreteStates",
-              Property(this, &Model::getNumDiscreteStates));
-  addProperty("directFeedThrough",
-              Property(this, &Model::getDirectFeedThrough));
 }
 
 Model::~Model(void)

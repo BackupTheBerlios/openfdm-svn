@@ -8,7 +8,6 @@
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
-#include "Property.h"
 #include "Vector.h"
 #include "Model.h"
 #include "Bias.h"
@@ -16,6 +15,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Bias, Model)
+  DEF_OPENFDM_PROPERTY(Matrix, Bias, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Bias::Bias(const std::string& name) : Model(name)
@@ -27,8 +27,6 @@ Bias::Bias(const std::string& name) : Model(name)
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &Bias::getOutput);
-
-  addStoredProperty("bias", Property(this, &Bias::getBias, &Bias::setBias));
 }
 
 Bias::~Bias(void)

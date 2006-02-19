@@ -7,7 +7,6 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "Property.h"
 #include "Vector.h"
 #include "Model.h"
 #include "DeadBand.h"
@@ -15,6 +14,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(DeadBand, Model)
+  DEF_OPENFDM_PROPERTY(Real, Width, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 DeadBand::DeadBand(const std::string& name) : Model(name)
@@ -26,8 +26,6 @@ DeadBand::DeadBand(const std::string& name) : Model(name)
   
   setNumOutputPorts(1);
   setOutputPort(0, "output", this, &DeadBand::getOutput);
-  
-  addStoredProperty("width", Property(this, &DeadBand::getWidth, &DeadBand::setWidth));
 }
 
 DeadBand::~DeadBand(void)

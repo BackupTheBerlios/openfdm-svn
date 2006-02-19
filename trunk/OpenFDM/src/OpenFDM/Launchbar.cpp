@@ -14,6 +14,10 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Launchbar, ExternalForce)
+  DEF_OPENFDM_PROPERTY(Real, Length, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, UpAngle, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, DownAngle, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, LaunchForce, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Launchbar::Launchbar(const std::string& name)

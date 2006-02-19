@@ -24,7 +24,7 @@ public:
   const Matrix& getProduct(void) const;
 
   unsigned getNumFactors(void) const;
-  void setNumFactors(const unsigned& num);
+  void setNumFactors(unsigned num);
 
 private:
   Matrix mProduct;

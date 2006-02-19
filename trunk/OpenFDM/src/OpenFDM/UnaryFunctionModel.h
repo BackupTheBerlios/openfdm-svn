@@ -8,6 +8,7 @@
 #include <string>
 
 #include "Types.h"
+#include "Units.h"
 #include "Model.h"
 
 namespace OpenFDM {

@@ -71,25 +71,31 @@ public:
 private:
   void dumpProperties(const Object& object)
   {
-    std::list<std::string> propNames = object.listProperties();
-    std::list<std::string>::iterator it = propNames.begin();
-    while (it != propNames.end()) {
-      if (object.isStoredProperty(*it)) {
-        Variant value = object.getPropertyValue(*it);
+    std::vector<PropertyInfo> props;
+    object.getPropertyInfoList(props);
+
+    std::vector<PropertyInfo>::iterator it = props.begin();
+    while (it != props.end()) {
+      if (it->isSerialized()) {
+        Variant value;
+        object.getPropertyValue(it->getName(), value);
         
         if (value.isReal()) {
           std::stringstream valStr;
           valStr.precision(mPrecision);
           valStr  << value.toReal();
-          indent() << "<property name=\"" << *it << "\" type=\"real\">"
+          indent() << "<property name=\"" << it->getName()
+                   << "\" type=\"real\">"
                    << valStr.str()
                    << "</property>\n";
         } else if (value.isInteger()) {
-          indent() << "<property name=\"" << *it << "\" type=\"integer\">"
+          indent() << "<property name=\"" << it->getName()
+                   << "\" type=\"integer\">"
                    << value.toInteger()
                    << "</property>\n";
         } else if (value.isUnsigned()) {
-          indent() << "<property name=\"" << *it << "\" type=\"unsigned\">"
+          indent() << "<property name=\"" << it->getName()
+                   << "\" type=\"unsigned\">"
                    << value.toUnsigned()
                    << "</property>\n";
         } else if (value.isMatrix()) {
@@ -112,15 +118,18 @@ private:
               valStr << mVal(cols(mVal), i) << '\n';
             }
           }
-          indent() << "<property name=\"" << *it << "\" type=\"matrix\">"
+          indent() << "<property name=\"" << it->getName()
+                   << "\" type=\"matrix\">"
                    << valStr.str()
                    << "</property>\n";
         } else if (value.isString()) {
-          indent() << "<property name=\"" << *it << "\" type=\"string\">"
+          indent() << "<property name=\"" << it->getName()
+                   << "\" type=\"string\">"
                    << escape(value.toString())
                    << "</property>\n";
         } else {
-          indent() << "<property name=\"" << *it << "\">"
+          indent() << "<property name=\"" << it->getName()
+                   << "\">"
                    << escape(value.toString())
                    << "</property>\n";
         }

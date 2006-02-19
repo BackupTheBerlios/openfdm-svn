@@ -7,6 +7,9 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Tank, Mass)
+/// This is a state value ???!!!
+  DEF_OPENFDM_PROPERTY(Real, Content, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, Capacity, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Tank::Tank(const std::string& name) :
@@ -21,9 +24,6 @@ Tank::Tank(const std::string& name) :
 
   setNumOutputPorts(1);
   setOutputPort(0, "content", this, &Tank::getContent);
-
-  addStoredProperty("content", Property(this, &Tank::getContent, &Tank::setContent));
-  addStoredProperty("capacity", Property(this, &Tank::getCapacity, &Tank::setCapacity));
 }
 
 Tank::~Tank(void)

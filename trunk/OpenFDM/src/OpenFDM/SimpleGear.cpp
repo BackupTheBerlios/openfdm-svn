@@ -15,6 +15,14 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(SimpleGear, Contact)
+  DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
+/// FIXME want to have similar names than with linearspringdamper
+  DEF_OPENFDM_PROPERTY(Real, SpringDamping, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, FrictionCoeficient, Serialized)
+
+  DEF_OPENFDM_PROPERTY(Real, SteeringAngle, NotSerialized)
+/// FIXME think about that name 
+  DEF_OPENFDM_PROPERTY(Real, Brake, NotSerialized)
   END_OPENFDM_OBJECT_DEF
 
 SimpleGear::SimpleGear(const std::string& name)
@@ -26,24 +34,7 @@ SimpleGear::SimpleGear(const std::string& name)
   mSpringDamp = 0;
   mFrictionCoef = 0;
 
-  // ??? FIXME
-  addProperty("steeringAngle",
-              Property(this, &SimpleGear::getSteeringAngle,
-                       &SimpleGear::setSteeringAngle));
-  addProperty("brake",
-              Property(this, &SimpleGear::getBrake, &SimpleGear::setBrake));
-
-
-  addStoredProperty("springConstant",
-                    Property(this, &SimpleGear::getSpringConstant,
-                             &SimpleGear::setSpringConstant));
-  addStoredProperty("springDamping",
-                    Property(this, &SimpleGear::getSpringDamping,
-                             &SimpleGear::setSpringDamping));
-  addStoredProperty("frictionCoeficient",
-                    Property(this, &SimpleGear::getFrictionCoeficient,
-                             &SimpleGear::setFrictionCoeficient));
-
+  /// FIXME
   unsigned inputPortBase = getNumInputPorts();
   setNumInputPorts(inputPortBase + 2);
   setInputPortName(inputPortBase + 0, "brakeCommand");
@@ -85,7 +76,7 @@ SimpleGear::getSteeringAngle(void) const
 }
 
 void
-SimpleGear::setSteeringAngle(const real_type& steeringAngle)
+SimpleGear::setSteeringAngle(real_type steeringAngle)
 {
   mSteeringAngle = steeringAngle;
 }
@@ -97,7 +88,7 @@ SimpleGear::getBrake(void) const
 }
 
 void
-SimpleGear::setBrake(const real_type& brake)
+SimpleGear::setBrake(real_type brake)
 {
   mBrake = brake;
 }
@@ -109,7 +100,7 @@ SimpleGear::getSpringConstant(void) const
 }
 
 void
-SimpleGear::setSpringConstant(const real_type& springConst)
+SimpleGear::setSpringConstant(real_type springConst)
 {
   mSpringConst = springConst;
 }
@@ -121,7 +112,7 @@ SimpleGear::getSpringDamping(void) const
 }
 
 void
-SimpleGear::setSpringDamping(const real_type& springDamp)
+SimpleGear::setSpringDamping(real_type springDamp)
 {
   mSpringDamp = springDamp;
 }
@@ -133,7 +124,7 @@ SimpleGear::getFrictionCoeficient(void) const
 }
 
 void
-SimpleGear::setFrictionCoeficient(const real_type& frictionCoef)
+SimpleGear::setFrictionCoeficient(real_type frictionCoef)
 {
   mFrictionCoef = frictionCoef;
  }

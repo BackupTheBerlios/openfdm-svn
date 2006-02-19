@@ -10,7 +10,7 @@
 namespace OpenFDM {
 
 class RevoluteActuatorFrame : public CartesianActuatorFrame<1> {
-  OPENFDM_OBJECT(PrismaticActuatorFrame, CartesianActuatorFrame<1>);
+  OPENFDM_OBJECT(RevoluteActuatorFrame, CartesianActuatorFrame<1>);
 public:
   RevoluteActuatorFrame(const std::string& name) :
     CartesianActuatorFrame<1>(name),

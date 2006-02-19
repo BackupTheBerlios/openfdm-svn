@@ -9,6 +9,8 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(DiscBrake, Model)
+  DEF_OPENFDM_PROPERTY(Real, MinForce, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, MaxForce, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 DiscBrake::DiscBrake(const std::string& name) :
@@ -19,9 +21,6 @@ DiscBrake::DiscBrake(const std::string& name) :
   setDirectFeedThrough(true);
 
   setNumContinousStates(1);
-
-  addStoredProperty("minForce", Property(this, &DiscBrake::getMinForce, &DiscBrake::setMinForce));
-  addStoredProperty("maxForce", Property(this, &DiscBrake::getMaxForce, &DiscBrake::setMaxForce));
 
   setNumInputPorts(2);
   setInputPortName(0, "brakePressure");
