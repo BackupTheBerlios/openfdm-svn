@@ -7,7 +7,6 @@
 
 #include <string>
 #include <simgear/props/props.hxx>
-#include <OpenFDM/Property.h>
 #include <OpenFDM/Model.h>
 
 namespace OpenFDM {
@@ -21,21 +20,18 @@ public:
   {}
 
 protected:
-  Variant getPropertyValue(void) const
+  bool getPropertyValue(Variant& value) const
   {
     if (!mObject)
-      return Variant();
-
-    return mObject->getPropertyValue(mPropertyName);
+      return false;
+    return mObject->getPropertyValue(mPropertyName, value);
   }
   bool setPropertyValue(const Variant& value)
   {
     if (!mObject)
       return false;
 
-    // FIXME: check if settable ...
-    mObject->setPropertyValue(mPropertyName, value);
-    return true;
+    return mObject->setPropertyValue(mPropertyName, value);
   }
 
 private:
@@ -57,7 +53,12 @@ public:
   { return setPropertyValue(Variant(std::string(value))); }
   /// Implements the SimGear property interface.
   virtual const char* getValue(void) const
-  { mValue = getPropertyValue().toString(); return mValue.c_str(); }
+  {
+    Variant variantValue;
+    if (getPropertyValue(variantValue))
+      mValue = variantValue.toString();
+    return mValue.c_str();
+  }
   
   virtual FGStringPropertyAdapter* clone(void) const
   { return new FGStringPropertyAdapter(*this); }
@@ -79,7 +80,10 @@ public:
   /// Implements the SimGear property interface.
   virtual bool setValue(double value)
   {
-    Matrix m = getPropertyValue().toMatrix();
+    Variant variantValue;
+    if (getPropertyValue(variantValue))
+      return false;
+    Matrix m = variantValue.toMatrix();
     unsigned r = mIndex % rows(m) + 1;
     unsigned c = mIndex / rows(m) + 1;
     if (r < 1 || rows(m) < r)
@@ -93,10 +97,16 @@ public:
   /// Implements the SimGear property interface.
   virtual double getValue(void) const
   {
-    if (mIndex == 1)
-      return getPropertyValue().toReal();
-    else {
-      Matrix m = getPropertyValue().toMatrix();
+    if (mIndex == 1) {
+      Variant variantValue;
+      if (!getPropertyValue(variantValue))
+        return 0;
+      return variantValue.toReal();
+    } else {
+      Variant variantValue;
+      if (!getPropertyValue(variantValue))
+        return 0;
+      Matrix m = variantValue.toMatrix();
       unsigned r = mIndex % rows(m) + 1;
       unsigned c = mIndex / rows(m) + 1;
       if (r < 1 || rows(m) < r)
@@ -126,7 +136,12 @@ public:
   { return setPropertyValue(Variant(value)); }
   /// Implements the SimGear property interface.
   virtual int getValue(void) const
-  { return getPropertyValue().toInteger(); }
+  {
+    Variant variantValue;
+    if (!getPropertyValue(variantValue))
+      return 0;
+    return variantValue.toInteger();
+  }
 
   virtual FGIntegerPropertyAdapter* clone(void) const
   { return new FGIntegerPropertyAdapter(*this); }

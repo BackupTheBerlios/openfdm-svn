@@ -467,37 +467,39 @@ FGOpenFDM::tieObject(SGPropertyNode* base, Object* object)
 
   // The usual, whole object reflection so that one can take a look into
   // OpenFDM's internal modules ...
-  std::list<std::string> propertyList = object->listProperties();
-  std::list<std::string>::const_iterator it = propertyList.begin();
-  while (it != propertyList.end()) {
+  std::vector<PropertyInfo> props;
+  object->getPropertyInfoList(props);
+  std::vector<PropertyInfo>::iterator it = props.begin();
+  while (it != props.end()) {
     // ... well, FIXME cleanup ...
-    std::string pName = toPropname(*it);
+    std::string pName = toPropname(it->getName());
     SGPropertyNode* sgProp = base->getChild(pName.c_str(), 0, true);
-    Variant value = object->getPropertyValue(*it);
+    Variant value;
+    object->getPropertyValue(it->getName(), value);
 
     if (value.isString())
-      sgProp->tie(FGStringPropertyAdapter(object, *it));
+      sgProp->tie(FGStringPropertyAdapter(object, it->getName()));
     else if (value.isReal())
-      sgProp->tie(FGRealPropertyAdapter(object, *it));
+      sgProp->tie(FGRealPropertyAdapter(object, it->getName()));
     else if (value.isInteger())
-      sgProp->tie(FGIntegerPropertyAdapter(object, *it));
+      sgProp->tie(FGIntegerPropertyAdapter(object, it->getName()));
     else if (value.isUnsigned())
-      sgProp->tie(FGIntegerPropertyAdapter(object, *it));
+      sgProp->tie(FGIntegerPropertyAdapter(object, it->getName()));
 
     else if (value.isMatrix()) {
       Matrix m = value.toMatrix();
       unsigned reshapeSize = rows(m) * cols(m);
 
-      sgProp->tie(FGRealPropertyAdapter(object, *it));
+      sgProp->tie(FGRealPropertyAdapter(object, it->getName()));
       for (unsigned i = 2; i <= reshapeSize; ++i) {
         sgProp = base->getChild(pName.c_str(), i-1, true);
-        sgProp->tie(FGRealPropertyAdapter(object, *it, i));
+        sgProp->tie(FGRealPropertyAdapter(object, it->getName(), i));
       }
     }
     else if (value.isValid()) {
       SG_LOG(SG_FLIGHT, SG_WARN,
              "Found unexpected property type with property named \""
-             << *it << "\"");
+             << it->getName() << "\"");
     }
     ++it;
   }
