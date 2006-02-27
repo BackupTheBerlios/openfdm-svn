@@ -5,8 +5,11 @@ AM_INIT_AUTOMAKE
 
 AC_CONFIG_SRCDIR([src/OpenFDM/Object.h])
 
-CPPFLAGS="$CPPFLAGS -I$prefix/include"
-LDFLAGS="$LDFLAGS -L$prefix/lib"
+dnl try to append the prefix path to the include and library paths if present
+if test "x$prefix" != "xNONE" ; then
+  CPPFLAGS="$CPPFLAGS -I$prefix/include"
+  LDFLAGS="$LDFLAGS -L$prefix/lib"
+fi
 
 AC_CANONICAL_HOST
 
