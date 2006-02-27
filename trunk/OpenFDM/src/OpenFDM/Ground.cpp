@@ -16,4 +16,28 @@ Ground::~Ground(void)
 {
 }
 
+bool
+Ground::getCatapultValues(real_type t, const Vector3& refPos,
+                          CatapultValues& catVal) const
+{
+  return false;
+}
+
+bool
+Ground::caughtWire(const HookPosition& old, const HookPosition& current) const
+{
+  return false;
+}
+
+bool
+Ground::getWireEnds(real_type t, WireValues& wireVal) const
+{
+  return false;
+}
+
+void
+Ground::releaseWire(void) const
+{
+}
+
 } // namespace OpenFDM

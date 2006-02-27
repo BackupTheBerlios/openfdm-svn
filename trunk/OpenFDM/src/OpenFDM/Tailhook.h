@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_Launchbar_H
-#define OpenFDM_Launchbar_H
+#ifndef OpenFDM_Tailhook_H
+#define OpenFDM_Tailhook_H
 
 #include "Assert.h"
 #include "Object.h"
@@ -15,11 +15,11 @@
 
 namespace OpenFDM {
 
-class Launchbar : public ExternalForce {
-  OPENFDM_OBJECT(Launchbar, ExternalForce);
+class Tailhook : public ExternalForce {
+  OPENFDM_OBJECT(Tailhook, ExternalForce);
 public:
-  Launchbar(const std::string& name);
-  virtual ~Launchbar(void);
+  Tailhook(const std::string& name);
+  virtual ~Tailhook(void);
 
   virtual bool init(void);
   virtual void output(const TaskInfo&);
@@ -36,16 +36,6 @@ public:
   void setLength(const real_type& length)
   { mLength = length; }
 
-  const real_type& getHoldbackLength(void) const
-  { return mHoldbackLength; }
-  void setHoldbackLength(const real_type& length)
-  { mHoldbackLength = length; }
-
-  const Vector3& getHoldbackMount(void) const
-  { return mHoldbackMount; }
-  void setHoldbackMount(const Vector3& mount)
-  { mHoldbackMount = mount; }
-
   const real_type& getUpAngle(void) const
   { return mUpAngle; }
   void setUpAngle(const real_type& upAngle)
@@ -56,45 +46,32 @@ public:
   void setDownAngle(const real_type& downAngle)
   { mDownAngle = downAngle; }
 
-  const real_type& getLaunchForce(void) const
-  { return mLaunchForce; }
-  void setLaunchForce(const real_type& launchForce)
-  { mLaunchForce = launchForce; }
-
 private:
   void getGround(real_type t);
-  bool computeCatFrame(real_type t, real_type& catLen);
-  real_type computeCurrentLaunchbarAngle(void);
-
-  enum State {
-    Unmounted,
-    Mounted,
-    Launching
-  };
+  bool computeWireFrame(real_type t, real_type& width);
+  real_type computeCurrentTailhookAngle(void);
 
   real_type mLength;
-  real_type mHoldbackLength;
-  // The mount point of the holdback at the strut
-  Vector3 mHoldbackMount;
   real_type mUpAngle;
   real_type mDownAngle;
   real_type mAngularVelocity;
-  // The launch force
-  real_type mLaunchForce;
+
+  bool mHasWire;
+  bool mFirstTime;
 
   /// Continous output of the launchbar angle
   real_type mAngle;
-  /// discrete state of the laged launchbar position following the command
+  /// discrete state of the laged tailhook position following the command
+  /// the hooks position is immediately corrected for no ground intersection
   real_type mAngleCommand;
 
-  real_type mPosOnCat;
-  State mState;
+  /// The hooks position at the prevous step
+  HookPosition mOldHookPosition;
 
-  RealPortHandle mTryMountPort;
-  RealPortHandle mLaunchCommandPort;
+  RealPortHandle mHookPositionPort;
 
   /// The frame where the catapult values are put in
-  SharedPtr<FreeFrame> mCatFrame;
+  SharedPtr<FreeFrame> mWireFrame;
 
   GroundValues mGroundVal;
   SharedPtr<Environment> mEnvironment;

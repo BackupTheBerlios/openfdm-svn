@@ -36,6 +36,7 @@
 #include <OpenFDM/SimpleGear.h>
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/Table.h>
+#include <OpenFDM/Tailhook.h>
 #include <OpenFDM/TimeDerivative.h>
 #include <OpenFDM/UnaryFunctionModel.h>
 #include <OpenFDM/Units.h>
@@ -846,8 +847,37 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         addOutputModel(port, "Gear " + numStr + " Position",
                        "gear/gear[" + numStr + "]/position-norm");
         
-      } else if (type == "TAILHOOK") /*FIXME*/ {
-      } else if (type == "LAUNCHBAR") {
+      } else if (type == "TAILHOOK") {
+        const XMLElement* tailhookElem = (*it);
+        std::string name = (*it)->getAttribute("name");
+
+        Tailhook* tailhook = new Tailhook(name + " Tailhook");
+        real_type length = realData(tailhookElem->getElement("length"), 0.5);
+        tailhook->setLength(length);
+        real_type upAngle = realData(tailhookElem->getElement("upAngle"), 10);
+        tailhook->setUpAngle(convertFrom(uDegree, upAngle));
+        real_type downAngle = realData(tailhookElem->getElement("downAngle"), -75);
+        tailhook->setDownAngle(convertFrom(uDegree, downAngle));
+        Vector3 loc = structToBody(locationData(tailhookElem->getElement("location")));
+        tailhook->setPosition(loc);
+        addMultiBodyModel(tailhook);
+        mVehicle->getTopBody()->addInteract(tailhook);
+        
+        Port* port = lookupJSBExpression("/controls/gear/tailhook");
+        tailhook->getInputPort(0)->connect(port);
+        
+        // expose the tailhook position
+        port = tailhook->getOutputPort(0);
+        std::string nameBase = "Tailhook Position";
+        addOutputModel(port, nameBase, "gear/tailhook/position-rad");
+        UnitConversionModel* unitModel
+          = new UnitConversionModel(nameBase + " converter",
+                                    UnitConversionModel::SiToUnit, uDegree);
+        unitModel->getInputPort(0)->connect(port);
+        addFCSModel(unitModel);
+        addOutputModel(unitModel->getOutputPort(0), nameBase + " Deg",
+                       "gear/tailhook/position-deg");
+
       } else {
         return error("Unknown groundreactions component of type " + type);
       }

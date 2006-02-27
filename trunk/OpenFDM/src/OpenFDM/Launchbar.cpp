@@ -15,20 +15,22 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Launchbar, ExternalForce)
   DEF_OPENFDM_PROPERTY(Real, Length, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, HoldbackLength, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, HoldbackMount, Serialized)
   DEF_OPENFDM_PROPERTY(Real, UpAngle, Serialized)
   DEF_OPENFDM_PROPERTY(Real, DownAngle, Serialized)
   DEF_OPENFDM_PROPERTY(Real, LaunchForce, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-Launchbar::Launchbar(const std::string& name)
-  : ExternalForce(name),
-    mLength(0.6),
-    mHoldbackLength(1.5),
-    mHoldBackMount(0, 0, 0.1),
-    mUpAngle(0.5),
-    mDownAngle(-0.5),
-    mAngularVelocity(1),
-    mLaunchForce(0)
+Launchbar::Launchbar(const std::string& name) :
+  ExternalForce(name),
+  mLength(0.6),
+  mHoldbackLength(1.5),
+  mHoldbackMount(0, 0, 0.1),
+  mUpAngle(0.5),
+  mDownAngle(-0.5),
+  mAngularVelocity(1),
+  mLaunchForce(0)
 {
   mCatFrame = new FreeFrame("Catapult frame");
   mMountFrame->addChildFrame(mCatFrame);
@@ -130,11 +132,11 @@ Launchbar::output(const TaskInfo& taskInfo)
 
     // ok, for now the holback is a stiff spring, will model that different
     // when loop closure contranits are availble ...
-    Vector3 hbDir = mHoldBackMount - hbDeckMount;
+    Vector3 hbDir = mHoldbackMount - hbDeckMount;
     real_type hbLen = norm(hbDir);
     if (mHoldbackLength < hbLen) {
       Vector3 hbForce = (2*mLaunchForce*(mHoldbackLength - hbLen)/hbLen)*hbDir;
-      force += forceFrom(mHoldBackMount, hbForce);
+      force += forceFrom(mHoldbackMount, hbForce);
     }
 
     // Some damping force, just at the position the launchbar applies its force
@@ -182,7 +184,7 @@ Launchbar::update(const TaskInfo& taskInfo)
           // compute the nearest point on the catapult line to the holdback
           // mount
           Vector3 hbNearest = catPos0
-            + dot(mHoldBackMount - catPos0, catDir)*catDir;
+            + dot(mHoldbackMount - catPos0, catDir)*catDir;
           
           // Find the distance backwards from that point matching
           // the holdback length
@@ -282,18 +284,44 @@ Launchbar::computeCurrentLaunchbarAngle(void)
 {
   // Transform the plane equation to the local frame.
   Plane lp = mMountFrame->planeFromRef(mGroundVal.plane);
-  
-  // Get the distance to ground
-  // negative values are above ground
-  real_type distToGround = lp.getDist(Vector3::zeros());
-  // The angle between the local x-axis and the launchbar, positive upwards
-  real_type aCosAngle = distToGround/mLength;
-  if (aCosAngle < -1)
-    aCosAngle = -1;
-  if (1 < aCosAngle)
-    aCosAngle = 1;
-  /// FIXME: could be done different ????
-  real_type angle = - acos(aCosAngle) + pi05;
+
+  // Now compute the intersection of the circle where the tip can move
+  // with the ground plane. If there is no intersection movement is free
+
+  // The trick is to find a xz = (x, 0, z) with |xz| = r and dot(xz, n) + d = 0
+  // where n is the plane normal and d is the plane distance
+
+  Vector n = lp.getNormal();
+  real_type d = lp.getDist();
+
+  // we are paralell to the plane
+  if (fabs(n(3)) <= Limits<real_type>::min())
+    return mAngleCommand;
+
+  // that leads to a quadratic equation where we pick the solution pointing
+  // backwards:
+  real_type nx2nz2 = n(1)*n(1) + n(3)*n(3);
+
+  // we need to didive through that later, with exact operations it should
+  // be safe to not check that because of n(3) being bounded away from zero,
+  // but due to the square the value can underflow
+  if (fabs(nx2nz2) <= Limits<real_type>::min())
+    return mAngleCommand;
+
+  // the discriminant (rought german translation ...)
+  real_type discr = nx2nz2*mLength*mLength - d*d;
+  // Unconstraint angle position
+  if (discr <= 0)
+    return mAngleCommand;
+
+  // the x coorinate of the tip
+  real_type x = -(d*n(1) - fabs(n(3))*sqrt(discr))/nx2nz2;
+
+  // get the z coordinate of the tip from the plane equation
+  real_type z = -(d + x*n(1))/n(3);
+
+  // ok, now the angle ...
+  real_type angle = atan2(-z, x);
   // limit to the range of movement
   if (angle < mAngleCommand)
     angle = mAngleCommand;
