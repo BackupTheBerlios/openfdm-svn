@@ -19,6 +19,56 @@ namespace OpenFDM {
 BEGIN_OPENFDM_OBJECT_DEF(System, ModelGroup)
   END_OPENFDM_OBJECT_DEF
 
+struct ModelListEntry {
+  SharedPtr<Model> model;
+  SampleTimeSet sampleTimeSet;  
+};
+
+typedef std::list<ModelListEntry> ModelList2;
+
+class ModelCollectVisitor :
+    public ModelVisitor {
+public:
+  virtual ~ModelCollectVisitor(void)
+  { }
+  virtual void apply(Model& model)
+  {
+    ModelListEntry entry;
+    entry.model = &model;
+    entry.sampleTimeSet = model.getSampleTimeSet();
+    if (entry.sampleTimeSet.isInherited()) {
+      SampleTimeSet::const_iterator it;
+      for (it = sampleTimeSet.begin(); it != sampleTimeSet.end(); ++it)
+        entry.sampleTimeSet.addSampleTime(*it);
+    }
+
+    SampleTimeSet::const_iterator it;
+    for (it = entry.sampleTimeSet.begin();
+         it != entry.sampleTimeSet.end(); ++it)
+      allSampleTimeSet.addSampleTime(*it);
+
+    modelList.push_back(entry);
+  }
+  virtual void apply(ModelGroup& modelGroup)
+  {
+    SampleTimeSet savedSet = sampleTimeSet;
+    if (modelGroup.getSampleTimeSet().isInherited()) {
+      SampleTimeSet::const_iterator it;
+      for (it = modelGroup.getSampleTimeSet().begin();
+           it != modelGroup.getSampleTimeSet().end(); ++it)
+        sampleTimeSet.addSampleTime(*it);
+    } else {
+      sampleTimeSet = modelGroup.getSampleTimeSet();
+    }
+    traverse(modelGroup);
+    sampleTimeSet = savedSet;
+  }
+
+  ModelList2 modelList;
+  SampleTimeSet sampleTimeSet;
+  SampleTimeSet allSampleTimeSet;
+};
+
 System::System(const std::string& name) :
   ModelGroup(name),
   mTime(0)
@@ -37,28 +87,45 @@ System::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
+static bool
+sortModels(ModelList2& mModels);
+
+static void
+fillTaskInfo(TaskInfo& taskInfo, const ModelList2& modelList);
+
 bool
 System::init(void)
 {
-  // Initialize the ModelGroup, sort out models according their dependencies
-  // and collects sample time information.
-  // If it fails to initialize, the system cannot be initialized.
-  if (!ModelGroup::init()) {
-    Log(Schedule, Error) << "Error initializing submodels.\nAborting!" << endl;
-    return false;
-  }
-
   // Reset the task scheduling stuff
+  mContinousModelList.clear();
+  mDiscreteModelList.clear();
   mDiscreteTaskList.clear();
   mCurrentTaskNum = 0u;
   mCurrentSliceTime = 0;
+
+  // For now let init sort them and now build tasks from that
+  ModelCollectVisitor modelCollectVisitor;
+  accept(modelCollectVisitor);
+
+  OpenFDM::sortModels(modelCollectVisitor.modelList);
+
+  // build up the lists of stateful models
+  ModelList2::const_iterator mit;
+  mit = modelCollectVisitor.modelList.begin();
+  while (mit != modelCollectVisitor.modelList.end()) {
+    if (mit->model->getNumContinousStates())
+      mContinousModelList.push_back(mit->model);
+    if (mit->model->getNumDiscreteStates())
+      mDiscreteModelList.push_back(mit->model);
+    ++mit;
+  }
 
   // Compute the basic time slice, that is the greatest time that hits all
   // discrete sample times boundaries we have in this system
   real_type gcd = 0;
   real_type scm = 0;
   real_type minSampleTime = Limits<real_type>::max();
-  SampleTimeSet sampleTimes = getSampleTimeSet();
+  SampleTimeSet sampleTimes = modelCollectVisitor.allSampleTimeSet;
   SampleTimeSet::const_iterator it;
   for (it = sampleTimes.begin(); it != sampleTimes.end(); ++it) {
     if (!it->isDiscrete())
@@ -118,6 +185,28 @@ System::init(void)
   }
   mDiscreteTaskList.swap(cTL);
 
+  // Now precompute the list of models to be updated on each task
+  for (unsigned i = 0; i < mDiscreteTaskList.size(); ++i)
+    fillTaskInfo(mDiscreteTaskList[i], modelCollectVisitor.modelList);
+
+  mPerTimestepTask = TaskInfo();
+  mPerTimestepTask.addSampleTime(SampleTime::PerTimestep);
+  fillTaskInfo(mPerTimestepTask, modelCollectVisitor.modelList);
+
+  mContinousTask = TaskInfo();
+  mContinousTask.addSampleTime(SampleTime::Continous);
+  fillTaskInfo(mContinousTask, modelCollectVisitor.modelList);
+
+  mit = modelCollectVisitor.modelList.begin();
+  while (mit != modelCollectVisitor.modelList.end()) {
+    if (!mit->model->init()) {
+      Log(Schedule, Error) << "Error initializing submodels.\n"
+                           << "Aborting!" << endl;
+      return false;
+    }
+    ++mit;
+  }
+
   // Just a verbose print here ...
   Log(Schedule, Info) << "gcd of sample times is: " << gcd
                    << ", scm of sample times is: " << scm << endl;
@@ -140,6 +229,58 @@ System::init(void)
   mTime = 0;
   mTimestepper->setStepsize(gcd);
   return true;
+}
+
+void
+System::output(const TaskInfo& taskInfo)
+{
+  taskInfo.output();
+}
+
+void
+System::update(const TaskInfo& taskInfo)
+{
+  taskInfo.update();
+}
+
+void
+System::setState(const StateStream& state)
+{
+  ModelList::iterator it;
+  for (it = mContinousModelList.begin(); it != mContinousModelList.end(); ++it)
+    (*it)->setState(state);
+}
+
+void
+System::getState(StateStream& state) const
+{
+  ModelList::const_iterator it;
+  for (it = mContinousModelList.begin(); it != mContinousModelList.end(); ++it)
+    (*it)->getState(state);
+}
+
+void
+System::getStateDeriv(StateStream& stateDeriv)
+{
+  ModelList::iterator it;
+  for (it = mContinousModelList.begin(); it != mContinousModelList.end(); ++it)
+    (*it)->getStateDeriv(stateDeriv);
+}
+
+void
+System::setDiscreteState(const StateStream& state)
+{
+  ModelList::iterator it;
+  for (it = mDiscreteModelList.begin(); it != mDiscreteModelList.end(); ++it)
+    (*it)->setDiscreteState(state);
+}
+
+void
+System::getDiscreteState(StateStream& state) const
+{
+  ModelList::const_iterator it;
+  for (it = mDiscreteModelList.begin(); it != mDiscreteModelList.end(); ++it)
+    (*it)->getDiscreteState(state);
 }
 
 bool
@@ -174,23 +315,24 @@ System::simulate(real_type tEnd)
       loopTEnd = tEnd;
     } else {
       // need that  ...
-      TaskInfo taskInfo = mDiscreteTaskList[mCurrentTaskNum];
-      taskInfo.setTime(getTime());
+      mDiscreteTaskList[mCurrentTaskNum].setTime(getTime());
       
       if (mCurrentSliceTime == 0) {
+        const TaskInfo& taskInfo = mDiscreteTaskList[mCurrentTaskNum];
         Log(Schedule, Info) << "Computing discrete output for Task # "
                          << mCurrentTaskNum << ": # basicSteps "
                          << taskInfo.getNumBasicSteps() << ", sliceSize "
                          << taskInfo.getSliceSize() << ", sample times "
                          << taskInfo.getSampleTimeSet() << endl;
-        
-        output(taskInfo);
-        update(taskInfo);
+      
+        output(mDiscreteTaskList[mCurrentTaskNum]);
+        update(mDiscreteTaskList[mCurrentTaskNum]);
       }
 
       // Take the minimum of the current discrete tasks end and the given
       // end time, take care of roundoff
-      real_type taskTEnd = mTime - mCurrentSliceTime + taskInfo.getSliceSize();
+      real_type taskTEnd = mTime - mCurrentSliceTime
+        + mDiscreteTaskList[mCurrentTaskNum].getSliceSize();
       if (equal(taskTEnd, tEnd, 100) || taskTEnd <= tEnd) {
         loopTEnd = taskTEnd;
         mCurrentSliceTime = 0;
@@ -208,11 +350,9 @@ System::simulate(real_type tEnd)
     } else {
       // Do the pre integration output round
       Log(Schedule, Info) << "Preparing Models: pre integration step" << endl;
-      TaskInfo taskInfo;
-      taskInfo.addSampleTime(SampleTime::Continous);
-      taskInfo.addSampleTime(SampleTime::PerTimestep);
-      taskInfo.setTime(getTime());
-      output(taskInfo);
+      mPerTimestepTask.setTime(getTime());
+      output(mPerTimestepTask);
+      update(mPerTimestepTask);
 
       Log(Schedule, Info) << "Integration: from time "
                           << mTimestepper->getTime()
@@ -406,6 +546,8 @@ System::trim(void)
   taskInfo.addSampleTime(SampleTime::Continous);
   taskInfo.addSampleTime(SampleTime::PerTimestep);
   output(taskInfo);
+  output(mPerTimestepTask);
+  output(mContinousTask);
 
   /// First try to find an altitude where the acceleration is minimal,
   /// this is most likely a good starting point for the subsequent total trim
@@ -455,12 +597,12 @@ System::setTimestepper(ODESolver* timestepper)
 {
   real_type t = 0;
   if (mTimestepper) {
-    mTimestepper->setModel(0);
+    mTimestepper->setSystem(0);
     t = mTimestepper->getTime();
   }
   mTimestepper = timestepper;
   if (mTimestepper) {
-    mTimestepper->setModel(this);
+    mTimestepper->setSystem(this);
     mTimestepper->setTime(t);
   }
 }
@@ -470,6 +612,234 @@ System::getEnvironment(void) const
 {
   /// Hmmm, FIXME
   return const_cast<Environment*>((const Environment*)mEnvironment);
+}
+
+void
+System::evalFunction(real_type t, const Vector& v, Vector& out)
+{
+  /// FIXME Hmm, may be different ...
+  StateStream stateStream(v);
+  setState(v);
+
+  mContinousTask.setTime(t);
+  output(mContinousTask);
+
+  stateStream.reset();
+  getStateDeriv(stateStream);
+  out = stateStream.getState();
+}
+
+void
+System::evalJacobian(real_type t, const Vector& v, Matrix& jac)
+{
+  unsigned nStates = getNumContinousStates();
+
+  // Create space ...
+  // FIXME
+  jac.resize(nStates, nStates);
+
+  // Get the function value at the current position.
+  Vector fv(nStates);
+  evalFunction(t, v, fv);
+
+  real_type sqrteps = 1e4*sqrt(Limits<real_type>::epsilon());
+
+  Vector tmpv = v;
+  Vector tmpfv(nStates);
+  for (unsigned i = 1; i <= nStates; ++i) {
+    tmpv(i) += sqrteps;
+
+    // Evaluate then function ...
+    evalFunction(t, tmpv, tmpfv);
+
+    // ... and compute the differencequotient to approximate the derivative.
+    jac(Range(1, nStates), i) = (1/sqrteps)*(tmpfv-fv);
+
+    // Restore the original value.
+    tmpv(i) = v(i);
+  }
+}
+
+static void
+fillTaskInfo(TaskInfo& taskInfo, const ModelList2& modelList)
+{
+  ModelList2::const_iterator it;
+  it = modelList.begin();
+  while (it != modelList.end()) {
+    if (nonZeroIntersection(taskInfo.getSampleTimeSet(), it->sampleTimeSet))
+      taskInfo.appendModel(it->model);
+    ++it;
+  }
+}
+
+/// Returns true if the given Model is the source for the input port inputPort
+static bool
+dependsOn(Port* inputPort, Model* model)
+{
+  for (unsigned k = 0; k < model->getNumOutputPorts(); ++k) {
+    if (inputPort->isConnectedTo(model->getOutputPort(k)))
+      return true;
+  }
+  return false;
+}
+
+static bool
+dependsOnMultiBody(Joint* joint1, Joint* joint2)
+{
+  return joint1->getOutboardBody() == joint2->getInboardBody();
+}
+
+static bool
+appendModel(ModelList2& mModels, const Model* firstModel, ModelListEntry model, ModelList2& newList)
+{
+  Interact* interact = model.model->toInteract();
+  Joint* joint = model.model->toJoint();
+  if (joint) {
+    for (;;) {
+      ModelList2::iterator it = mModels.begin();
+      while (it != mModels.end()) {
+        Joint* joint2 = (*it).model->toJoint();
+        if (joint2 && dependsOnMultiBody(joint, joint2))
+          break;
+
+        Interact* interact2 = (*it).model->toInteract();
+        if (interact2 && interact2->isChildOf(joint->getOutboardBody())
+            && !interact2->getMultiBodyAcceleration())
+          break;
+
+        ++it;
+      }
+      if (it == mModels.end())
+        break;
+
+      // FIXME: does not work in this algorithm
+      // Detect a circular dependency.
+//       if (*it == firstModel) {
+//         Log(Model, Warning)
+//           << "Detected circilar model dependency.\nRunning with a sample "
+//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
+//         return false;
+//       }
+
+      // We need to store that one here since the iterator possibly invalidates
+      // during the next append dependency call
+      ModelListEntry tmpModel = *it;
+      mModels.erase(it);
+      
+      // Now recurse into that model.
+      if (!appendModel(mModels, firstModel, tmpModel, newList))
+        return false;
+    }
+  }
+
+  // Special case: if we depend on the accelerations, like acceleration
+  // sensors, we depend on the mobile root ...
+  // Well a bit croase now, but until there is something better ...
+  if (model.model->getMultiBodyAcceleration()) {
+    ModelList2::iterator it = mModels.begin();
+    while (it != mModels.end()) {
+      MobileRootJoint* joint = (*it).model->toMobileRootJoint();
+      if (joint)
+        break;
+      ++it;
+    }
+    if (it != mModels.end()) {
+      // FIXME: does not work in this algorithm
+      // Detect a circular dependency.
+//       if (*it == firstModel) {
+//         Log(Model, Warning)
+//           << "Detected circilar model dependency.\nRunning with a sample "
+//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
+//         return false;
+//       }
+
+      // We need to store that one here since the iterator possibly invalidates
+      // during the next append dependency call
+      ModelListEntry tmpModel = *it;
+      mModels.erase(it);
+
+      // Now recurse into that model.
+      if (!appendModel(mModels, firstModel, tmpModel, newList))
+        return false;
+    }
+  }
+
+  // If the model in question does not have dependencies, stop.
+  if (model.model->getDirectFeedThrough() || joint || interact) {
+
+    // Check, all inputs for dependencies.
+    unsigned numInputs = model.model->getNumInputPorts();
+    for (unsigned i = 0; i < numInputs; ++i) {
+      // Determine the model which is the source for this port
+      Port* port = model.model->getInputPort(i);
+      
+      // Check if it is still in the list to be scheduled.
+      ModelList2::iterator it = mModels.begin();
+      while (it != mModels.end()) {
+        /// Horrible special case for now:
+        /// Output's from joints are only state dependent,
+        /// thus these 'output ports' do not have direct feedthrough:
+        /// Possible workarounds: extra sensor models or direct feedthrough
+        /// is a property of the port ...
+        Joint* joint2 = (*it).model->toJoint();
+        if (dependsOn(port, (*it).model) && !joint2)
+          break;
+        ++it;
+      }
+      if (it == mModels.end())
+        continue;
+      
+      // FIXME: does not work in this algorithm
+      // Detect a circular dependency.
+//       if (*it == firstModel) {
+//         Log(Model, Warning)
+//           << "Detected circilar model dependency.\nRunning with a sample "
+//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
+//         return false;
+//       }
+      
+      // We need to store that one here since the iterator possibly invalidates
+      // during the next append dependency call
+      ModelListEntry tmpModel = *it;
+      mModels.erase(it);
+      
+      // Now recurse into that model.
+      if (!appendModel(mModels, firstModel, tmpModel, newList))
+        return false;
+    }
+  }
+
+  Log(Model, Debug) << "Scheduling: \"" << model.model->getName() << "\"" << endl;
+  newList.push_back(model);
+  return true;
+}
+
+static bool
+sortModels(ModelList2& mModels)
+{
+  // TODO: use better sort algorithm.
+  /// erhm, FIXME: This is a horrible sort thing!!!
+  ModelList2 newList;
+  while (!mModels.empty()) {
+    ModelListEntry tmpModel = mModels.front();
+    mModels.erase(mModels.begin());
+
+    if (!appendModel(mModels, tmpModel.model, tmpModel, newList))
+      return false;
+  }
+  // Now the new ordered list is the current one.
+  mModels.swap(newList);
+
+  // print the schedule ...
+//   ModelList2::const_iterator it;
+//   it = mModels.begin();
+//   while (it != mModels.end()) {
+//     Log(Model,Error) << it->model->getPathString() << " "
+//                      << it->sampleTimeSet << endl;
+//     ++it;
+//   }
+
+  return true;
 }
 
 } // namespace OpenFDM

@@ -5,9 +5,11 @@
 #ifndef OpenFDM_TaskInfo_H
 #define OpenFDM_TaskInfo_H
 
-#include "SampleTime.h"
+#include "Types.h"
 
 namespace OpenFDM {
+
+class Model;
 
 class TaskInfo {
 public:
@@ -26,7 +28,7 @@ public:
   { mSampleTimeSet.addSampleTime(sampleTime); }
 
   void clear(void)
-  { mSampleTimeSet.clear(); }
+  { mSampleTimeSet.clear(); mModelList.clear(); }
 
   const SampleTimeSet& getSampleTimeSet(void) const
   { return mSampleTimeSet; }
@@ -41,7 +43,15 @@ public:
   void setNumBasicSteps(unsigned numBasicSteps)
   { mNumBasicSteps = numBasicSteps; }
 
+  void appendModel(SharedPtr<Model> model)
+  { mModelList.push_back(model); }
+
+  void output(void) const;
+  void update(void) const;
+
 private:
+  typedef std::vector<SharedPtr<Model> > ModelList;
+  ModelList mModelList;
   SampleTimeSet mSampleTimeSet;
   real_type mSliceSize;
   real_type mTime;

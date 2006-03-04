@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ModelGroup.h"
-#include "ODESolver.h"
 
 namespace OpenFDM {
 
@@ -17,6 +16,8 @@ namespace OpenFDM {
 /// algorithms to simulate and trim the whole system.
 
 class TaskInfo;
+
+class ODESolver;
 
 class System : public ModelGroup {
   OPENFDM_OBJECT(System, ModelGroup);
@@ -33,9 +34,17 @@ public:
   /// Set the system to its initial state
   virtual bool init(void);
 
-  /// Note that there are still these routines available
-//   virtual void output();
-//   virtual void update(real_type dt);
+  /// Note that this is called *before* update() is called.
+  virtual void output(const TaskInfo& taskInfo);
+  /// Called whenever discrete states need to be updated.
+  virtual void update(const TaskInfo& taskInfo);
+
+  virtual void setState(const StateStream& state);
+  virtual void getState(StateStream& state) const;
+  virtual void getStateDeriv(StateStream& stateDeriv);
+
+  virtual void setDiscreteState(const StateStream& state);
+  virtual void getDiscreteState(StateStream& state) const;
 
   /// Simulate the system until the time tEnd
   bool simulate(real_type tEnd);
@@ -57,6 +66,14 @@ public:
 
   virtual Environment* getEnvironment(void) const;
 
+  /// FIXME Hmm, may be different ...
+  /// May move into System ...
+  void evalFunction(real_type t, const Vector& v, Vector& out);
+  /// Compute the jacobian
+  /// The default implementation computes a numeric approximation by finite
+  /// differences
+  void evalJacobian(real_type t, const Vector& state, Matrix& jac);
+
 private:
   /// The timestepper used to get time discrete approximate solutions to the
   /// continous system
@@ -64,9 +81,17 @@ private:
 
   /// Hmm, need to think about this...
   typedef std::vector<TaskInfo> TaskList;
+
+  TaskInfo mPerTimestepTask;
+  TaskInfo mContinousTask;
+
   TaskList mDiscreteTaskList;
   unsigned mCurrentTaskNum;
   real_type mCurrentSliceTime;
+
+  typedef std::vector<SharedPtr<Model> > ModelList;
+  ModelList mDiscreteModelList;
+  ModelList mContinousModelList;
 
   SharedPtr<Environment> mEnvironment;
 

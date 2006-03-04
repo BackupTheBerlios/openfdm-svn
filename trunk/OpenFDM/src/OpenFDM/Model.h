@@ -81,14 +81,6 @@ public:
   virtual void setDiscreteState(const StateStream& state);
   virtual void getDiscreteState(StateStream& state) const;
 
-  /// FIXME Hmm, may be different ...
-  /// May move into System ...
-  void evalFunction(real_type t, const Vector& v, Vector& out);
-  /// Compute the jacobian
-  /// The default implementation computes a numeric approximation by finite
-  /// differences
-  void evalJacobian(real_type t, const Vector& state, Matrix& jac);
-
   /// Return the number of continous states
   unsigned getNumContinousStates(void) const
   { return mNumContinousStates; }

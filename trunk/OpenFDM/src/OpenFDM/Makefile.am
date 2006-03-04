@@ -192,6 +192,7 @@ libOpenFDM_la_SOURCES = \
   RevoluteJoint.cpp \
   RigidBody.cpp \
   RootFrame.cpp \
+  SampleTime.cpp \
   Saturation.cpp \
   SimpleContact.cpp \
   SimpleGear.cpp \
@@ -200,6 +201,7 @@ libOpenFDM_la_SOURCES = \
   Table.cpp \
   Tailhook.cpp \
   Tank.cpp \
+  TaskInfo.cpp \
   TimeDerivative.cpp \
   TransferFunction.cpp \
   UnaryFunctionModel.cpp \

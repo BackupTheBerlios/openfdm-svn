@@ -37,7 +37,7 @@ ImplicitEuler::integrate(real_type toTEnd)
   Vector fState(mState.size());
   fState.clear();
 
-  unsigned dim = mModel->getNumContinousStates();
+  unsigned dim = mSystem->getNumContinousStates();
 
   real_type h = 0;
   while (!reached(toTEnd)) {

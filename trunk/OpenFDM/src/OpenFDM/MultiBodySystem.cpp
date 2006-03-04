@@ -24,7 +24,6 @@ MultiBodySystem::MultiBodySystem(const std::string& name) :
   ModelGroup(name)
 {
   // FIXME
-  addSampleTime(SampleTime::PerTimestep);
   addSampleTime(SampleTime::Continous);
 }
 

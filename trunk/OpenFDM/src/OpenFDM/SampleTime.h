@@ -8,6 +8,7 @@
 #include <iosfwd>
 #include <vector>
 
+#include "Types.h"
 #include "Assert.h"
 
 namespace OpenFDM {
@@ -76,6 +77,19 @@ public:
   { return mSampleTimes.begin(); }
   const_iterator end(void) const
   { return mSampleTimes.end(); }
+
+  bool isInherited(void) const
+  {
+    if (mSampleTimes.empty())
+      return true;
+
+    SampleTimeData::const_iterator it;
+    for (it = mSampleTimes.begin(); it != mSampleTimes.end(); ++it) {
+      if (it->isInherited())
+        return true;
+    }
+    return false;
+  }
 
   bool empty(void) const
   { return mSampleTimes.empty(); }

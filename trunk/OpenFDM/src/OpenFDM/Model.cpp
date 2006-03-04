@@ -8,10 +8,6 @@
 
 namespace OpenFDM {
 
-const SampleTime SampleTime::PerTimestep(-2);
-const SampleTime SampleTime::Inherited(-1);
-const SampleTime SampleTime::Continous(0);
-
 BEGIN_OPENFDM_OBJECT_DEF(Model, Object)
   DEF_OPENFDM_ROPROP(Unsigned, NumContinousStates)
   DEF_OPENFDM_ROPROP(Unsigned, NumDiscreteStates)
@@ -148,54 +144,6 @@ Model::setDiscreteState(const StateStream& state)
 void
 Model::getDiscreteState(StateStream& state) const
 {
-}
-
-void
-Model::evalFunction(real_type t, const Vector& v, Vector& out)
-{
-  /// FIXME Hmm, may be different ...
-  StateStream stateStream(v);
-  setState(v);
-
-  TaskInfo taskInfo;
-  taskInfo.setTime(t);
-  taskInfo.addSampleTime(SampleTime::Continous);
-  output(taskInfo);
-
-  stateStream.reset();
-  getStateDeriv(stateStream);
-  out = stateStream.getState();
-}
-
-void
-Model::evalJacobian(real_type t, const Vector& v, Matrix& jac)
-{
-  unsigned nStates = getNumContinousStates();
-
-  // Create space ...
-  // FIXME
-  jac.resize(nStates, nStates);
-
-  // Get the function value at the current position.
-  Vector fv(nStates);
-  evalFunction(t, v, fv);
-
-  real_type sqrteps = 1e4*sqrt(Limits<real_type>::epsilon());
-
-  Vector tmpv = v;
-  Vector tmpfv(nStates);
-  for (unsigned i = 1; i <= nStates; ++i) {
-    tmpv(i) += sqrteps;
-
-    // Evaluate then function ...
-    evalFunction(t, tmpv, tmpfv);
-
-    // ... and compute the differencequotient to approximate the derivative.
-    jac(Range(1, nStates), i) = (1/sqrteps)*(tmpfv-fv);
-
-    // Restore the original value.
-    tmpv(i) = v(i);
-  }
 }
 
 const std::string&
