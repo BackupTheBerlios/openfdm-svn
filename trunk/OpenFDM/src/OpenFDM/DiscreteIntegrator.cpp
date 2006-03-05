@@ -39,9 +39,9 @@ DiscreteIntegrator::init(void)
   }
 
   // The initial value defaults to zero
-  if (getInputPort(1)->isConnected()) {
-    MatrixPortHandle mh = getInputPort(1)->toMatrixPortHandle();
-    mIntegralState = mh.getMatrixValue();
+  mInitialValuePort = getInputPort(1)->toMatrixPortHandle();
+  if (mInitialValuePort.isConnected()) {
+    mIntegralState = mInitialValuePort.getMatrixValue();
   } else {
     if (rows(mInitialValue) == 0 || cols(mInitialValue) == 0) {
       mInitialValue.resize(getInputPort(0)->getValue().toMatrix());
@@ -66,6 +66,12 @@ DiscreteIntegrator::init(void)
 void
 DiscreteIntegrator::output(const TaskInfo&)
 {
+  if (mInitialValuePort.isConnected()) {
+    mIntegralState = mInitialValuePort.getMatrixValue();
+    // FIXME: must have a reset slot or something like that
+    mInitialValuePort = 0;
+  }
+
   mIntegralOutput = mIntegralState;
 }
 
@@ -96,6 +102,19 @@ void
 DiscreteIntegrator::getDiscreteState(StateStream& state) const
 {
   state.writeSubState(mIntegralState);
+}
+
+bool
+DiscreteIntegrator::dependsDirectOn(Model* model)
+{
+  if (getInputPort(1)->isConnected()) {
+    // return true if we find the one connected to the initial value port
+    for (unsigned j = 0; j < model->getNumOutputPorts(); ++j)
+      if (getInputPort(1)->isConnectedTo(model->getOutputPort(j)))
+        return true;
+  }
+
+  return false;
 }
 
 const Matrix&

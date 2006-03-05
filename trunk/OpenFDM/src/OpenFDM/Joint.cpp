@@ -61,6 +61,23 @@ Joint::output(const TaskInfo& taskInfo)
   outboardBody->computeArtValues();
 }
 
+bool
+Joint::dependsDirectOn(Model* model)
+{
+  if (Interact::dependsDirectOn(model))
+    return true;
+  
+  RigidBody* outboardBody = getOutboardBody();
+  if (!outboardBody)
+    return false;
+  
+  Interact* interact = model->toInteract();
+  if (!interact)
+    return false;
+  
+  return interact != this && interact->isChildOf(outboardBody);
+}
+
 void
 Joint::interactWith(RigidBody* rigidBody)
 {

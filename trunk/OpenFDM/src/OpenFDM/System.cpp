@@ -660,6 +660,7 @@ System::evalJacobian(real_type t, const Vector& v, Matrix& jac)
   }
 }
 
+// FIXME make a member of TaskInfo
 static void
 fillTaskInfo(TaskInfo& taskInfo, const ModelList2& modelList)
 {
@@ -672,55 +673,19 @@ fillTaskInfo(TaskInfo& taskInfo, const ModelList2& modelList)
   }
 }
 
-/// Returns true if the given Model is the source for the input port inputPort
 static bool
-dependsOn(Port* inputPort, Model* model)
+appendModel(ModelList2& mModels, Model* firstModel, ModelListEntry model,
+            ModelList2& newList)
 {
-  for (unsigned k = 0; k < model->getNumOutputPorts(); ++k) {
-    if (inputPort->isConnectedTo(model->getOutputPort(k)))
-      return true;
+  if (model.model->dependsDirectOn(firstModel)) {
+    Log(Model,Error) << "Detected circular dependency starting from Model \""
+                     << firstModel->getName() << "\" to Model \""
+                     << model.model->getName() << "\"" << endl;
   }
-  return false;
-}
 
-static bool
-dependsOnMultiBody(Joint* joint1, Joint* joint2)
-{
-  return joint1->getOutboardBody() == joint2->getInboardBody();
-}
-
-static bool
-appendModel(ModelList2& mModels, const Model* firstModel, ModelListEntry model, ModelList2& newList)
-{
-  Interact* interact = model.model->toInteract();
-  Joint* joint = model.model->toJoint();
-  if (joint) {
-    for (;;) {
-      ModelList2::iterator it = mModels.begin();
-      while (it != mModels.end()) {
-        Joint* joint2 = (*it).model->toJoint();
-        if (joint2 && dependsOnMultiBody(joint, joint2))
-          break;
-
-        Interact* interact2 = (*it).model->toInteract();
-        if (interact2 && interact2->isChildOf(joint->getOutboardBody())
-            && !interact2->getMultiBodyAcceleration())
-          break;
-
-        ++it;
-      }
-      if (it == mModels.end())
-        break;
-
-      // FIXME: does not work in this algorithm
-      // Detect a circular dependency.
-//       if (*it == firstModel) {
-//         Log(Model, Warning)
-//           << "Detected circilar model dependency.\nRunning with a sample "
-//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
-//         return false;
-//       }
-
+  ModelList2::iterator it = mModels.begin();
+  while (it != mModels.end()) {
+    if (model.model->dependsDirectOn(it->model)) {
       // We need to store that one here since the iterator possibly invalidates
       // during the next append dependency call
       ModelListEntry tmpModel = *it;
@@ -729,87 +694,12 @@ appendModel(ModelList2& mModels, const Model* firstModel, ModelListEntry model, 
       // Now recurse into that model.
       if (!appendModel(mModels, firstModel, tmpModel, newList))
         return false;
-    }
-  }
 
-  // Special case: if we depend on the accelerations, like acceleration
-  // sensors, we depend on the mobile root ...
-  // Well a bit croase now, but until there is something better ...
-  if (model.model->getMultiBodyAcceleration()) {
-    ModelList2::iterator it = mModels.begin();
-    while (it != mModels.end()) {
-      MobileRootJoint* joint = (*it).model->toMobileRootJoint();
-      if (joint)
-        break;
+      // the iterator is most likely invalid ...
+      it = mModels.begin();
+    } else
       ++it;
-    }
-    if (it != mModels.end()) {
-      // FIXME: does not work in this algorithm
-      // Detect a circular dependency.
-//       if (*it == firstModel) {
-//         Log(Model, Warning)
-//           << "Detected circilar model dependency.\nRunning with a sample "
-//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
-//         return false;
-//       }
-
-      // We need to store that one here since the iterator possibly invalidates
-      // during the next append dependency call
-      ModelListEntry tmpModel = *it;
-      mModels.erase(it);
-
-      // Now recurse into that model.
-      if (!appendModel(mModels, firstModel, tmpModel, newList))
-        return false;
-    }
   }
-
-  // If the model in question does not have dependencies, stop.
-  if (model.model->getDirectFeedThrough() || joint || interact) {
-
-    // Check, all inputs for dependencies.
-    unsigned numInputs = model.model->getNumInputPorts();
-    for (unsigned i = 0; i < numInputs; ++i) {
-      // Determine the model which is the source for this port
-      Port* port = model.model->getInputPort(i);
-      
-      // Check if it is still in the list to be scheduled.
-      ModelList2::iterator it = mModels.begin();
-      while (it != mModels.end()) {
-        /// Horrible special case for now:
-        /// Output's from joints are only state dependent,
-        /// thus these 'output ports' do not have direct feedthrough:
-        /// Possible workarounds: extra sensor models or direct feedthrough
-        /// is a property of the port ...
-        Joint* joint2 = (*it).model->toJoint();
-        if (dependsOn(port, (*it).model) && !joint2)
-          break;
-        ++it;
-      }
-      if (it == mModels.end())
-        continue;
-      
-      // FIXME: does not work in this algorithm
-      // Detect a circular dependency.
-//       if (*it == firstModel) {
-//         Log(Model, Warning)
-//           << "Detected circilar model dependency.\nRunning with a sample "
-//           "delay at input of \"" << (*it)->getName() << "\"!" << endl;
-//         return false;
-//       }
-      
-      // We need to store that one here since the iterator possibly invalidates
-      // during the next append dependency call
-      ModelListEntry tmpModel = *it;
-      mModels.erase(it);
-      
-      // Now recurse into that model.
-      if (!appendModel(mModels, firstModel, tmpModel, newList))
-        return false;
-    }
-  }
-
-  Log(Model, Debug) << "Scheduling: \"" << model.model->getName() << "\"" << endl;
   newList.push_back(model);
   return true;
 }

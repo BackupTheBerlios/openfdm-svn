@@ -50,6 +50,37 @@ Interact::accept(ModelVisitor& visitor)
 }
 
 bool
+Interact::dependsDirectOn(Model* model)
+{
+  // HACK HACK HACK FIXME
+  // non joint interacts need to have their inputs, but the outputs are
+  // already present when the state is set ...
+  // We need to split out sensors which could be scheduled earlier
+  setDirectFeedThrough(true);
+  if (Model::dependsDirectOn(model)) {
+    setDirectFeedThrough(false);
+    return true;
+  }
+  setDirectFeedThrough(false);
+  
+  return false;
+}
+
+bool
+Interact::isChildOf(const RigidBody* const rigidBody) const
+{
+  if (!rigidBody)
+    return false;
+  ParentList::const_iterator it = mParents.begin();
+  while (it != mParents.end()) {
+    if ((*it) == rigidBody)
+      return true;
+    ++it;
+  }
+  return false;
+}
+
+bool
 Interact::attachTo(RigidBody* rigidBody, bool upstream)
 {
   if (!rigidBody) {

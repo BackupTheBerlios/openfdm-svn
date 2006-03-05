@@ -23,6 +23,8 @@ public:
   virtual void setDiscreteState(const StateStream& state);
   virtual void getDiscreteState(StateStream& state) const;
 
+  virtual bool dependsDirectOn(Model* model);
+
   const Matrix& getInitialValue(void) const;
   void setInitialValue(const Matrix& value);
 
@@ -47,6 +49,8 @@ private:
   Matrix mMaxSaturation;
   /// Holds a matrix handle to the integrators input
   MatrixPortHandle mDerivativePort;
+  /// Holds a matrix handle to the integrators initial value input
+  MatrixPortHandle mInitialValuePort;
 };
 
 } // namespace OpenFDM

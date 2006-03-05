@@ -38,6 +38,8 @@ public:
   /// This is the primary gate function which handles interaction
   virtual void interactWith(RigidBody* rigidBody) = 0;
 
+  virtual bool dependsDirectOn(Model* model);
+
   const RigidBody* getParentRigidBody(unsigned id = 0) const
   {
     OpenFDMAssert(id < mParents.size());
@@ -48,18 +50,7 @@ public:
     OpenFDMAssert(id < mParents.size());
     return mParents[id];
   }
-  bool isChildOf(const RigidBody* const rigidBody) const
-  {
-    if (!rigidBody)
-      return false;
-    ParentList::const_iterator it = mParents.begin();
-    while (it != mParents.end()) {
-      if ((*it) == rigidBody)
-        return true;
-      ++it;
-    }
-    return false;
-  }
+  bool isChildOf(const RigidBody* const rigidBody) const;
 
 private:
   bool attachTo(RigidBody* rigidBody, bool upstream);

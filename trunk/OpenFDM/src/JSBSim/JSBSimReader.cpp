@@ -420,15 +420,23 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   epFrame->setRelVelDot(Vector6::zeros());
   Sensor* accelSensor = new Sensor("Acceleration Sensor");
   accelSensor->addSampleTime(SampleTime(1.0/120));
-  Port* port = accelSensor->getOutputPort("nz");
+  Port* port = accelSensor->getOutputPort("nlfz");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
 //   epFrame->addInteract(accelSensor);
   mVehicle->getTopBody()->addInteract(accelSensor);
   mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
   addOutputModel(port, "Normalized load value", "accelerations/nlf");
+  port = accelSensor->getOutputPort("az");
+  registerJSBExpression("accelerations/accel-z-norm", port);
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
+  port = lookupJSBExpression("aero/alpha-deg");
+  addOutputModel(port, "Alpha", "orientation/alpha-deg");
+  port = lookupJSBExpression("aero/beta-rad");
+  addOutputModel(port, "Beta rad", "orientation/side-slip-rad");
+  port = lookupJSBExpression("aero/beta-deg");
+  addOutputModel(port, "Beta", "orientation/side-slip-deg");
 
   return true;
 }
@@ -622,6 +630,18 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           // FIXME: FCS might later define something for that gain ...
 //           prop = lookupJSBExpression("fcs/steer-pos-deg[" + numStr + "]");
           Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
+          UnaryFunctionModel* scale
+            = new UnaryFunctionModel(name + " Scale", UnaryFunctionModel::Abs);
+          scale->getInputPort(0)->connect(port);
+          addFCSModel(scale);
+
+          Product* sProd = new Product(name + " SProd");
+          sProd->setNumFactors(2);
+          sProd->getInputPort(0)->connect(port);
+          sProd->getInputPort(1)->connect(scale->getOutputPort(0));
+          port = sProd->getOutputPort(0);
+          addFCSModel(sProd);
+
           Gain* gain = new Gain(name + " Steer Gain");
           gain->setGain(maxSteer);
           gain->getInputPort(0)->connect(port);
@@ -706,6 +726,18 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           sj->setOrientation(Quaternion::unit());
           
           Port* port = lookupJSBExpression("fcs/steer-cmd-norm");
+          UnaryFunctionModel* scale
+            = new UnaryFunctionModel(name + " Scale", UnaryFunctionModel::Abs);
+          scale->getInputPort(0)->connect(port);
+          addFCSModel(scale);
+
+          Product* sProd = new Product(name + " SProd");
+          sProd->setNumFactors(2);
+          sProd->getInputPort(0)->connect(port);
+          sProd->getInputPort(1)->connect(scale->getOutputPort(0));
+          port = sProd->getOutputPort(0);
+          addFCSModel(sProd);
+
           sj->getInputPort(0)->connect(port);
   
           strutParent = steer;

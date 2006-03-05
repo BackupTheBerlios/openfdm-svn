@@ -39,6 +39,8 @@ public:
 
   virtual void output(const TaskInfo& taskInfo);
 
+  virtual bool dependsDirectOn(Model* model);
+
   RigidBody* getOutboardBody(void)
   { return getParentRigidBody(0); }
   RigidBody* getInboardBody(void)

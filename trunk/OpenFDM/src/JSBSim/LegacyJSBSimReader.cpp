@@ -313,15 +313,23 @@ LegacyJSBSimReader::convertMetrics(const std::string& data)
   epFrame->setRelVelDot(Vector6::zeros());
   Sensor* accelSensor = new Sensor("Acceleration Sensor");
   accelSensor->addSampleTime(SampleTime(1.0/120));
-  Port* port = accelSensor->getOutputPort("nz");
+  Port* port = accelSensor->getOutputPort("nlfz");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
 //   epFrame->addInteract(accelSensor);
   mVehicle->getTopBody()->addInteract(accelSensor);
   mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
   addOutputModel(port, "Normalized load value", "accelerations/nlf");
+  port = accelSensor->getOutputPort("az");
+  registerJSBExpression("accelerations/accel-z-norm", port);
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
+  port = lookupJSBExpression("aero/alpha-deg");
+  addOutputModel(port, "Alpha", "orientation/alpha-deg");
+  port = lookupJSBExpression("aero/beta-rad");
+  addOutputModel(port, "Beta rad", "orientation/side-slip-rad");
+  port = lookupJSBExpression("aero/beta-deg");
+  addOutputModel(port, "Beta", "orientation/side-slip-deg");
 
   return true;
 }

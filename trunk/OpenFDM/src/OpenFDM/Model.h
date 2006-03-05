@@ -36,6 +36,17 @@ class ModelVisitor;
 class Model : public Object {
   OPENFDM_OBJECT(Model, Object);
 public:
+  enum DisableMode {
+    /// If disabled, the models output/state is just held. On reenable, the
+    /// the model just continues to work
+    Hold,
+    /// If disabled, the models output/state is just held. On reenable, the
+    /// the model is initialized
+    HoldReset,
+    /// If disabled, the models output/state is initialized
+    ResetHold
+  };
+
   Model(const std::string& name);
   virtual ~Model(void);
 
@@ -81,6 +92,8 @@ public:
   virtual void setDiscreteState(const StateStream& state);
   virtual void getDiscreteState(StateStream& state) const;
 
+  virtual bool dependsDirectOn(Model* model);
+
   /// Return the number of continous states
   unsigned getNumContinousStates(void) const
   { return mNumContinousStates; }
@@ -90,11 +103,15 @@ public:
   /// Return if the outputs containe a direct dependency on an input
   bool getDirectFeedThrough(void) const
   { return mDirectFeedThrough; }
-
-  /// Returns true if it needs to know the accelerations ...
-  /// FIXME: do that in a different way ...
-  bool getMultiBodyAcceleration(void) const
-  { return mMultiBodyAcceleration; }
+  /// Return if the outputs containe a direct dependency on an input
+  bool getEnabled(void) const
+  { return mEnabled; }
+  void setEnabled(bool enabled)
+  { if (mEnabled != enabled) setEnabledUnconditional(enabled); }
+  DisableMode getDisableMode(void) const
+  { return mDisableMode; }
+  void setDisableMode(DisableMode disableMode)
+  { mDisableMode = disableMode; }
 
   bool addSampleTime(const SampleTime& sampleTime)
   { return mSampleTimeSet.addSampleTime(sampleTime); }
@@ -139,8 +156,6 @@ protected:
   void setNumDiscreteStates(unsigned numDiscreteStates);
   void setDirectFeedThrough(bool directFeedThrough)
   { mDirectFeedThrough = directFeedThrough; }
-  void setMultiBodyAcceleration(bool multiBodyAcceleration)
-  { mMultiBodyAcceleration = multiBodyAcceleration; }
 
   /// Sets the number of input properties.
   void setNumInputPorts(unsigned num);
@@ -187,6 +202,8 @@ private:
   // That is the one which is informed if the number of states changes.
   void setParent(Model* model);
 
+  void setEnabledUnconditional(bool enabled);
+
   /// FIXME: use visitor for that
   void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
   void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);
@@ -195,9 +212,11 @@ private:
   unsigned mNumContinousStates;
   unsigned mNumDiscreteStates;
   bool mDirectFeedThrough;
+  /// True if the Model is enabled
+  bool mEnabled;
+  DisableMode mDisableMode;
   // FIXME, at the moment used to state that this model must be scheduled
   // past all joint interacts
-  bool mMultiBodyAcceleration;
   SampleTimeSet mSampleTimeSet;
   std::vector<SharedPtr<Port> > mInputPorts;
   std::vector<SharedPtr<Port> > mOutputPorts;

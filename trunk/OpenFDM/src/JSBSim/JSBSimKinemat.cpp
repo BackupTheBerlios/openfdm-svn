@@ -63,8 +63,7 @@ JSBSimKinemat::JSBSimKinemat(const std::string& name) :
   Matrix tmp(1, 1);
   tmp(1, 1) = 1;
   integrator->setInitialValue(tmp);
-  /// FIXME: should happen in this way, fix when ports are reworked
-//   integrator->getInputPort(1)->connect(mInputSaturation->getOutputPort(0));
+  integrator->getInputPort(1)->connect(mInputSaturation->getOutputPort(0));
   
   Gain* feedbackGain = new Gain("Feedback Gain");
   getModelGroup()->addModel(feedbackGain);

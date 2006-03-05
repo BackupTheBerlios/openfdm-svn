@@ -574,13 +574,13 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName)
     port = mAeroForce->getOutputPort("beta");
   } else if (propName == "fdm/jsbsim/aero/mag-beta-rad") {
     port = mAeroForce->getOutputPort("beta");
-    port = addMultiBodyAbsModel("Angle of attack mag", port);
+    port = addMultiBodyAbsModel("Angle of sideslip mag", port);
   } else if (propName == "fdm/jsbsim/aero/beta-deg") {
     port = mAeroForce->getOutputPort("beta");
-    port = addMultiBodyToUnit("Angle of attack deg", uDegree, port);
+    port = addMultiBodyToUnit("Angle of sideslip deg", uDegree, port);
   } else if (propName == "fdm/jsbsim/aero/mag-beta-deg") {
     port = lookupJSBExpression("aero/beta-deg");
-    port = addMultiBodyAbsModel("Angle of attack mag deg", port);
+    port = addMultiBodyAbsModel("Angle of sideslip mag deg", port);
 
   } else if (propName == "fdm/jsbsim/aero/alphadot-rad_sec") {
     port = mAeroForce->getOutputPort("alphaDot");
@@ -592,7 +592,7 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName)
     port = mAeroForce->getOutputPort("betaDot");
   } else if (propName == "fdm/jsbsim/aero/betadot-deg_sec") {
     port = mAeroForce->getOutputPort("betaDot");
-    port = addMultiBodyToUnit("Angle of attack deriv deg_sec", uDegree, port);
+    port = addMultiBodyToUnit("Angle of sideslip deriv deg_sec", uDegree, port);
 
   } else if (propName == "fdm/jsbsim/metrics/bw-ft") {
     /// FIXME, just schedule a constant block for that??

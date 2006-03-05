@@ -103,6 +103,7 @@ Output::Output(const std::string& name) :
   Model(name),
   mOutputGain(1)
 {
+  setDirectFeedThrough(true);
   setNumInputPorts(1);
   setInputPortName(0, "input");
 }

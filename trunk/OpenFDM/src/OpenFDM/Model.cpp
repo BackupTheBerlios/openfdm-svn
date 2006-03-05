@@ -19,7 +19,8 @@ Model::Model(const std::string& name) :
   mNumContinousStates(0l),
   mNumDiscreteStates(0l),
   mDirectFeedThrough(false),
-  mMultiBodyAcceleration(false)
+  mEnabled(true),
+  mDisableMode(Hold)
 {
 }
 
@@ -144,6 +145,27 @@ Model::setDiscreteState(const StateStream& state)
 void
 Model::getDiscreteState(StateStream& state) const
 {
+}
+
+bool
+Model::dependsDirectOn(Model* model)
+{
+  if (!mDirectFeedThrough)
+    return false;
+
+  // FIXME HACK, outputs of interacts only deoend on its state ...
+  // FIXME is this always true??
+  Interact* interact = model->toInteract();
+  if (interact)
+    return false;
+
+  // return true if any output of model is connected to any input of this
+  for (unsigned i = 0; i < getNumInputPorts(); ++i)
+    for (unsigned j = 0; j < model->getNumOutputPorts(); ++j)
+      if (getInputPort(i)->isConnectedTo(model->getOutputPort(j)))
+        return true;
+
+  return false;
 }
 
 const std::string&
@@ -295,6 +317,34 @@ Model::setNumDiscreteStates(unsigned numDiscreteStates)
     mParentModel->adjustNumDiscreteStates(numDiscreteStates,
                                           mNumDiscreteStates);
   mNumDiscreteStates = numDiscreteStates;
+}
+
+void
+Model::setEnabledUnconditional(bool enabled)
+{
+  if (enabled) {
+    switch (mDisableMode) {
+    case ResetHold:
+      /// If disabled, the models output/state is initialized
+      init();
+      break;
+    default:
+      break;
+    }
+  } else {
+    switch (mDisableMode) {
+    case HoldReset:
+      /// If disabled, the models output/state is just held. On reenable, the
+      /// the model is initialized
+      /// If disabled, the models output/state is initialized
+      init();
+      break;
+    default:
+      break;
+    }
+  }
+
+  mEnabled = enabled;
 }
 
 void
