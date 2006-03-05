@@ -80,15 +80,55 @@ public:
     return dist < 5;
   }
 
-//     // the FDM calls release_wire().
-//     bool caught_wire(double t, const double pt[4][3]);
-  
-//     // Return the location and speed of the wire endpoints.
-//     bool get_wire_ends(double t, double end[2][3], double vel[2][3]);
+  virtual bool
+  caughtWire(const HookPosition& old, const HookPosition& current) const
+  {
+    if (!mIfce)
+      return false;
 
-//     // Tell the cache code that it does no longer need to care for
-//     // the wire end position.
-//     void release_wire(void);
+    Vector3 oldTip = old.basePosition + old.hookVector;
+    Vector3 currentTip = current.basePosition + current.hookVector;
+    double pt[4][3] = {
+      { old.basePosition(1), old.basePosition(2), old.basePosition(3) },
+      { oldTip(1), oldTip(2), oldTip(3) },
+      { currentTip(1), currentTip(2), currentTip(3) },
+      { current.basePosition(1), current.basePosition(2), current.basePosition(3) },
+    };
+    return mIfce->caught_wire_m(old.t, pt);
+  }
+
+  virtual bool
+  getWireEnds(real_type t, WireValues& wireVal) const
+  {
+    if (!mIfce)
+      return false;
+
+    double end[2][3];
+    double vel[2][3];
+    if (!mIfce->get_wire_ends_m(t, end, vel))
+      return false;
+
+    Vector3 p0 = Vector3(end[0][0], end[0][1], end[0][2]);
+    Vector3 p1 = Vector3(end[1][0], end[1][1], end[1][2]);
+
+    wireVal.position = 0.5*(p0 + p1);
+    wireVal.orientation = Quaternion::fromRotateTo(p1 - p0, Vector3::unit(2));
+
+    Vector3 v0 = Vector3(vel[0][0], vel[0][1], vel[0][2]);
+    Vector3 v1 = Vector3(vel[1][0], vel[1][1], vel[1][2]);
+    wireVal.velocity = Vector6(Vector3::zeros(), 0.5*(v0 + v1));
+    wireVal.width = norm(p1 - p0);
+
+    return true;
+  }
+  
+  virtual void
+  releaseWire(void) const
+  {
+    if (!mIfce)
+      return;
+    mIfce->release_wire();
+  }
 
   void setInterface(FGInterface *ifce)
   { mIfce = ifce; }
@@ -176,6 +216,37 @@ public:
 //     density = fgGetNode("/environment/density-slugft3",true);
 //     turbulence_gain = fgGetNode("/environment/turbulence/magnitude-norm",true);
 //     turbulence_rate = fgGetNode("/environment/turbulence/rate-hz",true);
+
+
+
+class InputConnectModelVisitor :
+    public ModelVisitor {
+public:
+  InputConnectModelVisitor(const SGSharedPtr<SGPropertyNode>& acRootNode) :
+    mAircraftRootNode(acRootNode)
+  { }
+  virtual void apply(Model& model)
+  {
+    // Check for input models
+    // If so, we need to register a change notifier in flightgears properties
+    Input* inputModel = dynamic_cast<Input*>(&model);
+    if (!inputModel)
+      return;
+
+    SG_LOG(SG_FLIGHT, SG_INFO,
+           "Registering input for \"" << inputModel->getName() << "\"");
+    std::string pName = inputModel->getInputName();
+    SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
+    // That adds a change listener to the property node which in turn
+    // writes changes to the property back to the input model.
+    inputModel->setUserData(new InputChangeUserData(inputModel, sgProp));
+  }
+  virtual void apply(ModelGroup& modelGroup)
+  { traverse(modelGroup); }
+private:
+  SGSharedPtr<SGPropertyNode> mAircraftRootNode;
+};
+
 
 
 void printVehicle(Vehicle* vehicle)
@@ -297,6 +368,10 @@ void FGOpenFDM::init()
     mobileRootJoint->setRelVel(Vector6::zeros());
   }
 
+  // connect the input models with the input properties
+  InputConnectModelVisitor icmv(mAircraftRootNode);
+  mData->vehicle->getSystem()->accept(icmv);
+
   // Try to find a stable set of states
   if (!vehicle->trim())
     SG_LOG(SG_FLIGHT, SG_WARN, "Trimming failed!");
@@ -317,12 +392,13 @@ void FGOpenFDM::bind()
 
   FGInterface::bind();
 
-  if (mData->vehicle) {
-    SGPropertyNode* sgProp = mAircraftRootNode->getChild("fdm", 0, true);
-    sgProp = sgProp->getChild("vehicle", 0, true);
-    sgProp = sgProp->getChild("system", 0, true);
-    tieModelGroup(sgProp, mData->vehicle->getSystem());
-  }
+  if (!mData->vehicle)
+    return;
+
+  SGPropertyNode* sgProp = mAircraftRootNode->getChild("fdm", 0, true);
+  sgProp = sgProp->getChild("vehicle", 0, true);
+  sgProp = sgProp->getChild("system", 0, true);
+  tieModelGroup(sgProp, mData->vehicle->getSystem());
 }
 
 void FGOpenFDM::unbind()
@@ -427,16 +503,21 @@ FGOpenFDM::update(double dt)
 
   Vector3 nAccel = 1/convertTo(uFeetPSec2, 9.81) * bodyAccel;
   _set_Accels_CG_Body_N(nAccel(1), nAccel(2), nAccel(3));
-  _set_Nlf(-nAccel(3));
 
-  
+
+  SGPropertyNode* sgProp;
+  // is already in the property tree, but fool the HUD now
+  sgProp = mAircraftRootNode->getNode("accelerations/nlf", false);
+  if (sgProp)
+    _set_Nlf( sgProp->getDoubleValue() );
+
   Vector3 angVel = topBody->getFrame()->getRelVel().getAngular();
   _set_Omega_Body(angVel(1), angVel(2), angVel(3));
-//   _set_Euler_Rates(roll, pitch, hdg);
 
-//   _set_Alpha( Auxiliary->Getalpha() );
-//   _set_Beta( Auxiliary->Getbeta() );
-//   _set_Gamma_vert_rad( Auxiliary->GetGamma() );
+  // is already in the property tree, but fool the HUD now
+  sgProp = mAircraftRootNode->getNode("orientation/alpha-deg", false);
+  if (sgProp)
+    _set_Alpha( sgProp->getDoubleValue() );
 }
 
 
@@ -449,20 +530,9 @@ FGOpenFDM::tieObject(SGPropertyNode* base, Object* object)
   if (outputModel) {
     std::string pName = outputModel->getOutputName();
     SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
+    if (sgProp->isTied())
+      sgProp->untie();
     sgProp->tie(FGOutputReflector(outputModel));
-  }
-
-  // Check for input models
-  // If so, we need to register a change notifier in flightgears property tree
-  Input* inputModel = dynamic_cast<Input*>(object);
-  if (inputModel) {
-    SG_LOG(SG_FLIGHT, SG_INFO,
-           "Registering input for \"" << inputModel->getName() << "\"");
-    std::string pName = inputModel->getInputName();
-    SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
-    // That adds a change listener to the property node which in turn
-    // writes changes to the property back to the input model.
-    inputModel->setUserData(new InputChangeUserData(inputModel, sgProp));
   }
 
   // Reflect all output ports
