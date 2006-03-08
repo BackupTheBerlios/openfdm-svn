@@ -6,9 +6,8 @@
 
 namespace OpenFDM {
 
-Atmosphere::Atmosphere(real_type gasConstant, real_type specificHeatRatio) :
-  mGasConstant(gasConstant),
-  mSpecificHeatRatio(specificHeatRatio)
+Atmosphere::Atmosphere(real_type gasConstant) :
+  mGasConstant(gasConstant)
 {
 }
 

@@ -24,10 +24,9 @@ const real_type AtmosphereSTD1976::mEarthRadius = 6369.0;
 
 #define MOL_WT          28.9644  // kg/kgmol (air)
 #define R_HAT           8314.32  // J/kgmol.K (gas const.)
-#define GAMMA           1.4
 
 AtmosphereSTD1976::AtmosphereSTD1976(void) :
-  Atmosphere(R_HAT/MOL_WT, GAMMA)
+  Atmosphere(R_HAT/MOL_WT)
 {
   mTable[0.0] = TableData(288.15, 1.0, -6.5);
   mTable[11.0] = TableData(216.65, 2.233611e-1, 0.0);

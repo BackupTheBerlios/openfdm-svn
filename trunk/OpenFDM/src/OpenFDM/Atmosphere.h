@@ -34,9 +34,16 @@ public:
 
   /// Returns the specific heat ratio
   real_type getSpecificHeatRatio(real_type temperature) const
-  { return mSpecificHeatRatio; }
+  { return getGamma(temperature); }
   real_type getGamma(real_type temperature) const
-  { return mSpecificHeatRatio; }
+  {
+    // Taken from SimTurbine, converted to kelvin
+    real_type a = -4.48729540632e-12;
+    real_type b =  4.459750164e-08;
+    real_type c = -1.407342762e-04;
+    real_type d =  1.436914;
+    return ((a*temperature + b)*temperature + c)*temperature + d;
+  }
 
   /// Returns the specific heat constant
   real_type getCp(real_type temperature) const
@@ -49,11 +56,10 @@ public:
   virtual AtmosphereData getData(real_type alt) const = 0;
 
 protected:
-  Atmosphere(real_type gasConstant, real_type specificHeatRatio);
+  Atmosphere(real_type gasConstant);
 
 private:
   real_type mGasConstant;
-  real_type mSpecificHeatRatio;
 };
 
 } // namespace OpenFDM
