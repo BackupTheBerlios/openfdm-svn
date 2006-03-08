@@ -33,4 +33,11 @@ ConstModel::setValue(const Matrix& value)
   mValue = value;
 }
 
+void
+ConstModel::setScalarValue(real_type value)
+{
+  mValue.resize(1, 1);
+  mValue(1, 1) = value;
+}
+
 } // namespace OpenFDM

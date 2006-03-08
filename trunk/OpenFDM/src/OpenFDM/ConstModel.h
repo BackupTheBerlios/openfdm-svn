@@ -19,6 +19,9 @@ public:
   const Matrix& getValue(void) const;
   void setValue(const Matrix& value);
 
+  // For conveninence
+  void setScalarValue(real_type value);
+
 private:
   Matrix mValue;
 };
