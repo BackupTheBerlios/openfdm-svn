@@ -30,11 +30,13 @@ Integrator::~Integrator(void)
 bool
 Integrator::init(void)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
+  mDerivativeHandle = getInputPort(0)->toMatrixPortHandle();
+  if (!mDerivativeHandle.isConnected())
+    return false;
 
   // The initial value defaults to zero
   if (rows(mInitialValue) == 0 || cols(mInitialValue) == 0) {
-    mInitialValue.resize(getInputPort(0)->getValue().toMatrix());
+    mInitialValue.resize(mDerivativeHandle.getMatrixValue());
     mInitialValue.clear();
   }
 
@@ -66,13 +68,10 @@ Integrator::getState(StateStream& state) const
 void
 Integrator::getStateDeriv(StateStream& stateDeriv)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-
-  // Just compute the integral.
-  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
-  const Matrix& input = mh.getMatrixValue();
+  // Just return the derivative
+  OpenFDMAssert(mDerivativeHandle.isConnected());
+  const Matrix& input = mDerivativeHandle.getMatrixValue();
   OpenFDMAssert(size(input) == size(mIntegralState));
-
   stateDeriv.writeSubState(input);
 }
 

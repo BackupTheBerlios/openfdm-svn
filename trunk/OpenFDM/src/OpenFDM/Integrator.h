@@ -29,6 +29,8 @@ public:
   const Matrix& getIntegralOutput(void) const;
 
 private:
+  /// The handle to the input port
+  MatrixPortHandle mDerivativeHandle;
   /// Holds the current output.
   Matrix mIntegralOutput;
   /// Holds the current integral state.
