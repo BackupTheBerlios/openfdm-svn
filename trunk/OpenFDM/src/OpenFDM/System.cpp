@@ -200,7 +200,8 @@ System::init(void)
   mit = modelCollectVisitor.modelList.begin();
   while (mit != modelCollectVisitor.modelList.end()) {
     if (!mit->model->init()) {
-      Log(Schedule, Error) << "Error initializing submodels.\n"
+      Log(Schedule, Error) << "Error initializing Model \""
+                           << mit->model->getName() << "\".\n"
                            << "Aborting!" << endl;
       return false;
     }
