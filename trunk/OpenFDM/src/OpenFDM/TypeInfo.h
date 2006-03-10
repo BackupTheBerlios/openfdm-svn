@@ -58,7 +58,7 @@ public:
   { return mName; }
 
   bool isSerialized(void) const
-  { mIsSerialized; }
+  { return mIsSerialized; }
 
   // const TypeInfo& getTypeInfo(void) const;
 
