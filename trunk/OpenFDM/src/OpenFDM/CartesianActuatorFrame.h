@@ -26,9 +26,7 @@ public:
     Frame(name),
 //     mJointMatrix(Matrix6N::zeros()), /// ??? ... see LinAlg checkout ...
     mOutboardInertia(SpatialInertia::zeros()),
-    mOutboardForce(Vector6::zeros()),
-    mPAlpha(Vector6::zeros()),
-    mJointForce(VectorN::zeros()),
+    mJointAccel(VectorN::zeros()),
     mArticulationDirty(true),
     mJointVelDotDirty(true),
     mSpVelDotDirty(true),
@@ -64,8 +62,8 @@ public:
                            << "\": Fix your model!" << endl;
         mJointVelDot.clear();
       } else {
-        Vector6 tmp = mOutboardInertia*getParentSpAccel() + mPAlpha;
-        mJointVelDot = hIh.solve(mJointForce - trans(mJointMatrix)*tmp);
+        Vector6 tmp = mOutboardInertia*getParentSpAccel();
+        mJointVelDot = mJointAccel - hIh.solve(trans(mJointMatrix)*tmp);
       }
       mJointVelDotDirty = false;
     }
@@ -80,7 +78,7 @@ public:
     // Store the outboard values since we will need them later in velocity
     // derivative computations
     mOutboardInertia = outI;
-    mOutboardForce = outF;
+    mJointAccel = jointAccel;
     // Make sure we have the correct internal state
     mJointVelDotDirty = true;
     mArticulationDirty = false;
@@ -89,11 +87,7 @@ public:
     Matrix6N Ih = outI*mJointMatrix;
     hIh = trans(mJointMatrix)*Ih;
 
-    mPAlpha = mOutboardForce + mOutboardInertia*getHdot();
-
-    mJointForce = trans(mJointMatrix)*(Ih*jointAccel + mPAlpha);
-
-    artF = mPAlpha;
+    artF = outF + mOutboardInertia*getHdot();
     artI = outI;
 
     if (hIh.singular()) {
@@ -104,7 +98,7 @@ public:
     }
     
     // Project away the directions handled with this current joint
-    artF -= Ih*hIh.solve(trans(mJointMatrix)*mPAlpha - mJointForce);
+    artF += Ih*mJointAccel;
     artI -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
 
     return true;
@@ -142,12 +136,8 @@ private:
 
   /// The articulated intertia of the outboard frame, 
   SpatialInertia mOutboardInertia;
-  /// The articulated force of the outboard frame, 
-  Vector6 mOutboardForce;
   /// The joint internal force in joint generalized coordinates
-  VectorN mJointForce;
-  /// Some intermediate value we will need later
-  Vector6 mPAlpha;
+  VectorN mJointAccel;
   /// The decomposition of the inertia matrix projected to joint coordinates
   MatrixFactorsNN hIh;
   /// This is true if the state has changed but the articulated intertia and
