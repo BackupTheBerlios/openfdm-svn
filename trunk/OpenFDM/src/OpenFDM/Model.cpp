@@ -211,7 +211,7 @@ Model::getOutputPort(const std::string& name)
     ++it;
   }
 
-  Log(Model, Error) << "Output port name " << name << "not found in \""
+  Log(Model, Error) << "Output port name \"" << name << "\" not found in \""
                     << getName() << "\"" << endl;
   return 0;
 }
