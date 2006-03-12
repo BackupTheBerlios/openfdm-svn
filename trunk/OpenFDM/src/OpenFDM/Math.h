@@ -106,7 +106,7 @@ smoothDeadBand(const T& val, const T& saturation)
 
 template<typename S, typename T>
 inline S
-interpolate(const T& x, const T& x0, const S& y0, T x1, const S& y1)
+interpolate(const T& x, const T& x0, const S& y0, const T& x1, const S& y1)
 {
   // If called in the wrong order, simply call with the correct order ...
   if (x1 < x0)
