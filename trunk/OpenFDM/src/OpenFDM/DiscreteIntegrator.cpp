@@ -60,7 +60,7 @@ DiscreteIntegrator::init(void)
 
   setNumDiscreteStates(rows(mIntegralState)*cols(mIntegralState));
   
-  return true;
+  return Model::init();
 }
 
 void

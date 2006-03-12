@@ -68,7 +68,7 @@ Product::init(void)
                     cols(mMatrixFactorPorts.back().getMatrixValue()));
   }
 
-  return true;
+  return Model::init();
 }
 
 void

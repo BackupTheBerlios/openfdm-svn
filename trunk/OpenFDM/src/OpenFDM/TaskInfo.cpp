@@ -14,8 +14,7 @@ TaskInfo::output(void) const
 {
   ModelList::const_iterator it = mModelList.begin();
   for (; it != mModelList.end(); ++it)
-    if ((*it)->getEnabled())
-      (*it)->output(*this);
+    (*it)->outputIfEnabled(*this);
 }
 
 void
@@ -23,8 +22,7 @@ TaskInfo::update(void) const
 {
   ModelList::const_iterator it = mModelList.begin();
   for (; it != mModelList.end(); ++it)
-    if ((*it)->getEnabled())
-      (*it)->update(*this);
+    (*it)->updateIfEnabled(*this);
 }
 
 } // namespace OpenFDM

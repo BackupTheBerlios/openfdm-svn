@@ -145,9 +145,10 @@ bool
 UnaryFunctionModel::init(void)
 {
   OpenFDMAssert(mImpl);
-  OpenFDMAssert(getInputPort(0)->isConnected());
   mImpl->setRealPortHandle(getInputPort(0)->toRealPortHandle());
-  return getInputPort(0)->isConnected();
+  if (!getInputPort(0)->isConnected())
+    return false;
+  return Model::init();
 }
 
 void
@@ -255,7 +256,7 @@ UnitConversionModel::init(void)
     return false;
   }
 
-  return true;
+  return Model::init();
 }
 
 void

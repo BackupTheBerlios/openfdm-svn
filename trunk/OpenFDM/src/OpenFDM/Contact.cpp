@@ -19,10 +19,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Contact, ExternalForce)
 Contact::Contact(const std::string& name)
   : ExternalForce(name)
 {
-  mEnabled = true;
-  unsigned inputPortBase = getNumInputPorts();
-  setNumInputPorts(inputPortBase + 1);
-  setInputPortName(inputPortBase + 0, "enabled");
+  setDisableMode(Model::ResetHold);
 
   // FIXME??
   addSampleTime(SampleTime::PerTimestep);
@@ -36,9 +33,11 @@ Contact::~Contact(void)
 bool
 Contact::init(void)
 {
+  setForce(Vector6::zeros());
   mEnvironment = getEnvironment();
   if (!mEnvironment)
     return false;
+
   return ExternalForce::init();
 }
 
@@ -50,17 +49,6 @@ Contact::output(const TaskInfo& taskInfo)
     Log(Model, Debug) << "Contact::output(): \"" << getName()
                       << "\" computing ground plane below" << endl;
     getGround(taskInfo.getTime());
-
-    // FIXME
-    if (getInputPort("enabled")->isConnected()) {
-      RealPortHandle rh = getInputPort("enabled")->toRealPortHandle();
-      mEnabled = 0.5 < rh.getRealValue();
-    }
-  }
-
-  if (!mEnabled) {
-    setForce(Vector6::zeros());
-    return;
   }
 
   // Transform the plane equation to the local frame.

@@ -462,7 +462,7 @@ LegacyJSBSimReader::convertUndercarriage(const std::string& data)
 
         if (retract == "RETRACT") {
           Port* port = lookupJSBExpression("gear/gear-pos-norm");
-          sg->getInputPort("enabled")->connect(port);
+          sg->getEnablePort()->connect(port);
           // Well, connect that directly to the input
           addOutputModel(port, "Gear " + numStr + " Position",
                          "gear/gear[" + numStr + "]/position-norm");

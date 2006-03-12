@@ -44,7 +44,7 @@ Integrator::init(void)
 
   mIntegralState = mInitialValue;
   mIntegralOutput = mIntegralState;
-  return true;
+  return Model::init();
 }
 
 void

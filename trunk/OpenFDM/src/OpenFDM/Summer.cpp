@@ -63,7 +63,8 @@ Summer::init(void)
       }
     }
   }
-  return true;
+
+  return Model::init();
 }
 
 void

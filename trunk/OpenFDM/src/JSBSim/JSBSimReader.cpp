@@ -619,7 +619,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         std::string retract = stringData((*it)->getElement("retractable"));
         if (retract == "RETRACT" || retract == "1") {
           Port* port = lookupJSBExpression("gear/gear-pos-norm");
-          sg->getInputPort("enabled")->connect(port);
+          sg->getEnablePort()->connect(port);
           // Well, connect that directly to the input
           addOutputModel(port, "Gear " + numStr + " Position",
                          "gear/gear[" + numStr + "]/position-norm");

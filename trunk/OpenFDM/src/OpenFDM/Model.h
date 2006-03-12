@@ -85,6 +85,19 @@ public:
   /// Called whenever discrete states need to be updated.
   virtual void update(const TaskInfo& taskInfo);
 
+  /// Convinience functions may make the virtuals protected ...
+  void outputIfEnabled(const TaskInfo& taskInfo)
+  {
+    if (mEnablePortInterface.isConnected()) {
+      /// FIXME bool!!!!
+      setEnabled(0.5 < fabs(mEnablePortInterface.getRealValue()));
+    }
+    if (mEnabled)
+      output(taskInfo);
+  }
+  void updateIfEnabled(const TaskInfo& taskInfo)
+  { if (mEnabled) update(taskInfo); }
+
   virtual void setState(const StateStream& state);
   virtual void getState(StateStream& state) const;
   virtual void getStateDeriv(StateStream& stateDeriv);
@@ -92,6 +105,8 @@ public:
   virtual void setDiscreteState(const StateStream& state);
   virtual void getDiscreteState(StateStream& state) const;
 
+  /// Must return true if the model given in the argument must be scheduled
+  /// before this one because of input data dependencies
   virtual bool dependsDirectOn(Model* model);
 
   /// Return the number of continous states
@@ -135,6 +150,8 @@ public:
     OpenFDMAssert(i < mInputPorts.size());
     return mInputPorts[i];
   }
+  Port* getEnablePort(void)
+  { return mEnablePort; }
 
   unsigned getNumOutputPorts(void) const
   { return mOutputPorts.size(); }
@@ -214,6 +231,8 @@ private:
   bool mDirectFeedThrough;
   /// True if the Model is enabled
   bool mEnabled;
+  SharedPtr<Port> mEnablePort;
+  RealPortHandle mEnablePortInterface;
   DisableMode mDisableMode;
   // FIXME, at the moment used to state that this model must be scheduled
   // past all joint interacts

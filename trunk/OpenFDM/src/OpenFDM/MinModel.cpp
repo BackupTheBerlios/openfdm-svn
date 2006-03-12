@@ -48,7 +48,7 @@ MinModel::init(void)
       return false;
   }
   mMin.resize(a0);
-  return true;
+  return Model::init();
 }
 
 void

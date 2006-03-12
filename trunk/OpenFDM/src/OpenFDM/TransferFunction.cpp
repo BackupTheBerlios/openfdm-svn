@@ -122,7 +122,7 @@ DiscreteTransferFunction::init(void)
   mState.clear();
   setNumDiscreteStates(rows(mDenNorm));
 
-  return true;
+  return Model::init();
 }
 
 void

@@ -72,7 +72,10 @@ BinaryFunctionModel::init(void)
   OpenFDMAssert(getInputPort(1)->isConnected());
   mImpl->setRealPortHandle(0, getInputPort(0)->toRealPortHandle());
   mImpl->setRealPortHandle(1, getInputPort(1)->toRealPortHandle());
-  return getInputPort(0)->isConnected() && getInputPort(1)->isConnected();
+  if (!getInputPort(0)->isConnected() || !getInputPort(1)->isConnected())
+    return false;
+
+  return Model::init();
 }
 
 void

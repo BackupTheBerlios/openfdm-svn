@@ -25,8 +25,7 @@ Bias::Bias(const std::string& name) : Model(name)
   setNumInputPorts(1);
   setInputPortName(0, "input");
   
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &Bias::getOutput);
+  addOutputPort("output", this, &Bias::getOutput);
 }
 
 Bias::~Bias(void)
@@ -55,7 +54,7 @@ Bias::init(void)
   }
   mOutput.resize(mInputPort.getMatrixValue());
 
-  return true;
+  return Model::init();
 }
 
 void

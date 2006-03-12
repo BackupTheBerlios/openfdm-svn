@@ -38,7 +38,7 @@ Input::toInput(void)
 bool
 Input::init(void)
 {
-  return true;
+  return Model::init();
 }
 
 void
@@ -115,7 +115,7 @@ Output::~Output(void)
 bool
 Output::init(void)
 {
-  return true;
+  return Model::init();
 }
 
 const Output*

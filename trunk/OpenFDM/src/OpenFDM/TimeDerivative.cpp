@@ -34,7 +34,8 @@ TimeDerivative::init(void)
 
   // Set a mark for the first step.
   mDt = 0.0;
-  return true;
+
+  return Model::init();
 }
 
 void

@@ -46,7 +46,7 @@ Gain::init(void)
   }
   mOutput.resize(mInputPort.getMatrixValue());
 
-  return true;
+  return Model::init();
 }
 
 void Gain::output(const TaskInfo&)

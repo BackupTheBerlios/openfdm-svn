@@ -20,6 +20,7 @@ Model::Model(const std::string& name) :
   mNumDiscreteStates(0l),
   mDirectFeedThrough(false),
   mEnabled(true),
+  mEnablePort(new Port),
   mDisableMode(Hold)
 {
 }
@@ -109,6 +110,10 @@ Model::toMobileRootJoint(void)
 bool
 Model::init(void)
 {
+  if (mEnablePort)
+    mEnablePortInterface = mEnablePort->toRealPortHandle();
+  else
+    mEnablePortInterface = 0;
   return true;
 }
 
@@ -322,7 +327,7 @@ Model::setNumDiscreteStates(unsigned numDiscreteStates)
 void
 Model::setEnabledUnconditional(bool enabled)
 {
-  if (enabled) {
+  if (mEnabled) {
     switch (mDisableMode) {
     case ResetHold:
       /// If disabled, the models output/state is initialized

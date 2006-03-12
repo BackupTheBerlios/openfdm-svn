@@ -48,7 +48,8 @@ Saturation::init(void)
     mOutput.resize(0, 0);
   
   mOutput.resize(inputMatrix);
-  return true;
+
+  return Model::init();
 }
 
 void

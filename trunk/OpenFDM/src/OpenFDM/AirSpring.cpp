@@ -62,7 +62,7 @@ AirSpring::init(void)
     return false;
   }
 
-  return true;
+  return Model::init();
 }
 
 void

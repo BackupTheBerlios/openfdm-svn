@@ -56,7 +56,7 @@ DiscBrake::init(void)
   // start with zero friction force
   mZ = 0;
 
-  return true;
+  return Model::init();
 }
 
 void

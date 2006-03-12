@@ -53,7 +53,7 @@ LinearSpringDamper::init(void)
   }
   mVelocityPort = getInputPort(1)->toRealPortHandle();
 
-  return true;
+  return Model::init();
 }
 
 void

@@ -36,7 +36,6 @@ public:
 private:
   void getGround(real_type t);
 
-  bool mEnabled;
   GroundValues mGroundVal;
   SharedPtr<Environment> mEnvironment;
 };

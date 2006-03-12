@@ -42,7 +42,7 @@ TablePreLookup::init(void)
                      << getName() << "\" is not connected" << endl;
     return false;
   }
-  return true;
+  return Model::init();
 }
 
 void
@@ -89,7 +89,7 @@ Table1D::init(void)
                      << getName() << "\" is not connected" << endl;
     return false;
   }
-  return true;
+  return Model::init();
 }
 
 void
@@ -141,7 +141,7 @@ Table2D::init(void)
       return false;
     }
   }
-  return true;
+  return Model::init();
 }
 
 void
@@ -196,7 +196,7 @@ Table3D::init(void)
       return false;
     }
   }
-  return true;
+  return Model::init();
 }
 
 void

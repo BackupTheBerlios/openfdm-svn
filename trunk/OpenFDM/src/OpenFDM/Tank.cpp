@@ -34,7 +34,7 @@ bool
 Tank::init(void)
 {
   mInputPort = getInputPort(0)->toRealPortHandle();
-  return true;
+  return Mass::init();
 }
 
 void

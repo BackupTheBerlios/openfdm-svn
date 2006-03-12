@@ -32,7 +32,7 @@ public:
   {
     mNextNlfz = 0;
     mNextAz = 0;
-    return true;
+    return Interact::init();
   }
 
   virtual void output(const TaskInfo& taskInfo)

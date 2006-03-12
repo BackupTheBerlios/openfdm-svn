@@ -48,7 +48,7 @@ MaxModel::init(void)
       return false;
   }
   mMax.resize(a0);
-  return true;
+  return Model::init();
 }
 
 void
