@@ -479,6 +479,20 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName)
     port = mAeroForce->getOutputPort("trueSpeed");
     port = addMultiBodyToUnit("True Speed kts", uKnots, port);
 
+  } else if (propName == "fdm/jsbsim/velocities/vc-fps") {
+    port = mAeroForce->getOutputPort("calibratedAirSpeed");
+    port = addMultiBodyToUnit("Calibrated Speed fps", uFeetPSecond, port);
+  } else if (propName == "fdm/jsbsim/velocities/vc-kts") {
+    port = mAeroForce->getOutputPort("calibratedAirSpeed");
+    port = addMultiBodyToUnit("Calibrated Speed kts", uKnots, port);
+
+  } else if (propName == "fdm/jsbsim/velocities/ve-fps") {
+    port = mAeroForce->getOutputPort("calibratedAirSpeed");
+    port = addMultiBodyToUnit("Equivalent Speed fps", uFeetPSecond, port);
+  } else if (propName == "fdm/jsbsim/velocities/ve-kts") {
+    port = mAeroForce->getOutputPort("calibratedAirSpeed");
+    port = addMultiBodyToUnit("Equivalent Speed kts", uKnots, port);
+
   } else if (propName == "fdm/jsbsim/velocities/mach-norm" ||
              propName == "fdm/jsbsim/velocities/mach") {
     port = mAeroForce->getOutputPort("machNumber");

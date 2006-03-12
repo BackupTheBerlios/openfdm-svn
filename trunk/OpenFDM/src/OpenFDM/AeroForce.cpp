@@ -47,6 +47,9 @@ AeroForce::AeroForce(const std::string& name)
   addOutputPort("coordOver2Speed", this, &AeroForce::getCoordOver2Speed);
   addOutputPort("hOverWingSpan", this, &AeroForce::getHOverWingSpan);
 
+  addOutputPort("equivalentAirSpeed", this, &AeroForce::getEquivalentAirSpeed);
+  addOutputPort("calibratedAirSpeed", this, &AeroForce::getCalibratedAirSpeed);
+
   addOutputPort("pressure", this, &AeroForce::getPressure);
   addOutputPort("density", this, &AeroForce::getDensity);
   addOutputPort("soundSpeed", this, &AeroForce::getSoundSpeed);
