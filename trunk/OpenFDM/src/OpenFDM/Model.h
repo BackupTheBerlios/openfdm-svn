@@ -234,8 +234,6 @@ private:
   SharedPtr<Port> mEnablePort;
   RealPortHandle mEnablePortInterface;
   DisableMode mDisableMode;
-  // FIXME, at the moment used to state that this model must be scheduled
-  // past all joint interacts
   SampleTimeSet mSampleTimeSet;
   std::vector<SharedPtr<Port> > mInputPorts;
   std::vector<SharedPtr<Port> > mOutputPorts;
