@@ -842,7 +842,9 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
         mVehicle->getTopBody()->addInteract(rj);
         arm->setInboardJoint(rj);
-        rj->setJointAxis(Vector3(0, 1, 0));
+        Vector3 compressJointAxis = locationData((*it)->getElement("axis"),
+                                                 Vector3(0, 1, 0));
+        rj->setJointAxis(normalize(compressJointAxis));
         rj->setJointPos(0);
         rj->setJointVel(0);
         Vector3 compressJointPos = locationData((*it)->getElement("location"));
@@ -851,8 +853,15 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         
         LineForce* lineForce = new LineForce(name + " Air Spring LineForce");
         /// FIXME that ordering in attachment is messy!
-        lineForce->setPosition0(structToBody(compressJointPos) - Vector3(0.1, 0, 0.5));
-        lineForce->setPosition1(Vector3(-0.5, 0, 0));
+        Vector3 asMnt0 = locationData((*it)->getElement("springMount0"),
+                                      compressJointPos -
+                                      convertTo(uInch, Vector3(0.1, 0, 0.5)));
+        Vector3 asMnt1 = locationData((*it)->getElement("springMount1"),
+                                      compressJointPos +
+                                      convertTo(uInch, Vector3(-0.5, 0, 0)));
+        lineForce->setPosition0(structToBody(asMnt0));
+        lineForce->setPosition1(structToBody(asMnt1)
+                                - structToBody(compressJointPos));
         mVehicle->getTopBody()->addInteract(lineForce);
         arm->addInteract(lineForce);
         
