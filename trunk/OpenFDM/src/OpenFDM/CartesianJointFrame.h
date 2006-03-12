@@ -108,6 +108,14 @@ public:
     return true;
   }
 
+  VectorN forceForAccel(const Vector6& outF, const SpatialInertia& outI,
+                        const VectorN& jointAccel)
+  {
+    Vector6 pAlpha = outF + outI*getHdot();
+    Vector6 Ih = outI*mJointMatrix;
+    return trans(mJointMatrix)*(Ih*jointAccel + pAlpha);
+  }
+
 protected:
   const Matrix6N& getJointMatrix(void) const
   { return mJointMatrix; }
