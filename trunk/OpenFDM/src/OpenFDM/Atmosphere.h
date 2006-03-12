@@ -28,10 +28,6 @@ public:
   real_type getR(void) const
   { return mGasConstant; }
 
-  /// Returns the soundspeed for the given temperature
-  real_type getSoundSpeed(real_type temperature) const
-  { return sqrt(getGamma(temperature)*temperature*getGasConstant()); }
-
   /// Returns the specific heat ratio
   real_type getSpecificHeatRatio(real_type temperature) const
   { return getGamma(temperature); }
@@ -44,6 +40,9 @@ public:
     real_type d =  1.436914;
     return ((a*temperature + b)*temperature + c)*temperature + d;
   }
+  /// Return standard temperature gamma, sufficient for most needs
+  real_type getGamma(void) const
+  { return real_type(1.4); }
 
   /// Returns the specific heat constant
   real_type getCp(real_type temperature) const
@@ -51,6 +50,16 @@ public:
     real_type gamma = getGamma(temperature);
     return getGasConstant()*gamma/(gamma-1);
   }
+  /// Returns the specific heat constant for the stdandard temperature
+  real_type getCp(void) const
+  {
+    real_type gamma = getGamma();
+    return getGasConstant()*gamma/(gamma-1);
+  }
+
+  /// Returns the soundspeed for the given temperature
+  real_type getSoundSpeed(real_type temperature) const
+  { return sqrt(getGamma(temperature)*temperature*getGasConstant()); }
 
   // Get the atmosphere data for a given altitude alt.
   virtual AtmosphereData getData(real_type alt) const = 0;
