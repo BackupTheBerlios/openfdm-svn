@@ -296,20 +296,20 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
                            "controls/flight/elevator-trim");
 
     } else if (propName == "fdm/jsbsim/fcs/rudder-cmd-norm") {
-      // FIXME is inverted in JSBSim ...
-      port = addInputModel("Rudder",
-                           "controls/flight/rudder");
+//       port = addInputModel("Rudder", "controls/flight/rudder");
+      port = lookupJSBExpression("fcs/steer-cmd-norm");
+      port = addInverterModel("Rudder inverter", port);
 
     } else if (propName == "fdm/jsbsim/fcs/yaw-trim-cmd-norm") {
-      // FIXME also with a minus
       port = addInputModel("Yaw Trim",
                            "controls/flight/rudder-trim");
+      port = addInverterModel("Yaw Trim inverter", port);
 
     } else if (propName == "fdm/jsbsim/fcs/steer-cmd-norm") {
       // FIXME is seperate in flightgear ???
       // port = addInputModel("Steering", "controls/gear/steering");
-      port = addInputModel("Steering",
-                           "controls/flight/rudder");
+      // if this is replaced note that the above line needs to be chenged too
+      port = addInputModel("Rudder", "controls/flight/rudder");
 
     } else if (propName.substr(0, 28) == "fdm/jsbsim/fcs/steer-pos-deg") {
       return lookupJSBExpression("fcs/steer-cmd-norm");
