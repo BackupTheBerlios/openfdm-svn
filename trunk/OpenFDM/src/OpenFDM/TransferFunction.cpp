@@ -59,9 +59,14 @@ DiscreteTransferFunction::getNumerator(void) const
 bool
 DiscreteTransferFunction::init(void)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  if (!getInputPort(0)->isConnected())
+  mInputPort = getInputPort(0)->toRealPortHandle();
+  if (!mInputPort.isConnected()) {
+    Log(Model, Error) << "Initialization of DiscreteTransferFunction model \""
+                      << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
     return false;
+  }
 
   mNumNorm.resize(0);
   mDenNorm.resize(0);
@@ -129,8 +134,7 @@ void
 DiscreteTransferFunction::output(const TaskInfo&)
 {
   // Compute the output ...
-  RealPortHandle rh = getInputPort(0)->toRealPortHandle();
-  real_type input = rh.getRealValue();
+  real_type input = mInputPort.getRealValue();
   mOutput = dot(mNumNorm, mState) + mD*input;
 }
 
@@ -143,8 +147,7 @@ DiscreteTransferFunction::update(const TaskInfo& taskInfo)
   if (0 < rows(mState)) {
     // FIXME: use exponential integration scheme here ...
     // looks very benificial, since it is exact here!
-    RealPortHandle rh = getInputPort(0)->toRealPortHandle();
-    real_type input = rh.getRealValue();
+    real_type input = mInputPort.getRealValue();
     if (mState.size() == 1) {
       /// On dimensional exponetial integrator ...
       real_type z = -dt*dot(mDenNorm, mState);

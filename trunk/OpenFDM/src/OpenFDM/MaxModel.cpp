@@ -35,31 +35,47 @@ MaxModel::~MaxModel(void)
 bool
 MaxModel::init(void)
 {
-  for (unsigned i = 0; i < getNumInputPorts(); ++i)
-    OpenFDMAssert(getInputPort(i)->isConnected());
-  
   // Make sure it is invalid if sizes do not match.
   mMax.resize(0, 0);
-  // Check if the sizes match.
-  Matrix a0 = getInputPort(0)->getValue().toMatrix();
-  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i)->getValue().toMatrix();
-    if (size(a0) != size(a))
+
+  mInputPorts.clear();
+  unsigned n = getNumInputPorts();
+  if (n == 0) {
+      Log(Model, Error) << "No input ports for MaxModel \""
+                        << getName() << "\"" << endl;
       return false;
   }
-  mMax.resize(a0);
+  for (unsigned i = 0; i < n; ++i) {
+    MatrixPortHandle matrixPort = getInputPort(i)->toMatrixPortHandle();
+    if (!matrixPort.isConnected()) {
+      Log(Model, Error) << "Found unconnected input Port for MaxModel \""
+                        << getName() << "\"" << endl;
+      return false;
+    }
+    mInputPorts.push_back(matrixPort);
+
+    Matrix a = matrixPort.getMatrixValue();
+    if (i == 0) {
+      mMax.resize(a);
+    } else {
+      if (size(mMax) != size(a)) {
+        Log(Model, Error) << "Input port sizes for MaxModel \""
+                          << getName() << "\" do not match." << endl;
+        return false;
+      }
+    }
+  }
+
   return Model::init();
 }
 
 void
 MaxModel::output(const TaskInfo&)
 {
-  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
-  mMax = mh.getMatrixValue();
-  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
-    MatrixPortHandle mh = getInputPort(i)->toMatrixPortHandle();
-    mMax = LinAlg::max(mMax, mh.getMatrixValue());
-  }
+  // the input method guarantees that there is at least one input
+  mMax = mInputPorts[0].getMatrixValue();
+  for (unsigned i = 1; i < mInputPorts.size(); ++i)
+    mMax = LinAlg::max(mMax, mInputPorts[i].getMatrixValue());
 }
 
 const Matrix&

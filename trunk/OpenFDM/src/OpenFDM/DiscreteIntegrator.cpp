@@ -107,7 +107,7 @@ DiscreteIntegrator::getDiscreteState(StateStream& state) const
 bool
 DiscreteIntegrator::dependsDirectOn(Model* model)
 {
-  if (getInputPort(1)->isConnected()) {
+  if (getInputPort(1)) {
     // return true if we find the one connected to the initial value port
     for (unsigned j = 0; j < model->getNumOutputPorts(); ++j)
       if (getInputPort(1)->isConnectedTo(model->getOutputPort(j)))

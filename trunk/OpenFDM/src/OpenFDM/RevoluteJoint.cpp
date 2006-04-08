@@ -46,7 +46,7 @@ bool
 RevoluteJoint::init(void)
 {
   /// Check if we have an input port connected to the joint force ...
-  if (getInputPort(0)->isConnected())
+  if (getInputPort(0))
     mJointForcePort = getInputPort(0)->toRealPortHandle();
   else
     mJointForcePort = 0;

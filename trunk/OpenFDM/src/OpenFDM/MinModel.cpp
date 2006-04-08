@@ -35,31 +35,48 @@ MinModel::~MinModel(void)
 bool
 MinModel::init(void)
 {
-  for (unsigned i = 0; i < getNumInputPorts(); ++i)
-    OpenFDMAssert(getInputPort(i)->isConnected());
-  
   // Make sure it is invalid if sizes do not match.
   mMin.resize(0, 0);
-  // Check if the sizes match.
-  Matrix a0 = getInputPort(0)->getValue().toMatrix();
-  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
-    Matrix a = getInputPort(i)->getValue().toMatrix();
-    if (size(a0) != size(a))
+
+  mInputPorts.clear();
+
+  unsigned n = getNumInputPorts();
+  if (n == 0) {
+      Log(Model, Error) << "No input ports for MinModel \""
+                        << getName() << "\"" << endl;
       return false;
   }
-  mMin.resize(a0);
+  for (unsigned i = 0; i < n; ++i) {
+    MatrixPortHandle matrixPort = getInputPort(i)->toMatrixPortHandle();
+    if (!matrixPort.isConnected()) {
+      Log(Model, Error) << "Found unconnected input Port for MinModel \""
+                        << getName() << "\"" << endl;
+      return false;
+    }
+    mInputPorts.push_back(matrixPort);
+
+    Matrix a = matrixPort.getMatrixValue();
+    if (i == 0) {
+      mMin.resize(a);
+    } else {
+      if (size(mMin) != size(a)) {
+        Log(Model, Error) << "Input port sizes for MinModel \""
+                          << getName() << "\" do not match." << endl;
+        return false;
+      }
+    }
+  }
+
   return Model::init();
 }
 
 void
 MinModel::output(const TaskInfo&)
 {
-  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
-  mMin = mh.getMatrixValue();
-  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
-    MatrixPortHandle mh = getInputPort(i)->toMatrixPortHandle();
-    mMin = LinAlg::min(mMin, mh.getMatrixValue());
-  }
+  // the input method guarantees that there is at least one input
+  mMin = mInputPorts[0].getMatrixValue();
+  for (unsigned i = 1; i < mInputPorts.size(); ++i)
+    mMin = LinAlg::min(mMin, mInputPorts[i].getMatrixValue());
 }
 
 const Matrix&

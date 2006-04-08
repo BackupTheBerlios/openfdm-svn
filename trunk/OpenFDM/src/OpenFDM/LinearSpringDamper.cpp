@@ -37,21 +37,21 @@ LinearSpringDamper::~LinearSpringDamper(void)
 bool
 LinearSpringDamper::init(void)
 {
-  if (!getInputPort(0)->isConnected()) {
+  mPositionPort = getInputPort(0)->toRealPortHandle();
+  if (!mPositionPort.isConnected()) {
     Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
                       << "\" failed: Input port \"" << getInputPortName(0)
                       << "\" is not connected!" << endl;
     return false;
   }
-  mPositionPort = getInputPort(0)->toRealPortHandle();
 
-  if (!getInputPort(1)->isConnected()) {
+  mVelocityPort = getInputPort(1)->toRealPortHandle();
+  if (!mVelocityPort.isConnected()) {
     Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
                       << "\" failed: Input port \"" << getInputPortName(1)
                       << "\" is not connected!" << endl;
     return false;
   }
-  mVelocityPort = getInputPort(1)->toRealPortHandle();
 
   return Model::init();
 }

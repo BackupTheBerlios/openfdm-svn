@@ -28,6 +28,7 @@ public:
 
 private:
   Matrix mMax;
+  std::vector<MatrixPortHandle> mInputPorts;
 };
 
 } // namespace OpenFDM

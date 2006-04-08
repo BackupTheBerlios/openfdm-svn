@@ -67,13 +67,31 @@ BinaryFunctionModel::~BinaryFunctionModel(void)
 bool
 BinaryFunctionModel::init(void)
 {
-  OpenFDMAssert(mImpl);
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  OpenFDMAssert(getInputPort(1)->isConnected());
-  mImpl->setRealPortHandle(0, getInputPort(0)->toRealPortHandle());
-  mImpl->setRealPortHandle(1, getInputPort(1)->toRealPortHandle());
-  if (!getInputPort(0)->isConnected() || !getInputPort(1)->isConnected())
+  if (!mImpl) {
+    Log(Model, Error) << "Initialization of BinaryFunctionModel model \""
+                      << getName() << "\" failed: No funcion given!" << endl;
     return false;
+  }
+
+  RealPortHandle portHandle = getInputPort(0)->toRealPortHandle();
+  if (!portHandle.isConnected()) {
+    Log(Model, Error) << "Initialization of BinaryFunctionModel model \""
+                      << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+  mImpl->setRealPortHandle(0, portHandle);
+
+  portHandle = getInputPort(1)->toRealPortHandle();
+  if (!portHandle.isConnected()) {
+    Log(Model, Error) << "Initialization of BinaryFunctionModel model \""
+                      << getName()
+                      << "\" failed: Input port \"" << getInputPortName(1)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+  mImpl->setRealPortHandle(1, portHandle);
 
   return Model::init();
 }

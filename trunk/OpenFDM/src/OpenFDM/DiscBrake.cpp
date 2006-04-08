@@ -37,21 +37,21 @@ DiscBrake::~DiscBrake(void)
 bool
 DiscBrake::init(void)
 {
-  if (!getInputPort(0)->isConnected()) {
+  mBrakePressurePort = getInputPort(0)->toRealPortHandle();
+  if (!mBrakePressurePort.isConnected()) {
     Log(Model, Error) << "Initialization of DiscBrake model \"" << getName()
                       << "\" failed: Input port \"" << getInputPortName(0)
                       << "\" is not connected!" << endl;
     return false;
   }
-  mBrakePressurePort = getInputPort(0)->toRealPortHandle();
 
-  if (!getInputPort(1)->isConnected()) {
+  mVelocityPort = getInputPort(1)->toRealPortHandle();
+  if (!mVelocityPort.isConnected()) {
     Log(Model, Error) << "Initialization of DiscBrake model \"" << getName()
                       << "\" failed: Input port \"" << getInputPortName(1)
                       << "\" is not connected!" << endl;
     return false;
   }
-  mVelocityPort = getInputPort(1)->toRealPortHandle();
 
   // start with zero friction force
   mZ = 0;

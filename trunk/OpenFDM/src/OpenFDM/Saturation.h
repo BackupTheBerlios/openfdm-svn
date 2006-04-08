@@ -36,6 +36,8 @@ private:
   Matrix mMaxSaturation;
   Matrix mMinSaturation;
   Matrix mOutput;
+
+  MatrixPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

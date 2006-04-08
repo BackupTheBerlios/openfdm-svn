@@ -27,6 +27,9 @@ private:
   Matrix mDerivativeOutput;
   Matrix mPastInput;
   double mDt;
+
+  /// The input port handle
+  MatrixPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

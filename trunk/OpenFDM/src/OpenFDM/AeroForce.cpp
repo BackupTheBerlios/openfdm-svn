@@ -82,28 +82,28 @@ AeroForce::init(void)
   if (!mEnvironment)
     return false;
 
-  if (getInputPort("roll")->isConnected())
+  if (getInputPort("roll"))
     mBodyAxisTorque[0] = getInputPort("roll")->toRealPortHandle();
   else
     mBodyAxisTorque[0] = 0;
-  if (getInputPort("pitch")->isConnected())
+  if (getInputPort("pitch"))
     mBodyAxisTorque[1] = getInputPort("pitch")->toRealPortHandle();
   else
     mBodyAxisTorque[1] = 0;
-  if (getInputPort("yaw")->isConnected())
+  if (getInputPort("yaw"))
     mBodyAxisTorque[2] = getInputPort("yaw")->toRealPortHandle();
   else
     mBodyAxisTorque[2] = 0;
 
-  if (getInputPort("drag")->isConnected())
+  if (getInputPort("drag"))
     mStabilityAxisForce[0] = getInputPort("drag")->toRealPortHandle();
   else
     mStabilityAxisForce[0] = 0;
-  if (getInputPort("side")->isConnected())
+  if (getInputPort("side"))
     mStabilityAxisForce[1] = getInputPort("side")->toRealPortHandle();
   else
     mStabilityAxisForce[1] = 0;
-  if (getInputPort("lift")->isConnected())
+  if (getInputPort("lift"))
     mStabilityAxisForce[2] = getInputPort("lift")->toRealPortHandle();
   else
     mStabilityAxisForce[2] = 0;

@@ -27,10 +27,16 @@ TimeDerivative::~TimeDerivative(void)
 bool
 TimeDerivative::init(void)
 {
-  if (!getInputPort(0)->isConnected())
+  mInputPort = getInputPort(0)->toMatrixPortHandle();
+  if (!mInputPort.isConnected()) {
+    Log(Model, Error) << "Initialization of TimeDerivative model \""
+                      << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
     return false;
+  }
 
-  mDerivativeOutput.resize(getInputPort(0)->getValue().toMatrix());
+  mDerivativeOutput.resize(mInputPort.getMatrixValue());
 
   // Set a mark for the first step.
   mDt = 0.0;
@@ -41,19 +47,17 @@ TimeDerivative::init(void)
 void
 TimeDerivative::output(const TaskInfo&)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
   // If we are here at the first time, dt is set to zero.
   // So, computing a derivative is not possible in the first step.
   // Prepare zero output in this case.
   if (mDt != 0.0) {
-    OpenFDMAssert(size(mh.getMatrixValue()) == size(mPastInput));
-    if (size(mh.getMatrixValue()) == size(mPastInput)) {
-      mDerivativeOutput = mh.getMatrixValue() - mPastInput;
+    OpenFDMAssert(size(mInputPort.getMatrixValue()) == size(mPastInput));
+    if (size(mInputPort.getMatrixValue()) == size(mPastInput)) {
+      mDerivativeOutput = mInputPort.getMatrixValue() - mPastInput;
       mDerivativeOutput *= 1/mDt;
     }
   } else {
-    mDerivativeOutput.resize(mh.getMatrixValue());
+    mDerivativeOutput.resize(mInputPort.getMatrixValue());
     mDerivativeOutput.clear();
   }
 }
@@ -61,13 +65,10 @@ TimeDerivative::output(const TaskInfo&)
 void
 TimeDerivative::update(const TaskInfo& taskInfo)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-
   // FIXME
   real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
   // Updating is just storing required information for the next output step.
-  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
-  mPastInput = mh.getMatrixValue();
+  mPastInput = mInputPort.getMatrixValue();
   mDt = dt;
 }
 

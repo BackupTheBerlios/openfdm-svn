@@ -21,7 +21,7 @@ public:
   SimpleGear(const std::string& name);
   virtual ~SimpleGear(void);
 
-//   virtual bool init(void);
+  virtual bool init(void);
   virtual void output(const TaskInfo&);
 
   real_type getSteeringAngle(void) const;
@@ -55,6 +55,9 @@ private:
   real_type mSpringConst;
   real_type mSpringDamp;
   real_type mFrictionCoef;
+
+  RealPortHandle mBrakeCommandHandle;
+  RealPortHandle mSteeringAngleHandle;
 };
 
 } // namespace OpenFDM

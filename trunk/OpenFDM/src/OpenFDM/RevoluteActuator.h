@@ -25,8 +25,7 @@ public:
   RevoluteActuator(const std::string& name);
   virtual ~RevoluteActuator(void);
 
-  virtual bool init(void)
-  { recheckTopology(); return Joint::init(); }
+  virtual bool init(void);
 
   virtual void recheckTopology(void);
 
@@ -96,6 +95,9 @@ private:
 
   /// The frame of the mobile root
   SharedPtr<RevoluteActuatorFrame> mRevoluteActuatorFrame;
+
+  /// Input port for the desired position
+  RealPortHandle mDesiredPositionPort;
 };
 
 } // namespace OpenFDM

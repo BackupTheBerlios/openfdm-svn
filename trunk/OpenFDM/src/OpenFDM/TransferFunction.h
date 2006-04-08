@@ -59,6 +59,8 @@ private:
   /// Holds the interal discrete state
   Vector mState;
 
+  /// Holds the handle to the input port
+  RealPortHandle mInputPort;
   /// FIXME, at the moment only explicit integration ...
 };
 

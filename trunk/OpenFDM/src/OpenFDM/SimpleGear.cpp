@@ -45,25 +45,36 @@ SimpleGear::~SimpleGear(void)
 {
 }
 
-// bool
-// SimpleGear::init(void)
-// {
-//   return true;
-// }
+bool
+SimpleGear::init(void)
+{
+  Port* port = getInputPort("brakeCommand");
+  if (port)
+    mBrakeCommandHandle = port->toRealPortHandle();
+  else
+    mBrakeCommandHandle = RealPortHandle(0);
+
+  port = getInputPort("steeringAngle");
+  if (port)
+    mSteeringAngleHandle = port->toRealPortHandle();
+  else
+    mSteeringAngleHandle = RealPortHandle(0);
+
+  mBrake = 0;
+  mSteeringAngle = 0;
+
+  return Contact::init();
+}
 
 void
 SimpleGear::output(const TaskInfo& taskInfo)
 {
   if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
                           SampleTime::PerTimestep)) {
-    if (getInputPort("brakeCommand")->isConnected()) {
-      RealPortHandle rh = getInputPort("brakeCommand")->toRealPortHandle();
-      mBrake = rh.getRealValue();
-    }
-    if (getInputPort("steeringAngle")->isConnected()) {
-      RealPortHandle rh = getInputPort("steeringAngle")->toRealPortHandle();
-      mSteeringAngle = rh.getRealValue();
-    }
+    if (mBrakeCommandHandle.isConnected())
+      mBrake = mBrakeCommandHandle.getRealValue();
+    if (mSteeringAngleHandle.isConnected())
+      mSteeringAngle = mSteeringAngleHandle.getRealValue();
   }
 
   Contact::output(taskInfo);
@@ -127,7 +138,7 @@ void
 SimpleGear::setFrictionCoeficient(real_type frictionCoef)
 {
   mFrictionCoef = frictionCoef;
- }
+}
 
 // Compute the plane normal force.
 real_type

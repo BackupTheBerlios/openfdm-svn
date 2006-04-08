@@ -37,9 +37,16 @@ Saturation::~Saturation(void)
 bool
 Saturation::init(void)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  
-  Matrix inputMatrix = getInputPort(0)->getValue().toMatrix();
+  mInputPort = getInputPort(0)->toMatrixPortHandle();
+  if (!mInputPort.isConnected()) {
+    Log(Model, Error) << "Initialization of Saturation model \""
+                      << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+
+  Matrix inputMatrix = mInputPort.getMatrixValue();
   if (0 < rows(mMaxSaturation) && 0 < cols(mMaxSaturation) &&
       size(mMaxSaturation) != size(inputMatrix))
     mOutput.resize(0, 0);
@@ -55,9 +62,7 @@ Saturation::init(void)
 void
 Saturation::output(const TaskInfo&)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  MatrixPortHandle mh = getInputPort(0)->toMatrixPortHandle();
-  mOutput = mh.getMatrixValue();
+  mOutput = mInputPort.getMatrixValue();
   if (0 < rows(mMaxSaturation) && 0 < cols(mMaxSaturation))
     mOutput = LinAlg::min(mOutput, mMaxSaturation);
   if (0 < rows(mMinSaturation) && 0 < cols(mMinSaturation))

@@ -144,10 +144,21 @@ UnaryFunctionModel::~UnaryFunctionModel(void)
 bool
 UnaryFunctionModel::init(void)
 {
-  OpenFDMAssert(mImpl);
-  mImpl->setRealPortHandle(getInputPort(0)->toRealPortHandle());
-  if (!getInputPort(0)->isConnected())
+  if (!mImpl) {
+    Log(Model, Error) << "Initialization of UnaryFunctionModel model \""
+                      << getName() << "\" failed: No funcion given!" << endl;
     return false;
+  }
+
+  RealPortHandle portHandle = getInputPort(0)->toRealPortHandle();
+  if (!portHandle.isConnected()) {
+    Log(Model, Error) << "Initialization of UnaryFunctionModel model \""
+                      << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+  mImpl->setRealPortHandle(portHandle);
   return Model::init();
 }
 

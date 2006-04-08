@@ -48,6 +48,22 @@ RevoluteActuator::~RevoluteActuator(void)
 {
 }
 
+bool
+RevoluteActuator::init(void)
+{
+  mDesiredPositionPort = getInputPort(0)->toRealPortHandle();
+  if (!mDesiredPositionPort.isConnected()) {
+    Log(Model, Error) << "Initialization of RevoluteActuator model \""
+                      << getName()
+                      << "\" failed: Input port \"" << getInputPortName(0)
+                      << "\" is not connected!" << endl;
+    return false;
+  }
+
+  recheckTopology();
+  return Joint::init();
+}
+
 void
 RevoluteActuator::recheckTopology(void)
 {
@@ -121,13 +137,10 @@ RevoluteActuator::jointArticulation(SpatialInertia& artI, Vector6& artF,
                                  const SpatialInertia& outI,
                                  const Vector6& outF)
 {
-  OpenFDMAssert(getInputPort(0)->isConnected());
-  RealPortHandle rh = getInputPort(0)->toRealPortHandle();
-  real_type desiredPos = rh.getRealValue();
+  real_type desiredPos = mDesiredPositionPort.getRealValue();
 
   real_type posErr = desiredPos - mRevoluteActuatorFrame->getJointPos();
 
-//   real_type desiredVel = saturate(mVelGain*posErr, mMaxVel);
   real_type desiredVel = smoothSaturate(mVelGain*posErr, mMaxVel);
 
   real_type velErr = desiredVel - mRevoluteActuatorFrame->getJointVel();

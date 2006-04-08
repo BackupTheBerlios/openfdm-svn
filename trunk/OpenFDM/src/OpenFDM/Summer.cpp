@@ -41,18 +41,19 @@ Summer::init(void)
   mPositiveSummandPorts.clear();
   mNegativeSummandPorts.clear();
   for (unsigned i = 0; i < getNumInputPorts(); ++i) {
-    if (!getInputPort(i)->isConnected()) {
+    MatrixPortHandle matrixPort = getInputPort(i)->toMatrixPortHandle();
+    if (!matrixPort.isConnected()) {
       Log(Model, Error) << "Found unconnected input Port for Summer \""
                         << getName() << "\"" << endl;
       return false;
     }
     if (getInputPortName(i) == "-") {
-      mNegativeSummandPorts.push_back(getInputPort(i)->toMatrixPortHandle());
+      mNegativeSummandPorts.push_back(matrixPort);
     } else {
-      mPositiveSummandPorts.push_back(getInputPort(i)->toMatrixPortHandle());
+      mPositiveSummandPorts.push_back(matrixPort);
     }
 
-    Matrix a = getInputPort(i)->getValue().toMatrix();
+    Matrix a = matrixPort.getMatrixValue();
     if (i == 0) {
       mSum.resize(a);
     } else {
