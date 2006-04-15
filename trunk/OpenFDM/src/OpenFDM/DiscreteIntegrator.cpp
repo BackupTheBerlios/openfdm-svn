@@ -44,7 +44,7 @@ DiscreteIntegrator::init(void)
     mIntegralState = mInitialValuePort.getMatrixValue();
   } else {
     if (rows(mInitialValue) == 0 || cols(mInitialValue) == 0) {
-      mInitialValue.resize(getInputPort(0)->getValue().toMatrix());
+      mInitialValue.resize(mDerivativePort.getMatrixValue());
       mInitialValue.clear();
     }
     mIntegralState = mInitialValue;
