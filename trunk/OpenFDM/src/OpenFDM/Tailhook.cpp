@@ -89,7 +89,6 @@ Tailhook::output(const TaskInfo& taskInfo)
   // ... yes this function works through sideffects ... :-/
   real_type width;
   if (!computeWireFrame(taskInfo.getTime(), width)) {
-    Log(Model,Error) << "1" << endl;
     mHasWire = false;
     setForce(Vector6::zeros());
     return;
@@ -107,7 +106,6 @@ Tailhook::output(const TaskInfo& taskInfo)
   // Ok, the hook intersects the wire but the aircraft is sufficiently
   // far that the hook tip has reached the wire
   if (norm(hookWireInters) < mLength) {
-    Log(Model,Error) << "2" << endl;
     setForce(Vector6::zeros());
     return;
   }
@@ -138,12 +136,11 @@ Tailhook::output(const TaskInfo& taskInfo)
   real_type v = 0.5*(vel0 + vel1);
   if (v < 0.1) {
     mHasWire = false;
-    Log(Model,Error) << "3" << endl;
     setForce(Vector6::zeros());
     return;
   }
 
-  setForce(Vector6(Vector3::zeros(), (5e4 + v*5e3)*(wireDir0 + wireDir1)));
+  setForce(Vector6(Vector3::zeros(), (5e4 + v*3e3)*(wireDir0 + wireDir1)));
 }
 
 void
@@ -162,7 +159,7 @@ Tailhook::update(const TaskInfo& taskInfo)
     const Ground* ground = mEnvironment->getGround();
     mHasWire = ground->caughtWire(mOldHookPosition, currentPosition);
     if (mHasWire)
-      Log(Model,Error) << "Caught wire!" << endl;
+      Log(Model,Debug) << "Caught wire!" << endl;
   }
   mOldHookPosition = currentPosition;
   mFirstTime = false;
