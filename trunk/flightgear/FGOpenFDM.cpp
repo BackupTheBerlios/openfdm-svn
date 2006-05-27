@@ -10,7 +10,6 @@
 #include <Main/globals.hxx>
 #include <Main/fg_props.hxx>
 
-#include <JSBSim/LegacyJSBSimReader.h>
 #include <JSBSim/JSBSimReader.h>
 #include <OpenFDM/Units.h>
 #include <OpenFDM/Vehicle.h>
@@ -300,33 +299,24 @@ void FGOpenFDM::init()
   reader.addAircraftPath(aircraftDir);
   reader.addEnginePath(engineDir);
   reader.loadAircraft(aircraftFile);
-  if (!reader.getErrorState()) {
-    mData->vehicle = reader.getVehicle();
-  } else {
-    // Try to read JSBSim legacy files.
-    LegacyJSBSimReader legReader;
-    legReader.addAircraftPath(aircraftDir);
-    legReader.addEnginePath(engineDir);
-    legReader.loadAircraft(aircraftFile);
-    if (legReader.getErrorState()) {
-      SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() cannot read aircraft!");
-
-      SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() Error messages from JSBSim reader:");
-      ReaderWriter::StringList errors = reader.getErrors();
-      ReaderWriter::StringList::const_iterator it;
-      for (it = errors.begin(); it != errors.end(); ++it) {
-        SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
-      }
-
-      SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() Error messages from legacy JSBSim reader:");
-      errors = legReader.getErrors();
-      for (it = errors.begin(); it != errors.end(); ++it) {
-        SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
-      }
-      return;
+  if (reader.getErrorState()) {
+    SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() cannot read aircraft!");
+    
+    SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() Error messages from JSBSim reader:");
+    ReaderWriter::StringList errors = reader.getErrors();
+    ReaderWriter::StringList::const_iterator it;
+    for (it = errors.begin(); it != errors.end(); ++it) {
+      SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
     }
-    mData->vehicle = legReader.getVehicle();
+    
+    SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() Error messages from legacy JSBSim reader:");
+    errors = reader.getErrors();
+    for (it = errors.begin(); it != errors.end(); ++it) {
+      SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
+    }
+    return;
   }
+  mData->vehicle = reader.getVehicle();
 
   Vehicle* vehicle = mData->vehicle;
   mData->ground = new FGGround(this);
@@ -338,7 +328,10 @@ void FGOpenFDM::init()
   common_init();
 
   // Hmm, twice ??
-  vehicle->init();
+  if (!vehicle->init()) {
+    mData->vehicle = 0;
+    return;
+  }
 
   MobileRootJoint* mobileRootJoint = vehicle->getMobileRootJoint();
   // Check the position

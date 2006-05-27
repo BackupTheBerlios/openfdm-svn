@@ -224,7 +224,7 @@ private:
 class FGRealPortReflector :
     public SGRawValue<double> {
 public:
-  FGRealPortReflector(Port* port, unsigned index = 1u) :
+  FGRealPortReflector(NumericPortProvider* port, unsigned index = 1u) :
     mPort(port), mIndex(index)
   {}
 
@@ -237,15 +237,15 @@ public:
     if (!mPort)
       return 0;
     if (mIndex == 1) {
-      const Port* port = mPort;
-      RealPortHandle realPortHandle = const_cast<Port*>(port)->toRealPortHandle();
+      NumericPortProvider* port = mPort;
+      RealPortHandle realPortHandle = port->getPortInterface()->toRealPortInterface();
       if (realPortHandle.isConnected())
         return realPortHandle.getRealValue();
       else
         return 0;
     } else {
-      const Port* port = mPort;
-      MatrixPortHandle matrixPortHandle = const_cast<Port*>(port)->toMatrixPortHandle();
+      NumericPortProvider* port = mPort;
+      MatrixPortHandle matrixPortHandle = port->getPortInterface()->toMatrixPortInterface();
       if (matrixPortHandle.isConnected()) {
         Matrix m = matrixPortHandle.getMatrixValue();
         unsigned r = mIndex % rows(m) + 1;
@@ -265,7 +265,7 @@ public:
 
 private:
   unsigned mIndex;
-  WeakPtr<Port> mPort;
+  WeakPtr<NumericPortProvider> mPort;
 };
 
 } // namespace OpenFDM
