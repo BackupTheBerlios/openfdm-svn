@@ -16,13 +16,16 @@ template<typename T>
 class WeakPtr {
 public:
   WeakPtr(void)
-  {}
+  { }
   WeakPtr(T* ptr)
   { assign(ptr); }
   WeakPtr(const WeakPtr& p) : mWeakDataPtr(p.mWeakDataPtr)
   { }
   template<typename U>
   WeakPtr(const SharedPtr<U>& p)
+  { assign(p.ptr()); }
+  template<typename U>
+  WeakPtr(const WeakPtr<U>& p)
   { assign(p.ptr()); }
   ~WeakPtr(void)
   { }
@@ -31,13 +34,21 @@ public:
   WeakPtr& operator=(const SharedPtr<U>& p)
   { assign(p.ptr()); return *this; }
   template<typename U>
-  WeakPtr& operator=(U* p)
+  WeakPtr& operator=(const WeakPtr<U>& p)
+  { assign(p.ptr()); return *this; }
+  WeakPtr& operator=(T* p)
   { assign(p); return *this; }
   WeakPtr& operator=(const WeakPtr& p)
   { mWeakDataPtr = p.mWeakDataPtr; return *this; }
 
   SharedPtr<T> lock(void) const
-  { return SharedPtr<T>(ptr()); }
+  {
+    T* p = ptr();
+    if (Referenced::count(p))
+      return SharedPtr<T>(p);
+    else
+      return SharedPtr<T>();
+  }
 
   T* operator->(void) const
   { return ptr(); }
@@ -50,15 +61,13 @@ public:
 
 private:
   T* ptr(void) const
-  { return static_cast<T*>(objectPtr()); }
-
-  WeakReferenced* objectPtr(void) const
   {
     if (mWeakDataPtr)
-      return mWeakDataPtr->object;
+      return static_cast<T*>(mWeakDataPtr->object);
     else
       return 0;
   }
+
   void assign(T* p)
   {
     if (p)
