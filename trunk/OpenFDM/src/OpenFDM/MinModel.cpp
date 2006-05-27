@@ -38,7 +38,7 @@ MinModel::init(void)
   // Make sure it is invalid if sizes do not match.
   mMin.resize(0, 0);
 
-  mInputPorts.clear();
+  mInputPorts2.clear();
 
   unsigned n = getNumInputPorts();
   if (n == 0) {
@@ -53,7 +53,7 @@ MinModel::init(void)
                         << getName() << "\"" << endl;
       return false;
     }
-    mInputPorts.push_back(matrixPort);
+    mInputPorts2.push_back(matrixPort);
 
     Matrix a = matrixPort.getMatrixValue();
     if (i == 0) {
@@ -74,9 +74,9 @@ void
 MinModel::output(const TaskInfo&)
 {
   // the input method guarantees that there is at least one input
-  mMin = mInputPorts[0].getMatrixValue();
-  for (unsigned i = 1; i < mInputPorts.size(); ++i)
-    mMin = LinAlg::min(mMin, mInputPorts[i].getMatrixValue());
+  mMin = mInputPorts2[0].getMatrixValue();
+  for (unsigned i = 1; i < mInputPorts2.size(); ++i)
+    mMin = LinAlg::min(mMin, mInputPorts2[i].getMatrixValue());
 }
 
 const Matrix&

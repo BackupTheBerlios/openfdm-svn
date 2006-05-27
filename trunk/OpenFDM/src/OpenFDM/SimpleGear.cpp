@@ -48,7 +48,7 @@ SimpleGear::~SimpleGear(void)
 bool
 SimpleGear::init(void)
 {
-  Port* port = getInputPort("brakeCommand");
+  NumericPortAcceptor* port = getInputPort("brakeCommand");
   if (port)
     mBrakeCommandHandle = port->toRealPortHandle();
   else

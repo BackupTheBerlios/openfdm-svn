@@ -5,14 +5,9 @@
 #ifndef OpenFDM_Port_H
 #define OpenFDM_Port_H
 
-#include <string>
-#include <vector>
-#include <algorithm>
-
-#include "LogStream.h"
 #include "Object.h"
+#include "SharedPtr.h"
 #include "WeakPtr.h"
-#include "Variant.h"
 
 namespace OpenFDM {
 
@@ -25,7 +20,6 @@ public:
   virtual RealPortInterface* toRealPortInterface(void) { return 0; }
   virtual MatrixPortInterface* toMatrixPortInterface(void) { return 0; }
 
-  virtual bool isConnected(void) const = 0;
   virtual void evaluate(void) = 0;
 };
 
@@ -66,8 +60,6 @@ public:
   { }
   virtual void evaluate(void)
   { mValue(1, 1) = (mSourceModel->*mGetter)(); }
-  virtual bool isConnected(void) const
-  { return mSourceModel && mGetter; }
 private:
   WeakPtr<M> mSourceModel;
   Getter mGetter;
@@ -81,8 +73,6 @@ public:
   { }
   virtual void evaluate(void)
   { mValue = (mSourceModel->*mGetter)(); }
-  virtual bool isConnected(void) const
-  { return mSourceModel && mGetter; }
 private:
   WeakPtr<M> mSourceModel;
   Getter mGetter;
@@ -98,7 +88,7 @@ public:
   real_type getRealValue(void)
   { return mRealPortInterface->getRealValue(); }
   bool isConnected(void) const
-  { return mRealPortInterface && mRealPortInterface->isConnected(); }
+  { return mRealPortInterface; }
 private:
   SharedPtr<RealPortInterface> mRealPortInterface;
 };
@@ -113,78 +103,56 @@ public:
   const Matrix& getMatrixValue(void)
   { return mMatrixPortInterface->getMatrixValue(); }
   bool isConnected(void) const
-  { return mMatrixPortInterface && mMatrixPortInterface->isConnected(); }
+  { return mMatrixPortInterface; }
 private:
   SharedPtr<MatrixPortInterface> mMatrixPortInterface;
 };
 
-/// Class for an input or output port of a Model.
-/// Ports can be connected together. This means in effect that the reader
-/// gains access to value at the source model.
-/// Additional information must be carried through that class.
-/// ...
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+class Model;
+class Connection;
+
 class Port :
     public Object {
 public:
-  virtual ~Port(void);
+  enum ConnectResult {
+    Success = 0,
+    NoPort, // The given port is a zero pointer
+    NoConnection, // The given Connection is a zero pointer
+    Running, // The System is running, stop the System before manipulating it
+    IsolatedModel, // Model does not belong to a parent Group
+    DifferentGroups, // Model belong to different model groups
+    StalePort, // Post still alive but originating model is dead
+    AlreadyConnected, // This end of the connection is already connected
+    IncompatiblePort, // The port is not compatible with the other end
+    IncompatibelSize  // The port is not compatible with the other end
+  };
 
-  void setPortInterface(PortInterface* portInterface);
+  Port(Model* model);
+  virtual ~Port();
 
-  /// returns true if this port has a source port connected to it
-  bool isConnected() const
-  { return mPortInterface && mPortInterface->isConnected(); }
+  /// Interface to the /user/.
+  /// Is implemented in PortAcceptor/PortProvider
+  /// This function is responsible to distinguish into which end of the
+  /// Connection object this Port belongs. This way the Connection object can
+  /// make sure that it has exactly one PortProvider and exactly one
+  /// PortAcceptor available to connect.
+  virtual ConnectResult addConnection(Connection* connection) = 0;
+  virtual bool removeConnection(Connection* connection) = 0;
+  virtual void removeAllConnections() = 0;
 
-  /// returns true if the source port sourcePort is the value source for the
-  /// current port
-  bool isConnectedTo(const Port* sourcePort) const;
+  /// Sets the model it belongs to to zero and cuts all connections
+  void invalidate();
 
-  /// returns true if the source port sourcePort is the value source for the
-  /// current port
-  bool hasSameSource(const Port* otherPort) const;
-
-  RealPortHandle toRealPortHandle(void)
-  {
-    if (mPortInterface)
-      return RealPortHandle(mPortInterface->toRealPortInterface());
-    else
-      return RealPortHandle(0);
-  }
-  MatrixPortHandle toMatrixPortHandle(void)
-  {
-    if (mPortInterface)
-      return MatrixPortHandle(mPortInterface->toMatrixPortInterface());
-    else
-      return MatrixPortHandle(0);
-  }
-
-  /// Retrieve the value of this port
-  /// Note that we don't need a setValue method since we attach a getter of a
-  /// Model to a port.
-
-  /// This might be the place where it is possible to implement
-  /// TaskInfo dependent output ports ...
-  /// Hmm, may be we should otoh 'dirty' some getters?
-  /// Generic thing. Don't use if you don't have to
-  Variant getValue(void);
-
-  /// Connect this port to the given source port
-  void connect(Port* sourcePort);
-
-  /// Disconnect this port from the given source port
-  void disconnect(Port* sourcePort);
-
-  /// Just disconnect from whoever we are connected to
-  void disconnect(void);
+  /// Return the model this port belongs to
+  WeakPtr<Model> getModel() const;
 
 private:
-  /// For now the untyped input port
-  /// On Model::init() it is expected to be specialized
-  /// to a typed port handle
-  SharedPtr<PortInterface> mPortInterface;
-  /// The list of readers for this port
-  std::vector<SharedPtr<Port> > mChainPorts;
-  /// The source of the current port connection
-  WeakPtr<Port> mSourcePort;
+  WeakPtr<Model> mModel;
 };
 
 } // namespace OpenFDM

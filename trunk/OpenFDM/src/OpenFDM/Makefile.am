@@ -30,6 +30,7 @@ nobase_OpenFDMinclude_HEADERS = \
   BinaryFunctionModel.h \
   CartesianActuatorFrame.h \
   CartesianJointFrame.h \
+  Connection.h \
   Contact.h \
   ConstModel.h \
   ConstFrameVisitor.h \
@@ -53,6 +54,8 @@ nobase_OpenFDMinclude_HEADERS = \
   Gain.h \
   Gravity.h \
   Ground.h \
+  GroupInput.h \
+  GroupOutput.h \
   Input.h \
   Integrator.h \
   Interact.h \
@@ -85,12 +88,17 @@ nobase_OpenFDMinclude_HEADERS = \
   MultiBodySystem.h \
   Mutex.h \
   Newton.h \
+  NumericPortAcceptor.h \
+  NumericPortProvider.h \
+  NumericPortProxy.h \
   Object.h \
   ODESolver.h \
   OpenFDMConfig.h \
   Plane.h \
   Planet.h \
   Port.h \
+  PortAcceptor.h \
+  PortProvider.h \
   Product.h \
   PrismaticJoint.h \
   PrismaticJointFrame.h \
@@ -144,6 +152,7 @@ libOpenFDM_la_SOURCES = \
   AtmosphereSTD1976.cpp \
   Bias.cpp \
   BinaryFunctionModel.cpp \
+  Connection.cpp \
   Contact.cpp \
   ConstModel.cpp \
   DeadBand.cpp \
@@ -164,6 +173,8 @@ libOpenFDM_la_SOURCES = \
   Gain.cpp \
   Gravity.cpp \
   Ground.cpp \
+  GroupInput.cpp \
+  GroupOutput.cpp \
   Input.cpp \
   Integrator.cpp \
   Interact.cpp \
@@ -185,6 +196,8 @@ libOpenFDM_la_SOURCES = \
   ODESolver.cpp \
   Planet.cpp \
   Port.cpp \
+  PortAcceptor.cpp \
+  PortProvider.cpp \
   PrismaticJoint.cpp \
   Product.cpp \
   ReaderWriter.cpp \

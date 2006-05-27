@@ -174,35 +174,35 @@ JSBSimReaderBase::normalizeComponentName(const std::string& name)
   return ret;
 }
 
-Port*
+PortProvider*
 JSBSimReaderBase::lookupJSBExpression(const std::string& name,
+                                      const Model::Path& path,
                                       bool recheckAeroProp)
 {
   // Convert to something being able to look up
   std::string propName = propNameFromJSBSim(name);
   
-  Port* port = 0;
-  if (mExpressionTable.count(propName) <= 0) {
+  PortProvider* port = 0;
+  if (!mExpressionTable.exists(propName)) {
     // Not yet available, so look and see if it is an input
     if (recheckAeroProp)
-      port = createAndScheduleAeroProp(propName);
+      port = createAndScheduleAeroProp(propName, path);
 
-    if (!port || !port->isConnected()) {
+    if (!port /*|| !port->isConnected()*/) {
       // Not yet available, so look and see if it is an input
-      port = createAndScheduleInput(propName);
+      port = createAndScheduleInput(propName, path);
       
       // Ok, still not available, create a constant zero thing and bail out ...
-      if (!port || !port->isConnected()) {
+      if (!port /*|| !port->isConnected()*/) {
         std::cerr << "Creating expression \"" << propName << "\"" << std::endl;
-        
-        return addConstModel(propName + " constant", 0);
+
+        return addConstModel(propName + " constant", 0, path);
       }
     }
-    
-  } else {
-    // Just get that one, if we already have it
-    port = mExpressionTable[propName];
   }
+
+  // Just get that one, if we already have it
+  port = mExpressionTable.routeTo(propName, path);
 
   // If we need the negative input, just multiply with a negative gain
   if (propMinusFromJSBSim(name))
@@ -211,27 +211,39 @@ JSBSimReaderBase::lookupJSBExpression(const std::string& name,
     return port;
 }
 
+bool
+JSBSimReaderBase::connectJSBExpression(const std::string& name,
+                                       PortAcceptor* pa, bool recheckAeroProp)
+{
+  SharedPtr<Model> model = pa->getModel().lock();
+  if (!model)
+    return false;
+  Model::Path path = model->getPath();
+  PortProvider* pp = lookupJSBExpression(name, path, recheckAeroProp);
+  return Port::Success == Connection::connect(pp, pa);
+}
+
 void
-JSBSimReaderBase::registerExpression(const std::string& name, Port* port)
+JSBSimReaderBase::registerExpression(const std::string& name, PortProvider* port)
 {
   if (name.size() <= 0)
     return;
-  if (!port || !port->isConnected())
+  if (!port /*|| !port->isConnected()*/)
     return;
-  if (0 < mExpressionTable.count(name)) {
+  if (mExpressionTable.exists(name)) {
     std::cerr << "Already have an expression for " << name << std::endl;
     return;
   }
 
-  mExpressionTable[name] = port;
+  mExpressionTable.registerPort(name, port);
 }
 
 void
-JSBSimReaderBase::registerJSBExpression(const std::string& name, Port* port)
+JSBSimReaderBase::registerJSBExpression(const std::string& name, PortProvider* port)
 {
   if (name.empty())
     return;
-  if (!port || !port->isConnected())
+  if (!port /*|| !port->isConnected()*/)
     return;
   if (name[0] == '/')
     registerExpression(name.substr(1), port);
@@ -266,8 +278,9 @@ JSBSimReaderBase::registerJSBExpression(const std::string& name, Port* port)
   }
 }
 
-Port*
-JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
+PortProvider*
+JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
+                                         const Model::Path& path)
 {
   // This routine checks if the given propName is a special JSBSim
   // input property. If so, it schedules and registers a discrete input model.
@@ -278,7 +291,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
     std::string inputName = propName;
     return addInputModel("Control " + inputName, propName);
   } else {
-    Port* port = 0;
+    PortProvider* port = 0;
     if (propName == "fdm/jsbsim/fcs/aileron-cmd-norm") {
       port = addInputModel("Aileron",
                            "controls/flight/aileron");
@@ -297,7 +310,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
 
     } else if (propName == "fdm/jsbsim/fcs/rudder-cmd-norm") {
 //       port = addInputModel("Rudder", "controls/flight/rudder");
-      port = lookupJSBExpression("fcs/steer-cmd-norm");
+      port = lookupJSBExpression("fcs/steer-cmd-norm", path);
       port = addInverterModel("Rudder inverter", port);
 
     } else if (propName == "fdm/jsbsim/fcs/yaw-trim-cmd-norm") {
@@ -312,7 +325,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
       port = addInputModel("Rudder", "controls/flight/rudder");
 
     } else if (propName.substr(0, 28) == "fdm/jsbsim/fcs/steer-pos-deg") {
-      return lookupJSBExpression("fcs/steer-cmd-norm");
+      return lookupJSBExpression("fcs/steer-cmd-norm", path);
 
     } else if (propName == "fdm/jsbsim/fcs/flap-cmd-norm") {
       port = addInputModel("Flaps",
@@ -335,7 +348,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
 
     } else if (propName.substr(0, 32) == "fdm/jsbsim/fcs/throttle-pos-norm") {
       std::string cmd = "fcs/throttle-cmd-norm" + propName.substr(32);
-      return lookupJSBExpression(cmd);
+      return lookupJSBExpression(cmd, path);
 
 
     } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/mixture-cmd-norm") {
@@ -345,7 +358,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
 
     } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/mixture-pos-norm") {
       std::string cmd = "fcs/mixture-cmd-norm" + propName.substr(31);
-      return lookupJSBExpression(cmd);
+      return lookupJSBExpression(cmd, path);
 
 
     } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/advance-cmd-norm") {
@@ -356,14 +369,14 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
 
     } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/advance-pos-norm") {
       std::string cmd = "fcs/advance-cmd-norm" + propName.substr(31);
-      return lookupJSBExpression(cmd);
+      return lookupJSBExpression(cmd, path);
 
     } else if (propName == "fdm/jsbsim/gear/gear-cmd-norm") {
       port = addInputModel("Gear Retract",
                            "controls/gear/gear-down");
 
     } else if (propName == "fdm/jsbsim/gear/gear-pos-norm") {
-      return lookupJSBExpression("gear/gear-cmd-norm");
+      return lookupJSBExpression("gear/gear-cmd-norm", path);
 
     } else if (propName == "controls/gear/brake-parking") {
       port = addInputModel("Parking Brake",
@@ -372,77 +385,77 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
     } else if (propName == "fdm/jsbsim/gear/right-brake-pos-norm") {
       MaxModel* maxModel = new MaxModel("Right Brake Max");
       maxModel->setNumMaxInputs(3);
-
-      Port* pilotBr = addInputModel("Right Brake",
-                                    "controls/gear/brake-right");
-      maxModel->getInputPort(0)->connect(pilotBr);
-
-      Port* copilotBr = addInputModel("Right Copilot Brake",
-                                      "controls/gear/copilot-brake-right");
-      maxModel->getInputPort(1)->connect(copilotBr);
-
-      Port* parkBr = lookupJSBExpression("/controls/gear/brake-parking");
-      maxModel->getInputPort(2)->connect(parkBr);
-
       addFCSModel(maxModel);
+
+      PortProvider* pilotBr = addInputModel("Right Brake",
+                                    "controls/gear/brake-right");
+      Connection::connect(pilotBr, maxModel->getInputPort(0));
+
+      PortProvider* copilotBr = addInputModel("Right Copilot Brake",
+                                      "controls/gear/copilot-brake-right");
+      Connection::connect(copilotBr, maxModel->getInputPort(1));
+
+      PortProvider* parkBr = lookupJSBExpression("/controls/gear/brake-parking", maxModel->getPath());
+      Connection::connect(parkBr, maxModel->getInputPort(2));
+
       port = maxModel->getOutputPort(0);
 
     } else if (propName == "fdm/jsbsim/gear/left-brake-pos-norm") {
       MaxModel* maxModel = new MaxModel("Left Brake Max");
+      addFCSModel(maxModel);
       maxModel->setNumMaxInputs(3);
 
-      Port* pilotBr = addInputModel("Left Brake",
+      PortProvider* pilotBr = addInputModel("Left Brake",
                                     "controls/gear/brake-left");
-      maxModel->getInputPort(0)->connect(pilotBr);
+      Connection::connect(pilotBr, maxModel->getInputPort(0));
 
-      Port* copilotBr = addInputModel("Left Copilot Brake",
+      PortProvider* copilotBr = addInputModel("Left Copilot Brake",
                                       "controls/gear/copilot-brake-left");
-      maxModel->getInputPort(1)->connect(copilotBr);
+      Connection::connect(copilotBr, maxModel->getInputPort(1));
       
-      Port* parkBr = lookupJSBExpression("/controls/gear/brake-parking");
-      maxModel->getInputPort(2)->connect(parkBr);
+      PortProvider* parkBr = lookupJSBExpression("/controls/gear/brake-parking", maxModel->getPath());
+      Connection::connect(parkBr, maxModel->getInputPort(2));
 
-      addFCSModel(maxModel);
       port = maxModel->getOutputPort(0);
 
     } else if (propName == "fdm/jsbsim/fcs/elevator-pos-rad") {
-      port = lookupJSBExpression("fcs/elevator-pos-deg", false);
+      port = lookupJSBExpression("fcs/elevator-pos-deg", path, false);
       port = addFromUnit("elevator-pos-rad unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/elevator-pos-deg") {
-      port = lookupJSBExpression("fcs/elevator-pos-rad", false);
+      port = lookupJSBExpression("fcs/elevator-pos-rad", path, false);
       port = addToUnit("elevator-pos-deg unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/left-aileron-pos-rad") {
-      port = lookupJSBExpression("fcs/left-aileron-pos-deg", false);
+      port = lookupJSBExpression("fcs/left-aileron-pos-deg", path, false);
       port = addFromUnit("left-aileron-pos-rad unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/left-aileron-pos-deg") {
-      port = lookupJSBExpression("fcs/left-aileron-pos-rad", false);
+      port = lookupJSBExpression("fcs/left-aileron-pos-rad", path, false);
       port = addToUnit("left-aileron-pos-deg unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/right-aileron-pos-rad") {
-      port = lookupJSBExpression("fcs/right-aileron-pos-deg", false);
+      port = lookupJSBExpression("fcs/right-aileron-pos-deg", path, false);
       port = addFromUnit("right-aileron-pos-rad unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/right-aileron-pos-deg") {
-      port = lookupJSBExpression("fcs/right-aileron-pos-rad", false);
+      port = lookupJSBExpression("fcs/right-aileron-pos-rad", path, false);
       port = addToUnit("right-aileron-pos-deg unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/aileron-pos-rad") {
-      port = lookupJSBExpression("fcs/aileron-pos-deg", false);
+      port = lookupJSBExpression("fcs/aileron-pos-deg", path, false);
       port = addFromUnit("aileron-pos-rad unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/aileron-pos-deg") {
-      port = lookupJSBExpression("fcs/aileron-pos-rad", false);
+      port = lookupJSBExpression("fcs/aileron-pos-rad", path, false);
       port = addToUnit("aileron-pos-deg unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/rudder-pos-rad") {
-      port = lookupJSBExpression("fcs/rudder-pos-deg", false);
+      port = lookupJSBExpression("fcs/rudder-pos-deg", path, false);
       port = addFromUnit("rudder-pos-rad unit", uDegree, port);
 
     } else if (propName == "fdm/jsbsim/fcs/rudder-pos-deg") {
-      port = lookupJSBExpression("fcs/rudder-pos-rad", false);
+      port = lookupJSBExpression("fcs/rudder-pos-rad", path, false);
       port = addToUnit("rudder-pos-deg unit", uDegree, port);
 
     } else if (propName.substr(0, 19) == "fdm/jsbsim/fcs/mag-") {
@@ -450,12 +463,12 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
       // remove the 'mag-' substring here and use that as input for the
       // Abs block
       std::string name = "fcs/" + propName.substr(19);
-      Port* in = lookupJSBExpression(name);
+      PortProvider* in = lookupJSBExpression(name, path);
       port = addAbsModel(propName.substr(15), in);
 
     }
 
-    if (port && port->isConnected())
+    if (port /*&& port->isConnected()*/)
       registerExpression(propName, port);
 
     return port;
@@ -464,34 +477,35 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName)
   return 0;
 }
 
-Port*
-JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName)
+PortProvider*
+JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
+                                            const Model::Path& path)
 {
   // This routine checks if the given propName is a aerodynamic reference
   // point property. If so, it schedules and registers a discrete input model.
-  Port* port = 0;
+  PortProvider* port = 0;
   if (propName == "fdm/jsbsim/velocities/vt-mps") {
     port = mAeroForce->getOutputPort("trueSpeed");
   } else if (propName == "fdm/jsbsim/velocities/vt-fps") {
     port = mAeroForce->getOutputPort("trueSpeed");
-    port = addMultiBodyToUnit("True Speed fps", uFeetPSecond, port);
+    port = addToUnit("True Speed fps", uFeetPSecond, port);
   } else if (propName == "fdm/jsbsim/velocities/vt-kts") {
     port = mAeroForce->getOutputPort("trueSpeed");
-    port = addMultiBodyToUnit("True Speed kts", uKnots, port);
+    port = addToUnit("True Speed kts", uKnots, port);
 
   } else if (propName == "fdm/jsbsim/velocities/vc-fps") {
     port = mAeroForce->getOutputPort("calibratedAirSpeed");
-    port = addMultiBodyToUnit("Calibrated Speed fps", uFeetPSecond, port);
+    port = addToUnit("Calibrated Speed fps", uFeetPSecond, port);
   } else if (propName == "fdm/jsbsim/velocities/vc-kts") {
     port = mAeroForce->getOutputPort("calibratedAirSpeed");
-    port = addMultiBodyToUnit("Calibrated Speed kts", uKnots, port);
+    port = addToUnit("Calibrated Speed kts", uKnots, port);
 
   } else if (propName == "fdm/jsbsim/velocities/ve-fps") {
     port = mAeroForce->getOutputPort("calibratedAirSpeed");
-    port = addMultiBodyToUnit("Equivalent Speed fps", uFeetPSecond, port);
+    port = addToUnit("Equivalent Speed fps", uFeetPSecond, port);
   } else if (propName == "fdm/jsbsim/velocities/ve-kts") {
     port = mAeroForce->getOutputPort("calibratedAirSpeed");
-    port = addMultiBodyToUnit("Equivalent Speed kts", uKnots, port);
+    port = addToUnit("Equivalent Speed kts", uKnots, port);
 
   } else if (propName == "fdm/jsbsim/velocities/mach-norm" ||
              propName == "fdm/jsbsim/velocities/mach") {
@@ -501,127 +515,141 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName)
     port = mAeroForce->getOutputPort("p");
   } else if (propName == "fdm/jsbsim/velocities/p-deg_sec") {
     port = mAeroForce->getOutputPort("p");
-    port = addMultiBodyToUnit("P deg_sec", uDegree, port);
+    port = addToUnit("P deg_sec", uDegree, port);
 
   } else if (propName == "fdm/jsbsim/velocities/q-rad_sec") {
     port = mAeroForce->getOutputPort("q");
   } else if (propName == "fdm/jsbsim/velocities/q-deg_sec") {
     port = mAeroForce->getOutputPort("q");
-    port = addMultiBodyToUnit("Q deg_sec", uDegree, port);
+    port = addToUnit("Q deg_sec", uDegree, port);
 
   } else if (propName == "fdm/jsbsim/velocities/r-rad_sec") {
     port = mAeroForce->getOutputPort("r");
   } else if (propName == "fdm/jsbsim/velocities/r-deg_sec") {
     port = mAeroForce->getOutputPort("r");
-    port = addMultiBodyToUnit("R deg_sec", uDegree, port);
+    port = addToUnit("R deg_sec", uDegree, port);
 
     /// FIXME: the aero stuff is yet missing!!!
   } else if (propName == "fdm/jsbsim/velocities/p-aero-rad_sec") {
     port = mAeroForce->getOutputPort("p");
   } else if (propName == "fdm/jsbsim/velocities/p-aero-deg_sec") {
     port = mAeroForce->getOutputPort("p");
-    port = addMultiBodyToUnit("P-aero deg_sec", uDegree, port);
+    port = addToUnit("P-aero deg_sec", uDegree, port);
 
   } else if (propName == "fdm/jsbsim/velocities/q-aero-rad_sec") {
     port = mAeroForce->getOutputPort("q");
   } else if (propName == "fdm/jsbsim/velocities/q-aero-deg_sec") {
     port = mAeroForce->getOutputPort("q");
-    port = addMultiBodyToUnit("Q-aero deg_sec", uDegree, port);
+    port = addToUnit("Q-aero deg_sec", uDegree, port);
 
   } else if (propName == "fdm/jsbsim/velocities/r-aero-rad_sec") {
     port = mAeroForce->getOutputPort("r");
   } else if (propName == "fdm/jsbsim/velocities/r-aero-deg_sec") {
     port = mAeroForce->getOutputPort("r");
-    port = addMultiBodyToUnit("R-aero deg_sec", uDegree, port);
+    port = addToUnit("R-aero deg_sec", uDegree, port);
 
   } else if (propName == "fdm/jsbsim/velocities/u-aero-mps") {
     port = mAeroForce->getOutputPort("u");
   } else if (propName == "fdm/jsbsim/velocities/u-aero-fps") {
     port = mAeroForce->getOutputPort("u");
-    port = addMultiBodyToUnit("U-aero fps", uFeetPSecond, port);
+    port = addToUnit("U-aero fps", uFeetPSecond, port);
 
   } else if (propName == "fdm/jsbsim/velocities/v-aero-mps") {
     port = mAeroForce->getOutputPort("v");
   } else if (propName == "fdm/jsbsim/velocities/v-aero-fps") {
     port = mAeroForce->getOutputPort("v");
-    port = addMultiBodyToUnit("V-aero fps", uFeetPSecond, port);
+    port = addToUnit("V-aero fps", uFeetPSecond, port);
 
   } else if (propName == "fdm/jsbsim/velocities/w-aero-mps") {
     port = mAeroForce->getOutputPort("w");
   } else if (propName == "fdm/jsbsim/velocities/w-aero-fps") {
     port = mAeroForce->getOutputPort("w");
-    port = addMultiBodyToUnit("W-aero fps", uFeetPSecond, port);
+    port = addToUnit("W-aero fps", uFeetPSecond, port);
 
   } else if (propName == "fdm/jsbsim/aero/qbar-pa") {
     port = mAeroForce->getOutputPort("dynamicPressure");
   } else if (propName == "fdm/jsbsim/aero/qbar-psf") {
     port = mAeroForce->getOutputPort("dynamicPressure");
-    port = addMultiBodyToUnit("Dynamic pressure psf", uPoundPFt2, port);
+    port = addToUnit("Dynamic pressure psf", uPoundPFt2, port);
 
+  } else if (propName == "fdm/jsbsim/propulsion/tat-r") {
+    port = mAeroForce->getOutputPort("temperature");
+    port = addToUnit("Temperature Rankine", uRankine, port);
+  } else if (propName == "fdm/jsbsim/propulsion/tat-f") {
+    port = mAeroForce->getOutputPort("temperature");
+    port = addToUnit("Degree Fahrenheit", uFahrenheit, port);
+  } else if (propName == "fdm/jsbsim/propulsion/tat-c") {
+    port = mAeroForce->getOutputPort("temperature");
+    port = addToUnit("Degree Centigrade", uDegC, port);
+    // Braindead: a tepmerature value in velocities ...
   } else if (propName == "fdm/jsbsim/velocities/tat-r") {
-    port = mAeroForce->getOutputPort("temperature");
-    port = addMultiBodyToUnit("Temperature Rankine", uRankine, port);
+    port = lookupJSBExpression("propulsion/tat-r", path);
   } else if (propName == "fdm/jsbsim/velocities/tat-f") {
-    port = mAeroForce->getOutputPort("temperature");
-    port = addMultiBodyToUnit("Degree Fahrenheit", uFahrenheit, port);
+    port = lookupJSBExpression("propulsion/tat-f", path);
+  } else if (propName == "fdm/jsbsim/velocities/tat-c") {
+    port = lookupJSBExpression("propulsion/tat-c", path);
 
+  } else if (propName == "fdm/jsbsim/propulsion/pt-pa") {
+    port = mAeroForce->getOutputPort("pressure");
+  } else if (propName == "fdm/jsbsim/propulsion/pt-lbs_sqft") {
+    port = mAeroForce->getOutputPort("pressure");
+    port = addToUnit("Static pressure psf", uPoundPFt2, port);
     // Braindead: a pressure value in velocities ...
   } else if (propName == "fdm/jsbsim/velocities/pt-pa") {
-    port = mAeroForce->getOutputPort("pressure");
+    port = lookupJSBExpression("propulsion/pt-pa", path);
   } else if (propName == "fdm/jsbsim/velocities/pt-lbs_sqft") {
-    port = mAeroForce->getOutputPort("temperature");
-    port = addMultiBodyToUnit("Static pressure psf", uPoundPFt2, port);
+    port = lookupJSBExpression("propulsion/pt-lbs_sqft", path);
 
   } else if (propName == "fdm/jsbsim/aero/alpha-rad") {
     port = mAeroForce->getOutputPort("alpha");
   } else if (propName == "fdm/jsbsim/aero/mag-alpha-rad") {
     port = mAeroForce->getOutputPort("alpha");
-    port = addMultiBodyAbsModel("Angle of attack mag", port);
+    port = addAbsModel("Angle of attack mag", port);
   } else if (propName == "fdm/jsbsim/aero/alpha-deg") {
     port = mAeroForce->getOutputPort("alpha");
-    port = addMultiBodyToUnit("Angle of attack deg", uDegree, port);
+    port = addToUnit("Angle of attack deg", uDegree, port);
   } else if (propName == "fdm/jsbsim/aero/mag-alpha-deg") {
-    port = lookupJSBExpression("aero/alpha-deg");
-    port = addMultiBodyAbsModel("Angle of attack mag deg", port);
+    port = lookupJSBExpression("aero/alpha-deg", path);
+    port = addAbsModel("Angle of attack mag deg", port);
 
   } else if (propName == "fdm/jsbsim/aero/beta-rad") {
     port = mAeroForce->getOutputPort("beta");
   } else if (propName == "fdm/jsbsim/aero/mag-beta-rad") {
     port = mAeroForce->getOutputPort("beta");
-    port = addMultiBodyAbsModel("Angle of sideslip mag", port);
+    port = addAbsModel("Angle of sideslip mag", port);
   } else if (propName == "fdm/jsbsim/aero/beta-deg") {
     port = mAeroForce->getOutputPort("beta");
-    port = addMultiBodyToUnit("Angle of sideslip deg", uDegree, port);
+    port = addToUnit("Angle of sideslip deg", uDegree, port);
   } else if (propName == "fdm/jsbsim/aero/mag-beta-deg") {
-    port = lookupJSBExpression("aero/beta-deg");
-    port = addMultiBodyAbsModel("Angle of sideslip mag deg", port);
+    port = lookupJSBExpression("aero/beta-deg", path);
+    port = addAbsModel("Angle of sideslip mag deg", port);
 
   } else if (propName == "fdm/jsbsim/aero/alphadot-rad_sec") {
     port = mAeroForce->getOutputPort("alphaDot");
   } else if (propName == "fdm/jsbsim/aero/alphadot-deg_sec") {
     port = mAeroForce->getOutputPort("alphaDot");
-    port = addMultiBodyToUnit("Angle of attack deriv deg_sec", uDegree, port);
+    port = addToUnit("Angle of attack deriv deg_sec", uDegree, port);
 
   } else if (propName == "fdm/jsbsim/aero/betadot-rad_sec") {
     port = mAeroForce->getOutputPort("betaDot");
   } else if (propName == "fdm/jsbsim/aero/betadot-deg_sec") {
     port = mAeroForce->getOutputPort("betaDot");
-    port = addMultiBodyToUnit("Angle of sideslip deriv deg_sec", uDegree, port);
+    port = addToUnit("Angle of sideslip deriv deg_sec", uDegree, port);
 
   } else if (propName == "fdm/jsbsim/metrics/bw-ft") {
     /// FIXME, just schedule a constant block for that??
     port = mAeroForce->getOutputPort("wingSpan");
-    port = addMultiBodyToUnit("Wingspan ft", uFoot, port);
+    port = addToUnit("Wingspan ft", uFoot, port);
 
   } else if (propName == "fdm/jsbsim/metrics/Sw-sqft") {
     /// FIXME, just schedule a constant block for that??
     port = mAeroForce->getOutputPort("wingArea");
-    port = addMultiBodyToUnit("Wingarea ft2", uFoot2, port);
+    port = addToUnit("Wingarea ft2", uFoot2, port);
 
   } else if (propName == "fdm/jsbsim/metrics/cbarw-ft") {
     /// FIXME, just schedule a constant block for that??
     port = mAeroForce->getOutputPort("coord");
-    port = addMultiBodyToUnit("Coord ft", uFoot, port);
+    port = addToUnit("Coord ft", uFoot, port);
 
   } else if (propName == "fdm/jsbsim/aero/bi2vel") {
     port = mAeroForce->getOutputPort("wingSpanOver2Speed");
@@ -634,139 +662,152 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName)
 
   } else if (propName == "fdm/jsbsim/aero/h_b-mac-ft") {
     /// Hmmm, FIXME
-    port = lookupJSBExpression("aero/h_b-cg-ft");
+    port = lookupJSBExpression("aero/h_b-cg-ft", path);
 
   }
 
-  if (port && port->isConnected())
+  if (port /*&& port->isConnected()*/)
     registerExpression(propName, port);
   
   return port;
 }
 
-Port*
+PortProvider*
 JSBSimReaderBase::addInputModel(const std::string& name,
-                            const std::string& propName, real_type gain)
+                                const std::string& propName, real_type gain)
 {
   Input* input = new Input(name + " Input");
   input->setInputName(propName);
   input->setInputGain(gain);
   addFCSModel(input);
-  Port* port = input->getOutputPort(0);
+  PortProvider* port = input->getOutputPort(0);
   registerExpression(propName, port);
   return port;
 }
 
 void
-JSBSimReaderBase::addOutputModel(Port* out,
-                             const std::string& name,
-                             const std::string& propName, real_type gain)
+JSBSimReaderBase::addOutputModel(PortProvider* out,
+                                 const std::string& name,
+                                 const std::string& propName, real_type gain)
 {
+  SharedPtr<ModelGroup> modelGroup = getModelGroup(out);
+  if (!modelGroup) {
+    std::cerr << "Could not add output model " << name << std::endl;
+    return;
+  }
   Output* output = new Output(name + " Output");
-  output->getInputPort(0)->connect(out);
+  modelGroup->addModel(output, true);
   output->setOutputName(propName);
   output->setOutputGain(gain);
-  addFCSModel(output);
+  Connection::connect(out, output->getInputPort(0));
 }
 
-Port*
-JSBSimReaderBase::addInverterModel(const std::string& name, Port* in)
+PortProvider*
+JSBSimReaderBase::addInverterModel(const std::string& name, PortProvider* in)
 {
+  SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
+  if (!modelGroup) {
+    std::cerr << "Could not add inverter model " << name << std::endl;
+    return 0;
+  }
   UnaryFunctionModel *unary
     = new UnaryFunctionModel(name + " Inverter", UnaryFunctionModel::Minus);
-  unary->getInputPort(0)->connect(in);
-  addFCSModel(unary);
+  modelGroup->addModel(unary, true);
+  if (Port::Success != Connection::connect(in, unary->getInputPort(0)))
+    return 0;
   return unary->getOutputPort(0);
 }
 
-Port*
-JSBSimReaderBase::addAbsModel(const std::string& name, Port* in)
+PortProvider*
+JSBSimReaderBase::addAbsModel(const std::string& name, PortProvider* in)
 {
+  SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
+  if (!modelGroup) {
+    std::cerr << "Could not add inverter model " << name << std::endl;
+    return 0;
+  }
   UnaryFunctionModel *unary
     = new UnaryFunctionModel(name + " Abs", UnaryFunctionModel::Abs);
-  unary->getInputPort(0)->connect(in);
-  addFCSModel(unary);
+  modelGroup->addModel(unary, true);
+  if (Port::Success != Connection::connect(in, unary->getInputPort(0)))
+    return 0;
   return unary->getOutputPort(0);
 }
 
-Port*
-JSBSimReaderBase::addConstModel(const std::string& name, real_type value)
+PortProvider*
+JSBSimReaderBase::addConstModel(const std::string& name, real_type value,
+                                const Model::Path& path)
 {
   Matrix m(1, 1);
   m(1, 1) = 0;
   ConstModel* cModel = new ConstModel(name, m);
-  addFCSModel(cModel);
+  if (path.empty())
+    addFCSModel(cModel);
+  else
+    path.back()->addModel(cModel, true);
   return cModel->getOutputPort(0);
 }
 
-Port*
-JSBSimReaderBase::addToUnit(const std::string& name, Unit u, Port* in)
+PortProvider*
+JSBSimReaderBase::addToUnit(const std::string& name, Unit u, PortProvider* in)
 {
-  if (!in)
+  SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
+  if (!modelGroup) {
+    std::cerr << "Could not add inverter model " << name << std::endl;
     return 0;
+  }
   UnitConversionModel* unitConv
     = new UnitConversionModel(name, UnitConversionModel::SiToUnit, u);
-  addFCSModel(unitConv);
-  unitConv->getInputPort(0)->connect(in);
+  modelGroup->addModel(unitConv, true);
+  if (Port::Success != Connection::connect(in, unitConv->getInputPort(0)))
+    return 0;
   return unitConv->getOutputPort(0);
 }
 
-Port*
-JSBSimReaderBase::addFromUnit(const std::string& name, Unit u, Port* in)
+PortProvider*
+JSBSimReaderBase::addFromUnit(const std::string& name, Unit u, PortProvider* in)
 {
-  if (!in)
+  SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
+  if (!modelGroup) {
+    std::cerr << "Could not add inverter model " << name << std::endl;
     return 0;
+  }
   UnitConversionModel* unitConv
     = new UnitConversionModel(name, UnitConversionModel::UnitToSi, u);
-  addFCSModel(unitConv);
-  unitConv->getInputPort(0)->connect(in);
+  modelGroup->addModel(unitConv, true);
+  if (Port::Success != Connection::connect(in, unitConv->getInputPort(0)))
+    return 0;
   return unitConv->getOutputPort(0);
+}
+
+SharedPtr<ModelGroup>
+JSBSimReaderBase::getModelGroup(PortProvider* in)
+{
+  if (!in) {
+    std::cerr << "Could not find model group for input port" << std::endl;
+    return 0;
+  }
+  SharedPtr<Model> model = in->getModel().lock();
+  if (!model) {
+    std::cerr << "Could not find model group for input port" << std::endl;
+    return 0;
+  }
+  SharedPtr<ModelGroup> modelGroup = model->getParent();
+  if (!modelGroup) {
+    std::cerr << "Could not find model group for input port" << std::endl;
+    return 0;
+  }
+  return modelGroup;
 }
 
 void
 JSBSimReaderBase::addFCSModel(Model* model)
 {
   // FIXME
-  while (mVehicle->getModelGroup()->addModel(model) == ~0u) {
-    model->setName(model->getName() + "x");
-  }
+  mVehicle->getModelGroup()->addModel(model, true);
 }
 
-Port*
-JSBSimReaderBase::addMultiBodyToUnit(const std::string& name, Unit u, Port* in)
-{
-  if (!in)
-    return 0;
-  UnitConversionModel* unitConv
-    = new UnitConversionModel(name, UnitConversionModel::SiToUnit, u);
-  addMultiBodyModel(unitConv);
-  unitConv->getInputPort(0)->connect(in);
-  return unitConv->getOutputPort(0);
-}
-
-Port*
-JSBSimReaderBase::addMultiBodyFromUnit(const std::string& name, Unit u, Port* in)
-{
-  if (!in)
-    return 0;
-  UnitConversionModel* unitConv
-    = new UnitConversionModel(name, UnitConversionModel::UnitToSi, u);
-  addMultiBodyModel(unitConv);
-  unitConv->getInputPort(0)->connect(in);
-  return unitConv->getOutputPort(0);
-}
-
-Port*
-JSBSimReaderBase::addMultiBodyAbsModel(const std::string& name, Port* in)
-{
-  UnaryFunctionModel *unary
-    = new UnaryFunctionModel(name + " Abs", UnaryFunctionModel::Abs);
-  unary->getInputPort(0)->connect(in);
-  addMultiBodyModel(unary);
-  return unary->getOutputPort(0);
-}
-
-Port*
+PortProvider*
 JSBSimReaderBase::addMultiBodyConstModel(const std::string& name, real_type value)
 {
   Matrix m(1, 1);
@@ -780,25 +821,26 @@ void
 JSBSimReaderBase::addMultiBodyModel(Model* model)
 {
   // FIXME
-  while (mVehicle->getMultiBodySystem()->addModel(model) == ~0u) {
-    model->setName(model->getName() + "x");
-  }
+  mVehicle->getMultiBodySystem()->addModel(model, true);
 }
 
-Port*
-JSBSimReaderBase::getTablePrelookup(const std::string& name, Port* in,
+PortProvider*
+JSBSimReaderBase::getTablePrelookup(const std::string& name, PortProvider* in,
                                     const TableLookup& tl)
 {
   if (!in)
     return 0;
+  NumericPortProvider* nin = dynamic_cast<NumericPortProvider*>(in);
+  if (!nin)
+    return 0;
+
   // First check if we already have a table lookup for this port/brakepoint
   // combination. If so return that output port
   std::vector<SharedPtr<TablePreLookup> >::iterator it;
   for (it = mTableLookups.begin(); it != mTableLookups.end(); ++it) {
     if (tl == (*it)->getTableLookup() &&
-        in->hasSameSource((*it)->getInputPort(0))) {
+        nin->getPortInterface() == (*it)->getInputPort(0)->getPortInterface())
       return (*it)->getOutputPort(0);
-    }
   }
 
   // No sharable table lookup found, we need to create a new one
@@ -806,7 +848,7 @@ JSBSimReaderBase::getTablePrelookup(const std::string& name, Port* in,
     = new TablePreLookup(name + " Table Prelookup");
   addMultiBodyModel(tablePreLookup);
   tablePreLookup->setTableLookup(tl);
-  tablePreLookup->getInputPort(0)->connect(in);
+  Connection::connect(in, tablePreLookup->getInputPort(0));
   mTableLookups.push_back(tablePreLookup);
   return tablePreLookup->getOutputPort(0);
 }

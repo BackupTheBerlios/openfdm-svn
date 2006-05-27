@@ -611,8 +611,7 @@ System::setTimestepper(ODESolver* timestepper)
 Environment*
 System::getEnvironment(void) const
 {
-  /// Hmmm, FIXME
-  return const_cast<Environment*>((const Environment*)mEnvironment);
+  return mEnvironment;
 }
 
 void

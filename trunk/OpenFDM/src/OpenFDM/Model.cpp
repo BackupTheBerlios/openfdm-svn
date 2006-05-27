@@ -20,7 +20,7 @@ Model::Model(const std::string& name) :
   mNumDiscreteStates(0l),
   mDirectFeedThrough(false),
   mEnabled(true),
-  mEnablePort(new Port),
+  mEnablePort(new NumericPortAcceptor(this)),
   mDisableMode(Hold)
 {
 }
@@ -33,6 +33,14 @@ void
 Model::accept(ModelVisitor& visitor)
 {
   visitor.apply(*this);
+}
+
+void
+Model::ascend(ModelVisitor& visitor)
+{
+  SharedPtr<ModelGroup> parentGroup = mParentModel.lock();
+  if (parentGroup)
+    parentGroup->accept(visitor);
 }
 
 const ModelGroup*
@@ -165,10 +173,13 @@ Model::dependsDirectOn(Model* model)
     return false;
 
   // return true if any output of model is connected to any input of this
-  for (unsigned i = 0; i < getNumInputPorts(); ++i)
-    for (unsigned j = 0; j < model->getNumOutputPorts(); ++j)
-      if (getInputPort(i)->isConnectedTo(model->getOutputPort(j)))
+  for (unsigned i = 0; i < getNumInputPorts(); ++i) {
+    for (unsigned j = 0; j < model->getNumOutputPorts(); ++j) {
+      if (getInputPort(i)->getPortInterface() ==
+          model->getOutputPort(j)->getPortInterface())
         return true;
+    }
+  }
 
   return false;
 }
@@ -180,11 +191,11 @@ Model::getInputPortName(unsigned i) const
   return mInputPorts[i]->getName();
 }
 
-Port*
+NumericPortAcceptor*
 Model::getInputPort(const std::string& name)
 {
   // Check if this one exists and return its value.
-  std::vector<SharedPtr<Port> >::iterator it = mInputPorts.begin();
+  InputPortVector::iterator it = mInputPorts.begin();
   while (it != mInputPorts.end()) {
     if ((*it)->getName() == name)
       return *it;
@@ -193,7 +204,7 @@ Model::getInputPort(const std::string& name)
   return 0;
 }
 
-Port*
+NumericPortProvider*
 Model::getOutputPort(unsigned i)
 {
   if (mOutputPorts.size() <= i) {
@@ -205,11 +216,11 @@ Model::getOutputPort(unsigned i)
   return mOutputPorts[i];
 }
 
-Port*
+NumericPortProvider*
 Model::getOutputPort(const std::string& name)
 {
   // Check if this one exists and return its value.
-  std::vector<SharedPtr<Port> >::iterator it = mOutputPorts.begin();
+  OutputPortVector::iterator it = mOutputPorts.begin();
   while (it != mOutputPorts.end()) {
     if ((*it)->getName() == name)
       return *it;
@@ -246,14 +257,41 @@ Model::getPathString(void)
   return modelPathCollector.path;
 }
 
+Model::Path
+Model::getPath()
+{
+  Path path;
+
+  SharedPtr<ModelGroup> model = getParent();
+  while(model) {
+    path.push_front(model);
+    model = model->getParent();
+  }
+
+  return path;
+}
+
+const ModelGroup*
+Model::getParent(void) const
+{
+  return mParentModel;
+}
+
+ModelGroup*
+Model::getParent(void)
+{
+  return mParentModel;
+}
+
 void
 Model::setNumInputPorts(unsigned num)
 {
   // Ok, strange, but required ...
   unsigned oldSize = mInputPorts.size();
   mInputPorts.resize(num);
-  for (; oldSize < mInputPorts.size(); ++oldSize)
-    mInputPorts[oldSize] = new Port;
+  for (; oldSize < mInputPorts.size(); ++oldSize) {
+    mInputPorts[oldSize] = new NumericPortAcceptor(this);
+  }
 }
 
 void
@@ -269,8 +307,9 @@ Model::setNumOutputPorts(unsigned num)
   // Ok, strange, but required ...
   unsigned oldSize = mOutputPorts.size();
   mOutputPorts.resize(num);
-  for (; oldSize < mOutputPorts.size(); ++oldSize)
-    mOutputPorts[oldSize] = new Port;
+  for (; oldSize < mOutputPorts.size(); ++oldSize) {
+    mOutputPorts[oldSize] = new NumericPortProvider(this);
+  }
 }
 
 void
@@ -278,10 +317,11 @@ Model::setOutputPort(unsigned i, const std::string& name,
                      PortInterface* portInterface)
 {
   OpenFDMAssert(i < mOutputPorts.size());
-  Port* port = new Port;
-  port->setPortInterface(portInterface);
-  port->setName(name);
-  mOutputPorts[i] = port;
+
+  NumericPortProvider* portProvider = new NumericPortProvider(this);
+  portProvider->setPortInterface(portInterface);
+  portProvider->setName(name);
+  mOutputPorts[i] = portProvider;
 }
 
 Environment*
@@ -293,7 +333,7 @@ Model::getEnvironment(void) const
 }
 
 void
-Model::setParent(Model* model)
+Model::setParent(ModelGroup* model)
 {
   if (mParentModel) {
     mParentModel->adjustNumDiscreteStates(0, getNumDiscreteStates());
@@ -303,6 +343,13 @@ Model::setParent(Model* model)
   if (mParentModel) {
     mParentModel->adjustNumDiscreteStates(getNumDiscreteStates(), 0);
     mParentModel->adjustNumContinousStates(getNumContinousStates(), 0);
+  } else {
+    unsigned num = getNumInputPorts();
+    for (unsigned i = 0; i < num; ++i)
+      mInputPorts[i]->removeAllConnections();
+    num = getNumOutputPorts();
+    for (unsigned i = 0; i < num; ++i)
+      mOutputPorts[i]->removeAllConnections();
   }
 }
 

@@ -14,6 +14,11 @@
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/ReaderWriter.h>
 #include <OpenFDM/Table.h>
+#include <OpenFDM/Model.h>
+#include <OpenFDM/GroupInput.h>
+#include <OpenFDM/GroupOutput.h>
+#include <OpenFDM/Connection.h>
+#include <OpenFDM/Port.h>
 
 #include <OpenFDM/XML/XMLReader.h>
 #include <OpenFDM/XML/ContentHandler.h>
@@ -31,6 +36,121 @@ class Element;
 class Summer;
 class Product;
 
+class PortProviderSet {
+  struct PathPort {
+    Model::Path modelPath;
+    SharedPtr<PortProvider> portProvider;
+  };
+public:
+  PortProviderSet(PortProvider* sourcePortProvider = 0)
+  {
+    if (!sourcePortProvider)
+      return;
+    PathPort pathPort;
+    pathPort.portProvider = sourcePortProvider;
+
+    SharedPtr<Model> model = sourcePortProvider->getModel().lock();
+    if (model)
+      pathPort.modelPath = model->getPath();
+
+    mPortProviderList.push_back(pathPort);
+  }
+
+  PortProvider* routeTo(const Model::Path& path)
+  {
+    // could happen if the initialzer failed
+    if (mPortProviderList.empty())
+      return 0;
+
+    // ok, shortcut for old style connections
+    if (path.empty())
+      return mPortProviderList.front().portProvider;
+
+    const Model::Path& originatingPath = mPortProviderList.front().modelPath;
+    // fast return if the models are not connected to the same root system
+    if (path.front() != originatingPath.front())
+      return 0;
+
+    // first check, if we already have a route
+    PortProvider* portProvider = findProvider(path);
+    if (portProvider)
+      return portProvider;
+
+    // Compute the iterators for seperating the common part of the model path
+    // from the different part
+    Model::Path::const_iterator mi1 = path.begin();
+    Model::Path::const_iterator mi2 = originatingPath.begin();
+    while (mi1 != path.end() && mi2 != originatingPath.end()) {
+      if (*mi1 != *mi2)
+        break;
+      ++mi1;
+      ++mi2;
+    }
+
+    if (mi1 != path.end()) {
+      // that is: we must first go up that path and search again
+      Model::Path pathUp = path;
+      pathUp.pop_back();
+      portProvider = routeTo(pathUp);
+      if (!portProvider)
+        return 0;
+      
+      GroupInput* groupInput = new GroupInput(portProvider->getName());
+      path.back()->addModel(groupInput, true);
+
+      PathPort pathPort;
+      pathPort.modelPath = groupInput->getPath();
+      pathPort.portProvider = groupInput->getOutputPort(0);
+      mPortProviderList.push_back(pathPort);
+
+      Connection::connect(portProvider, groupInput->getGroupInput());
+      
+      return groupInput->getOutputPort(0);
+
+    } else if (mi2 != originatingPath.end()) {
+      // that is: we need to step deeper towards the origin of that port
+      Model::Path pathDown = path;
+      pathDown.push_back(*mi2);
+      portProvider = routeTo(pathDown);
+      if (!portProvider)
+        return 0;
+
+      GroupOutput* groupOutput = new GroupOutput(portProvider->getName());
+      pathDown.back()->addModel(groupOutput, true);
+
+      PathPort pathPort;
+      pathPort.modelPath = groupOutput->getPath();
+      pathPort.portProvider = groupOutput->getGroupOutput();
+      mPortProviderList.push_back(pathPort);
+
+      Connection::connect(portProvider, groupOutput->getInputPort(0));
+      
+      return groupOutput->getGroupOutput();
+
+    } else {
+      // should not happen, in this case the find provider must have been
+      // successful,
+      return 0;
+    }
+  }
+
+  PortProvider* findProvider(const Model::Path& path)
+  {
+    PortProviderList::iterator i = mPortProviderList.begin();
+    while (i != mPortProviderList.end()) {
+      if (i->modelPath == path)
+        return i->portProvider;
+      ++i;
+    }
+
+    return 0;
+  }
+
+private:
+  typedef std::list<PathPort> PortProviderList;
+  PortProviderList mPortProviderList;
+};
+
 // Implements a SimGear SGProperty compatible 'path' to 'expression'
 // mapping.
 // It is used to map the value names occuring in JSBSim configuration files
@@ -40,10 +160,9 @@ class Product;
 // map operations with the simplyfied key instead of the original one.
 // 
 /// FIXME!!!!!!!!
-class PropertyMap
-  : public std::map<std::string,SharedPtr<Port> > {
+class PropertyMap {
 public:
-  static std::string simplyfy(std::string path)
+  static std::string simplify(std::string path)
   {
     std::string::size_type idx;
     while ((idx = path.find("[0]")) != std::string::npos) {
@@ -52,64 +171,29 @@ public:
     return path;
   }
 
-  mapped_type&
-  operator[](const key_type& key)
-  { return std::map<std::string,SharedPtr<Port> >::operator[](simplyfy(key)); }
+  /// Clears the property map. Is used in the readers to reuse a reader
+  void clear()
+  { mMap.clear(); }
 
-  size_type
-  erase(const key_type& key)
-  { return std::map<std::string,SharedPtr<Port> >::erase(simplyfy(key)); }
-
-  iterator
-  find(const key_type& key)
-  { return std::map<std::string,SharedPtr<Port> >::find(simplyfy(key)); }
-
-  const_iterator
-  find(const key_type& key) const
-  { return std::map<std::string,SharedPtr<Port> >::find(simplyfy(key)); }
-
-  size_type
-  count(const key_type& key) const
-  { return std::map<std::string,SharedPtr<Port> >::count(simplyfy(key)); }
-
-  iterator
-  lower_bound(const key_type& key)
-  { return std::map<std::string,SharedPtr<Port> >::lower_bound(simplyfy(key)); }
-
-  const_iterator
-  lower_bound(const key_type& key) const
-  { return std::map<std::string,SharedPtr<Port> >::lower_bound(simplyfy(key)); }
-
-  iterator
-  upper_bound(const key_type& key)
-  { return std::map<std::string,SharedPtr<Port> >::upper_bound(simplyfy(key)); }
-
-  const_iterator
-  upper_bound(const key_type& key) const
-  { return std::map<std::string,SharedPtr<Port> >::upper_bound(simplyfy(key)); }
-
-  std::pair<iterator,iterator>
-  equal_range(const key_type& key)
-  { return std::map<std::string,SharedPtr<Port> >::equal_range(simplyfy(key)); }
-
-  std::pair<const_iterator,const_iterator>
-  equal_range(const key_type& key) const
-  { return std::map<std::string,SharedPtr<Port> >::equal_range(simplyfy(key)); }
-
-
-  std::pair<iterator,bool>
-  insert(const value_type& val)
+  PortProvider* routeTo(const std::string& name, const Model::Path& path)
   {
-    value_type sval(simplyfy(val.first), val.second);
-    return std::map<std::string,SharedPtr<Port> >::insert(sval);
+    std::string simplifiedName = simplify(name);
+    if (mMap.count(simplifiedName) <= 0)
+      return 0;
+    return mMap[simplifiedName].routeTo(path);
   }
 
-  iterator
-  insert(iterator position, const value_type& val)
-  {
-    value_type sval(simplyfy(val.first), val.second);
-    return std::map<std::string,SharedPtr<Port> >::insert(position, sval);
-  }
+  void registerPort(const std::string& name, PortProvider* port)
+  { mMap[simplify(name)] = port; }
+
+  /// Returns true if this property is already registered
+  bool exists(const std::string& propertyName) const
+  { return 0 < mMap.count(simplify(propertyName)); }
+
+private:
+  typedef std::map<std::string,PortProviderSet> PortMap;
+
+  PortMap mMap;
 };
 
 class JSBSimReaderBase : public ReaderWriter {
@@ -146,35 +230,40 @@ protected:
 
 
   /// <FIXME> document and rethink
-  Port* lookupJSBExpression(const std::string& name,
+  PortProvider* lookupJSBExpression(const std::string& name,
+                                    const Model::Path& path = Model::Path(),
+                                    bool recheckAeroProp = true);
+
+  bool connectJSBExpression(const std::string& name, PortAcceptor*,
                             bool recheckAeroProp = true);
 
-  void registerExpression(const std::string& name, Port* expr);
-  void registerJSBExpression(const std::string& name, Port* expr);
+  void registerExpression(const std::string& name, PortProvider* expr);
+  void registerJSBExpression(const std::string& name, PortProvider* expr);
 
-  Port* createAndScheduleAeroProp(const std::string& name);
-  Port* createAndScheduleInput(const std::string& name);
+  PortProvider* createAndScheduleAeroProp(const std::string& name,
+                                          const Model::Path& path);
+  PortProvider* createAndScheduleInput(const std::string& name,
+                                       const Model::Path& path);
 
-  Port* addInputModel(const std::string& name, const std::string& propName,
+  PortProvider* addInputModel(const std::string& name, const std::string& propName,
                       real_type gain = 1);
-  void addOutputModel(Port* out, const std::string& name,
+  void addOutputModel(PortProvider* out, const std::string& name,
                       const std::string& propName, real_type gain = 1);
 
-  Port* addInverterModel(const std::string& name, Port* in);
-  Port* addAbsModel(const std::string& name, Port* in);
-  Port* addConstModel(const std::string& name, real_type value);
-  Port* addToUnit(const std::string& name, Unit u, Port* in);
-  Port* addFromUnit(const std::string& name, Unit u, Port* in);
+  PortProvider* addInverterModel(const std::string& name, PortProvider* in);
+  PortProvider* addAbsModel(const std::string& name, PortProvider* in);
+  PortProvider* addConstModel(const std::string& name, real_type value,
+                              const Model::Path& path = Model::Path());
+  PortProvider* addToUnit(const std::string& name, Unit u, PortProvider* in);
+  PortProvider* addFromUnit(const std::string& name, Unit u, PortProvider* in);
 
+  static SharedPtr<ModelGroup> getModelGroup(PortProvider* in);
   void addFCSModel(Model* model);
 
-  Port* addMultiBodyToUnit(const std::string& name, Unit u, Port* in);
-  Port* addMultiBodyFromUnit(const std::string& name, Unit u, Port* in);
-  Port* addMultiBodyAbsModel(const std::string& name, Port* in);
-  Port* addMultiBodyConstModel(const std::string& name, real_type value);
+  PortProvider* addMultiBodyConstModel(const std::string& name, real_type value);
   void addMultiBodyModel(Model* model);
   /// </FIXME> document and rethink
-  Port* getTablePrelookup(const std::string& name, Port* in, const TableLookup& tl);
+  PortProvider* getTablePrelookup(const std::string& name, PortProvider* in, const TableLookup& tl);
   /// List for the aircraft search path.
   std::list<std::string> mAircraftPath;
   /// List for the engine search path.

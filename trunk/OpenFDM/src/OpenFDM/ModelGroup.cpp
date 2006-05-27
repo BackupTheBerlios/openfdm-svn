@@ -35,6 +35,13 @@ ModelGroup::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
+void
+ModelGroup::traverse(ModelVisitor& visitor)
+{
+  for (ModelList::iterator it = mModels.begin(); it != mModels.end(); ++it)
+    (*it)->accept(visitor);
+}
+
 const ModelGroup*
 ModelGroup::toModelGroup(void) const
 {
@@ -92,7 +99,7 @@ ModelGroup::getModelIndex(const std::string& name) const
 }
 
 unsigned
-ModelGroup::getModelIndex(const Model* model) const
+ModelGroup::getModelIndex(const Model* const model) const
 {
   unsigned idx = 0u;
   ModelList::const_iterator it = mModels.begin();
@@ -106,7 +113,7 @@ ModelGroup::getModelIndex(const Model* model) const
 }
 
 unsigned
-ModelGroup::addModel(Model* model)
+ModelGroup::addModel(Model* model, bool allowRename)
 {
   // cannot add no model ...
   if (!model) {
@@ -130,10 +137,16 @@ ModelGroup::addModel(Model* model)
   /// by attaching and than setting the duplicate name!
   for (unsigned i = 0; i < mModels.size(); ++i) {
     if (model->getName() == mModels[i]->getName()) {
-      Log(Model, Warning)
-        << "While adding the OpenFDM::Model \"" << model->getName()
-        << "\" to OpenFDM::ModelGroup \"" << getName()
-        << "\": Model with the same name is already attached!" << endl;
+      if (allowRename) {
+        model->setName(model->getName() + "r");
+        return addModel(model, allowRename);
+      } else {
+        Log(Model, Warning)
+          << "While adding the OpenFDM::Model \"" << model->getName()
+          << "\" to OpenFDM::ModelGroup \"" << getName()
+          << "\": Model with the same name is already attached!" << endl;
+        return ~0u;
+      }
     }
   }
 
@@ -188,6 +201,60 @@ ModelGroup::removeModel(Model* model)
   // note that erasing might delete the model object, thus delete it past
   // correction of the number of states.
   mModels.erase(it);
+}
+
+void
+ModelGroup::addConnection(Connection* connection)
+{
+  ConnectionList::iterator i;
+  i = std::find(mConnections.begin(), mConnections.end(), connection);
+  if (i != mConnections.end())
+    return;
+  mConnections.push_back(connection);
+}
+
+void
+ModelGroup::removeConnection(Connection* connection)
+{
+  ConnectionList::iterator i;
+  i = std::find(mConnections.begin(), mConnections.end(), connection);
+  if (i == mConnections.end())
+    return;
+  mConnections.erase(i);
+}
+
+unsigned
+ModelGroup::getConnectionIndex(const Connection* const connection) const
+{
+  for (unsigned i = 0; i < mConnections.size(); ++i) {
+    if (mConnections[i] == connection)
+      return i;
+  }
+  return ~0u;
+}
+
+Connection*
+ModelGroup::getConnection(unsigned i)
+{
+  if (mConnections.size() <= i)
+    return 0;
+  return mConnections[i];
+}
+
+const Connection*
+ModelGroup::getConnection(unsigned i) const
+{
+  if (mConnections.size() <= i)
+    return 0;
+  return mConnections[i];
+}
+
+Model::Path
+ModelGroup::getGroupPath() /* FIXME const*/
+{
+  Path path = getPath();
+  path.push_back(this);
+  return path;
 }
 
 } // namespace OpenFDM

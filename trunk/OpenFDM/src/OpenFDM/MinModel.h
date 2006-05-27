@@ -28,7 +28,7 @@ public:
 
 private:
   Matrix mMin;
-  std::vector<MatrixPortHandle> mInputPorts;
+  std::vector<MatrixPortHandle> mInputPorts2;
 };
 
 } // namespace OpenFDM

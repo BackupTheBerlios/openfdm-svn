@@ -2,6 +2,7 @@
  *
  */
 
+#include <OpenFDM/GroupInput.h>
 #include <OpenFDM/ModelGroup.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/Saturation.h>
@@ -9,15 +10,12 @@
 
 #include "JSBSimAerosurfaceScale.h"
 
-
-
-
 #include <OpenFDM/Gain.h>
 
 namespace OpenFDM {
 
 JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
-  JSBSimFCSComponent(name, true),
+  JSBSimFCSComponent(name),
   mGain(1)
 {
   // Such a component is a simple table lookup
@@ -39,8 +37,9 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   tl.setAtIndex(2, 0);
   tl.setAtIndex(3, 1);
   mTablePreLookup->setTableLookup(tl);
-  mTablePreLookup->getInputPort(0)->connect(mInputSaturation->getOutputPort(0));
   getModelGroup()->addModel(mTablePreLookup);
+  Connection::connect(mTablePreLookup->getInputPort(0),
+                      mInputSaturation->getOutputPort(0));
 
   mTable = new Table1D("Table");
   TableData<1>::SizeVector sv;
@@ -54,17 +53,22 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   iv(1) = 3;
   tableData(iv) = mGain;
   mTable->setTableData(tableData);
-  mTable->getInputPort(0)->connect(mTablePreLookup->getOutputPort(0));
   getModelGroup()->addModel(mTable);
+  Connection::connect(mTable->getInputPort(0),
+                      mTablePreLookup->getOutputPort(0));
 
   // Now connect the input and the output to this groups in and outputs
-  getModelGroup()->setNumInputPorts(1);
-  getModelGroup()->getInputPort(0)->setName("Input");
-  mInputSaturation->getInputPort(0)->connect(getModelGroup()->getInputPort(0));
-
-  getOutputPort()->connect(mTable->getOutputPort(0));
+  GroupInput* groupInput = new GroupInput("Input");
+  getModelGroup()->addModel(groupInput);
+  Connection::connect(mInputSaturation->getInputPort(0),
+                      groupInput->getOutputPort(0));
+ 
+  // That single output port is this one
+  Connection::connect(getInternalOutputPort(),
+                      mTable->getOutputPort(0));
   // FIXME, is no longer normalized ...
-  getOutputNormPort()->connect(mInputSaturation->getOutputPort(0));
+  Connection::connect(getInternalOutputNormPort(),
+                      mInputSaturation->getOutputPort(0));
 }
 
 JSBSimAerosurfaceScale::~JSBSimAerosurfaceScale(void)

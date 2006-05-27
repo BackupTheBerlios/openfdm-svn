@@ -22,7 +22,7 @@ class Port;
 class JSBSimFCSComponent :
     public Referenced {
 public:
-  JSBSimFCSComponent(const std::string& name, bool normOut);
+  JSBSimFCSComponent(const std::string& name);
   virtual ~JSBSimFCSComponent(void);
 
 //   /// Add an inverter into the input chanel numbered inNumber
@@ -31,14 +31,18 @@ public:
 //   void invertOutput(void);
 
   /// Return /the/ output port (we have only one)
-  Port* getOutputPort(void);
+  NumericPortProvider* getOutputPort(void);
+  NumericPortAcceptor* getInternalOutputPort(void);
   /// Return /the/ normalized output port
-  Port* getOutputNormPort(void);
+  NumericPortProvider* getOutputNormPort(void);
+  NumericPortAcceptor* getInternalOutputNormPort(void);
 
   ModelGroup* getModelGroup(void)
   { return mModelGroup; }
 private:
   SharedPtr<ModelGroup> mModelGroup;
+  SharedPtr<NumericPortAcceptor> mInternalOutputPort;
+  SharedPtr<NumericPortAcceptor> mInternalOutputNormPort;
 };
 
 } //namespace OpenFDM

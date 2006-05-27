@@ -17,13 +17,18 @@
 #include "SampleTime.h"
 #include "TaskInfo.h"
 #include "StateStream.h"
+#include "Connection.h"
 #include "Port.h"
+#include "NumericPortProvider.h"
+#include "NumericPortAcceptor.h"
 
 namespace OpenFDM {
 
 class ModelGroup;
 class MultiBodySystem;
 class Environment;
+class GroupInput;
+class GroupOutput;
 
 class Input;
 class Output;
@@ -37,15 +42,17 @@ class Model : public Object {
   OPENFDM_OBJECT(Model, Object);
 public:
   enum DisableMode {
-    /// If disabled, the models output/state is just held. On reenable, the
-    /// the model just continues to work
+    /// If disabled, the models output/state is just held.
+    /// On reenable, the model just continues to work
     Hold,
-    /// If disabled, the models output/state is just held. On reenable, the
-    /// the model is initialized
+    /// If disabled, the models output/state is just held.
+    /// On reenable, the model is initialized
     HoldReset,
     /// If disabled, the models output/state is initialized
     ResetHold
   };
+
+  typedef std::list<SharedPtr<ModelGroup> > Path;
 
   Model(const std::string& name);
   virtual ~Model(void);
@@ -56,8 +63,7 @@ public:
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
   /// Hmm ...
-  void ascend(ModelVisitor& visitor)
-  { if (mParentModel) mParentModel->accept(visitor); }
+  void ascend(ModelVisitor& visitor);
 
   virtual const ModelGroup* toModelGroup(void) const;
   virtual ModelGroup* toModelGroup(void);
@@ -81,9 +87,9 @@ public:
   virtual bool init(void);
   /// Called when the outputs need to be prepared for the next step.
   /// Note that this is called *before* update() is called.
-  virtual void output(const TaskInfo& taskInfo);
+  virtual void output(const TaskInfo& taskInfo /*const TaskSet& ??*/);
   /// Called whenever discrete states need to be updated.
-  virtual void update(const TaskInfo& taskInfo);
+  virtual void update(const TaskInfo& taskInfo /*const Task& ??*/);
 
   /// Convinience functions may make the virtuals protected ...
   void outputIfEnabled(const TaskInfo& taskInfo)
@@ -144,26 +150,27 @@ public:
   const std::string& getInputPortName(unsigned i) const;
 
   /// Sets the i-th input property.
-  Port* getInputPort(const std::string& name);
-  Port* getInputPort(unsigned i)
+  NumericPortAcceptor* getInputPort(const std::string& name);
+  NumericPortAcceptor* getInputPort(unsigned i)
   {
     OpenFDMAssert(i < mInputPorts.size());
     return mInputPorts[i];
   }
-  Port* getEnablePort(void)
+  NumericPortAcceptor* getEnablePort(void)
   { return mEnablePort; }
 
   unsigned getNumOutputPorts(void) const
   { return mOutputPorts.size(); }
 
-  Port* getOutputPort(unsigned i);
-  Port* getOutputPort(const std::string& name);
+  NumericPortProvider* getOutputPort(unsigned i);
+  NumericPortProvider* getOutputPort(const std::string& name);
   const std::string& getOutputPortName(unsigned i) const;
 
   std::string getPathString(void) /* FIXME const*/;
+  Path getPath() /* FIXME const*/;
 
-  const Model* getParent(void) const { return mParentModel; }
-  Model* getParent(void) { return mParentModel; }
+  const ModelGroup* getParent(void) const;
+  ModelGroup* getParent(void);
 
   /// FIXME: have function returning the input ports a given output
   /// port depends on
@@ -179,6 +186,23 @@ protected:
 
   /// Sets the name of the i-th input property.
   void setInputPortName(unsigned i, const std::string& name);
+  void addInputPort(NumericPortAcceptor* port)
+  {
+    unsigned num = getNumInputPorts();
+    setNumInputPorts(num+1);
+    mInputPorts[num] = port;
+  }
+  void removeInputPort(NumericPortAcceptor* port)
+  {
+    InputPortVector::iterator i = std::find(mInputPorts.begin(),
+                                            mInputPorts.end(), port);
+    if (i == mInputPorts.end()) {
+      Log(Model,Error) << "Trying to remove foreign port" << endl;
+      return;
+    }
+    (*i)->invalidate();
+    mInputPorts.erase(i);
+  }
 
   /// Sets the number of output properties.
   void setNumOutputPorts(unsigned num);
@@ -197,6 +221,24 @@ protected:
   { setOutputPort(i, name, new MatrixGetterPortInterface<M>(model, getter)); }
 
   /// Convenience shortcuts
+  void addOutputPort(NumericPortProvider* port)
+  {
+    unsigned num = getNumOutputPorts();
+    setNumOutputPorts(num+1);
+    mOutputPorts[num] = port;
+  }
+  void removeOutputPort(NumericPortProvider* port)
+  {
+    OutputPortVector::iterator i = std::find(mOutputPorts.begin(),
+                                             mOutputPorts.end(), port);
+    if (i == mOutputPorts.end()) {
+      Log(Model,Error) << "Trying to remove foreign port" << endl;
+      return;
+    }
+    (*i)->invalidate();
+    mOutputPorts.erase(i);
+  }
+
   void addOutputPort(const std::string& name, PortInterface* portInterface)
   {
     unsigned num = getNumOutputPorts();
@@ -214,29 +256,38 @@ protected:
 
   virtual Environment* getEnvironment(void) const;
 
-private:
+// private:
   // Sets the parent model.
   // That is the one which is informed if the number of states changes.
-  void setParent(Model* model);
+  virtual void setParent(ModelGroup* model);
+  friend class GroupInput;
+  friend class GroupOutput;
 
+private:
   void setEnabledUnconditional(bool enabled);
 
   /// FIXME: use visitor for that
   void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
   void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);
 
-  WeakPtr<Model> mParentModel;
+  WeakPtr<ModelGroup> mParentModel;
   unsigned mNumContinousStates;
   unsigned mNumDiscreteStates;
   bool mDirectFeedThrough;
   /// True if the Model is enabled
   bool mEnabled;
-  SharedPtr<Port> mEnablePort;
+  // the old obsolete one
+  SharedPtr<NumericPortAcceptor> mEnablePort;
   RealPortHandle mEnablePortInterface;
   DisableMode mDisableMode;
   SampleTimeSet mSampleTimeSet;
-  std::vector<SharedPtr<Port> > mInputPorts;
-  std::vector<SharedPtr<Port> > mOutputPorts;
+
+  /// New port system
+protected:
+  typedef std::vector<SharedPtr<NumericPortAcceptor> > InputPortVector;
+  typedef std::vector<SharedPtr<NumericPortProvider> > OutputPortVector;
+  InputPortVector mInputPorts;
+  OutputPortVector mOutputPorts;
 
   // FIXME
   friend class ModelGroup;

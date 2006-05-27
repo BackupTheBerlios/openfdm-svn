@@ -20,10 +20,10 @@
 
 #include <OpenFDM/ReaderWriter.h>
 #include <OpenFDM/XMLDumpModelVisitor.h>
-#include <JSBSim/LegacyJSBSimReader.h>
+#include <JSBSim/JSBSimReader.h>
 
 using OpenFDM::ReaderWriter;
-using OpenFDM::LegacyJSBSimReader;
+using OpenFDM::JSBSimReader;
 
 #include <iostream>
 
@@ -99,7 +99,7 @@ void
 MainWindow::setupDockWindows()
 {
   // Try to read JSBSim legacy files.
-  LegacyJSBSimReader reader;
+  JSBSimReader reader;
   
   reader.addAircraftPath("/home/flightgear/sw/share/FlightGear/Aircraft/FA-18/");
   reader.addEnginePath("/home/flightgear/sw/share/FlightGear/Aircraft/FA-18/Engines/");
