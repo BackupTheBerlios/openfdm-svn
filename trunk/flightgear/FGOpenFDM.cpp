@@ -309,11 +309,6 @@ void FGOpenFDM::init()
       SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
     }
     
-    SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() Error messages from legacy JSBSim reader:");
-    errors = reader.getErrors();
-    for (it = errors.begin(); it != errors.end(); ++it) {
-      SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
-    }
     return;
   }
   mData->vehicle = reader.getVehicle();
