@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "Object.h"
+#include "Model.h"
 #include "Vector.h"
 #include "Inertia.h"
 #include "Frame.h"
@@ -20,15 +20,13 @@ class MultiBodySystem;
 
 // Rename to Body???
 class RigidBody :
-    public Object {
+    public Model {
 public:
   /// Constructor
   RigidBody(const std::string& name);
   /// Destructor
   virtual ~RigidBody(void);
 
-
-// protected:
   /** Compute articulated values outboard including this body.
       That function is part of the articulated body algorithm.
       It is used to compute the articulated force and articulated inertia
@@ -40,8 +38,12 @@ public:
       @see const SpatialInertia& getArtInertia(void) const
       @see const Vector6& getArtForce(void) const
    */
-  void computeArtValues(void);
+  virtual void output(const TaskInfo& taskInfo);
 
+  /// Returns true if the Model this depends directly on @ref model.
+  virtual bool dependsDirectOn(Model* model);
+
+// protected:
   /** Get the outboard articulated inertia.
       Returns a reference to the outboard articulated inertia.
       The returned inertia matrix is computed prevously by a call to

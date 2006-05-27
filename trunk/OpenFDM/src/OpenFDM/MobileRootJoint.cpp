@@ -83,7 +83,6 @@ MobileRootJoint::output(const TaskInfo& taskInfo)
   Log(ArtBody, Debug) << "Computing mobile root accelerations for joint \""
                       << getName() << "\"" << endl;
   
-  outboardBody->computeArtValues();
   interactWith(getInboardBody());
 }
 

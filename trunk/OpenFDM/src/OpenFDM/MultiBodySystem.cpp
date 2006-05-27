@@ -61,6 +61,7 @@ MultiBodySystem::addRigidBody(RigidBody* rigidBody)
   }
   mRigidBodies.push_back(rigidBody);
   rigidBody->setParentMultiBodySystem(this);
+  addModel(rigidBody);
 }
 
 void
@@ -75,6 +76,7 @@ MultiBodySystem::removeRigidBody(RigidBody* rigidBody)
     else
       ++it;
   }
+  removeModel(rigidBody);
 }
 
 void

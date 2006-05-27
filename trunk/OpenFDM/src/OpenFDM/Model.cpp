@@ -166,7 +166,7 @@ Model::dependsDirectOn(Model* model)
   if (!mDirectFeedThrough)
     return false;
 
-  // FIXME HACK, outputs of interacts only deoend on its state ...
+  // FIXME HACK, outputs of interacts only depend on its state ...
   // FIXME is this always true??
   Interact* interact = model->toInteract();
   if (interact)

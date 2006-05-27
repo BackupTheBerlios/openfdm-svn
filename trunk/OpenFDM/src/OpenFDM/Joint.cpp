@@ -57,8 +57,6 @@ Joint::output(const TaskInfo& taskInfo)
   Log(ArtBody, Debug) << "Preparing Body \""
                       << outboardBody->getName() << "\" through joint \""
                       << getName() << "\"" << endl;
-  
-  outboardBody->computeArtValues();
 }
 
 bool
@@ -71,10 +69,13 @@ Joint::dependsDirectOn(Model* model)
   if (!outboardBody)
     return false;
   
+  if (model == outboardBody)
+    return true;
+  
   Interact* interact = model->toInteract();
   if (!interact)
     return false;
-  
+
   return interact != this && interact->isChildOf(outboardBody);
 }
 

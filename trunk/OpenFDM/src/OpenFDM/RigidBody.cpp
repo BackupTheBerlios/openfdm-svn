@@ -19,7 +19,7 @@
 namespace OpenFDM {
 
 RigidBody::RigidBody(const std::string& name) :
-  Object(name)
+  Model(name)
 {
 }
 
@@ -28,7 +28,7 @@ RigidBody::~RigidBody(void)
 }
 
 void
-RigidBody::computeArtValues(void)
+RigidBody::output(const TaskInfo& taskInfo)
 {
   Log(ArtBody, Debug) << "Entry of computeArtValues of \"" << getName()
                       << "\"" << endl;
@@ -45,6 +45,16 @@ RigidBody::computeArtValues(void)
   Log(ArtBody, Debug3) << "On exit of computeArtValues of \"" << getName()
                        << "\" Force is:\n" << trans(mArtForce)
                        << "\nInertia:\n" << mArtInertia << endl;
+}
+
+bool
+RigidBody::dependsDirectOn(Model* model)
+{
+  InteractList::const_iterator i;
+  for (i = mInteracts.begin(); i != mInteracts.end(); ++i)
+    if ((*i) == model)
+      return true;
+  return Model::dependsDirectOn(model);
 }
 
 void
