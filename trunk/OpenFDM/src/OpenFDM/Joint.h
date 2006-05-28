@@ -49,7 +49,9 @@ public:
   virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
                                  const SpatialInertia& outI,
                                  const Vector6& outF) = 0;
-
+private:
+  SpatialInertia mInboardInertia;
+  Vector6 mInboardForce;
 };
 
 } // namespace OpenFDM

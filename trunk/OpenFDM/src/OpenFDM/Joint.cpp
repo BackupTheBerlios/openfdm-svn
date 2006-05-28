@@ -45,6 +45,18 @@ Joint::output(const TaskInfo& taskInfo)
   Log(ArtBody, Debug) << "Preparing Body \""
                       << outboardBody->getName() << "\" through joint \""
                       << getName() << "\"" << endl;
+
+  // We need the articulated inertia and force from the outboard body.
+  // Apply the joint degrees of freedom to that.
+  // If there was an error, (something was singular ???)
+  // just ignore that part. FIXME, ist this ok????
+  jointArticulation(mInboardInertia, mInboardForce,
+                    outboardBody->getArtInertia(),
+                    outboardBody->getArtForce());
+
+  Log(ArtBody, Debug3) << "Outboard Articulated values past joint "
+                       << "projection: Force:\n" << trans(mInboardForce)
+                       << "\nInertia\n" << mInboardInertia << endl;
 }
 
 bool
@@ -71,6 +83,8 @@ void
 Joint::interactWith(RigidBody* rigidBody)
 {
   // HMmMm
+  if (!rigidBody)
+    return;
   if (rigidBody != getInboardBody())
     return;
   
@@ -78,30 +92,10 @@ Joint::interactWith(RigidBody* rigidBody)
   if (!outboardBody)
     return;
   
-  Log(ArtBody, Debug) << "Contributing articulation from \""
-                      << outboardBody->getName() << "\" through joint \""
-                      << getName() << "\"" << endl;
-  
-  // We need the articulated inertia and force from the outboard body.
-  SpatialInertia I;
-  Vector6 F;
-  
-  // Apply the joint degrees of freedom to that.
-  // If there was an error, (something was singular ???)
-  // just ignore that part. FIXME, ist this ok????
-  jointArticulation(I, F, outboardBody->getArtInertia(),
-                    outboardBody->getArtForce());
-  
-  Log(ArtBody, Debug3) << "Outboard Articulated values past joint "
-                       << "projection: Force:\n" << trans(F)
-                       << "\nInertia\n" << I << endl;
-  
   // Contribute the transformed values to the parent.
-  if (!rigidBody)
-    return;
   Frame* frame = outboardBody->getFrame();
-  rigidBody->contributeInertia(frame->inertiaToParent(I));
-  rigidBody->contributeForce(frame->forceToParent(F));
+  rigidBody->contributeInertia(frame->inertiaToParent(mInboardInertia));
+  rigidBody->contributeForce(frame->forceToParent(mInboardForce));
 }
 
 } // namespace OpenFDM

@@ -62,19 +62,6 @@ MobileRootJoint::init(void)
 }
 
 void
-MobileRootJoint::output(const TaskInfo& taskInfo)
-{
-  RigidBody* outboardBody = getOutboardBody();
-  if (!outboardBody)
-    return;
-  
-  Log(ArtBody, Debug) << "Computing mobile root accelerations for joint \""
-                      << getName() << "\"" << endl;
-  
-  interactWith(getInboardBody());
-}
-
-void
 MobileRootJoint::recheckTopology(void)
 {
   // Hmm, works for the first cut, but rethink what happens with strange
