@@ -16,7 +16,6 @@
 namespace OpenFDM {
 
 class Interact;
-class MultiBodySystem;
 
 // Rename to Body???
 class RigidBody :
@@ -95,9 +94,6 @@ public:
   const Frame* getFrame(void) const
   { return mFrame; }
 
-  void setParentMultiBodySystem(MultiBodySystem* multiBodySystem);
-  MultiBodySystem* getParentMultiBodySystem(void);
-
   bool setInboardJoint(Joint* joint);
   bool addInteract(Interact* interact);
   bool removeInteract(Interact* interact);
@@ -119,8 +115,6 @@ private:
   /// All Interacts attached to this RigidBody
   typedef std::vector<SharedPtr<Interact> > InteractList;
   InteractList mInteracts;
-
-  WeakPtr<MultiBodySystem> mParentMultiBodySystem;
 
   // HMM ... FIXME
   friend class Interact;

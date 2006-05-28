@@ -13,7 +13,7 @@
 #include "Force.h"
 #include "Mass.h"
 #include "Joint.h"
-#include "MultiBodySystem.h"
+#include "ModelGroup.h"
 #include "RigidBody.h"
 
 namespace OpenFDM {
@@ -57,48 +57,21 @@ RigidBody::dependsDirectOn(Model* model)
   return Model::dependsDirectOn(model);
 }
 
-void
-RigidBody::setParentMultiBodySystem(MultiBodySystem* multiBodySystem)
-{
-  /// FIXME: rethink that ...
-  mParentMultiBodySystem = multiBodySystem;
-  if (!multiBodySystem)
-    return;
-  InteractList::iterator it;
-  for (it = mInteracts.begin(); it != mInteracts.end(); ++it) {
-    multiBodySystem->addInteract(*it);
-  }
-  if (mInboardJoint)
-    multiBodySystem->addInteract(mInboardJoint);
-}
-
-MultiBodySystem*
-RigidBody::getParentMultiBodySystem(void)
-{
-  return mParentMultiBodySystem;
-}
-
 bool
 RigidBody::setInboardJoint(Joint* joint)
 {
-  mInboardJoint = joint;
   if (!joint->attachTo(this, true))
     return false;
-  if (!mParentMultiBodySystem)
-    return true;
-  mParentMultiBodySystem->addInteract(joint);
+  mInboardJoint = joint;
   return true;
 }
 
 bool
 RigidBody::addInteract(Interact* interact)
 {
-  mInteracts.push_back(interact);
   if (!interact->attachTo(this, false))
     return false;
-  if (!mParentMultiBodySystem)
-    return true;
-  mParentMultiBodySystem->addInteract(interact);
+  mInteracts.push_back(interact);
   return true;
 }
 

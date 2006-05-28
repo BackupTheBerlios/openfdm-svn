@@ -13,7 +13,6 @@
 #include "ModelVisitor.h"
 #include "Model.h"
 #include "ModelGroup.h"
-#include "MultiBodySystem.h"
 
 namespace OpenFDM {
 
@@ -43,16 +42,6 @@ public:
     dumpProperties(modelGroup);
     traverse(modelGroup);
     dumpConnections(modelGroup);
-    --mIndent;
-    indent() << "</model>\n";
-  }
-  virtual void apply(MultiBodySystem& multiBodySystem)
-  {
-    indent() << "<model type=\"MultiBodySystem\">\n";
-    ++mIndent;
-    dumpProperties(multiBodySystem);
-    traverse(multiBodySystem);
-    dumpConnections(multiBodySystem);
     --mIndent;
     indent() << "</model>\n";
   }

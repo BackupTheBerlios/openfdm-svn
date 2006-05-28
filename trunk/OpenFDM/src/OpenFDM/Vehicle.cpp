@@ -24,25 +24,26 @@ namespace OpenFDM {
 
 Vehicle::Vehicle(void)
 {
-  mTopBody = new RigidBody("Topmost rigid body");
-
-  mMobileRootJoint = new MobileRootJoint("Mobile vehicle base");
-  mTopBody->setInboardJoint(mMobileRootJoint);
-
   mSystem = new System("Top Vehicle System");
-
-  mModelGroup = new ModelGroup("Flight Control System");
-
-  mMultiBodySystem = new MultiBodySystem("Multi Body System");
-  mMultiBodySystem->addRigidBody(mTopBody);
 
 //   mSystem->setTimestepper(new ExplicitAdams);
   mSystem->setTimestepper(new DoPri5);
 //   mSystem->setTimestepper(new ImplicitEuler);
 //   mSystem->setTimestepper(new MidpointRule);
 
+  mModelGroup = new ModelGroup("Flight Control System");
   mSystem->addModel(mModelGroup);
+
+  mMultiBodySystem = new ModelGroup("Multi Body System");
   mSystem->addModel(mMultiBodySystem);
+  mMultiBodySystem->addSampleTime(SampleTime::Continous);
+
+  mTopBody = new RigidBody("Topmost rigid body");
+  mMultiBodySystem->addModel(mTopBody);
+
+  mMobileRootJoint = new MobileRootJoint("Mobile vehicle base");
+  mMultiBodySystem->addModel(mMobileRootJoint);
+  mTopBody->setInboardJoint(mMobileRootJoint);
 }
 
 Vehicle::~Vehicle(void)

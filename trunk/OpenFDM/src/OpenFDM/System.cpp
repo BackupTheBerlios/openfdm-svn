@@ -12,6 +12,8 @@
 #include "Function.h"
 #include "Newton.h"
 #include "ModelVisitor.h"
+#include "Planet.h"
+#include "MobileRootJoint.h"
 #include "System.h"
 
 namespace OpenFDM {

@@ -13,7 +13,6 @@
 #include "Frame.h"
 #include "MobileRootJoint.h"
 #include "RootFrame.h"
-#include "MultiBodySystem.h"
 #include "Planet.h"
 #include "ODESolver.h"
 #include "Environment.h"
@@ -119,13 +118,13 @@ public:
   System* getSystem(void)
   { return mSystem; }
 
-  MultiBodySystem* getMultiBodySystem(void)
+  ModelGroup* getMultiBodySystem(void)
   { return mMultiBodySystem; }
 
 private:
   SharedPtr<RigidBody> mTopBody;
   SharedPtr<MobileRootJoint> mMobileRootJoint;
-  SharedPtr<MultiBodySystem> mMultiBodySystem;
+  SharedPtr<ModelGroup> mMultiBodySystem;
 
   SharedPtr<ModelGroup> mModelGroup;
 

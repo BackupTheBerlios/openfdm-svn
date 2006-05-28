@@ -271,7 +271,9 @@ JSBSimReader::loadAircraft(const std::string& acFileName)
   // Allocate a new vehicle
   mVehicle = new Vehicle;
   mAeroForce = new AeroForce("Aerodynamic force");
+  mVehicle->getMultiBodySystem()->addModel(mAeroForce);
   mVehicle->getTopBody()->addInteract(mAeroForce);
+
   // Default discrete stepsize of JSBSim
   mVehicle->getModelGroup()->addSampleTime(SampleTime(1.0/120));
 
@@ -420,11 +422,11 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   epFrame->setRelVelDot(Vector6::zeros());
   mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
   Sensor* accelSensor = new Sensor("Acceleration Sensor");
-  accelSensor->addSampleTime(SampleTime(1.0/120));
+  mVehicle->getMultiBodySystem()->addModel(accelSensor);
   mVehicle->getTopBody()->addInteract(accelSensor);
+  accelSensor->addSampleTime(SampleTime(1.0/120));
   PortProvider* port = accelSensor->getOutputPort("nlfz");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
-//   epFrame->addInteract(accelSensor);
   addOutputModel(port, "Normalized load value", "accelerations/nlf");
   port = accelSensor->getOutputPort("az");
   registerJSBExpression("accelerations/accel-z-norm", port);
@@ -497,7 +499,9 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
     spi += inertiaFrom(structToBody(it->first), inertia);
     ++it;
   }
-  mVehicle->getTopBody()->addInteract(new Mass("Emptyweight Mass", spi));
+  Mass* massModel = new Mass("Emptyweight Mass", spi);
+  mVehicle->getMultiBodySystem()->addModel(massModel);
+  mVehicle->getTopBody()->addInteract(massModel);
 
   return true;
 }
@@ -508,14 +512,17 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
                           const Vector3& parentDesignPos)
 {
   RigidBody* wheel = new RigidBody(name + " Wheel");
+  mVehicle->getMultiBodySystem()->addModel(wheel);
   InertiaMatrix wheelInertia = inertiaData(wheelElem->getElement("inertia"),
                                            InertiaMatrix(10, 0, 0, 30, 0, 10));
   real_type wheelMass = realData(wheelElem->getElement("mass"), 30);
-  wheel->addInteract(new Mass(name + " Wheel Inertia",
-                              SpatialInertia(wheelInertia, wheelMass)));
-  mVehicle->getMultiBodySystem()->addRigidBody(wheel);
+  Mass* mass = new Mass(name + " Wheel Inertia",
+                        SpatialInertia(wheelInertia, wheelMass));
+  mVehicle->getMultiBodySystem()->addModel(mass);
+  wheel->addInteract(mass);
   
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
+  mVehicle->getMultiBodySystem()->addModel(wj);
   parent->addInteract(wj);
   wheel->setInboardJoint(wj);
   wj->setJointAxis(Vector3(0, 1, 0));
@@ -559,6 +566,8 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
   
   real_type wheelDiam = realData(wheelElem->getElement("wheelDiameter"));
   WheelContact* wc = new WheelContact(name + " Wheel Contact");
+  mVehicle->getMultiBodySystem()->addModel(wc);
+  wheel->addInteract(wc);
   wc->setWheelRadius(0.5*wheelDiam);
   real_type tireSpring = realData(wheelElem->getElement("tireSpring"));
   wc->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
@@ -566,7 +575,6 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
   wc->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
   real_type fc = realData(wheelElem->getElement("frictionCoef"), 0.9);
   wc->setFrictionCoeficient(fc);
-  wheel->addInteract(wc);
   
   PortProvider* port = wj->getOutputPort(0);
   std::string nameBase = "Wheel " + numStr + " Position";
@@ -594,6 +602,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 
         // For jsbsim use simple gears
         SimpleGear* sg = new SimpleGear(name);
+        mVehicle->getMultiBodySystem()->addModel(sg);
         mVehicle->getTopBody()->addInteract(sg);
         Vector3 loc
           = locationData((*it)->getElement("location"), Vector3(0, 0, 0));
@@ -677,6 +686,8 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
       } else if (type == "STRUCTURE" || type == "CONTACT") {
         // Very simple contact force. Penalty method.
         SimpleContact* sc = new SimpleContact((*it)->getAttribute("name"));
+        mVehicle->getMultiBodySystem()->addModel(sc);
+        mVehicle->getTopBody()->addInteract(sc);
 
         Vector3 loc
           = locationData((*it)->getElement("location"), Vector3(0, 0, 0));
@@ -693,8 +704,6 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         real_type fs = realData((*it)->getElement("static_friction"), 0);
         sc->setFrictionCoeficient(fs);
         
-        mVehicle->getTopBody()->addInteract(sc);
-
       } else if (type == "NOSEGEAR") {
         // Ok, a compressable gear like the F-18's main gear is.
         // Some kind of hardcoding here ...
@@ -713,12 +722,13 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         if (steerable == "true" || steerable == "1") {
           // A new part modelling the steering
           RigidBody* steer = new RigidBody(name + " Steer");
-          mVehicle->getMultiBodySystem()->addRigidBody(steer);
+          mVehicle->getMultiBodySystem()->addModel(steer);
           
           // connect that via a revolute joint to the toplevel body.
           // Note the 0.05m below, most steering wheels have some kind of
           // castering auto line up behavour. That is doe with this 0.05m.
           RevoluteActuator* sj = new RevoluteActuator(name + " Steer Joint");
+          mVehicle->getMultiBodySystem()->addModel(sj);
           strutParent->addInteract(sj);
           steer->setInboardJoint(sj);
           sj->setJointAxis(Vector3(0, 0, 1));
@@ -759,6 +769,8 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         const XMLElement* launchbarElem = (*it)->getElement("launchbar");
         if (launchbarElem) {
           Launchbar* launchbar = new Launchbar(name + " Launchbar");
+          addMultiBodyModel(launchbar);
+          strutParent->addInteract(launchbar);
           real_type length = realData(launchbarElem->getElement("length"), 0.5);
           launchbar->setLength(length);
           real_type upAngle = realData(launchbarElem->getElement("upAngle"), 30);
@@ -769,8 +781,6 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           launchbar->setLaunchForce(force);
           Vector3 loc = structToBody(locationData(launchbarElem->getElement("location")));
           launchbar->setPosition(loc - parentPos);
-          addMultiBodyModel(launchbar);
-          strutParent->addInteract(launchbar);
 
 
           if (!connectJSBExpression("/controls/gear/launchbar",
@@ -791,11 +801,14 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         
         // Now the compressible part of the strut
         RigidBody* arm = new RigidBody(name + " Strut");
-        mVehicle->getMultiBodySystem()->addRigidBody(arm);
-        arm->addInteract(new Mass(name + " Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(100))));
+        mVehicle->getMultiBodySystem()->addModel(arm);
+        Mass* mass = new Mass(name + " Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(100)));
+        mVehicle->getMultiBodySystem()->addModel(mass);
+        arm->addInteract(mass);
         
         // This time it is a prismatic joint
         PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
+        mVehicle->getMultiBodySystem()->addModel(pj);
         strutParent->addInteract(pj);
         arm->setInboardJoint(pj);
         pj->setJointAxis(Vector3(0, 0, -1));
@@ -833,11 +846,14 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 
         // This is the movable part of the strut, doing the compression
         RigidBody* arm = new RigidBody(name + " Arm");
-        mVehicle->getMultiBodySystem()->addRigidBody(arm);
-        arm->addInteract(new Mass(name + " Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(80))));
+        mVehicle->getMultiBodySystem()->addModel(arm);
+        Mass* mass = new Mass(name + " Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(80)));
+        mVehicle->getMultiBodySystem()->addModel(mass);
+        arm->addInteract(mass);
         
         // Connect that with a revolute joint to the main body
         RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
+        mVehicle->getMultiBodySystem()->addModel(rj);
         mVehicle->getTopBody()->addInteract(rj);
         arm->setInboardJoint(rj);
         Vector3 compressJointAxis = locationData((*it)->getElement("axis"),
@@ -850,6 +866,9 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         rj->setOrientation(Quaternion::unit());
         
         LineForce* lineForce = new LineForce(name + " Air Spring LineForce");
+        mVehicle->getMultiBodySystem()->addModel(lineForce);
+        mVehicle->getTopBody()->addInteract(lineForce);
+        arm->addInteract(lineForce);
         /// FIXME that ordering in attachment is messy!
         Vector3 asMnt0 = locationData((*it)->getElement("springMount0"),
                                       compressJointPos -
@@ -860,8 +879,6 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         lineForce->setPosition0(structToBody(asMnt0));
         lineForce->setPosition1(structToBody(asMnt1)
                                 - structToBody(compressJointPos));
-        mVehicle->getTopBody()->addInteract(lineForce);
-        arm->addInteract(lineForce);
         
         // The damper element
         const XMLElement* airSpringElem = (*it)->getElement("damper");
@@ -894,6 +911,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         std::string name = (*it)->getAttribute("name");
 
         Tailhook* tailhook = new Tailhook(name + " Tailhook");
+        mVehicle->getMultiBodySystem()->addModel(tailhook);
         real_type length = realData(tailhookElem->getElement("length"), 0.5);
         tailhook->setLength(length);
         real_type upAngle = realData(tailhookElem->getElement("upAngle"), 10);
@@ -1148,6 +1166,7 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
   Connection::connect(fullForce->getOutputPort(0), prod->getInputPort(1));
 
   ExternalForceModel* engineForce = new ExternalForceModel(namestr);
+  mVehicle->getMultiBodySystem()->addModel(engineForce);
   mVehicle->getTopBody()->addInteract(engineForce);
   engineForce->setPosition(pos);
   engineForce->setOrientation(orientation);

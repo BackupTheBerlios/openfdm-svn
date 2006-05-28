@@ -8,7 +8,6 @@
 #include "Model.h"
 #include "ModelGroup.h"
 #include "RigidBody.h"
-#include "MultiBodySystem.h"
 #include "System.h"
 
 namespace OpenFDM {
@@ -21,8 +20,6 @@ public:
   { }
   virtual void apply(ModelGroup& modelGroup)
   { apply((Model&)modelGroup); }
-  virtual void apply(MultiBodySystem& multiBodySystem)
-  { apply((ModelGroup&)multiBodySystem); }
   virtual void apply(System& system)
   { apply((ModelGroup&)system); }
   virtual void apply(Interact& interact)
@@ -36,10 +33,6 @@ protected:
   /// traverse downward
   inline void traverse(ModelGroup& modelGroup)
   { modelGroup.traverse(*this); }
-  /// Call this in the apply(MultiBodySystem&) method if you want to
-  /// traverse downward
-  inline void traverse(MultiBodySystem& multiBodySystem)
-  { multiBodySystem.traverse(*this); }
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse upward
   inline void ascend(Model& model)
