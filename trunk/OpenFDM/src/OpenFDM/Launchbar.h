@@ -61,6 +61,9 @@ public:
   void setLaunchForce(const real_type& launchForce)
   { mLaunchForce = launchForce; }
 
+protected:
+  virtual void setEnvironment(Environment* environment);
+
 private:
   void getGround(real_type t);
   bool computeCatFrame(real_type t, real_type& catLen);
@@ -97,7 +100,7 @@ private:
   SharedPtr<FreeFrame> mCatFrame;
 
   GroundValues mGroundVal;
-  SharedPtr<Environment> mEnvironment;
+  SharedPtr<const Environment> mEnvironment;
 };
 
 } // namespace OpenFDM

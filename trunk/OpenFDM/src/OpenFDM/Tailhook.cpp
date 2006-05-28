@@ -8,7 +8,6 @@
 #include "Vector.h"
 #include "Frame.h"
 #include "Force.h"
-#include "Environment.h"
 #include "Tailhook.h"
 
 namespace OpenFDM {
@@ -61,9 +60,6 @@ Tailhook::init(void)
     return false;
   }
 
-  mEnvironment = getEnvironment();
-  if (!mEnvironment)
-    return false;
   return ExternalForce::init();
 }
 
@@ -186,13 +182,14 @@ Tailhook::getDiscreteState(StateStream& state) const
 }
 
 void
+Tailhook::setEnvironment(Environment* environment)
+{
+  mEnvironment = environment;
+}
+
+void
 Tailhook::getGround(real_type t)
 {
-  // FIXME
-  if (!mEnvironment) {
-    mEnvironment = getEnvironment();
-  }
-
   // Get the position of the contact in the reference system.
   Vector3 pos = mMountFrame->getRefPosition();
   // Query for the ground parameters at this point.

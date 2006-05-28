@@ -8,7 +8,6 @@
 #include "Vector.h"
 #include "Frame.h"
 #include "Force.h"
-#include "Environment.h"
 #include "Launchbar.h"
 
 namespace OpenFDM {
@@ -75,9 +74,6 @@ Launchbar::init(void)
     return false;
   }
 
-  mEnvironment = getEnvironment();
-  if (!mEnvironment)
-    return false;
   return ExternalForce::init();
 }
 
@@ -246,13 +242,14 @@ Launchbar::getDiscreteState(StateStream& state) const
 }
 
 void
+Launchbar::setEnvironment(Environment* environment)
+{
+  mEnvironment = environment;
+}
+
+void
 Launchbar::getGround(real_type t)
 {
-  // FIXME
-  if (!mEnvironment) {
-    mEnvironment = getEnvironment();
-  }
-
   // Get the position of the contact in the reference system.
   Vector3 pos = mMountFrame->getRefPosition();
   // Query for the ground parameters at this point.

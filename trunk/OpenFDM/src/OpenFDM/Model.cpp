@@ -300,14 +300,6 @@ Model::setOutputPort(unsigned i, const std::string& name,
   mOutputPorts[i] = portProvider;
 }
 
-Environment*
-Model::getEnvironment(void) const
-{
-  if (mParentModel)
-    return mParentModel->getEnvironment();
-  return 0;
-}
-
 void
 Model::setParent(ModelGroup* model)
 {
@@ -345,6 +337,11 @@ Model::setNumDiscreteStates(unsigned numDiscreteStates)
     mParentModel->adjustNumDiscreteStates(numDiscreteStates,
                                           mNumDiscreteStates);
   mNumDiscreteStates = numDiscreteStates;
+}
+
+void
+Model::setEnvironment(Environment* environment)
+{
 }
 
 void

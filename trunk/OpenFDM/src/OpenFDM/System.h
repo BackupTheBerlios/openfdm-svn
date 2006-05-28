@@ -64,8 +64,6 @@ public:
   /// Return a reference to the timestepping algorithm
   ODESolver* getTimestepper(void) { return mTimestepper; }
 
-  virtual Environment* getEnvironment(void) const;
-
   /// FIXME Hmm, may be different ...
   /// May move into System ...
   void evalFunction(real_type t, const Vector& v, Vector& out);
@@ -73,6 +71,9 @@ public:
   /// The default implementation computes a numeric approximation by finite
   /// differences
   void evalJacobian(real_type t, const Vector& state, Matrix& jac);
+
+  Environment* getEnvironment(void) const
+  { return mEnvironment; }
 
 private:
   /// The timestepper used to get time discrete approximate solutions to the
@@ -92,8 +93,6 @@ private:
   typedef std::vector<SharedPtr<Model> > ModelList;
   ModelList mDiscreteModelList;
   ModelList mContinousModelList;
-
-  SharedPtr<Environment> mEnvironment;
 
   /// The actual simulation time for the system
   real_type mTime;

@@ -78,10 +78,6 @@ AeroForce::~AeroForce(void)
 bool
 AeroForce::init(void)
 {
-  mEnvironment = getEnvironment();
-  if (!mEnvironment)
-    return false;
-
   if (getInputPort("roll"))
     mBodyAxisTorque[0] = getInputPort("roll")->toRealPortHandle();
   else
@@ -119,7 +115,7 @@ AeroForce::output(const TaskInfo& taskInfo)
     Log(Model, Debug) << "AeroForce::output(): \"" << getName()
                       << "\" computing ground plane below" << endl;
     real_type t = taskInfo.getTime();
-    mGroundVal = mEnvironment->getGround()->getGroundPlane(t, getRefPosition());
+    mGroundVal = getGround()->getGroundPlane(t, getRefPosition());
   }
   dirtyAll();
 
@@ -204,12 +200,8 @@ const Vector6&
 AeroForce::getAirSpeed(void) const
 {
   if (mDirtyAirSpeed) {
-    // FIXME temporary workaround
-    if (!mEnvironment) {
-      const_cast<AeroForce*>(this)->mEnvironment = getEnvironment();
-    }
     // Get the position in the earth centered coordinate frame.
-    Vector3 windVel = mEnvironment->getWind()->getWindVel(getRefPosition());
+    Vector3 windVel = getWind()->getWindVel(getRefPosition());
     windVel = mMountFrame->rotFromRef(windVel);
     mAirSpeed = Vector6(Vector3::zeros(), windVel) + mMountFrame->getRefVel();
     mDirtyAirSpeed = false;
@@ -455,12 +447,8 @@ const real_type&
 AeroForce::getAltitude(void) const
 {
   if (mDirtyAltitude) {
-    // FIXME temporary workaround
-    if (!mEnvironment) {
-      const_cast<AeroForce*>(this)->mEnvironment = getEnvironment();
-    }
     // Get the altitude for the atmosphere.
-    Geodetic geod = mEnvironment->getPlanet()->toGeod(getRefPosition());
+    Geodetic geod = getPlanet()->toGeod(getRefPosition());
 
     // Get the Athmosphere information at this position and the given time.
     mAltitude = geod.altitude;
@@ -579,6 +567,12 @@ AeroForce::getLocalGroundPlane(void) const
     mDirtyLocalGroundPlane = false;
   }
   return mLocalGroundPlane;
+}
+
+void
+AeroForce::setEnvironment(Environment* environment)
+{
+  mEnvironment = environment;
 }
 
 void

@@ -40,18 +40,12 @@ MobileRootJoint::accept(ModelVisitor& visitor)
 bool
 MobileRootJoint::init(void)
 {
-  Environment* environment = getEnvironment();
-  if (!environment) {
-    Log(Model,Error) << "Can not get environment pointer! Most propably the"
-      " Model is not put together correctly!" << endl;
-    return false;
-  }
-  mGravity = environment->getGravity();
+  mGravity = mEnvironment->getGravity();
   if (!mGravity) {
     Log(Model,Error) << "Can not get gravity model!" << endl;
     return false;
   }
-  Frame* rootFrame = environment->getRootFrame();
+  const Frame* rootFrame = mEnvironment->getRootFrame();
   if (!rootFrame) {
     Log(Model,Error) << "Can not get rootFrame model!" << endl;
     return false;
@@ -80,9 +74,8 @@ MobileRootJoint::recheckTopology(void)
     if (frame && !frame->isDirectParentFrameOf(mFrame))
       frame->addChildFrame(mFrame);
   } else {
-    Environment* environment = getEnvironment();
-    if (environment) {
-      Frame* rootFrame = environment->getRootFrame();
+    if (mEnvironment) {
+      Frame* rootFrame = mEnvironment->getRootFrame();
       if (rootFrame && !rootFrame->isDirectParentFrameOf(mFrame))
         rootFrame->addChildFrame(mFrame);
     }
@@ -146,28 +139,25 @@ MobileRootJoint::setRefOrientation(const Quaternion& o)
 Geodetic
 MobileRootJoint::getGeodPosition(void) const
 {
-  Environment* env = getEnvironment();
-  if (!env)
+  if (!mEnvironment)
     return Geodetic();
-  return env->getPlanet()->toGeod(getRefPosition());
+  return mEnvironment->getPlanet()->toGeod(getRefPosition());
 }
 
 void
 MobileRootJoint::setGeodPosition(const Geodetic& geod)
 {
-  Environment* env = getEnvironment();
-  if (!env)
+  if (!mEnvironment)
     return;
-  setRefPosition(env->getPlanet()->toCart(geod));
+  setRefPosition(mEnvironment->getPlanet()->toCart(geod));
 }
 
 Quaternion
 MobileRootJoint::getGeodOrientation(void) const
 {
-  Environment* env = getEnvironment();
-  if (!env)
+  if (!mEnvironment)
     return Quaternion::unit();
-  Quaternion hlOr = env->getPlanet()->getGeodHLOrientation(getRefPosition());
+  Quaternion hlOr = mEnvironment->getPlanet()->getGeodHLOrientation(getRefPosition());
   return inverse(hlOr)*getRefOrientation();
 }
 
@@ -229,6 +219,12 @@ MobileRootJoint::getStateDeriv(StateStream& stateDeriv)
   stateDeriv.writeSubState(getQDot());
   stateDeriv.writeSubState(getPosDot());
   stateDeriv.writeSubState(getRelVelDot());
+}
+
+void
+MobileRootJoint::setEnvironment(Environment* environment)
+{
+  mEnvironment = environment;
 }
 
 } // namespace OpenFDM

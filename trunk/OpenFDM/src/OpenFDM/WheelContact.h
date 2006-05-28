@@ -52,6 +52,10 @@ public:
   { mFrictionCoeficient = frictionCoeficient; }
   const real_type& getFrictionCoeficient(void) const
   { return mFrictionCoeficient; }
+
+protected:
+  virtual void setEnvironment(Environment* environment);
+
 private:
   void getGround(real_type t);
 

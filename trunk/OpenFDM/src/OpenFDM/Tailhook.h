@@ -46,6 +46,9 @@ public:
   void setDownAngle(const real_type& downAngle)
   { mDownAngle = downAngle; }
 
+protected:
+  virtual void setEnvironment(Environment* environment);
+
 private:
   void getGround(real_type t);
   bool computeWireFrame(real_type t, real_type& width);

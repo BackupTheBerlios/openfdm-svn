@@ -86,6 +86,9 @@ public:
    */
   virtual void getStateDeriv(StateStream& state);
 
+protected:
+  virtual void setEnvironment(Environment* environment);
+
 private:
   /// The commonly used gravity model from the environment class
   /// It is initialized at the init() call
@@ -93,6 +96,9 @@ private:
 
   /// The frame of the mobile root
   SharedPtr<MobileRootJointFrame> mFrame;
+
+  /// The environment pointer
+  SharedPtr<Environment> mEnvironment;
 };
 
 } // namespace OpenFDM

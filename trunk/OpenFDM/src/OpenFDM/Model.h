@@ -165,9 +165,6 @@ public:
   const ModelGroup* getParent(void) const;
   ModelGroup* getParent(void);
 
-  /// FIXME: have function returning the input ports a given output
-  /// port depends on
-
 protected:
   void setNumContinousStates(unsigned numContinousStates);
   void setNumDiscreteStates(unsigned numDiscreteStates);
@@ -247,7 +244,7 @@ protected:
                      const Matrix& (M::*getter)(void) const)
   { addOutputPort(name, new MatrixGetterPortInterface<M>(model, getter)); }
 
-  virtual Environment* getEnvironment(void) const;
+  virtual void setEnvironment(Environment* environment);
 
 // private:
   // Sets the parent model.

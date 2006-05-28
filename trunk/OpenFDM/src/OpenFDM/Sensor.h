@@ -11,6 +11,7 @@
 #include "Gravity.h"
 #include "Frame.h"
 #include "RigidBody.h"
+#include "Environment.h"
 #include "Interact.h"
 
 namespace OpenFDM {
@@ -54,7 +55,7 @@ public:
     Frame* frame = rigidBody->getFrame();
     if (!frame)
       return;
-    const Gravity* grav = getEnvironment()->getGravity();
+    const Gravity* grav = mEnvironment->getGravity();
     if (!grav)
       return;
     Vector3 accel = frame->getClassicAccel().getLinear();
@@ -75,7 +76,12 @@ public:
   virtual void interactWith(RigidBody*)
   {}
 
+protected:
+  virtual void setEnvironment(Environment* environment)
+  { mEnvironment = environment; }
+
 private:
+  SharedPtr<Environment> mEnvironment;
   real_type mNlfz;
   real_type mNextNlfz;
   real_type mAz;

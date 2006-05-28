@@ -33,11 +33,14 @@ public:
   computeFrictionForce(real_type normForce, const Vector3& vel,
                        const Vector3& groundNormal, real_type friction) const;
 
+protected:
+  virtual void setEnvironment(Environment* environment);
+
 private:
   void getGround(real_type t);
 
   GroundValues mGroundVal;
-  SharedPtr<Environment> mEnvironment;
+  SharedPtr<const Environment> mEnvironment;
 };
 
 } // namespace OpenFDM

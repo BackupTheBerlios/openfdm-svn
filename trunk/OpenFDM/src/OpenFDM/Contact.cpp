@@ -8,7 +8,6 @@
 #include "Vector.h"
 #include "Frame.h"
 #include "Force.h"
-#include "Environment.h"
 #include "Contact.h"
 
 namespace OpenFDM {
@@ -34,10 +33,6 @@ bool
 Contact::init(void)
 {
   setForce(Vector6::zeros());
-  mEnvironment = getEnvironment();
-  if (!mEnvironment)
-    return false;
-
   return ExternalForce::init();
 }
 
@@ -110,13 +105,14 @@ Contact::computeFrictionForce(real_type normForce, const Vector3& vel,
 }
 
 void
+Contact::setEnvironment(Environment* environment)
+{
+  mEnvironment = environment;
+}
+
+void
 Contact::getGround(real_type t)
 {
-  // FIXME
-  if (!mEnvironment) {
-    mEnvironment = getEnvironment();
-  }
-
   // Get the position of the contact in the reference system.
   Vector3 pos = mMountFrame->getRefPosition();
   // Query for the ground parameters at this point.

@@ -610,12 +610,6 @@ System::setTimestepper(ODESolver* timestepper)
   }
 }
 
-Environment*
-System::getEnvironment(void) const
-{
-  return mEnvironment;
-}
-
 void
 System::evalFunction(real_type t, const Vector& v, Vector& out)
 {

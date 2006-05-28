@@ -9,6 +9,7 @@
 
 #include "Object.h"
 #include "Model.h"
+#include "Environment.h"
 #include "NumericPortProxy.h"
 
 namespace OpenFDM {
@@ -50,11 +51,17 @@ public:
   Connection* getConnection(unsigned i);
   const Connection* getConnection(unsigned i) const;
 
+  virtual void setEnvironment(Environment* environment);
+
   /// Returns the path of this ModelGroup. In contrast to getPath this returns
   /// the path including the current ModelGroup.
   Path getGroupPath() /* FIXME const*/;
 
+protected:
+  SharedPtr<Environment> mEnvironment;
+
 private:
+
   typedef std::vector<SharedPtr<Model> > ModelList;
   typedef std::vector<SharedPtr<Connection> > ConnectionList;
 

@@ -83,6 +83,9 @@ public:
   const Vector3& getUnitDown(void) const;
   const Plane& getLocalGroundPlane(void) const;
 
+protected:
+  virtual void setEnvironment(Environment* environment);
+
 private:
   void dirtyAll(void);
   void computeAtmosphere(void) const;
@@ -96,8 +99,12 @@ private:
   { return mEnvironment->getAtmosphere(); }
   const Planet* getPlanet(void) const
   { return mEnvironment->getPlanet(); }
+  const Ground* getGround(void) const
+  { return mEnvironment->getGround(); }
+  const Wind* getWind(void) const
+  { return mEnvironment->getWind(); }
 
-  SharedPtr<Environment> mEnvironment;
+  SharedPtr<const Environment> mEnvironment;
 
   real_type mWingSpan;
   real_type mWingArea;
