@@ -35,18 +35,6 @@ Joint::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
-const Joint*
-Joint::toJoint(void) const
-{
-  return this;
-}
-
-Joint*
-Joint::toJoint(void)
-{
-  return this;
-}
-
 void
 Joint::output(const TaskInfo& taskInfo)
 {

@@ -33,9 +33,6 @@ public:
   /// Double dispatch helper for the multibody system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
-  virtual const MobileRootJoint* toMobileRootJoint(void) const;
-  virtual MobileRootJoint* toMobileRootJoint(void);
-
   virtual bool init(void);
   virtual void output(const TaskInfo& taskInfo);
 

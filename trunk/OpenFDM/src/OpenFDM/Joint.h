@@ -34,9 +34,6 @@ public:
   /// Double dispatch helper for the multibody system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
-  virtual const Joint* toJoint(void) const;
-  virtual Joint* toJoint(void);
-
   virtual void output(const TaskInfo& taskInfo);
 
   virtual bool dependsDirectOn(Model* model);

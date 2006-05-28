@@ -91,30 +91,6 @@ Model::toInteract(void)
   return 0;
 }
 
-const Joint*
-Model::toJoint(void) const
-{
-  return 0;
-}
-
-Joint*
-Model::toJoint(void)
-{
-  return 0;
-}
-
-const MobileRootJoint*
-Model::toMobileRootJoint(void) const
-{
-  return 0;
-}
-
-MobileRootJoint*
-Model::toMobileRootJoint(void)
-{
-  return 0;
-}
-
 bool
 Model::init(void)
 {

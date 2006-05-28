@@ -37,18 +37,6 @@ MobileRootJoint::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
-const MobileRootJoint*
-MobileRootJoint::toMobileRootJoint(void) const
-{
-  return this;
-}
-
-MobileRootJoint*
-MobileRootJoint::toMobileRootJoint(void)
-{
-  return this;
-}
-
 bool
 MobileRootJoint::init(void)
 {

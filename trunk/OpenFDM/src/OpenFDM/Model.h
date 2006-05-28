@@ -77,12 +77,6 @@ public:
   virtual const Interact* toInteract(void) const;
   virtual Interact* toInteract(void);
 
-  virtual const Joint* toJoint(void) const;
-  virtual Joint* toJoint(void);
-
-  virtual const MobileRootJoint* toMobileRootJoint(void) const;
-  virtual MobileRootJoint* toMobileRootJoint(void);
-
   /// Called on each system initialization.
   virtual bool init(void);
   /// Called when the outputs need to be prepared for the next step.
