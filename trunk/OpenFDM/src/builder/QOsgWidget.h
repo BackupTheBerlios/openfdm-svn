@@ -19,8 +19,9 @@
 
 class QtEventAdapter;
 
-class QOsgWidget
-  : public QGLWidget, protected osgGA::GUIActionAdapter {
+class QOsgWidget :
+  public QGLWidget, protected osgGA::GUIActionAdapter {
+  Q_OBJECT
 public:
   QOsgWidget(QWidget *parent = 0, const QGLWidget* shareWidget = 0,
              Qt::WFlags f = 0);

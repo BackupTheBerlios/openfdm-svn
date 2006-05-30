@@ -95,9 +95,9 @@ bool
 Model::init(void)
 {
   if (mEnablePort)
-    mEnablePortInterface = mEnablePort->toRealPortHandle();
+    mEnablePortHandle = mEnablePort->toRealPortHandle();
   else
-    mEnablePortInterface = 0;
+    mEnablePortHandle = 0;
   return true;
 }
 

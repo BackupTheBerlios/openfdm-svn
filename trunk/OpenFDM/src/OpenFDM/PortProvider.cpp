@@ -26,4 +26,12 @@ PortProvider::addConnection(Connection* connection)
   return connection->setPortProvider(this);
 }
 
+bool
+PortProvider::removeConnection(Connection* connection)
+{
+  if (!connection)
+    return false;
+  return connection->setPortProvider(0);
+}
+
 } // namespace OpenFDM

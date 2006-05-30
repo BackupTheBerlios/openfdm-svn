@@ -26,4 +26,12 @@ PortAcceptor::addConnection(Connection* connection)
   return connection->setPortAcceptor(this);
 }
 
+bool
+PortAcceptor::removeConnection(Connection* connection)
+{
+  if (!connection)
+    return false;
+  return connection->setPortAcceptor(0);
+}
+
 } // namespace OpenFDM

@@ -19,6 +19,7 @@ public:
   virtual ~PortProvider();
 
   virtual Port::ConnectResult addConnection(Connection* connection);
+  virtual bool removeConnection(Connection* connection);
 
   virtual Port::ConnectResult provide(NumericPortAcceptor* port)
   { return Port::IncompatiblePort; }

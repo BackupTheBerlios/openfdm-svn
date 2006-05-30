@@ -30,7 +30,7 @@ public:
     if (i == mConnections.end())
       return false;
 
-    (*i)->disconnect(this);
+    PortProvider::removeConnection(*i);
     mConnections.erase(i);
     return true;
   }
@@ -38,7 +38,7 @@ public:
   {
     ConnectionList::iterator i = mConnections.begin();
     while (i != mConnections.end()) {
-      (*i)->disconnect(this);
+      PortProvider::removeConnection(*i);
       i = mConnections.erase(i);
     }
   }

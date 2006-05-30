@@ -87,9 +87,9 @@ public:
   /// Convinience functions may make the virtuals protected ...
   void outputIfEnabled(const TaskInfo& taskInfo)
   {
-    if (mEnablePortInterface.isConnected()) {
+    if (mEnablePortHandle.isConnected()) {
       /// FIXME bool!!!!
-      setEnabled(0.5 < fabs(mEnablePortInterface.getRealValue()));
+      setEnabled(0.5 < fabs(mEnablePortHandle.getRealValue()));
     }
     if (mEnabled)
       output(taskInfo);
@@ -268,7 +268,7 @@ private:
   bool mEnabled;
   // the old obsolete one
   SharedPtr<NumericPortAcceptor> mEnablePort;
-  RealPortHandle mEnablePortInterface;
+  RealPortHandle mEnablePortHandle;
   DisableMode mDisableMode;
   SampleTimeSet mSampleTimeSet;
 

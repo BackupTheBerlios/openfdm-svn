@@ -18,6 +18,7 @@ public:
   virtual ~PortAcceptor();
 
   virtual ConnectResult addConnection(Connection* connection);
+  virtual bool removeConnection(Connection* connection);
 
   virtual ConnectResult connect(PortProvider* port) = 0;
   virtual bool disconnect(PortProvider* port) = 0;

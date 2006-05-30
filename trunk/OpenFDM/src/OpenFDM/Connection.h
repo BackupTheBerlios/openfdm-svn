@@ -25,11 +25,6 @@ public:
   Connection(const std::string& name = std::string());
   virtual ~Connection();
 
-  /// Connect this connection to the given Port
-  Port::ConnectResult connect(Port* port);
-  /// Disconnect this connection from the given Port
-  bool disconnect(Port* port);
-
   /// Set the PortProvider end.
   /// Tries to complete the connection if the other end is already connected.
   Port::ConnectResult setPortProvider(PortProvider* portProvider);
@@ -38,10 +33,10 @@ public:
   Port::ConnectResult setPortAcceptor(PortAcceptor* portAcceptor);
 
   /// Return the PortProvider of this connection
-  const PortProvider* getPortProvider() const
+  WeakPtr<const PortProvider> getPortProvider() const
   { return mPortProvider; }
   /// Return the PortAcceptor of this connection
-  const PortAcceptor* getPortAcceptor() const
+  WeakPtr<const PortAcceptor> getPortAcceptor() const
   { return mPortAcceptor; }
 
   /// Connect the two given ports, zero checks are done.
@@ -50,7 +45,8 @@ public:
   /// Connect the two given ports, zero checks are done.
   /// The two ports must just belong to models of the same system.
   /// If required ModelGroup inputs or outputs are inserted.
-  static Port::ConnectResult connectRoute(PortProvider* port0, PortAcceptor* port1);
+  static Port::ConnectResult connectRoute(PortProvider* port0,
+                                          PortAcceptor* port1);
 
 private:
   /// Disconnect this connection from all attached Ports

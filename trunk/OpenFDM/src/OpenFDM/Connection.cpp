@@ -22,39 +22,21 @@ Connection::~Connection()
 }
 
 Port::ConnectResult
-Connection::connect(Port* port)
-{
-  if (!port)
-    return Port::NoPort;
-  return port->addConnection(this);
-}
-
-bool
-Connection::disconnect(Port* port)
-{
-  if (!port)
-    return false;
-  
-  if (port == mPortProvider) {
-    if (mPortAcceptor)
-      mPortAcceptor->disconnect(mPortProvider);
-    mPortProvider = 0;
-    return true;
-  }
-  if (port == mPortAcceptor) {
-    if (mPortProvider)
-      mPortAcceptor->disconnect(mPortProvider);
-    mPortAcceptor = 0;
-    return true;
-  }
-  return false;
-}
-
-Port::ConnectResult
 Connection::setPortProvider(PortProvider* portProvider)
 {
   if (mPortProvider && portProvider)
     return Port::AlreadyConnected;
+
+  if (!portProvider) {
+    if (mPortAcceptor && mPortProvider) {
+      mPortAcceptor->disconnect(mPortProvider);
+    } else {
+      // FIXME
+//       modelGroup->removeConnection(this);
+    }
+    mPortProvider = 0;
+    return Port::Success;
+  }
 
   SharedPtr<Model> providerModel = portProvider->getModel().lock();
   if (!providerModel)
@@ -67,7 +49,6 @@ Connection::setPortProvider(PortProvider* portProvider)
     mPortProvider = portProvider;
     ModelGroup* modelGroup = providerModel->getParent();
     modelGroup->addConnection(this);
-
     return Port::Success;
   }
 
@@ -91,6 +72,17 @@ Connection::setPortAcceptor(PortAcceptor* portAcceptor)
   if (mPortAcceptor && portAcceptor)
     return Port::AlreadyConnected;
 
+  if (!portAcceptor) {
+    if (mPortAcceptor && mPortProvider) {
+      mPortAcceptor->disconnect(mPortProvider);
+    } else {
+      // FIXME
+//       modelGroup->removeConnection(this);
+    }
+    mPortAcceptor = 0;
+    return Port::Success;
+  }
+    
   SharedPtr<Model> acceptorModel = portAcceptor->getModel().lock();
   if (!acceptorModel)
     return Port::StalePort;
@@ -124,10 +116,10 @@ Port::ConnectResult
 Connection::connect(Port* port0, Port* port1)
 {
   SharedPtr<Connection> connection = new Connection;
-  Port::ConnectResult result = connection->connect(port0);
+  Port::ConnectResult result = port0->addConnection(connection);
   if (result != Port::Success)
     return result;
-  result = connection->connect(port1);
+  result = port1->addConnection(connection);
   return result;
 }
 
@@ -184,8 +176,10 @@ Connection::connectRoute(PortProvider* port0, PortAcceptor* port1)
 void
 Connection::disconnect()
 {
-  if (mPortProvider && mPortAcceptor)
-    mPortAcceptor->disconnect(mPortProvider);
+  SharedPtr<PortProvider> portProvider = mPortProvider.lock();
+  SharedPtr<PortAcceptor> portAcceptor = mPortAcceptor.lock();
+  if (portProvider && portAcceptor)
+    portAcceptor->disconnect(portProvider);
   mPortProvider = 0;
   mPortAcceptor = 0;
 }
