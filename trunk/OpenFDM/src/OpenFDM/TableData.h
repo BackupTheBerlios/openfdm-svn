@@ -139,7 +139,6 @@ public:
     unsigned loIdx = loBoundIt->second;
     if (loBound == upBound)
       return loIdx;
-    unsigned upIdx = upBoundIt->second;
     real_type theta = (input - loBound)/(upBound-loBound);
     return loIdx + theta;
   }
@@ -172,14 +171,14 @@ public:
     mData(0)
   {}
   TableData(const SizeVector& size) :
-    mSize(size), mData(new real_type[product(size)])
+    mData(new real_type[product(size)]), mSize(size)
   {
     unsigned totalLen = product(mSize);
     for (unsigned i = 0; i < totalLen; ++i)
       mData[i] = 0;
   }
   TableData(const TableData& ndarray) :
-    mSize(ndarray.size()), mData(new real_type[product(ndarray.size())])
+    mData(new real_type[product(ndarray.size())]), mSize(ndarray.size())
   {
     unsigned totalLen = product(mSize);
     for (unsigned i = 0; i < totalLen; ++i)

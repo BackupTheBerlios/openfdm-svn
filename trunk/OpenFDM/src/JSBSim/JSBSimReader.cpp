@@ -1489,8 +1489,6 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     return error("Unknown FCS COMPONENT type: \"" + type
                  + "\". Ignoring whole FCS component \"" + name + "\"" );
 
-  OpenFDMAssert(out->isConnected());
-
   // Register all output property names.
   std::string implicitOutname = normalizeComponentName(name);
   registerJSBExpression(std::string("fcs/") + implicitOutname, out);

@@ -124,7 +124,7 @@ private:
 
   std::basic_ostream<char>* mStream;
   unsigned mCategory;
-  unsigned mPriority;
+  int mPriority;
 };
 
 #if defined(NDEBUG)
