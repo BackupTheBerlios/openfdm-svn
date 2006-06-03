@@ -97,7 +97,7 @@ fi
 AC_SUBST(OpenFDM_HAVE_LIBXML2_XMLREADER)
 
 dnl simple check for qt4
-AC_CHECK_HEADERS([Qt/QtGlobal],[openfdm_have_qt4="yes"])
+AC_CHECK_HEADERS([Qt/QtCore],[openfdm_have_qt4="yes"])
 dnl simple check for osg
 AC_CHECK_HEADERS([osg/Object],[openfdm_have_osg="yes"])
 dnl avoid trying to build the editor if qt4 or osg is missing

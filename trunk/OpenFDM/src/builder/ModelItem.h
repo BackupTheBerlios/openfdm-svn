@@ -5,7 +5,7 @@
 #ifndef ModelItem_H
 #define ModelItem_H
 
-#include <Qt/QAbstractItemModel>
+#include <QtCore/QAbstractItemModel>
 
 #include <OpenFDM/System.h>
 

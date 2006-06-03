@@ -5,7 +5,7 @@
 #ifndef FrameItem_H
 #define FrameItem_H
 
-#include <Qt/QAbstractItemModel>
+#include <QtCore/QAbstractItemModel>
 
 #include <OpenFDM/System.h>
 
