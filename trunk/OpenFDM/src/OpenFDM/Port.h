@@ -22,7 +22,7 @@ public:
     Running, // The System is running, stop the System before manipulating it
     IsolatedModel, // Model does not belong to a parent Group
     DifferentGroups, // Model belong to different model groups
-    StalePort, // Post still alive but originating model is dead
+    StalePort, // Port still alive but originating model is dead
     AlreadyConnected, // This end of the connection is already connected
     IncompatiblePort, // The port is not compatible with the other end
     IncompatibelSize  // The port is not compatible with the other end
