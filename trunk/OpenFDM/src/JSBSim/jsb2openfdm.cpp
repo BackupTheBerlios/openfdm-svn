@@ -12,10 +12,11 @@ using OpenFDM::SharedPtr;
 int
 main(int argc, char *argv[])
 {
-  if (argc < 3)
+  if (argc < 3) {
+    std::cerr << "No aircraft given!" << std::endl;
     return 1;
+  }
 
-  SharedPtr<Vehicle> vehicle;
   std::string aircraftDir = argv[1];
   std::string engineDir = aircraftDir + "/Engines";
   std::string aircraftFile = argv[2];
@@ -31,13 +32,9 @@ main(int argc, char *argv[])
     for (it = errors.begin(); it != errors.end(); ++it)
       std::cerr << (*it) << std::endl;
     
-    errors = reader.getErrors();
-    for (it = errors.begin(); it != errors.end(); ++it)
-      std::cerr << (*it) << std::endl;
-    
     return EXIT_FAILURE;
   }
-  vehicle = reader.getVehicle();
+  SharedPtr<Vehicle> vehicle = reader.getVehicle();
 
   // Ok, now the Vehicle here contains the imported data
   // When the reflection stuff is ready, we can dump that data to a
