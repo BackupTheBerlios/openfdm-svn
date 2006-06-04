@@ -20,6 +20,7 @@ Model::Model(const std::string& name) :
   mNumDiscreteStates(0l),
   mDirectFeedThrough(false),
   mEnabled(true),
+  mNextEnabled(true),
   mEnablePort(new NumericPortAcceptor(this)),
   mDisableMode(Hold)
 {

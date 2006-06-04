@@ -87,15 +87,22 @@ public:
   /// Convinience functions may make the virtuals protected ...
   void outputIfEnabled(const TaskInfo& taskInfo)
   {
-    if (mEnablePortHandle.isConnected()) {
-      /// FIXME bool!!!!
-      setEnabled(0.5 < fabs(mEnablePortHandle.getRealValue()));
-    }
+    /// FIXME: should that only be checked for discrete tasks???
+    /// May be with a special list in System to know which ones need to recheck
+    /// the enable ports ???
+    setEnabled(mNextEnabled);
     if (mEnabled)
       output(taskInfo);
   }
   void updateIfEnabled(const TaskInfo& taskInfo)
-  { if (mEnabled) update(taskInfo); }
+  {
+    if (mEnabled)
+      update(taskInfo);
+    if (mEnablePortHandle.isConnected()) {
+      /// FIXME bool!!!!
+      mNextEnabled = 0.5 < fabs(mEnablePortHandle.getRealValue());
+    }
+  }
 
   virtual void setState(const StateStream& state);
   virtual void getState(StateStream& state) const;
@@ -266,13 +273,12 @@ private:
   bool mDirectFeedThrough;
   /// True if the Model is enabled
   bool mEnabled;
-  // the old obsolete one
+  bool mNextEnabled;
   SharedPtr<NumericPortAcceptor> mEnablePort;
   RealPortHandle mEnablePortHandle;
   DisableMode mDisableMode;
   SampleTimeSet mSampleTimeSet;
 
-  /// New port system
 protected:
   typedef std::vector<SharedPtr<NumericPortAcceptor> > InputPortVector;
   typedef std::vector<SharedPtr<NumericPortProvider> > OutputPortVector;
