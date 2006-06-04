@@ -1,46 +1,55 @@
-
-qtinclude=$(QTDIR)/include
-othrinclude=$(HOME)/sw/include
-osginclude=$(HOME)/sw/include
-x11lib=/usr/X11R6/lib
-
-qtlib=$(QTDIR)/lib
-othrlib=$(HOME)/sw/lib
-osglib=$(HOME)/sw/lib
-
-MOC=$(QTDIR)/bin/moc
-
-SUFFIXES = _moc.cpp
-.h_moc.cpp:
-	$(MOC) $(CPPFLAGS) -o $@ $<
-
-INCLUDES = -I$(srcdir)/.. -I$(qtinclude) -I$(othrinclude) -I$(osginclude)
-
-BUILT_SOURCES = QOsgWidget_moc.cpp
+INCLUDES = -I$(srcdir)/..
 
 bin_PROGRAMS = openfdm
 
-openfdm_SOURCES = \
+DISTSOURCES = \
 	main.cpp \
-	Configuration.h \
 	Configuration.cpp \
-	FrameItem.h \
 	FrameItem.cpp \
-	Geometries.h \
 	Geometries.cpp \
-	MainWindow.h \
 	MainWindow.cpp \
-	ModelItem.h \
 	ModelItem.cpp \
-	QOsgWidget.h \
-	QOsgWidget.cpp \
-	QOsgWidget_moc.cpp
+	QOsgWidget.cpp
+
+# Headers with QObjects
+DISTHEADERS_MOC = \
+	QOsgWidget.h
+
+# Headers without QObjects
+DISTHEADERS_NO_MOC = \
+	Configuration.h \
+	FrameItem.h \
+	Geometries.h \
+	MainWindow.h \
+	ModelItem.h
+
+# ui files
+FORMS = 
+
+# The derived files
+FORMHEADERS = $(FORMS:.ui=.h)
+MOC_CC = $(FORMS:.ui=.moc.cpp) $(DISTHEADERS_MOC:.h=.moc.cpp)
+UIC_CC = $(FORMS:.ui=.uic.cpp)
+
+BUILT_SOURCES = $(FORMHEADERS) $(UIC_CC) $(MOC_CC)
+CLEANFILES = $(BUILT_SOURCES)
+
+openfdm_SOURCES = $(DISTSOURCES) $(DISTHEADERS_MOC) $(DISTHEADERS_NO_MOC)
+nodist_openfdm_SOURCES = $(MOC_CC) $(UIC_CC)
 
 openfdm_LDADD = ../JSBSim/libOpenFDMJSBReader.la ../OpenFDM/libOpenFDM.la \
                 -losgGA -losgUtil -losgDB -losg -lOpenThreads \
                 -lQtGui -lQtOpenGL -lQtCore \
                 -lGL -lGLU
 
-openfdm_LDFLAGS = -L$(qtlib) \
-                -L$(osglib) -L$(othrlib) -Wl,-rpath,$(osglib) \
-                -L$(qtlib)
+# Some suffix rules to make qt built sources
+.ui.h:
+	$(QT_UIC) -o $@ $<
+
+.h.moc.cpp:
+	$(QT_MOC) -o $@ $<
+
+.ui.uic.cpp:
+	$(QT_UIC) -o $@ -impl $*.h $<
+
+SUFFIXES = .h .ui .moc.cpp .uic.cpp

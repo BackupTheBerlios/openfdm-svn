@@ -1,25 +1,28 @@
-AC_INIT([OpenFDM], [0.5])
-dnl AC_PREREQ(2.59)
-dnl AC_COPYRIGHT(COPYRIGHT-NOTICE)
-AM_INIT_AUTOMAKE
+# -*- Autoconf -*-
 
+AC_PREREQ(2.59)
+AC_INIT([OpenFDM], [0.5])
+dnl AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_SRCDIR([src/OpenFDM/Object.h])
+dnl AC_CONFIG_HEADER([config.h])
+AM_INIT_AUTOMAKE()
+
+dnl AC_CANONICAL_HOST
+AC_LANG(C++)
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_CXX
+AC_PROG_INSTALL
+
+AC_DISABLE_SHARED
+AC_PROG_LIBTOOL
+AC_SUBST(LIBTOOL_DEPS)
 
 dnl try to append the prefix path to the include and library paths if present
 if test "x$prefix" != "xNONE" ; then
   CPPFLAGS="$CPPFLAGS -I$prefix/include"
   LDFLAGS="$LDFLAGS -L$prefix/lib"
 fi
-
-AC_CANONICAL_HOST
-
-AC_PROG_CC
-AC_PROG_CPP
-AC_PROG_CXX
-
-AC_DISABLE_SHARED
-AC_PROG_LIBTOOL
-AC_SUBST(LIBTOOL_DEPS)
 
 dnl Configure debugging checks
 AC_ARG_ENABLE(debug,
@@ -44,9 +47,6 @@ case $enable_range_checking in
 esac
 ]
 AC_SUBST(enable_range_checking)
-
-dnl Since OpenFDM is c++ ...
-AC_LANG_PUSH(C++)
 
 dnl Check for headers and symbols required for better speaking backtraces ...
 AC_CHECK_HEADERS([execinfo.h cxxabi.h])
@@ -97,9 +97,23 @@ fi
 AC_SUBST(OpenFDM_HAVE_LIBXML2_XMLREADER)
 
 dnl simple check for qt4
-AC_CHECK_HEADERS([Qt/QtCore],[openfdm_have_qt4="yes"])
+if test "x$QTDIR" != "x" ; then
+  CPPFLAGS="$CPPFLAGS -I$QTDIR/include"
+  LDFLAGS="$LDFLAGS -L$QTDIR/lib"
+  AC_CHECK_HEADERS([Qt/QtCore],[openfdm_have_qt4="yes"])
+  QT_MOC=$QTDIR/bin/moc
+  QT_UIC=$QTDIR/bin/uic
+else
+  AC_MSG_WARN([You must have QTDIR set to the qt-4 directory for the builder])
+  QT_MOC=/bin/false
+  QT_UIC=/bin/false
+fi
+AC_SUBST(QT_MOC)
+AC_SUBST(QT_UIC)
+
 dnl simple check for osg
 AC_CHECK_HEADERS([osg/Object],[openfdm_have_osg="yes"])
+
 dnl avoid trying to build the editor if qt4 or osg is missing
 if test "x$openfdm_have_qt4" = "xyes" && test "x$openfdm_have_osg" = "xyes"
 then
