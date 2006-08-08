@@ -2,14 +2,14 @@ SUBDIRS = XML
 
 INCLUDES = -I$(srcdir)/..
 
-noinst_PROGRAMS = units
+noinst_PROGRAMS = unitstest
 
 # define some unit tests
 check_PROGRAMS = quattest
 TESTS          = $(check_PROGRAMS)
 
-units_SOURCES = units.cpp
-units_LDADD = libOpenFDM.la
+unitstest_SOURCES = unitstest.cpp
+unitstest_LDADD = libOpenFDM.la
 
 quattest_SOURCES = quattest.cpp
 quattest_LDADD = Units.o
