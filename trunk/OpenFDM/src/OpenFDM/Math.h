@@ -35,18 +35,19 @@ using std::sqrt;
 using std::tan;
 using std::tanh;
 
-using std::fpclassify;
+// Not stdc++ functions but hopefully present ...
+// using std::fpclassify;
 using std::isfinite;
-using std::isinf;
-using std::isnan;
-using std::isnormal;
-using std::signbit;
-using std::isgreater;
-using std::isgreaterequal;
-using std::isless;
-using std::islessequal;
-using std::islessgreater;
-using std::isunordered;
+// using std::isinf;
+// using std::isnan;
+// using std::isnormal;
+// using std::signbit;
+// using std::isgreater;
+// using std::isgreaterequal;
+// using std::isless;
+// using std::islessequal;
+// using std::islessgreater;
+// using std::isunordered;
 
 using std::min;
 using std::max;
@@ -154,7 +155,7 @@ greatestCommonDivisor(real_type a_, real_type b_)
 inline
 bool
 equal(real_type a, real_type b, real_type sf)
-{ return fabs(a-b) < max(fabs(a), fabs(b))*sf*Limits<real_type>::epsilon(); }
+{ return fabs(a-b) <= max(fabs(a), fabs(b))*sf*Limits<real_type>::epsilon(); }
 
 /// Returns true if the floatingpoint values are equal to roundoff with a
 /// security factor of 8.
