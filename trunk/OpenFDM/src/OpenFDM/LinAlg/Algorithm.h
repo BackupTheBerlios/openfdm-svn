@@ -889,7 +889,8 @@ qr_reflector(typename Impl::value_type& alpha, MatrixLValue<Impl,dim,1>& x_,
     tau = 0;
   else {
     value_type beta = sqrt(alpha*alpha + xnorm*xnorm);
-    beta = std::signbit(alpha) ? beta : -beta;
+    if (0 <= alpha)
+      beta = -beta;
 
     value_type mn = Limits<value_type>::min();
     value_type eps = Limits<value_type>::epsilon();
@@ -907,7 +908,8 @@ qr_reflector(typename Impl::value_type& alpha, MatrixLValue<Impl,dim,1>& x_,
 
       xnorm = norm(x);
       beta = sqrt(alpha*alpha + xnorm*xnorm);
-      beta = std::signbit(alpha) ? beta : -beta;
+      if (0 <= alpha)
+        beta = -beta;
       tau = (beta-alpha)/beta;
       x *= 1/(alpha-beta);
       alpha = beta;
