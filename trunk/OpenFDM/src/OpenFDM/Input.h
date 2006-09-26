@@ -39,32 +39,6 @@ private:
   std::string mInputName;
 };
 
-class Output : public Model {
-  OPENFDM_OBJECT(Output, Model);
-public:
-  Output(const std::string& name);
-  virtual ~Output(void);
-  
-  virtual const Output* toOutput(void) const;
-  virtual Output* toOutput(void);
-
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-
-  const real_type& getValue(void) const;
-
-  const real_type& getOutputGain(void) const;
-  void setOutputGain(const real_type& outputGain);
-
-  const std::string& getOutputName(void) const;
-  void setOutputName(const std::string& outputName);
-
-private:
-  real_type mValue;
-  real_type mOutputGain;
-  std::string mOutputName;
-};
-
 } // namespace OpenFDM
 
 #endif

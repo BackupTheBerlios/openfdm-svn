@@ -21,6 +21,7 @@
 #include <OpenFDM/TransferFunction.h>
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/Input.h>
+#include <OpenFDM/Output.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/LinearSpringDamper.h>
 #include <OpenFDM/MaxModel.h>
