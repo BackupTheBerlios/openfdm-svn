@@ -93,6 +93,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Object.h \
   ODESolver.h \
   OpenFDMConfig.h \
+  Output.h \
   Plane.h \
   Planet.h \
   Port.h \
@@ -192,6 +193,7 @@ libOpenFDM_la_SOURCES = \
   Newton.cpp \
   Object.cpp \
   ODESolver.cpp \
+  Output.cpp \
   Planet.cpp \
   Port.cpp \
   PortAcceptor.cpp \
