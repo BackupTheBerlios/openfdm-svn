@@ -14,6 +14,7 @@
 #include <OpenFDM/Units.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/Input.h>
+#include <OpenFDM/Output.h>
 #include <OpenFDM/Ground.h>
 #include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/Model.h>
