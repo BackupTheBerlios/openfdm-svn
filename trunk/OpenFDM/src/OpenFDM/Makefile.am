@@ -26,6 +26,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Assert.h \
   Atmosphere.h \
   AtmosphereSTD1976.h \
+  Atomic.h \
   Bias.h \
   BinaryFunctionModel.h \
   CartesianActuatorFrame.h \

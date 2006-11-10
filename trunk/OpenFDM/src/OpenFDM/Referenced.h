@@ -5,6 +5,8 @@
 #ifndef OpenFDM_Referenced_H
 #define OpenFDM_Referenced_H
 
+#include "Atomic.h"
+
 namespace OpenFDM {
 
 class Referenced {
@@ -28,7 +30,7 @@ public:
   { if (ref) return 1u < ref->_refcount; else return false; }
 
 private:
-  mutable unsigned _refcount;
+  mutable Atomic _refcount;
 };
 
 } // namespace OpenFDM
