@@ -321,6 +321,10 @@ void FGOpenFDM::init()
   // Call what needs to be done ... ;-)
   common_init();
 
+  // connect the input models with the input properties
+  InputConnectModelVisitor icmv(mAircraftRootNode);
+  vehicle->getSystem()->accept(icmv);
+
   // Hmm, twice ??
   if (!vehicle->init()) {
     mData->vehicle = 0;
@@ -354,10 +358,6 @@ void FGOpenFDM::init()
   } else {
     mobileRootJoint->setRelVel(Vector6::zeros());
   }
-
-  // connect the input models with the input properties
-  InputConnectModelVisitor icmv(mAircraftRootNode);
-  mData->vehicle->getSystem()->accept(icmv);
 
   // Try to find a stable set of states
   if (!vehicle->trim())
