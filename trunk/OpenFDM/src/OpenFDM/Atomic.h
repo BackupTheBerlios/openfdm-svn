@@ -5,7 +5,8 @@
 #ifndef OpenFDM_Atomic_H
 #define OpenFDM_Atomic_H
 
-#if defined(__GNUC__) && (4 <= __GNUC__) && (1 <= __GNUC_MINOR__)
+#if defined(__GNUC__) && (4 <= __GNUC__) && (1 <= __GNUC_MINOR__) \
+  && (defined(__i386__) || defined(__x86_64__))
 // No need to include something. Is a Compiler API ...
 # define OpenFDM_USE_GCC4_BUILTINS
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
@@ -63,8 +64,12 @@ private:
   Atomic(const Atomic&);
   Atomic& operator=(const Atomic&);
 
-#if !defined(OpenFDM_USE_GCC4_BUILTINS) && !defined(OpenFDM_USE_WIN32_INTERLOCKED)
+#if !defined(OpenFDM_USE_GCC4_BUILTINS) \
+  && !defined(OpenFDM_USE_WIN32_INTERLOCKED)
   mutable Mutex mMutex;
+#endif
+#ifdef OpenFDM_USE_WIN32_INTERLOCKED
+  __declspec(align(32))
 #endif
   unsigned mValue;
 };

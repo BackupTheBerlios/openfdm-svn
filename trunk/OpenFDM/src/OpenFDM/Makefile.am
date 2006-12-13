@@ -151,6 +151,7 @@ libOpenFDM_la_SOURCES = \
   Assert.cpp \
   Atmosphere.cpp \
   AtmosphereSTD1976.cpp \
+  Atomic.cpp \
   Bias.cpp \
   BinaryFunctionModel.cpp \
   Connection.cpp \
