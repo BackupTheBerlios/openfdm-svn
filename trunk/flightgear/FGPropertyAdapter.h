@@ -147,78 +147,51 @@ public:
   { return new FGIntegerPropertyAdapter(*this); }
 };
 
-// This one is used to write changes to input properties into their input
-// models
-class InputChangeListener : public SGPropertyChangeListener {
+class FGInputCallback : public Input::Callback {
 public:
-  InputChangeListener(Input* inputModel) : mInputModel(inputModel) {}
-  virtual ~InputChangeListener(void) {}
-  virtual void valueChanged(SGPropertyNode * node)
-  {
-    // Just to be sure
-    if (!node)
-      return;
-    // Check if it is still valid
-    if (!mInputModel)
-      return;
-    // Set the input from the nodes's value.
-    mInputModel->setInputValue(node->getDoubleValue());
-  }
+  FGInputCallback(const SGPropertyNode* propertyNode) :
+    mPropertyNode(propertyNode)
+  { }
+  virtual real_type getValue() const
+  { return mPropertyNode->getDoubleValue(); }
 private:
-  // Holds the input model where it should write the value
-  // Note that this shal not be a SharedPtr, since we get a recursive
-  // ref count loop in that case.
-  WeakPtr<Input> mInputModel;
+  SGSharedPtr<const SGPropertyNode> mPropertyNode;
 };
 
-// That class just takes care that the listeners to a specific Input are
-// cleaned up past the input is deleted.
-class InputChangeUserData : public Object {
+class FGOutputCallback : public Output::Callback {
 public:
-  InputChangeUserData(Input* inputModel, SGPropertyNode* node) :
-    mListener(new InputChangeListener(inputModel))
-  {
-    node->addChangeListener(mListener);
-    // Don't forget to set the initial value
-    mListener->valueChanged(node);
-  }
-  virtual ~InputChangeUserData(void)
-  {
-    // Also deregisters itself at the SGPropertyNode.
-    // is deleted in the property system, don't do here
-    // FIXME: this might be a place where we can use the new refcounting thing
-    // of flightgear
-//     delete mListener;
-  }
+  FGOutputCallback() : mValue(0)
+  { }
+  virtual void setValue(real_type value)
+  { mValue = value; }
+  real_type getValue(void) const
+  { return mValue; }
 private:
-  InputChangeListener* mListener;
+  real_type mValue;
 };
 
 class FGOutputReflector :
     public SGRawValue<double> {
 public:
   FGOutputReflector(Output* output) :
-    mOutputModel(output)
-  {}
+    mOutputCallback(new FGOutputCallback)
+  {
+    if (!output)
+      return;
+    output->setCallback(mOutputCallback);
+  }
 
   virtual bool setValue(double value)
   { return false; }
   
   virtual double getValue(void) const
-  {
-    if (!mOutputModel)
-      return 0;
-    return mOutputModel->getValue();
-  }
+  { return mOutputCallback->getValue(); }
 
   virtual FGOutputReflector* clone(void) const
   { return new FGOutputReflector(*this); }
 
 private:
-  // Holds the output model where it should write the value
-  // Note that this shal not be a SharedPtr, since we get a recursive
-  // ref count loop in that case.
-  WeakPtr<Output> mOutputModel;
+  SharedPtr<FGOutputCallback> mOutputCallback;
 };
 
 class FGRealPortReflector :

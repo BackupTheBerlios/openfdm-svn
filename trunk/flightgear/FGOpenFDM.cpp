@@ -229,7 +229,7 @@ public:
   {
     // Check for input models
     // If so, we need to register a change notifier in flightgears properties
-    Input* inputModel = dynamic_cast<Input*>(&model);
+    Input* inputModel = model.toInput();
     if (!inputModel)
       return;
 
@@ -237,9 +237,7 @@ public:
            "Registering input for \"" << inputModel->getName() << "\"");
     std::string pName = inputModel->getInputName();
     SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
-    // That adds a change listener to the property node which in turn
-    // writes changes to the property back to the input model.
-    inputModel->setUserData(new InputChangeUserData(inputModel, sgProp));
+    inputModel->setCallback(new FGInputCallback(sgProp));
   }
   virtual void apply(ModelGroup& modelGroup)
   { traverse(modelGroup); }
