@@ -2,13 +2,13 @@
  *
  */
 
-#include "Assert.h"
+#include "AeroForce.h"
+
 #include "Object.h"
 #include "Vector.h"
 #include "Frame.h"
 #include "Force.h"
 #include "Atmosphere.h"
-#include "AeroForce.h"
 
 namespace OpenFDM {
 
