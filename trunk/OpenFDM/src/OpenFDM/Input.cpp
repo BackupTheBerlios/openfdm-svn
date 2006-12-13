@@ -42,17 +42,19 @@ Input::toInput(void)
 bool
 Input::init(void)
 {
+  if (!mCallback) {
+    Log(Model, Error) << "Initialization of Input model \"" << getName()
+                      << "\" failed: Input Callback not set!" << endl;
+    return false;
+  }
+
   return Model::init();
 }
 
 void
 Input::output(const TaskInfo&)
 {
-  if (mCallback) {
-    mOutputValue = mCallback->getValue();
-  } else {
-    mOutputValue = mInputValue*mInputGain;
-  }
+  mOutputValue = mInputGain*mCallback->getValue();
 }
 
 Input::Callback*
@@ -65,18 +67,6 @@ void
 Input::setCallback(Input::Callback* callback)
 {
   mCallback = callback;
-}
-
-const real_type&
-Input::getInputValue(void) const
-{
-  return mInputValue;
-}
-
-void
-Input::setInputValue(const real_type& value)
-{
-  mInputValue = value;
 }
 
 const real_type&

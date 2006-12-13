@@ -30,8 +30,6 @@ public:
   Callback* getCallback(void) const;
   void setCallback(Callback* callback);
 
-  const real_type& getValue(void) const;
-
   const real_type& getOutputGain(void) const;
   void setOutputGain(const real_type& outputGain);
 
@@ -41,8 +39,6 @@ public:
 private:
   RealPortHandle mInputPort;
   SharedPtr<Callback> mCallback;
-
-  real_type mValue;
   real_type mOutputGain;
   std::string mOutputName;
 };

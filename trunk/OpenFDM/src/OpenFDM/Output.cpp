@@ -16,8 +16,7 @@ Output::Callback::~Callback()
 }
 
 Output::Output(const std::string& name) :
-  Model(name),
-  mOutputGain(1)
+  Model(name)
 {
   setDirectFeedThrough(true);
   setNumInputPorts(1);
@@ -38,6 +37,11 @@ Output::init(void)
                       << "\" is not connected!" << endl;
     return false;
   }
+//   if (!mCallback) {
+//     Log(Model, Error) << "Initialization of Output model \"" << getName()
+//                       << "\" failed: Output Callback not set!" << endl;
+//     return false;
+//   }
 
   return Model::init();
 }
@@ -57,9 +61,9 @@ Output::toOutput(void)
 void
 Output::output(const TaskInfo&)
 {
-  mValue = mInputPort.getRealValue();
-  if (mCallback)
-    mCallback->setValue(mInputPort.getRealValue());
+  if (!mCallback)
+    return;
+  mCallback->setValue(mOutputGain*mInputPort.getRealValue());
 }
 
 Output::Callback*
@@ -72,12 +76,6 @@ void
 Output::setCallback(Output::Callback* callback)
 {
   mCallback = callback;
-}
-
-const real_type&
-Output::getValue(void) const
-{
-  return mValue;
 }
 
 const real_type&

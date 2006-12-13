@@ -30,9 +30,6 @@ public:
   Callback* getCallback(void) const;
   void setCallback(Callback* callback);
 
-  const real_type& getInputValue(void) const;
-  void setInputValue(const real_type& value);
-
   const real_type& getInputGain(void) const;
   void setInputGain(const real_type& inputGain);
 
@@ -43,8 +40,6 @@ public:
 
 private:
   SharedPtr<Callback> mCallback;
-
-  real_type mInputValue;
   real_type mOutputValue;
   real_type mInputGain;
   std::string mInputName;
