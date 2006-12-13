@@ -11,6 +11,10 @@ BEGIN_OPENFDM_OBJECT_DEF(Output, Model)
   DEF_OPENFDM_PROPERTY(String, OutputName, Serialized)
   END_OPENFDM_OBJECT_DEF
 
+Output::Callback::~Callback()
+{
+}
+
 Output::Output(const std::string& name) :
   Model(name),
   mOutputGain(1)
