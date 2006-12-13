@@ -2,11 +2,12 @@
  *
  */
 
+#include "MidpointRule.h"
+
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
 #include "ODESolver.h"
-#include "MidpointRule.h"
 
 namespace OpenFDM {
 

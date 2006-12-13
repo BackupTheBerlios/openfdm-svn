@@ -2,6 +2,8 @@
  *
  */
 
+#include "Vehicle.h"
+
 #include "Assert.h"
 #include "Object.h"
 #include "Vector.h"
@@ -18,7 +20,6 @@
 #include "DoPri5.h"
 #include "ModelGroup.h"
 #include "System.h"
-#include "Vehicle.h"
 
 namespace OpenFDM {
 

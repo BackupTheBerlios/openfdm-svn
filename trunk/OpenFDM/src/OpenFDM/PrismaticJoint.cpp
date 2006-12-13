@@ -2,6 +2,8 @@
  *
  */
 
+#include "PrismaticJoint.h"
+
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
@@ -13,7 +15,6 @@
 #include "Frame.h"
 #include "RigidBody.h"
 #include "PrismaticJointFrame.h"
-#include "PrismaticJoint.h"
 
 namespace OpenFDM {
 

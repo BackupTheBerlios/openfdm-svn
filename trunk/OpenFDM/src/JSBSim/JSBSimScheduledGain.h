@@ -6,13 +6,10 @@
 #define OpenFDM_JSBSimScheduledGain_H
 
 #include "JSBSimFCSComponent.h"
+#include <OpenFDM/SharedPtr.h>
+#include <OpenFDM/Table.h>
 
 namespace OpenFDM {
-
-class Table1D;
-template<unsigned>
-class TableData;
-class TableLookup;
 
 /// Just a small container mapping the JSBSim ScheduledGain parameters to
 /// the OpenFDM models.

@@ -2,13 +2,14 @@
  *
  */
 
+#include "DefaultGravity.h"
+
 #include "Types.h"
 #include "Object.h"
 #include "Units.h"
 #include "Vector.h"
 #include "Quaternion.h"
 #include "Gravity.h"
-#include "DefaultGravity.h"
 
 namespace OpenFDM {
 

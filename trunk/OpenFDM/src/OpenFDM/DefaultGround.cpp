@@ -1,3 +1,9 @@
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2006 Mathias Froehlich 
+ *
+ */
+
+#include "DefaultGround.h"
+
 #include "Types.h"
 #include "Object.h"
 #include "Plane.h"
@@ -5,7 +11,6 @@
 #include "Planet.h"
 #include "Environment.h"
 #include "Ground.h"
-#include "DefaultGround.h"
 
 namespace OpenFDM {
 

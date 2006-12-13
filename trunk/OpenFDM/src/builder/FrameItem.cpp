@@ -2,10 +2,10 @@
  *
  */
 
-#include <iostream>
-
-#include <OpenFDM/Frame.h>
 #include "FrameItem.h"
+
+#include <iostream>
+#include <OpenFDM/Frame.h>
 
 using OpenFDM::Frame;
 

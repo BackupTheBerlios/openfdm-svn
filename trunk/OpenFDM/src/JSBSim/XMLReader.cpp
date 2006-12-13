@@ -2,6 +2,8 @@
  *
  */
 
+#include "XMLReader.h"
+
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -15,8 +17,6 @@
 #include <OpenFDM/XML/Attributes.h>
 
 #include <OpenFDM/XML/EasyXMLReader.h> // FIXME
-
-#include "XMLReader.h"
 
 namespace OpenFDM {
 

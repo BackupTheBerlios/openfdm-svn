@@ -2,11 +2,11 @@
  *
  */
 
-#include <iostream>
+#include "ModelItem.h"
 
+#include <iostream>
 #include <OpenFDM/Model.h>
 #include <OpenFDM/ModelGroup.h>
-#include "ModelItem.h"
 
 using OpenFDM::Model;
 using OpenFDM::ModelGroup;

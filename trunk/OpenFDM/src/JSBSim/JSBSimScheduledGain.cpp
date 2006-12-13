@@ -2,12 +2,12 @@
  *
  */
 
+#include "JSBSimScheduledGain.h"
+
 #include <OpenFDM/GroupInput.h>
 #include <OpenFDM/ModelGroup.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/Table.h>
-
-#include "JSBSimScheduledGain.h"
 
 namespace OpenFDM {
 

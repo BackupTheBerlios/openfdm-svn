@@ -8,6 +8,7 @@
 #include <string>
 #include <OpenFDM/Referenced.h>
 #include <OpenFDM/SharedPtr.h>
+#include <OpenFDM/Model.h>
 
 namespace OpenFDM {
 

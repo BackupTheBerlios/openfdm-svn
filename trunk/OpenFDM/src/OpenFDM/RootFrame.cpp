@@ -2,8 +2,9 @@
  *
  */
 
-#include "Frame.h"
 #include "RootFrame.h"
+
+#include "Frame.h"
 
 namespace OpenFDM {
 

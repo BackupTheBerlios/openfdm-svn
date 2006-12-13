@@ -2,10 +2,11 @@
  *
  */
 
+#include "TaskInfo.h"
+
 #include "SharedPtr.h"
 #include "SampleTime.h"
 #include "Model.h"
-#include "TaskInfo.h"
 
 namespace OpenFDM {
 

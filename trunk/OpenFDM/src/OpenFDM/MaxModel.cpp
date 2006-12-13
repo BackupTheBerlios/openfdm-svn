@@ -2,12 +2,12 @@
  *
  */
 
-#include <string>
+#include "MaxModel.h"
 
+#include <string>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
-#include "MaxModel.h"
 
 namespace OpenFDM {
 

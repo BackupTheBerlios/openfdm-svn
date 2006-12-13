@@ -2,9 +2,10 @@
  *
  */
 
+#include "TransferFunction.h"
+
 #include "Assert.h"
 #include "LogStream.h"
-#include "TransferFunction.h"
 
 namespace OpenFDM {
 

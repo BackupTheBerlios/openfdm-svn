@@ -2,12 +2,12 @@
  *
  */
 
-#include <string>
+#include "MinModel.h"
 
+#include <string>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
-#include "MinModel.h"
 
 namespace OpenFDM {
 

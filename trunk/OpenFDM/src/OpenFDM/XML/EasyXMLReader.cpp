@@ -2,8 +2,8 @@
  *
  */
 
-#include <simgear/xml/easyxml.hxx>
 #include "EasyXMLReader.h"
+#include <simgear/xml/easyxml.hxx>
 
 namespace OpenFDM {
 namespace XML {

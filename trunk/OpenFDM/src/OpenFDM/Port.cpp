@@ -2,6 +2,8 @@
  *
  */
 
+#include "Port.h"
+
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -10,7 +12,6 @@
 #include "Object.h"
 #include "Variant.h"
 #include "Model.h"
-#include "Port.h"
 
 namespace OpenFDM {
 

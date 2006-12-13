@@ -2,6 +2,8 @@
  *
  */
 
+#include "System.h"
+
 #include "Object.h"
 #include "Model.h"
 #include "Vector.h"
@@ -14,7 +16,6 @@
 #include "ModelVisitor.h"
 #include "Planet.h"
 #include "MobileRootJoint.h"
-#include "System.h"
 
 namespace OpenFDM {
 

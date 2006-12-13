@@ -6,6 +6,9 @@
 #define OpenFDM_TaskInfo_H
 
 #include "Types.h"
+#include "SampleTime.h"
+#include "SharedPtr.h"
+#include "Model.h"
 
 namespace OpenFDM {
 

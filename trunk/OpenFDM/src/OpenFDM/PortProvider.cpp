@@ -2,10 +2,11 @@
  *
  */
 
+#include "PortProvider.h"
+
 #include "Model.h"
 #include "ModelGroup.h"
 #include "Connection.h"
-#include "PortProvider.h"
 
 namespace OpenFDM {
 

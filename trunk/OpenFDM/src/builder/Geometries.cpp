@@ -2,6 +2,8 @@
  *
  */
 
+#include "Geometries.h"
+
 #include <osg/Node>
 #include <osg/Group>
 #include <osg/Geometry>

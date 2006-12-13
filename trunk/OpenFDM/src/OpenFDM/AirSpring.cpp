@@ -2,9 +2,9 @@
  *
  */
 
-#include <string>
-
 #include "AirSpring.h"
+
+#include <string>
 
 namespace OpenFDM {
 

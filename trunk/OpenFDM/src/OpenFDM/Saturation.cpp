@@ -2,6 +2,8 @@
  *
  */
 
+#include "Saturation.h"
+
 #include <string>
 #include <vector>
 
@@ -10,7 +12,6 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include "Model.h"
-#include "Saturation.h"
 
 namespace OpenFDM {
 

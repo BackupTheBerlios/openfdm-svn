@@ -2,11 +2,11 @@
  *
  */
 
+#include "JSBSimFCSComponent.h"
+
 #include <OpenFDM/GroupOutput.h>
 #include <OpenFDM/ModelGroup.h>
 #include <OpenFDM/Gain.h>
-
-#include "JSBSimFCSComponent.h"
 
 namespace OpenFDM {
 

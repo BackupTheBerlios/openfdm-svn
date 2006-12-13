@@ -2,6 +2,8 @@
  *
  */
 
+#include "Environment.h"
+
 #include "Assert.h"
 #include "Object.h"
 #include "EnvironmentObject.h"
@@ -11,7 +13,6 @@
 #include "DefaultPlanet.h"
 #include "Turbulence.h"
 #include "Wind.h"
-#include "Environment.h"
 #include "RootFrame.h"
 
 namespace OpenFDM {

@@ -21,6 +21,15 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo&);
 
+  class Callback : public WeakReferenced {
+  public:
+    virtual ~Callback();
+    virtual real_type getValue() const = 0;
+  };
+
+  Callback* getCallback(void) const;
+  void setCallback(Callback* callback);
+
   const real_type& getInputValue(void) const;
   void setInputValue(const real_type& value);
 
@@ -33,6 +42,8 @@ public:
   const real_type& getOutputValue(void) const;
 
 private:
+  SharedPtr<Callback> mCallback;
+
   real_type mInputValue;
   real_type mOutputValue;
   real_type mInputGain;

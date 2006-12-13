@@ -2,9 +2,10 @@
  *
  */
 
+#include "Model.h"
+
 #include "LogStream.h"
 #include "ModelVisitor.h"
-#include "Model.h"
 
 namespace OpenFDM {
 

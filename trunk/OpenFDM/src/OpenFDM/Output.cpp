@@ -54,6 +54,20 @@ void
 Output::output(const TaskInfo&)
 {
   mValue = mInputPort.getRealValue();
+  if (mCallback)
+    mCallback->setValue(mInputPort.getRealValue());
+}
+
+Output::Callback*
+Output::getCallback(void) const
+{
+  return mCallback;
+}
+
+void
+Output::setCallback(Output::Callback* callback)
+{
+  mCallback = callback;
 }
 
 const real_type&

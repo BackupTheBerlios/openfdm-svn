@@ -2,6 +2,8 @@
  *
  */
 
+#include "Assert.h"
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -17,8 +19,6 @@
 #endif
 
 #include <iostream>
-
-#include "Assert.h"
 
 namespace OpenFDM {
 

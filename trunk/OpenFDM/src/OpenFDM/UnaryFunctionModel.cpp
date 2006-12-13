@@ -2,10 +2,11 @@
  *
  */
 
+#include "UnaryFunctionModel.h"
+
 #include <string>
 
 #include "Types.h"
-#include "UnaryFunctionModel.h"
 
 namespace OpenFDM {
 

@@ -6,6 +6,9 @@
 #define OpenFDM_JSBSimKinemat_H
 
 #include "JSBSimFCSComponent.h"
+#include <OpenFDM/SharedPtr.h>
+#include <OpenFDM/Saturation.h>
+#include <OpenFDM/Gain.h>
 
 namespace OpenFDM {
 

@@ -2,8 +2,8 @@
  *
  */
 
-#include "Assert.h"
 #include "DiscreteIntegrator.h"
+#include "Assert.h"
 
 namespace OpenFDM {
 

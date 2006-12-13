@@ -2,16 +2,15 @@
  *
  */
 
-#include <iterator>
+#include "AtmosphereSTD1976.h"
 
+#include <iterator>
 #include "Types.h"
 #include "LogStream.h"
 #include "Math.h"
 #include "Object.h"
 #include "Atmosphere.h"
-#include "AtmosphereSTD1976.h"
 #include "Environment.h"
-
 #include <iostream>
 
 namespace OpenFDM {

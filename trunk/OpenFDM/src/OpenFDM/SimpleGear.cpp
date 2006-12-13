@@ -2,6 +2,8 @@
  *
  */
 
+#include "SimpleGear.h"
+
 #include "Assert.h"
 #include "LogStream.h"
 #include "Units.h"
@@ -10,7 +12,6 @@
 #include "Frame.h"
 #include "Force.h"
 #include "Contact.h"
-#include "SimpleGear.h"
 
 namespace OpenFDM {
 

@@ -2,6 +2,8 @@
  *
  */
 
+#include "JSBSimReaderBase.h"
+
 #include <iostream>
 #include <istream>
 #include <fstream>
@@ -55,8 +57,6 @@
 #include "JSBSimAerosurfaceScale.h"
 #include "JSBSimKinemat.h"
 #include "JSBSimScheduledGain.h"
-
-#include "JSBSimReaderBase.h"
 
 namespace OpenFDM {
 

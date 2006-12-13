@@ -2,10 +2,10 @@
  *
  */
 
+#include "ExplicitEuler.h"
 #include "Object.h"
 #include "Vector.h"
 #include "ODESolver.h"
-#include "ExplicitEuler.h"
 
 namespace OpenFDM {
 

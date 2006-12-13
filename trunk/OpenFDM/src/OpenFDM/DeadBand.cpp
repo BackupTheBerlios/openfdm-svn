@@ -2,6 +2,8 @@
  *
  */
 
+#include "DeadBand.h"
+
 #include <string>
 #include <vector>
 
@@ -9,7 +11,6 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Model.h"
-#include "DeadBand.h"
 
 namespace OpenFDM {
 

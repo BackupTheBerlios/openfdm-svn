@@ -2,9 +2,9 @@
  *
  */
 
+#include "ExpatXMLReader.h"
 #include <iostream>
 #include <expat.h>
-#include "ExpatXMLReader.h"
 #include "config.h"
 
 namespace OpenFDM {

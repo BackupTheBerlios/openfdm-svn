@@ -2,6 +2,7 @@
  *
  */
 
+#include "RevoluteActuator.h"
 #include "Assert.h"
 #include "LogStream.h"
 #include "Limits.h"
@@ -13,7 +14,6 @@
 #include "Frame.h"
 #include "RigidBody.h"
 #include "RevoluteActuatorFrame.h"
-#include "RevoluteActuator.h"
 
 namespace OpenFDM {
 

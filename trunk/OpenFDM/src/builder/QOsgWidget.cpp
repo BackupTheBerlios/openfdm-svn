@@ -2,6 +2,8 @@
  *
  */
 
+#include "QOsgWidget.h"
+
 #include <QtGui/QWidget>
 #include <QtOpenGL/QtOpenGL>
 
@@ -21,8 +23,6 @@
 #include <osgGA/TrackballManipulator>
 #include <osgGA/UFOManipulator>
 #include <osgUtil/SceneView>
-
-#include "QOsgWidget.h"
 
 class QtEventAdapter
   : public osgGA::GUIEventAdapter {

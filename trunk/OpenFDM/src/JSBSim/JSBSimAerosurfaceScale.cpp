@@ -2,14 +2,13 @@
  *
  */
 
+#include "JSBSimAerosurfaceScale.h"
+
 #include <OpenFDM/GroupInput.h>
 #include <OpenFDM/ModelGroup.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/Table.h>
-
-#include "JSBSimAerosurfaceScale.h"
-
 #include <OpenFDM/Gain.h>
 
 namespace OpenFDM {

@@ -21,6 +21,15 @@ public:
   virtual bool init(void);
   virtual void output(const TaskInfo&);
 
+  class Callback : public WeakReferenced {
+  public:
+    virtual ~Callback();
+    virtual void setValue(real_type value) = 0;
+  };
+
+  Callback* getCallback(void) const;
+  void setCallback(Callback* callback);
+
   const real_type& getValue(void) const;
 
   const real_type& getOutputGain(void) const;
@@ -31,6 +40,8 @@ public:
 
 private:
   RealPortHandle mInputPort;
+  SharedPtr<Callback> mCallback;
+
   real_type mValue;
   real_type mOutputGain;
   std::string mOutputName;

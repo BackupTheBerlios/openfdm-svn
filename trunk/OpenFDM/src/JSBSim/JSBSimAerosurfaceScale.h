@@ -7,9 +7,11 @@
 
 #include "JSBSimFCSComponent.h"
 
-namespace OpenFDM {
+#include <OpenFDM/SharedPtr.h>
+#include <OpenFDM/Saturation.h>
+#include <OpenFDM/Table.h>
 
-class Table1D;
+namespace OpenFDM {
 
 /// Just a small container mapping the JSBSim AerosurfaceScale parameters to
 /// the OpenFDM models.

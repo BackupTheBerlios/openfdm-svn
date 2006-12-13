@@ -2,12 +2,13 @@
  *
  */
 
+#include "Function.h"
+
 #include "Assert.h"
 #include "Object.h"
 #include "Limits.h"
 #include "Vector.h"
 #include "Matrix.h"
-#include "Function.h"
 
 namespace OpenFDM {
 

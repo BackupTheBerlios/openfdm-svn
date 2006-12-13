@@ -2,6 +2,8 @@
  *
  */
 
+#include "Interact.h"
+
 #include <iosfwd>
 #include <list>
 #include <string>
@@ -14,7 +16,6 @@
 #include "Inertia.h"
 #include "RigidBody.h"
 #include "ModelVisitor.h"
-#include "Interact.h"
 
 namespace OpenFDM {
 

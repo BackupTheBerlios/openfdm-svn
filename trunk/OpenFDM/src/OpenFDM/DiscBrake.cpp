@@ -2,9 +2,9 @@
  *
  */
 
+#include "DiscBrake.h"
 #include "Model.h"
 #include "Vector.h"
-#include "DiscBrake.h"
 
 namespace OpenFDM {
 

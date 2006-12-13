@@ -2,8 +2,9 @@
  *
  */
 
-#include "Assert.h"
 #include "TimeDerivative.h"
+
+#include "Assert.h"
 
 namespace OpenFDM {
 

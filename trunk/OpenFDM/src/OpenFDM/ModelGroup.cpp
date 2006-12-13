@@ -2,12 +2,13 @@
  *
  */
 
+#include "ModelGroup.h"
+
 #include "Object.h"
 #include "Model.h"
 #include "Vector.h"
 #include "LogStream.h"
 #include "ModelVisitor.h"
-#include "ModelGroup.h"
 
 namespace OpenFDM {
 

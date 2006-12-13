@@ -2,9 +2,9 @@
  *
  */
 
-#include <iostream>
-
 #include "Tablereader.h"
+
+#include <iostream>
 
 namespace OpenFDM {
 

@@ -2,10 +2,10 @@
  *
  */
 
+#include "ExplicitAdams.h"
 #include "Object.h"
 #include "Vector.h"
 #include "ODESolver.h"
-#include "ExplicitAdams.h"
 
 namespace OpenFDM {
 

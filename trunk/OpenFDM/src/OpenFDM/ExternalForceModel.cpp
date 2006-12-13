@@ -2,8 +2,8 @@
  *
  */
 
-#include "Vector.h"
 #include "ExternalForceModel.h"
+#include "Vector.h"
 
 namespace OpenFDM {
 

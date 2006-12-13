@@ -2,11 +2,12 @@
  *
  */
 
+#include "DoPri5.h"
+
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
 #include "ODESolver.h"
-#include "DoPri5.h"
 
 namespace OpenFDM {
 

@@ -2,12 +2,13 @@
  *
  */
 
+#include "ODESolver.h"
+
 #include "Assert.h"
 #include "Math.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
-#include "ODESolver.h"
 
 namespace OpenFDM {
 

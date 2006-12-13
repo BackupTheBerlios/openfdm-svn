@@ -2,12 +2,12 @@
  *
  */
 
-#include <string>
+#include "Product.h"
 
+#include <string>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
-#include "Product.h"
 
 namespace OpenFDM {
 

@@ -11,6 +11,10 @@ BEGIN_OPENFDM_OBJECT_DEF(Input, Model)
   DEF_OPENFDM_PROPERTY(String, InputName, Serialized)
   END_OPENFDM_OBJECT_DEF
 
+Input::Callback::~Callback()
+{
+}
+
 Input::Input(const std::string& name) :
   Model(name),
   mInputGain(1)
@@ -44,7 +48,23 @@ Input::init(void)
 void
 Input::output(const TaskInfo&)
 {
-  mOutputValue = mInputValue*mInputGain;
+  if (mCallback) {
+    mOutputValue = mCallback->getValue();
+  } else {
+    mOutputValue = mInputValue*mInputGain;
+  }
+}
+
+Input::Callback*
+Input::getCallback(void) const
+{
+  return mCallback;
+}
+
+void
+Input::setCallback(Input::Callback* callback)
+{
+  mCallback = callback;
 }
 
 const real_type&

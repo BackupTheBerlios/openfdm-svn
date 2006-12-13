@@ -2,9 +2,9 @@
  *
  */
 
+#include "EnvironmentObject.h"
 #include "Object.h"
 #include "Environment.h"
-#include "EnvironmentObject.h"
 
 namespace OpenFDM {
 

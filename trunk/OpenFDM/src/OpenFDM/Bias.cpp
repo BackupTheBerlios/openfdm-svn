@@ -2,15 +2,15 @@
  *
  */
 
+#include "Bias.h"
+
 #include <string>
 #include <vector>
-
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Model.h"
-#include "Bias.h"
 
 namespace OpenFDM {
 

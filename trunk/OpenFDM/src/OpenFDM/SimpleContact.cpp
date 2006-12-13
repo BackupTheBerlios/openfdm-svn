@@ -2,13 +2,14 @@
  *
  */
 
+#include "SimpleContact.h"
+
 #include "Assert.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Frame.h"
 #include "Force.h"
 #include "Contact.h"
-#include "SimpleContact.h"
 
 namespace OpenFDM {
 

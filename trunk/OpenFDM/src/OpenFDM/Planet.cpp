@@ -2,6 +2,8 @@
  *
  */
 
+#include "Planet.h"
+
 #include <iosfwd>
 
 #include "Types.h"
@@ -9,7 +11,6 @@
 #include "Math.h"
 #include "Vector.h"
 #include "Quaternion.h"
-#include "Planet.h"
 
 namespace OpenFDM {
 

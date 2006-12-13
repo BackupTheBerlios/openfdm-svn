@@ -2,6 +2,8 @@
  *
  */
 
+#include "Frame.h"
+
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
@@ -9,7 +11,6 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Frame.h"
 #include "FrameVisitor.h"
 #include "ConstFrameVisitor.h"
 

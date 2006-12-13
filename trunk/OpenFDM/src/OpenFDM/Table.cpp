@@ -2,12 +2,12 @@
  *
  */
 
-#include <map>
-#include "Matrix.h"
-#include "Vector.h"
 #include "Table.h"
 
+#include <map>
 #include <iostream>
+#include "Matrix.h"
+#include "Vector.h"
 
 namespace OpenFDM {
 

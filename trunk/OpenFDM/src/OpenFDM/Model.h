@@ -36,6 +36,7 @@ class Joint;
 class MobileRootJoint;
 
 class ModelVisitor;
+class TaskInfo;
 
 class Model : public Object {
   OPENFDM_OBJECT(Model, Object);

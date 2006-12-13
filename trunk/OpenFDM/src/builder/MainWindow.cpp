@@ -2,6 +2,8 @@
  *
  */
 
+#include "MainWindow.h"
+
 #include <QtGui/QMainWindow>
 #include <QtGui/QMenu>
 #include <QtGui/QMenuBar>
@@ -32,7 +34,6 @@ using OpenFDM::JSBSimReader;
 
 #include "FrameItem.h"
 #include "ModelItem.h"
-#include "MainWindow.h"
 
 MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
   : QMainWindow(parent, flags)

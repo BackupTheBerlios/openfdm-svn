@@ -8,6 +8,7 @@
 #include <QtCore/QAbstractItemModel>
 
 #include <OpenFDM/System.h>
+#include <OpenFDM/Frame.h>
 
 class FrameItem : public QAbstractItemModel {
 public:

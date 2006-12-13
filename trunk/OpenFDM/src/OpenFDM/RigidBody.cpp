@@ -2,6 +2,7 @@
  *
  */
 
+#include "RigidBody.h"
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
@@ -14,7 +15,6 @@
 #include "Mass.h"
 #include "Joint.h"
 #include "ModelGroup.h"
-#include "RigidBody.h"
 
 namespace OpenFDM {
 

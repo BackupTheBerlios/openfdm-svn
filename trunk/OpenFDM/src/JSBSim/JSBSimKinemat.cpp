@@ -2,14 +2,14 @@
  *
  */
 
+#include "JSBSimKinemat.h"
+
 #include <OpenFDM/GroupInput.h>
 #include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/ModelGroup.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/Summer.h>
-
-#include "JSBSimKinemat.h"
 
 namespace OpenFDM {
 

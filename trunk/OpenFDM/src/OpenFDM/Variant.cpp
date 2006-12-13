@@ -2,13 +2,14 @@
  *
  */
 
+#include "Variant.h"
+
 #include <sstream>
 
 #include "Types.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
-#include "Variant.h"
 
 namespace OpenFDM {
 

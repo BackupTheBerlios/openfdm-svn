@@ -4,13 +4,14 @@
 
 #undef NDEBUG
 
+#include "Newton.h"
+
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "Function.h"
-#include "Newton.h"
 
 namespace OpenFDM {
 

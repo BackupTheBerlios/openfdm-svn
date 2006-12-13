@@ -2,10 +2,10 @@
  *
  */
 
-#include <string>
-
-#include "Types.h"
 #include "BinaryFunctionModel.h"
+
+#include <string>
+#include "Types.h"
 
 namespace OpenFDM {
 

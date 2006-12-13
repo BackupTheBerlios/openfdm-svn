@@ -2,6 +2,8 @@
  *
  */
 
+#include "Joint.h"
+
 #include "Assert.h"
 #include "Object.h"
 #include "Frame.h"
@@ -13,7 +15,6 @@
 #include "Frame.h"
 #include "LogStream.h"
 #include "ModelVisitor.h"
-#include "Joint.h"
 
 namespace OpenFDM {
 

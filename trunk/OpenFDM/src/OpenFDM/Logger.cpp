@@ -2,13 +2,13 @@
  *
  */
 
+#include "LogStream.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
-
 #include "Mutex.h"
 #include "ScopeLock.h"
-#include "LogStream.h"
 
 namespace OpenFDM {
 

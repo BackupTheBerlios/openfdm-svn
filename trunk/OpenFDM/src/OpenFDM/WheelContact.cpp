@@ -2,13 +2,13 @@
  *
  */
 
-#include "Assert.h"
+#include "WheelContact.h"
+
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Frame.h"
 #include "Force.h"
-#include "WheelContact.h"
 
 namespace OpenFDM {
 

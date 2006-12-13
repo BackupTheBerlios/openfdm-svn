@@ -2,8 +2,9 @@
  *
  */
 
-#include "Port.h"
 #include "Connection.h"
+
+#include "Port.h"
 #include "ModelGroup.h"
 #include "GroupInput.h"
 #include "GroupOutput.h"

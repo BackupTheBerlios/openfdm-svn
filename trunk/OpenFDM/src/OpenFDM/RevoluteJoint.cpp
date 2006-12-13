@@ -2,6 +2,7 @@
  *
  */
 
+#include "RevoluteJoint.h"
 #include "Assert.h"
 #include "LogStream.h"
 #include "Limits.h"
@@ -13,7 +14,6 @@
 #include "Frame.h"
 #include "RigidBody.h"
 #include "RevoluteJointFrame.h"
-#include "RevoluteJoint.h"
 
 namespace OpenFDM {
 

@@ -2,9 +2,10 @@
  *
  */
 
+#include "LinearSpringDamper.h"
+
 #include "Model.h"
 #include "Vector.h"
-#include "LinearSpringDamper.h"
 
 namespace OpenFDM {
 

@@ -2,6 +2,8 @@
  *
  */
 
+#include "MobileRootJoint.h"
+
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
@@ -15,7 +17,6 @@
 #include "ModelVisitor.h"
 #include "RootFrame.h"
 #include "MobileRootJointFrame.h"
-#include "MobileRootJoint.h"
 
 namespace OpenFDM {
 
