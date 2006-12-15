@@ -22,10 +22,6 @@ Object::Object(const std::string& name) :
 {
 }
 
-Object::~Object(void)
-{
-}
-
 const TypeInfo&
 Object::getTypeInfo(void) const
 {
@@ -56,6 +52,16 @@ void
 Object::getPropertyInfoList(std::vector<PropertyInfo>& props) const
 {
   sTypeInfo.getPropertyInfoList(props);
+}
+
+void
+Object::destroy(const Object* object)
+{
+  delete object;
+}
+
+Object::~Object(void)
+{
 }
 
 } // namespace OpenFDM

@@ -92,7 +92,6 @@ class Object : public WeakReferenced {
   OPENFDM_OBJECT(Object, );
 public:
   Object(const std::string& name = "Unnamed Object");
-  virtual ~Object(void);
 
   /// Returns the Objects name.
   const std::string& getName(void) const
@@ -113,6 +112,13 @@ public:
   /// Sets the objects user data
   void setUserData(Object* userData)
   { mUserData = userData; }
+
+  /// overwrites the destroy function in Referenced
+  static void destroy(const Object* object);
+
+protected:
+  /// Objects must not be put onto the stack
+  virtual ~Object(void);
 
 private:
   /// Such objects can not be copied.

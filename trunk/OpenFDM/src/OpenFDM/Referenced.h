@@ -29,6 +29,10 @@ public:
   static bool shared(const Referenced* ref)
   { if (ref) return 1u < ref->_refcount; else return false; }
 
+  template<typename T>
+  static void destroy(T* ref)
+  { delete ref; }
+
 private:
   mutable Atomic _refcount;
 };

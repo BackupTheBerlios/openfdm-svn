@@ -64,7 +64,7 @@ private:
   { Referenced::get(p); put(); _ptr = p; }
 
   void put(void)
-  { if (!Referenced::put(_ptr)) { delete _ptr; _ptr = 0; } }
+  { if (!Referenced::put(_ptr)) { T::destroy(_ptr); _ptr = 0; } }
   
   // The reference itself.
   T* _ptr;
