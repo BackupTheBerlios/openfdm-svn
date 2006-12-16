@@ -4,7 +4,7 @@
 
 #include <cstdlib>
 #include <iostream>
-#include "Quaternion.h"
+#include <OpenFDM/Quaternion.h>
 
 namespace OpenFDM {
 

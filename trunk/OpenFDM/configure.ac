@@ -132,6 +132,7 @@ AC_OUTPUT([
   src/OpenFDM/Makefile
   src/OpenFDM/XML/Makefile
   src/JSBSim/Makefile
+  src/test/Makefile
   src/builder/Makefile
   share/Makefile
   share/objects/Makefile

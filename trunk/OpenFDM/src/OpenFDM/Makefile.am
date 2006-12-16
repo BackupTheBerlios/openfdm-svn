@@ -2,19 +2,6 @@ SUBDIRS = XML
 
 INCLUDES = -I$(srcdir)/..
 
-noinst_PROGRAMS = unitstest
-
-# define some unit tests
-check_PROGRAMS = quattest
-TESTS          = $(check_PROGRAMS)
-
-unitstest_SOURCES = unitstest.cpp
-unitstest_LDADD = libOpenFDM.la
-
-quattest_SOURCES = quattest.cpp
-quattest_LDADD = Units.o
-#quattest_LDADD = libOpenFDM.la
-
 OpenFDMincludedir = $(includedir)/OpenFDM
 
 lib_LTLIBRARIES = libOpenFDM.la
