@@ -39,7 +39,7 @@ public:
   virtual GroundValues
   getGroundPlane(real_type t, const Vector3& refPos) const
   {
-    double loc_cart[3] = { refPos(1), refPos(2), refPos(3) };
+    double loc_cart[3] = { refPos(0), refPos(1), refPos(2) };
     double contact[3], normal[3], vel[3], lc, ff, agl;
     int groundtype;
     // FIXME!!!!!!!
@@ -62,7 +62,7 @@ public:
     if (!mIfce)
       return Limits<real_type>::max();
 
-    double pt[3] = { refPos(1), refPos(2), refPos(3) };
+    double pt[3] = { refPos(0), refPos(1), refPos(2) };
     double end[2][3];
     double vel[2][3];
     real_type dist = mIfce->get_cat_m(t, pt, end, vel);
@@ -71,7 +71,7 @@ public:
     Vector3 p1 = Vector3(end[1][0], end[1][1], end[1][2]);
 
     catVal.position = p0;
-    catVal.orientation = Quaternion::fromRotateTo(p1 - p0, Vector3::unit(1));
+    catVal.orientation = Quaternion::fromRotateTo(p1 - p0, Vector3::unit(0));
     /// FIXME: wrong ...
     catVal.velocity = Vector6(Vector3::zeros(),
                               Vector3(vel[0][0], vel[0][1], vel[0][2]));
@@ -89,10 +89,10 @@ public:
     Vector3 oldTip = old.basePosition + old.hookVector;
     Vector3 currentTip = current.basePosition + current.hookVector;
     double pt[4][3] = {
-      { old.basePosition(1), old.basePosition(2), old.basePosition(3) },
-      { oldTip(1), oldTip(2), oldTip(3) },
-      { currentTip(1), currentTip(2), currentTip(3) },
-      { current.basePosition(1), current.basePosition(2), current.basePosition(3) },
+      { old.basePosition(0), old.basePosition(1), old.basePosition(2) },
+      { oldTip(0), oldTip(1), oldTip(2) },
+      { currentTip(0), currentTip(1), currentTip(2) },
+      { current.basePosition(0), current.basePosition(1), current.basePosition(2) },
     };
     return mIfce->caught_wire_m(old.t, pt);
   }
@@ -162,7 +162,7 @@ public:
    */
   virtual Geodetic toGeod(const Vector3& cart) const
   {
-    double xyz[3] = { cart(1), cart(2), cart(3) };
+    double xyz[3] = { cart(0), cart(1), cart(2) };
     double lat, lon, alt;
     sgCartToGeod(xyz, &lat, &lon, &alt);
     return Geodetic(lat, lon, alt);
@@ -189,7 +189,7 @@ public:
   // FIXME: make pure virtual
   virtual Vector3 getWindVel(const Vector3& pos) const
   {
-    double xyz[3] = { pos(1), pos(2), pos(3) };
+    double xyz[3] = { pos(0), pos(1), pos(2) };
     double lat, lon, alt;
     sgCartToGeod(xyz, &lat, &lon, &alt);
 
@@ -441,7 +441,7 @@ FGOpenFDM::update(double dt)
   double groundCacheRadius = acrad
     + 2*dt*norm(vehicle->getVelocity().getLinear());
   Vector3 cart = vehicle->getCartPosition();
-  double cart_pos[3] = { cart(1), cart(2), cart(3) };
+  double cart_pos[3] = { cart(0), cart(1), cart(2) };
   double t = vehicle->getTime();
   if (!prepare_ground_cache_m(t, cart_pos, groundCacheRadius))
     SG_LOG(SG_FLIGHT, SG_WARN,
@@ -459,37 +459,37 @@ FGOpenFDM::update(double dt)
 
   Rotation geodOr = vehicle->getGeodOrientation();
   euler = geodOr.getEuler();
-  _set_Euler_Angles(euler(1), euler(2), euler(3));
+  _set_Euler_Angles(euler(0), euler(1), euler(2));
 
   // FIXME: wrong velocities are set here ...
   Vector3 velWrtWind = vehicle->getVelocity().getLinear();
   _set_V_rel_wind(convertTo(uFeetPSecond, norm(velWrtWind)));
-  _set_Velocities_Wind_Body(convertTo(uFeetPSecond, velWrtWind(1)),
-                            convertTo(uFeetPSecond, velWrtWind(2)),
-                            convertTo(uFeetPSecond, velWrtWind(3)));
+  _set_Velocities_Wind_Body(convertTo(uFeetPSecond, velWrtWind(0)),
+                            convertTo(uFeetPSecond, velWrtWind(1)),
+                            convertTo(uFeetPSecond, velWrtWind(2)));
   _set_V_equiv_kts(convertTo(uKnots, norm(velWrtWind)));
   _set_V_calibrated_kts(convertTo(uKnots, norm(velWrtWind)));
   _set_Mach_number(norm(velWrtWind)/340);
 
   Vector3 localVel = convertTo(uFeetPSecond, geodOr.backTransform(velWrtWind));
-  _set_Velocities_Local(localVel(1),localVel(2), localVel(3));
+  _set_Velocities_Local(localVel(0),localVel(1), localVel(2));
   _set_V_ground_speed(convertTo(uFeetPSecond,
-             sqrt(localVel(1)*localVel(1) + localVel(2)*localVel(2))));
-  _set_Velocities_Ground(localVel(1),localVel(2), -localVel(3));;
-  _set_Climb_Rate(-localVel(3));
+             sqrt(localVel(0)*localVel(0) + localVel(1)*localVel(1))));
+  _set_Velocities_Ground(localVel(0), localVel(1), -localVel(2));;
+  _set_Climb_Rate(-localVel(2));
 
   const RigidBody* topBody = vehicle->getTopBody();
   Vector3 bodyAccel = convertTo(uFeetPSec2, topBody->getFrame()->getClassicAccel().getLinear());
-  _set_Accels_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
-  _set_Accels_Pilot_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
-  _set_Accels_CG_Body(bodyAccel(1), bodyAccel(2), bodyAccel(3));
+  _set_Accels_Body(bodyAccel(0), bodyAccel(1), bodyAccel(2));
+  _set_Accels_Pilot_Body(bodyAccel(0), bodyAccel(1), bodyAccel(2));
+  _set_Accels_CG_Body(bodyAccel(0), bodyAccel(1), bodyAccel(2));
   // It is not clear in any way how this 'local acceleration is meant'
   // Just provide one possible interpretation
   Vector3 localAccel = geodOr.backTransform(bodyAccel);
-  _set_Accels_Local(localAccel(1), localAccel(2), localAccel(3));
+  _set_Accels_Local(localAccel(0), localAccel(1), localAccel(2));
 
   Vector3 nAccel = 1/convertTo(uFeetPSec2, 9.81) * bodyAccel;
-  _set_Accels_CG_Body_N(nAccel(1), nAccel(2), nAccel(3));
+  _set_Accels_CG_Body_N(nAccel(0), nAccel(1), nAccel(2));
 
 
   SGPropertyNode* sgProp;
@@ -499,7 +499,7 @@ FGOpenFDM::update(double dt)
     _set_Nlf( sgProp->getDoubleValue() );
 
   Vector3 angVel = topBody->getFrame()->getRelVel().getAngular();
-  _set_Omega_Body(angVel(1), angVel(2), angVel(3));
+  _set_Omega_Body(angVel(0), angVel(1), angVel(2));
 
   // is already in the property tree, but fool the HUD now
   sgProp = mAircraftRootNode->getNode("orientation/alpha-deg", false);

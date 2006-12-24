@@ -84,11 +84,11 @@ public:
     if (getPropertyValue(variantValue))
       return false;
     Matrix m = variantValue.toMatrix();
-    unsigned r = mIndex % rows(m) + 1;
-    unsigned c = mIndex / rows(m) + 1;
-    if (r < 1 || rows(m) < r)
+    unsigned r = mIndex % rows(m);
+    unsigned c = mIndex / rows(m);
+    if (rows(m) <= r)
       return false;
-    if (c < 1 || cols(m) < c)
+    if (cols(m) <= c)
       return false;
     
     m(r, c) = value;
@@ -107,11 +107,11 @@ public:
       if (!getPropertyValue(variantValue))
         return 0;
       Matrix m = variantValue.toMatrix();
-      unsigned r = mIndex % rows(m) + 1;
-      unsigned c = mIndex / rows(m) + 1;
-      if (r < 1 || rows(m) < r)
+      unsigned r = mIndex % rows(m);
+      unsigned c = mIndex / rows(m);
+      if (rows(m) <= r)
         return 0;
-      if (c < 1 || cols(m) < c)
+      if (cols(m) <= c)
         return 0;
       return m(r, c);
     }
@@ -221,11 +221,11 @@ public:
       MatrixPortHandle matrixPortHandle = port->getPortInterface()->toMatrixPortInterface();
       if (matrixPortHandle.isConnected()) {
         Matrix m = matrixPortHandle.getMatrixValue();
-        unsigned r = mIndex % rows(m) + 1;
-        unsigned c = mIndex / rows(m) + 1;
-        if (r < 1 || rows(m) < r)
+        unsigned r = mIndex % rows(m);
+        unsigned c = mIndex / rows(m);
+        if (rows(m) <= r)
           return 0;
-        if (c < 1 || cols(m) < c)
+        if (cols(m) <= c)
           return 0;
         return m(r, c);
       } else
