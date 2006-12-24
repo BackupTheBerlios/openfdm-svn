@@ -97,7 +97,7 @@ Table1D::output(const TaskInfo&)
 {
   OpenFDMAssert(mInputPortHandle.isConnected());
   TableData<1>::InterpVector interpVec;
-  interpVec(1) = mInputPortHandle.getRealValue();
+  interpVec(0) = mInputPortHandle.getRealValue();
   mOutput = mTableData.interpolate(interpVec);
   Log(Model,Debug3) << "Output of Table1D \"" << getName() << "\" "
                     << mOutput << endl;
@@ -150,8 +150,8 @@ Table2D::output(const TaskInfo&)
   OpenFDMAssert(mInputPortHandle[0].isConnected());
   OpenFDMAssert(mInputPortHandle[1].isConnected());
   TableData<2>::InterpVector interpVec;
-  interpVec(1) = mInputPortHandle[0].getRealValue();
-  interpVec(2) = mInputPortHandle[1].getRealValue();
+  interpVec(0) = mInputPortHandle[0].getRealValue();
+  interpVec(1) = mInputPortHandle[1].getRealValue();
   mOutput = mTableData.interpolate(interpVec);
   Log(Model, Debug3) << "Output of Table2D \"" << getName() << "\" "
                      << mOutput << endl;
@@ -206,9 +206,9 @@ Table3D::output(const TaskInfo&)
   OpenFDMAssert(mInputPortHandle[1].isConnected());
   OpenFDMAssert(mInputPortHandle[2].isConnected());
   TableData<3>::InterpVector interpVec;
-  interpVec(1) = mInputPortHandle[0].getRealValue();
-  interpVec(2) = mInputPortHandle[1].getRealValue();
-  interpVec(3) = mInputPortHandle[2].getRealValue();
+  interpVec(0) = mInputPortHandle[0].getRealValue();
+  interpVec(1) = mInputPortHandle[1].getRealValue();
+  interpVec(2) = mInputPortHandle[2].getRealValue();
   mOutput = mTableData.interpolate(interpVec);
   Log(Model, Debug3) << "Output of Table3D \"" << getName() << "\" "
                      << mOutput << endl;

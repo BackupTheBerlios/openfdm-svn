@@ -34,7 +34,7 @@ quattest(void)
     Vector3 to = rnVec();
     Quaternion q = Quaternion::fromRotateTo(from, to);
 
-    if (!equal(q.transform(from), to, 100*eps)) {
+    if (!equal(q.transform(from), to, 1e4*eps)) {
       std::cerr << "Failing on test " << i << " Quaternion::fromRotateTo("
                 << trans(from) << ", " << trans(to) << "):\n"
                 << "q = " << q << "\n"
@@ -48,9 +48,9 @@ quattest(void)
   // Testing fromRotateTo factory
   for (unsigned i = 0; i < nTests; ++i) {
     Vector3 from1 = rnVec();
-    unsigned i1 = 1;
+    unsigned i1 = 0;
     Vector3 from2 = rnVec();
-    unsigned i2 = 2;
+    unsigned i2 = 1;
     // Make sure they are not linearily dependent
     while (dot(from1, from2) < 0.1) {
       from2 = rnVec();
@@ -58,7 +58,7 @@ quattest(void)
 
     Quaternion q = Quaternion::fromRotateTo(from1, i1, from2, i2);
 
-    if (!equal(q.transform(from1), Vector3::unit(i1), 1e2*eps)) {
+    if (!equal(q.transform(from1), Vector3::unit(i1), 1e4*eps)) {
       std::cerr << "Failing on test " << i << " Quaternion::fromRotateTo("
                 << trans(from1) << ", " << i1 << ", "
                 << trans(from2) << ", " << i2 << "):\n"
@@ -69,7 +69,7 @@ quattest(void)
       return -1;
     }
     Vector3 from2Orth = normalize(cross(cross(from1, from2), from1));
-    if (!equal(q.transform(from2Orth), Vector3::unit(i2), 1e3*eps)
+    if (!equal(q.transform(from2Orth), Vector3::unit(i2), 1e4*eps)
         || (0 > dot(q.transform(from2), Vector3::unit(i2)))) {
       std::cerr << "Failing on test " << i << " Quaternion::fromRotateTo("
                 << trans(from1) << ", " << i1 << ", "

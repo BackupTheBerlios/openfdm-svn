@@ -177,14 +177,14 @@ SimpleGear::computeFrictionForce(real_type normForce, const Vector3& vel,
   // We just set that to 0.99999 times the x-velocity in the 
   // rolling case and to 1 in the brakeing case.
   real_type wheelSlip = interpolate(mBrake,
-                                    (real_type)0, 1e-5*wheelVel(1),
-                                    (real_type)1, wheelVel(1));
+                                    (real_type)0, 1e-5*wheelVel(0),
+                                    (real_type)1, wheelVel(0));
   
   // The slip angle is the angle between the 'velocity vector' and 
   // the wheel forward direction.
-  real_type slipAngle = rad2deg*atan2(wheelVel(2), fabs(wheelVel(1)));
+  real_type slipAngle = rad2deg*atan2(wheelVel(1), fabs(wheelVel(0)));
 //   slipAngle = saturate(slipAngle, 10*fabs(wheelVel(2)));
-  slipAngle = smoothSaturate(slipAngle, 10*fabs(wheelVel(2)));
+  slipAngle = smoothSaturate(slipAngle, 10*fabs(wheelVel(1)));
   
 //   Vector2 slip(wheelSlip, slipAngle);
 //   if (1 < norm(slip))
@@ -195,7 +195,7 @@ SimpleGear::computeFrictionForce(real_type normForce, const Vector3& vel,
   Vector2 fricForce = (-friction*mFrictionCoef*normForce)*slip;
   
   // Transform the friction force back and return
-  return fricForce(1)*forward + fricForce(2)*side;
+  return fricForce(0)*forward + fricForce(1)*side;
 }
 
 } // namespace OpenFDM

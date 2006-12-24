@@ -36,17 +36,17 @@ public:
     // Compute transform rotating the surface normal onto the z axis.
     // Note that this implementation provides quaternion which is a steady
     // function of the plane normal here.
-    Rotation r = Quaternion::fromRotateTo(planeNormal, Vector3::unit(3));
+    Rotation r = Quaternion::fromRotateTo(planeNormal, Vector3::unit(2));
 
     // Transform the velocity into the x/y plane.
     Vector3 v = r.transform(vel);
 
     // Compute the 2d friction force.
-    Vector2 f = getFrictionForce(Vector2(v(1), v(2)), normalForce,
+    Vector2 f = getFrictionForce(Vector2(v(0), v(1)), normalForce,
                                  surfaceCoef);
 
     // Return the friction force in the original coordinate directions.
-    return r.backTransform(Vector3(f(1), f(2), 0));
+    return r.backTransform(Vector3(f(0), f(1), 0));
   }
 
   /** Friction force computation.

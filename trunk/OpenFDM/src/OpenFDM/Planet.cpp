@@ -25,9 +25,9 @@ Planet::~Planet(void)
 Geocentric
 Planet::toGeoc(const Vector3& cart) const
 {
-  real_type lon = (cart(1) == 0 && cart(2) == 0) ? 0 : atan2(cart(2), cart(1));
-  real_type nxy = sqrt(cart(1)*cart(1)+cart(2)*cart(2));
-  real_type lat = (nxy == 0 && cart(3) == 0) ? 0 : atan2(cart(3), nxy);
+  real_type lon = (cart(0) == 0 && cart(1) == 0) ? 0 : atan2(cart(1), cart(0));
+  real_type nxy = sqrt(cart(0)*cart(0)+cart(1)*cart(1));
+  real_type lat = (nxy == 0 && cart(2) == 0) ? 0 : atan2(cart(2), nxy);
   return Geocentric(lat, lon, norm(cart));
 }
 
@@ -94,7 +94,7 @@ Planet::getGoecHLRate(const Geocentric& pos, const Vector3& ecVel) const
 {
   Quaternion hlOrientation = getGeocHLOrientation(pos);
   Vector3 hlVel = hlOrientation.transform(ecVel);
-  Vector3 hlRate = Vector3(hlVel(2), -hlVel(1), -hlVel(2)*tan(pos.latitude));
+  Vector3 hlRate = Vector3(hlVel(1), -hlVel(0), -hlVel(1)*tan(pos.latitude));
   return hlOrientation.backTransform((1/pos.radius)*hlRate);
 }
 

@@ -43,20 +43,45 @@ public:
     : Vector4<T>(v)
   {}
   OpenFDM_FORCE_INLINE
-  Quaternion(value_type q1, value_type q2, value_type q3, value_type q4)
-    : Vector4<T>(q1, q2, q3, q4)
+  Quaternion(value_type w, value_type x, value_type y, value_type z)
+    : Vector4<T>(w, x, y, z)
   {}
   OpenFDM_FORCE_INLINE
   ~Quaternion(void)
   {}
 
   OpenFDM_FORCE_INLINE
+  const real_type& w(void) const
+  { return Vector4<T>::operator()(0); }
+  OpenFDM_FORCE_INLINE
+  real_type& w(void)
+  { return Vector4<T>::operator()(0); }
+  OpenFDM_FORCE_INLINE
+  const real_type& x(void) const
+  { return Vector4<T>::operator()(1); }
+  OpenFDM_FORCE_INLINE
+  real_type& x(void)
+  { return Vector4<T>::operator()(1); }
+  OpenFDM_FORCE_INLINE
+  const real_type& y(void) const
+  { return Vector4<T>::operator()(2); }
+  OpenFDM_FORCE_INLINE
+  real_type& y(void)
+  { return Vector4<T>::operator()(2); }
+  OpenFDM_FORCE_INLINE
+  const real_type& z(void) const
+  { return Vector4<T>::operator()(3); }
+  OpenFDM_FORCE_INLINE
+  real_type& z(void)
+  { return Vector4<T>::operator()(3); }
+
+  OpenFDM_FORCE_INLINE
   bool isIdentity(void) const
   {
-    return fabs(fabs((*this)(1))-1) < Limits<T>::epsilon() &&
-      fabs((*this)(2)) < Limits<T>::epsilon() &&
-      fabs((*this)(3)) < Limits<T>::epsilon() &&
-      fabs((*this)(4)) < Limits<T>::epsilon();
+    return fabs(fabs(w())-1) < Limits<T>::epsilon() &&
+      fabs(x()) < Limits<T>::epsilon() &&
+      fabs(y()) < Limits<T>::epsilon() &&
+      fabs(z()) < Limits<T>::epsilon();
   }
 
   OpenFDM_FORCE_INLINE
@@ -75,8 +100,8 @@ public:
       return Vector3::zeros();
 
     Vector4<T> nq = (*this)/nrm;
-    value_type cosAngle2 = nq(1);
-    Vector3 axis = Vector3(nq(2), nq(3), nq(4));
+    value_type cosAngle2 = nq.w();
+    Vector3 axis = Vector3(nq.x(), nq.y(), nq.z());
     value_type sinAngle2 = norm(axis);
     axis = normalize(axis);
     if (-0.7 < sinAngle2 && sinAngle2 < 0.7)
@@ -103,10 +128,10 @@ public:
   {
     Vector3 angles;
 
-    value_type q1 = (*this)(1);
-    value_type q2 = (*this)(2);
-    value_type q3 = (*this)(3);
-    value_type q4 = (*this)(4);
+    value_type q1 = w();
+    value_type q2 = x();
+    value_type q3 = y();
+    value_type q4 = z();
     value_type sqrQ1 = q1*q1;
     value_type sqrQ2 = q2*q2;
     value_type sqrQ3 = q3*q3;
@@ -116,28 +141,28 @@ public:
     value_type num = 2*(q3*q4 + q1*q2);
     if (fabs(den) < Limits<value_type>::min() &&
         fabs(num) < Limits<value_type>::min())
-      angles(1) = 0;
+      angles(0) = 0;
     else
-      angles(1) = atan2(num, den);
+      angles(0) = atan2(num, den);
     
     value_type tmp = 2*(q2*q4 - q1*q3);
-    if (tmp < -1.0)
-      angles(2) = pi05;
+    if (tmp < -1)
+      angles(1) = pi05;
     else if (1.0 < tmp)
-      angles(2) = -pi05;
+      angles(1) = -pi05;
     else
-      angles(2) = -asin(tmp);
+      angles(1) = -asin(tmp);
     
     den = sqrQ1 + sqrQ2 - sqrQ3 - sqrQ4;
     num = 2*(q2*q3 + q1*q4);
     if (fabs(den) < Limits<value_type>::min() &&
         fabs(num) < Limits<value_type>::min())
-      angles(3) = 0;
+      angles(2) = 0;
     else {
       value_type psi = atan2(num, den);
-      if (psi < 0.0)
+      if (psi < 0)
         psi += pi2;
-      angles(3) = psi;
+      angles(2) = psi;
     }
 
     return angles;
@@ -165,10 +190,10 @@ public:
 //  [ 1 - 2y^2 - 2z^2    2xy - 2wz      2xz + 2wy
 //    2xy + 2wz    1 - 2x^2 - 2z^2    2yz - 2wx
 //    2xz - 2wy      2yz + 2wx    1 - 2x^2 - 2y^2 ]
-    value_type q1 = (*this)(1);
-    value_type q2 = (*this)(2);
-    value_type q3 = (*this)(3);
-    value_type q4 = (*this)(4);
+    value_type q1 = w();
+    value_type q2 = x();
+    value_type q3 = y();
+    value_type q4 = z();
 
     value_type r = 1/dot(*this, *this);
     value_type rq1 = r*q1;
@@ -228,13 +253,13 @@ public:
 
   /// Unit quaternion
   OpenFDM_FORCE_INLINE
-  static Quaternion unit(unsigned i = 1)
+  static Quaternion unit(unsigned i = 0)
   { return Quaternion(Vector4<T>::unit(i)); }
 
   /// Create from real part and imaginary part
   OpenFDM_FORCE_INLINE
   static Quaternion fromRealImag(value_type r, const Vector3& i)
-  { return Quaternion(r, i(1), i(2), i(3)); }
+  { return Quaternion(r, i(0), i(1), i(2)); }
 
   OpenFDM_FORCE_INLINE
   static Quaternion fromEulerSeq(unsigned i, value_type angle)
@@ -327,7 +352,7 @@ public:
     value_type nfrom = norm(from);
     value_type nto = norm(to);
     if (nfrom < Limits<T>::min() || nto < Limits<T>::min())
-      return Quaternion::unit(1);
+      return Quaternion::unit();
 
     return Quaternion::fromRotateToNorm((1/nfrom)*from, (1/nto)*to);
   }
@@ -339,13 +364,13 @@ public:
     value_type nrmv1 = norm(v1);
     value_type nrmv2 = norm(v2);
     if (nrmv1 < Limits<T>::min() || nrmv2 < Limits<T>::min())
-      return Quaternion::unit(1);
+      return Quaternion::unit();
 
     Vector3 nv1 = (1/nrmv1)*v1;
     Vector3 nv2 = (1/nrmv2)*v2;
     value_type dv1v2 = dot(nv1, nv2);
     if (fabs(fabs(dv1v2)-1) < Limits<value_type>::epsilon())
-      return Quaternion::unit(1);
+      return Quaternion::unit();
 
     // The target vector for the first rotation
     Vector3 nto1 = Vector3::unit(i1);
@@ -382,23 +407,23 @@ public:
   {
     // The vector from points to the oposite direction than to.
     // Find a vector perpandicular to the vector to.
-    value_type absv1 = fabs(v(1));
-    value_type absv2 = fabs(v(2));
-    value_type absv3 = fabs(v(3));
+    value_type absv1 = fabs(v(0));
+    value_type absv2 = fabs(v(1));
+    value_type absv3 = fabs(v(2));
     
     Vector3 axis;
     if (absv2 < absv1 && absv3 < absv1) {
-      value_type quot = v(2)/v(1);
+      value_type quot = v(1)/v(0);
       axis = (1/sqrt(1+quot*quot))*Vector3(quot, -1, 0);
     } else if (absv1 < absv2 && absv3 < absv2) {
-      value_type quot = v(3)/v(2);
+      value_type quot = v(2)/v(1);
       axis = (1/sqrt(1+quot*quot))*Vector3(0, quot, -1);
     } else if (absv1 < absv3 && absv2 < absv3) {
-      value_type quot = v(1)/v(3);
+      value_type quot = v(0)/v(2);
       axis = (1/sqrt(1+quot*quot))*Vector3(-1, 0, quot);
     } else {
       // The all zero case.
-      return Quaternion::unit(1);
+      return Quaternion::unit();
     }
 
     return Quaternion::fromRealImag(0, axis);
@@ -477,18 +502,11 @@ OpenFDM_FORCE_INLINE
 Quaternion<T>
 operator*(const Quaternion<T>& q1, const Quaternion<T>& q2)
 {
-  Quaternion<T> q;
-/*  w = w1w2 - x1x2 - y1y2 - z1z2 */
-/*  x = w1x2 + x1w2 + y1z2 - z1y2 */
-/*  y = w1y2 - x1z2 + y1w2 + z1x2 */
-/*  z = w1z2 + x1y2 - y1x2 + z1w2 */
-
-  q(1) = q1(1)*q2(1) - q1(2)*q2(2) - q1(3)*q2(3) - q1(4)*q2(4);
-  q(2) = q1(1)*q2(2) + q1(2)*q2(1) + q1(3)*q2(4) - q1(4)*q2(3);
-  q(3) = q1(1)*q2(3) - q1(2)*q2(4) + q1(3)*q2(1) + q1(4)*q2(2);
-  q(4) = q1(1)*q2(4) + q1(2)*q2(3) - q1(3)*q2(2) + q1(4)*q2(1);
-
-  return q;
+  return Quaternion<T>
+    (q1.w()*q2.w() - q1.x()*q2.x() - q1.y()*q2.y() - q1.z()*q2.z(),
+     q1.w()*q2.x() + q1.x()*q2.w() + q1.y()*q2.z() - q1.z()*q2.y(),
+     q1.w()*q2.y() - q1.x()*q2.z() + q1.y()*q2.w() + q1.z()*q2.x(),
+     q1.w()*q2.z() + q1.x()*q2.y() - q1.y()*q2.x() + q1.z()*q2.w());
 }
 
 template<typename T>
@@ -501,7 +519,7 @@ template<typename T>
 OpenFDM_FORCE_INLINE
 Quaternion<T>
 conjugate(const Quaternion<T>& q)
-{ return Quaternion<T>(q(1), -q(2), -q(3), -q(4)); }
+{ return Quaternion<T>(q.w(), -q.x(), -q.y(), -q.z()); }
 
 template<typename T>
 OpenFDM_FORCE_INLINE
@@ -513,27 +531,24 @@ template<typename T>
 OpenFDM_FORCE_INLINE
 typename Quaternion<T>::value_type
 real(const Quaternion<T>& q)
-{ return q(1); }
+{ return q.w(); }
 
 template<typename T>
 OpenFDM_FORCE_INLINE
 typename Quaternion<T>::Vector3
 imag(const Quaternion<T>& q)
-{ return typename Quaternion<T>::Vector3(q(2), q(3), q(4)); }
+{ return typename Quaternion<T>::Vector3(q.x(), q.y(), q.z()); }
 
 template<typename T>
 OpenFDM_FORCE_INLINE
 Vector4<T>
 derivative(const Quaternion<T>& q, const Vector3<T>& angVel)
 {
-  Vector4<T> deriv;
-
-  deriv(1) = 0.5*(-q(2)*angVel(1) - q(3)*angVel(2) - q(4)*angVel(3));
-  deriv(2) = 0.5*( q(1)*angVel(1) - q(4)*angVel(2) + q(3)*angVel(3));
-  deriv(3) = 0.5*( q(4)*angVel(1) + q(1)*angVel(2) - q(2)*angVel(3));
-  deriv(4) = 0.5*(-q(3)*angVel(1) + q(2)*angVel(2) + q(1)*angVel(3));
-
-  return deriv;
+  return Vector4<T>
+    (0.5*(-q.x()*angVel(0) - q.y()*angVel(1) - q.z()*angVel(2)),
+     0.5*( q.w()*angVel(0) - q.z()*angVel(1) + q.y()*angVel(2)),
+     0.5*( q.z()*angVel(0) + q.w()*angVel(1) - q.x()*angVel(2)),
+     0.5*(-q.y()*angVel(0) + q.x()*angVel(1) + q.w()*angVel(2)));
 }
 
 template<typename T>

@@ -84,19 +84,19 @@ locationData(const XMLElement* element, const Vector3& def = Vector3(0, 0, 0))
   Vector3 value = def;
   {
     std::stringstream stream(xElement->getData());
-    stream >> value(1);
+    stream >> value(0);
     //   if (!stream)
     //     return def;
   }
   {
     std::stringstream stream(yElement->getData());
-    stream >> value(2);
+    stream >> value(1);
     //   if (!stream)
     //     return def;
   }
   {
     std::stringstream stream(zElement->getData());
-    stream >> value(3);
+    stream >> value(2);
     //   if (!stream)
     //     return def;
   }
@@ -136,19 +136,19 @@ orientationData(const XMLElement* element, const Vector3& def = Vector3(0, 0, 0)
   Vector3 value = def;
   {
     std::stringstream stream(xElement->getData());
-    stream >> value(1);
+    stream >> value(0);
     //   if (!stream)
     //     return def;
   }
   {
     std::stringstream stream(yElement->getData());
-    stream >> value(2);
+    stream >> value(1);
     //   if (!stream)
     //     return def;
   }
   {
     std::stringstream stream(zElement->getData());
-    stream >> value(3);
+    stream >> value(2);
     //   if (!stream)
     //     return def;
   }
@@ -160,12 +160,12 @@ inertiaData(const XMLElement* element,
             const InertiaMatrix& def = InertiaMatrix(1, 0, 0, 1, 0, 1))
 {
   InertiaMatrix I;
-  I(1, 1) = realData(element->getElement("ixx"), def(1, 1));
-  I(1, 2) = realData(element->getElement("ixy"), def(1, 2));
-  I(1, 3) = realData(element->getElement("ixz"), def(1, 3));
-  I(2, 2) = realData(element->getElement("iyy"), def(2, 2));
-  I(2, 3) = realData(element->getElement("iyz"), def(2, 3));
-  I(3, 3) = realData(element->getElement("izz"), def(3, 3));
+  I(0, 0) = realData(element->getElement("ixx"), def(0, 0));
+  I(0, 1) = realData(element->getElement("ixy"), def(0, 1));
+  I(0, 2) = realData(element->getElement("ixz"), def(0, 2));
+  I(1, 1) = realData(element->getElement("iyy"), def(1, 1));
+  I(1, 2) = realData(element->getElement("iyz"), def(1, 2));
+  I(2, 2) = realData(element->getElement("izz"), def(2, 2));
   return I;
 }
 
@@ -459,17 +459,17 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
   masslist masses;
 
   real_type ixx = realData(massBalance->getElement("ixx"), 0);
-  I(1, 1) = convertFrom(uSlugFt2, ixx);
+  I(0, 0) = convertFrom(uSlugFt2, ixx);
   real_type iyy = realData(massBalance->getElement("iyy"), 0);
-  I(2, 2) = convertFrom(uSlugFt2, iyy);
+  I(1, 1) = convertFrom(uSlugFt2, iyy);
   real_type izz = realData(massBalance->getElement("izz"), 0);
-  I(3, 3) = convertFrom(uSlugFt2, izz);
+  I(2, 2) = convertFrom(uSlugFt2, izz);
   real_type ixy = realData(massBalance->getElement("ixy"), 0);
-  I(1, 2) = convertFrom(uSlugFt2, ixy);
+  I(0, 1) = convertFrom(uSlugFt2, ixy);
   real_type ixz = realData(massBalance->getElement("ixz"), 0);
-  I(1, 3) = convertFrom(uSlugFt2, ixz);
+  I(0, 2) = convertFrom(uSlugFt2, ixz);
   real_type iyz = realData(massBalance->getElement("iyz"), 0);
-  I(2, 3) = convertFrom(uSlugFt2, iyz);
+  I(1, 2) = convertFrom(uSlugFt2, iyz);
   
   mass = realData(massBalance->getElement("emptywt"), 0);
   mass = convertFrom(uPoundSealevel, mass);
@@ -1017,7 +1017,7 @@ JSBSimReader::convertEngine(const XMLElement* engine,
 
   loc = structToBody(loc);
   Quaternion orientation
-    = Quaternion::fromYawPitchRoll(orient(3), orient(2), orient(1));
+    = Quaternion::fromYawPitchRoll(orient(2), orient(1), orient(0));
 
 
   // Engines are distinguished between that turbine model which effectively
@@ -1247,7 +1247,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       addFCSModel(bias);
       Connection::connect(summer->getOutputPort(0), bias->getInputPort(0));
       Matrix m(1, 1);
-      m(1, 1) = b;
+      m(0, 0) = b;
       bias->setBias(m);
       model = bias;
     } else {
@@ -1745,12 +1745,12 @@ JSBSimReader::readTable1D(const XMLElement* tableElem,
 
   unsigned sz = values.size()/2;
   TableData<1>::SizeVector sv;
-  sv(1) = sz;
+  sv(0) = sz;
   data = TableData<1>(sv);
   for (unsigned idx = 0; idx < sz; ++idx) {
-    lookup.setAtIndex(idx+1, values[idx*2]);
+    lookup.setAtIndex(idx, values[idx*2]);
     TableData<1>::Index iv;
-    iv(1) = idx + 1;
+    iv(0) = idx;
     data(iv) = values[idx*2+1];
   }
   return true;
@@ -1781,7 +1781,7 @@ JSBSimReader::readTable2D(const XMLElement* tableElem,
       lstream >> in;
       if (!lstream)
         break;
-      lookup[1].setAtIndex(cols+1, in);
+      lookup[1].setAtIndex(cols, in);
     }
   }
   std::vector<real_type> values;
@@ -1791,7 +1791,7 @@ JSBSimReader::readTable2D(const XMLElement* tableElem,
     stream >> val;
     if (!stream)
       break;
-    lookup[0].setAtIndex(++rows, val);
+    lookup[0].setAtIndex(rows++, val);
 
     for (unsigned i = 0; i < cols; ++i) {
       stream >> val;
@@ -1803,14 +1803,14 @@ JSBSimReader::readTable2D(const XMLElement* tableElem,
     return error("Invalid table size!");
 
   TableData<2>::SizeVector sv;
-  sv(1) = rows;
-  sv(2) = cols;
+  sv(0) = rows;
+  sv(1) = cols;
   data = TableData<2>(sv);
   for (unsigned i = 0; i < rows; ++i) {
     for (unsigned j = 0; j < cols; ++j) {
       TableData<2>::Index iv;
-      iv(1) = i+1;
-      iv(2) = j+1;
+      iv(0) = i;
+      iv(1) = j;
       data(iv) = values[i*cols+j];
     }
   }

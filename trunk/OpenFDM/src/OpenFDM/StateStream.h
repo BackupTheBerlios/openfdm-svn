@@ -43,7 +43,7 @@ public:
   void readSubState(real_type& value) const
   {
     OpenFDMAssert(mOffset + 1 <= rows(mState));
-    value = mState(++mOffset);
+    value = mState(mOffset++);
   }
   template<typename Impl, LinAlg::size_type m, LinAlg::size_type n>
   OpenFDM_FORCE_INLINE
@@ -53,9 +53,9 @@ public:
     LinAlg::size_type c = cols(value);
     OpenFDMAssert(mOffset + r*c <= rows(mState));
     Impl& valueImpl = value.asImpl();
-    for (LinAlg::size_type j = 1; j <= c; ++j) 
-      for (LinAlg::size_type i = 1; i <= r; ++i)
-        valueImpl(i, j) = mState(++mOffset);
+    for (LinAlg::size_type j = 0; j < c; ++j) 
+      for (LinAlg::size_type i = 0; i < r; ++i)
+        valueImpl(i, j) = mState(mOffset++);
   }
   template<typename Impl, LinAlg::size_type n>
   OpenFDM_FORCE_INLINE
@@ -64,15 +64,15 @@ public:
     LinAlg::size_type r = rows(value);
     OpenFDMAssert(mOffset + r <= rows(mState));
     Impl& valueImpl = value.asImpl();
-    for (LinAlg::size_type i = 1; i <= r; ++i)
-      valueImpl(i) = mState(++mOffset);
+    for (LinAlg::size_type i = 0; i < r; ++i)
+      valueImpl(i) = mState(mOffset++);
   }
 
   OpenFDM_FORCE_INLINE
   void writeSubState(real_type value)
   {
     OpenFDMAssert(mOffset + 1 <= rows(mState));
-    mState(++mOffset) = value;
+    mState(mOffset++) = value;
   }
   template<typename Impl, LinAlg::size_type m, LinAlg::size_type n>
   OpenFDM_FORCE_INLINE
@@ -82,9 +82,9 @@ public:
     LinAlg::size_type c = cols(value);
     OpenFDMAssert(mOffset + r*c <= rows(mState));
     const Impl& valueImpl = value.asImpl();
-    for (LinAlg::size_type j = 1; j <= c; ++j) 
-      for (LinAlg::size_type i = 1; i <= r; ++i)
-        mState(++mOffset) = valueImpl(i, j);
+    for (LinAlg::size_type j = 0; j < c; ++j) 
+      for (LinAlg::size_type i = 0; i < r; ++i)
+        mState(mOffset++) = valueImpl(i, j);
   }
   template<typename Impl, LinAlg::size_type n>
   OpenFDM_FORCE_INLINE
@@ -93,8 +93,8 @@ public:
     LinAlg::size_type r = rows(value);
     OpenFDMAssert(mOffset + r <= rows(mState));
     const Impl& valueImpl = value.asImpl();
-    for (LinAlg::size_type i = 1; i <= r; ++i)
-      mState(++mOffset) = valueImpl(i);
+    for (LinAlg::size_type i = 0; i < r; ++i)
+      mState(mOffset++) = valueImpl(i);
   }
 
 private:

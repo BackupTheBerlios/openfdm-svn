@@ -294,7 +294,7 @@ public:
     value_type ret = 0;
     size_type cols = op1_.cols();
     size_type k;
-    for (k = 1; k <= cols; ++k)
+    for (k = 0; k < cols; ++k)
       ret += op1_(i, k) * op2_(k, j);
     return ret;
   }
@@ -329,8 +329,8 @@ trans(const MatrixRValue<Impl,n,m>& A)
 
   Matrix<typename Impl::value_type,m,n> ret(cols, rows);
   size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
       ret(j,i) = Ai(i,j);
 
   return ret;
@@ -348,8 +348,8 @@ operator-(const MatrixRValue<Impl,m,n>& A)
 
   Matrix<typename Impl::value_type,m,n> ret(rows, cols);
   size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
       ret(i,j) = -Ai(i,j);
 
   return ret;
@@ -366,7 +366,7 @@ operator-(const MatrixRValue<Impl,m,1>& A)
 
   Vector<typename Impl::value_type,m> ret(rows, 1);
   size_type i;
-  for (i = 1; i <= rows; ++i)
+  for (i = 0; i < rows; ++i)
     ret(i,1) = -Ai(i,1);
 
   return ret;
@@ -384,8 +384,8 @@ operator*(typename Impl::value_type scalar, const MatrixRValue<Impl,m,n>& A)
 
   Matrix<typename Impl::value_type,m,n> ret(rows, cols);
   size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
       ret(i,j) = scalar*Ai(i,j);
 
   return ret;
@@ -402,8 +402,8 @@ operator*(typename Impl::value_type scalar, const MatrixRValue<Impl,m,1>& A)
 
   Vector<typename Impl::value_type,m> ret(rows, 1);
   size_type i;
-  for (i = 1; i <= rows; ++i)
-    ret(i,1) = scalar*Ai(i,1);
+  for (i = 0; i < rows; ++i)
+    ret(i,0) = scalar*Ai(i,0);
 
   return ret;
 }
@@ -420,8 +420,8 @@ operator*(const MatrixRValue<Impl,m,n>& A, typename Impl::value_type scalar)
 
   Matrix<typename Impl::value_type,m,n> ret(rows, cols);
   size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
       ret(i,j) = scalar*Ai(i,j);
 
   return ret;
@@ -438,8 +438,8 @@ operator*(const MatrixRValue<Impl,m,1>& A, typename Impl::value_type scalar)
 
   Vector<typename Impl::value_type,m> ret(rows, 1);
   size_type i;
-  for (i = 1; i <= rows; ++i)
-    ret(i,1) = scalar*Ai(i,1);
+  for (i = 0; i < rows; ++i)
+    ret(i,0) = scalar*Ai(i,0);
 
   return ret;
 }
@@ -461,8 +461,8 @@ operator+(const MatrixRValue<Impl1,m1,n1>& A1,
 
   Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
   size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
       ret(i, j) = A1i(i, j) + A2i(i, j);
 
   return ret;
@@ -483,8 +483,8 @@ operator+(const MatrixRValue<Impl1,m1,1>& A1,
 
   Vector<typename Impl1::value_type,m1> ret(rows, 1);
   size_type i;
-  for (i = 1; i <= rows; ++i)
-    ret(i, 1) = A1i(i, 1) + A2i(i, 1);
+  for (i = 0; i < rows; ++i)
+    ret(i, 0) = A1i(i, 0) + A2i(i, 0);
 
   return ret;
 }
@@ -506,8 +506,8 @@ operator-(const MatrixRValue<Impl1,m1,n1>& A1,
 
   Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
   size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
       ret(i, j) = A1i(i, j) - A2i(i, j);
 
   return ret;
@@ -528,8 +528,8 @@ operator-(const MatrixRValue<Impl1,m1,1>& A1,
 
   Vector<typename Impl1::value_type,m1> ret(rows, 1);
   size_type i;
-  for (i = 1; i <= rows; ++i)
-    ret(i, 1) = A1i(i, 1) - A2i(i, 1);
+  for (i = 0; i < rows; ++i)
+    ret(i, 0) = A1i(i, 0) - A2i(i, 0);
 
   return ret;
 }
@@ -554,16 +554,16 @@ operator*(const MatrixRValue<Impl1,m1,n1>& A1,
 
   Matrix<value_type,m1,n2> ret(m, n);
   size_type j;
-  for (j = 1; j <= n; ++j) {
+  for (j = 0; j < n; ++j) {
     size_type i;
-    value_type t = A2i(1, j);
-    for (i = 1; i <= m; ++i) {
-      ret(i, j) = t*A1i(i, 1);
+    value_type t = A2i(0, j);
+    for (i = 0; i < m; ++i) {
+      ret(i, j) = t*A1i(i, 0);
     }
     size_type l;
-    for (l = 2; l <= k; ++l) {
+    for (l = 1; l < k; ++l) {
       t = A2i(l, j);
-      for (i = 1; i <= m; ++i) {
+      for (i = 0; i < m; ++i) {
         ret(i, j) += t*A1i(i, l);
       }
     }
@@ -582,15 +582,15 @@ operator*(const MatrixRValue<Impl1,3,3>& A1,
 
   typedef typename Impl1::value_type value_type;
   Matrix<typename Impl1::value_type,3,3> ret;
-  ret(1,1) = A1i(1,1)*A2i(1,1) + A1i(1,2)*A2i(2,1) + A1i(1,3)*A2i(3,1);
-  ret(2,1) = A1i(2,1)*A2i(1,1) + A1i(2,2)*A2i(2,1) + A1i(2,3)*A2i(3,1);
-  ret(3,1) = A1i(3,1)*A2i(1,1) + A1i(3,2)*A2i(2,1) + A1i(3,3)*A2i(3,1);
-  ret(1,2) = A1i(1,1)*A2i(1,2) + A1i(1,2)*A2i(2,2) + A1i(1,3)*A2i(3,2);
-  ret(2,2) = A1i(2,1)*A2i(1,2) + A1i(2,2)*A2i(2,2) + A1i(2,3)*A2i(3,2);
-  ret(3,2) = A1i(3,1)*A2i(1,2) + A1i(3,2)*A2i(2,2) + A1i(3,3)*A2i(3,2);
-  ret(1,3) = A1i(1,1)*A2i(1,3) + A1i(1,2)*A2i(2,3) + A1i(1,3)*A2i(3,3);
-  ret(2,3) = A1i(2,1)*A2i(1,3) + A1i(2,2)*A2i(2,3) + A1i(2,3)*A2i(3,3);
-  ret(3,3) = A1i(3,1)*A2i(1,3) + A1i(3,2)*A2i(2,3) + A1i(3,3)*A2i(3,3);
+  ret(0,0) = A1i(0,0)*A2i(0,0) + A1i(0,1)*A2i(1,0) + A1i(0,2)*A2i(2,0);
+  ret(1,0) = A1i(1,0)*A2i(0,0) + A1i(1,1)*A2i(1,0) + A1i(1,2)*A2i(2,0);
+  ret(2,0) = A1i(2,0)*A2i(0,0) + A1i(2,1)*A2i(1,0) + A1i(2,2)*A2i(2,0);
+  ret(0,1) = A1i(0,0)*A2i(0,1) + A1i(0,1)*A2i(1,1) + A1i(0,2)*A2i(2,1);
+  ret(1,1) = A1i(1,0)*A2i(0,1) + A1i(1,1)*A2i(1,1) + A1i(1,2)*A2i(2,1);
+  ret(2,1) = A1i(2,0)*A2i(0,1) + A1i(2,1)*A2i(1,1) + A1i(2,2)*A2i(2,1);
+  ret(0,2) = A1i(0,0)*A2i(0,2) + A1i(0,1)*A2i(1,2) + A1i(0,2)*A2i(2,2);
+  ret(1,2) = A1i(1,0)*A2i(0,2) + A1i(1,1)*A2i(1,2) + A1i(1,2)*A2i(2,2);
+  ret(2,2) = A1i(2,0)*A2i(0,2) + A1i(2,1)*A2i(1,2) + A1i(2,2)*A2i(2,2);
   return ret;
 }
 
@@ -605,9 +605,9 @@ operator*(const MatrixRValue<Impl1,3,3>& A1,
 
   typedef typename Impl1::value_type value_type;
   Vector<typename Impl1::value_type,3> ret;
-  ret(1) = A1i(1,1)*A2i(1,1) + A1i(1,2)*A2i(2,1) + A1i(1,3)*A2i(3,1);
-  ret(2) = A1i(2,1)*A2i(1,1) + A1i(2,2)*A2i(2,1) + A1i(2,3)*A2i(3,1);
-  ret(3) = A1i(3,1)*A2i(1,1) + A1i(3,2)*A2i(2,1) + A1i(3,3)*A2i(3,1);
+  ret(0) = A1i(0,0)*A2i(0,0) + A1i(0,1)*A2i(1,0) + A1i(0,2)*A2i(2,0);
+  ret(1) = A1i(1,0)*A2i(0,0) + A1i(1,1)*A2i(1,0) + A1i(1,2)*A2i(2,0);
+  ret(2) = A1i(2,0)*A2i(0,0) + A1i(2,1)*A2i(1,0) + A1i(2,2)*A2i(2,0);
   return ret;
 }
 using LinAlg::Zeros;
@@ -623,18 +623,18 @@ operator*(const MatrixRValue<Impl1,6,6>& A1,
 
   typedef typename Impl1::value_type value_type;
   Vector<typename Impl1::value_type,6> ret;
-  ret(1) = A1i(1,1)*A2i(1,1) + A1i(1,2)*A2i(2,1) + A1i(1,3)*A2i(3,1)
-    + A1i(1,4)*A2i(4,1) + A1i(1,5)*A2i(5,1) + A1i(1,6)*A2i(6,1);
-  ret(2) = A1i(2,1)*A2i(1,1) + A1i(2,2)*A2i(2,1) + A1i(2,3)*A2i(3,1)
-    + A1i(2,4)*A2i(4,1) + A1i(2,5)*A2i(5,1) + A1i(2,6)*A2i(6,1);
-  ret(3) = A1i(3,1)*A2i(1,1) + A1i(3,2)*A2i(2,1) + A1i(3,3)*A2i(3,1)
-    + A1i(3,4)*A2i(4,1) + A1i(3,5)*A2i(5,1) + A1i(3,6)*A2i(6,1);
-  ret(4) = A1i(4,1)*A2i(1,1) + A1i(4,2)*A2i(2,1) + A1i(4,3)*A2i(3,1)
-    + A1i(4,4)*A2i(4,1) + A1i(4,5)*A2i(5,1) + A1i(4,6)*A2i(6,1);
-  ret(5) = A1i(5,1)*A2i(1,1) + A1i(5,2)*A2i(2,1) + A1i(5,3)*A2i(3,1)
-    + A1i(5,4)*A2i(4,1) + A1i(5,5)*A2i(5,1) + A1i(5,6)*A2i(6,1);
-  ret(6) = A1i(6,1)*A2i(1,1) + A1i(6,2)*A2i(2,1) + A1i(6,3)*A2i(3,1)
-    + A1i(6,4)*A2i(4,1) + A1i(6,5)*A2i(5,1) + A1i(6,6)*A2i(6,1);
+  ret(0) = A1i(0,0)*A2i(0,0) + A1i(0,1)*A2i(1,0) + A1i(0,2)*A2i(2,0)
+    + A1i(0,3)*A2i(3,0) + A1i(0,4)*A2i(4,0) + A1i(0,5)*A2i(5,0);
+  ret(1) = A1i(1,0)*A2i(0,0) + A1i(1,1)*A2i(1,0) + A1i(1,2)*A2i(2,0)
+    + A1i(1,3)*A2i(3,0) + A1i(1,4)*A2i(4,0) + A1i(1,5)*A2i(5,0);
+  ret(2) = A1i(2,0)*A2i(0,0) + A1i(2,1)*A2i(1,0) + A1i(2,2)*A2i(2,0)
+    + A1i(2,3)*A2i(3,0) + A1i(2,4)*A2i(4,0) + A1i(2,5)*A2i(5,0);
+  ret(3) = A1i(3,0)*A2i(0,0) + A1i(3,1)*A2i(1,0) + A1i(3,2)*A2i(2,0)
+    + A1i(3,3)*A2i(3,0) + A1i(3,4)*A2i(4,0) + A1i(3,5)*A2i(5,0);
+  ret(4) = A1i(4,0)*A2i(0,0) + A1i(4,1)*A2i(1,0) + A1i(4,2)*A2i(2,0)
+    + A1i(4,3)*A2i(3,0) + A1i(4,4)*A2i(4,0) + A1i(4,5)*A2i(5,0);
+  ret(5) = A1i(5,0)*A2i(0,0) + A1i(5,1)*A2i(1,0) + A1i(5,2)*A2i(2,0)
+    + A1i(5,3)*A2i(3,0) + A1i(5,4)*A2i(4,0) + A1i(5,5)*A2i(5,0);
   return ret;
 }
 
@@ -644,58 +644,58 @@ Vector<T,6>
 operator*(const SymMatrix<T,6>& A1,
           const MatrixRValue<Impl2,6,1>& A2)
 {
-  const T* sptr = A1.find(1,1);
+  const T* sptr = A1.find(0,0);
   const Impl2& A2i = A2.asImpl();
 
-  T v1 = A2i(1,1);
-  T v2 = A2i(2,1);
-  T v3 = A2i(3,1);
-  T v4 = A2i(4,1);
-  T v5 = A2i(5,1);
-  T v6 = A2i(6,1);
+  T v1 = A2i(0,0);
+  T v2 = A2i(1,0);
+  T v3 = A2i(2,0);
+  T v4 = A2i(3,0);
+  T v5 = A2i(4,0);
+  T v6 = A2i(5,0);
 
   Vector<T,6> ret;
-  ret(1) = v1*sptr[0];
-  ret(2) = v1*sptr[1];
-  ret(1) += v2*sptr[1];
-  ret(3) = v1*sptr[2];
-  ret(1) += v3*sptr[2];
-  ret(4) = v1*sptr[3];
-  ret(1) += v4*sptr[3];
-  ret(5) = v1*sptr[4];
-  ret(1) += v5*sptr[4];
-  ret(6) = v1*sptr[5];
-  ret(1) += v6*sptr[5];
+  ret(0) = v1*sptr[0];
+  ret(1) = v1*sptr[1];
+  ret(0) += v2*sptr[1];
+  ret(2) = v1*sptr[2];
+  ret(0) += v3*sptr[2];
+  ret(3) = v1*sptr[3];
+  ret(0) += v4*sptr[3];
+  ret(4) = v1*sptr[4];
+  ret(0) += v5*sptr[4];
+  ret(5) = v1*sptr[5];
+  ret(0) += v6*sptr[5];
 
-  ret(2) += v2*sptr[6];
-  ret(3) += v2*sptr[7];
-  ret(2) += v3*sptr[7];
-  ret(4) += v2*sptr[8];
-  ret(2) += v4*sptr[8];
-  ret(5) += v2*sptr[9];
-  ret(2) += v5*sptr[9];
-  ret(6) += v2*sptr[10];
-  ret(2) += v6*sptr[10];
+  ret(1) += v2*sptr[6];
+  ret(2) += v2*sptr[7];
+  ret(1) += v3*sptr[7];
+  ret(3) += v2*sptr[8];
+  ret(1) += v4*sptr[8];
+  ret(4) += v2*sptr[9];
+  ret(1) += v5*sptr[9];
+  ret(5) += v2*sptr[10];
+  ret(1) += v6*sptr[10];
 
-  ret(3) += v3*sptr[11];
-  ret(4) += v3*sptr[12];
-  ret(3) += v4*sptr[12];
-  ret(5) += v3*sptr[13];
-  ret(3) += v5*sptr[13];
-  ret(6) += v3*sptr[14];
-  ret(3) += v6*sptr[14];
+  ret(2) += v3*sptr[11];
+  ret(3) += v3*sptr[12];
+  ret(2) += v4*sptr[12];
+  ret(4) += v3*sptr[13];
+  ret(2) += v5*sptr[13];
+  ret(5) += v3*sptr[14];
+  ret(2) += v6*sptr[14];
 
-  ret(4) += v4*sptr[15];
-  ret(5) += v4*sptr[16];
-  ret(4) += v5*sptr[16];
-  ret(6) += v4*sptr[17];
-  ret(4) += v6*sptr[17];
+  ret(3) += v4*sptr[15];
+  ret(4) += v4*sptr[16];
+  ret(3) += v5*sptr[16];
+  ret(5) += v4*sptr[17];
+  ret(3) += v6*sptr[17];
 
-  ret(5) += v5*sptr[18];
-  ret(6) += v5*sptr[19];
-  ret(5) += v6*sptr[19];
+  ret(4) += v5*sptr[18];
+  ret(5) += v5*sptr[19];
+  ret(4) += v6*sptr[19];
 
-  ret(6) += v6*sptr[20];
+  ret(5) += v6*sptr[20];
 
   return ret;
 }
@@ -717,8 +717,8 @@ max(const MatrixRValue<Impl1,m1,n1>& A1,
 
   Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
   size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
       ret(i, j) = max(A1i(i, j), A2i(i, j));
 
   return ret;
@@ -741,8 +741,8 @@ min(const MatrixRValue<Impl1,m1,n1>& A1,
 
   Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
   size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
       ret(i, j) = min(A1i(i, j), A2i(i, j));
 
   return ret;

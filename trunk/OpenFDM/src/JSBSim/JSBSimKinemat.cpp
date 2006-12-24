@@ -67,7 +67,7 @@ JSBSimKinemat::JSBSimKinemat(const std::string& name) :
   Connection::connect(integrator->getInputPort(0),
                       mKinematRateLimit->getOutputPort(0));
   Matrix tmp(1, 1);
-  tmp(1, 1) = 1;
+  tmp(0, 0) = 1;
   integrator->setInitialValue(tmp);
   Connection::connect(integrator->getInputPort(1),
                       mInputSaturation->getOutputPort(0));
@@ -108,9 +108,9 @@ JSBSimKinemat::setRateLimit(real_type rateLimit)
 {
   rateLimit = fabs(rateLimit);
   Matrix tmp(1, 1);
-  tmp(1, 1) = -rateLimit;
+  tmp(0, 0) = -rateLimit;
   mKinematRateLimit->setMinSaturation(tmp);
-  tmp(1, 1) = rateLimit;
+  tmp(0, 0) = rateLimit;
   mKinematRateLimit->setMaxSaturation(tmp);
 }
 
@@ -118,7 +118,7 @@ void
 JSBSimKinemat::setMinValue(real_type minValue)
 {
   Matrix tmp(1, 1);
-  tmp(1, 1) = minValue;
+  tmp(0, 0) = minValue;
   mInputSaturation->setMinSaturation(tmp);
 }
 
@@ -133,7 +133,7 @@ JSBSimKinemat::setMaxValue(real_type maxValue)
   mOutputNormGain->setGain(1/maxValue);
 
   Matrix tmp(1, 1);
-  tmp(1, 1) = maxValue;
+  tmp(0, 0) = maxValue;
   mInputSaturation->setMaxSaturation(tmp);
 }
 
@@ -145,7 +145,7 @@ JSBSimKinemat::setNoScale(bool noScale)
     mInputGain->setGain(1);
   } else {
     Matrix maxValue = mInputSaturation->getMaxSaturation();
-    mInputGain->setGain(maxValue(1, 1));
+    mInputGain->setGain(maxValue(0, 0));
   }
 }
 

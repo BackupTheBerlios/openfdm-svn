@@ -246,8 +246,8 @@ planeFrom(const Rotation& r, const Plane& plane)
 OpenFDM_FORCE_INLINE SpatialInertia
 inertiaFrom(const Vector3& p, const Rotation& r, const SpatialInertia& I)
 {
-  InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));
-  InertiaMatrix I22(I(4,4), I(5,4), I(6,4), I(5,5), I(6,5), I(6,6));
+  InertiaMatrix I11(I(0,0), I(1,0), I(2,0), I(1,1), I(2,1), I(2,2));
+  InertiaMatrix I22(I(3,3), I(4,3), I(5,3), I(4,4), I(5,4), I(5,5));
   
   Matrix33 RI11(trans(r.getTransform())*I11);
   Matrix33 RI22(trans(r.getTransform())*I22);
@@ -256,31 +256,31 @@ inertiaFrom(const Vector3& p, const Rotation& r, const SpatialInertia& I)
   InertiaMatrix RI22R(RI22*r.getTransform());
   
   SpatialInertia It2;
+  It2(3,3) = RI22R(0,0);
+  It2(4,3) = RI22R(1,0);
+  It2(5,3) = RI22R(2,0);
   It2(4,4) = RI22R(1,1);
   It2(5,4) = RI22R(2,1);
-  It2(6,4) = RI22R(3,1);
   It2(5,5) = RI22R(2,2);
-  It2(6,5) = RI22R(3,2);
-  It2(6,6) = RI22R(3,3);
   
-  Matrix33 I21(I(4,1), I(4,2), I(4,3),
-               I(5,1), I(5,2), I(5,3),
-               I(6,1), I(6,2), I(6,3));
+  Matrix33 I21(I(3,0), I(3,1), I(3,2),
+               I(4,0), I(4,1), I(4,2),
+               I(5,0), I(5,1), I(5,2));
   Matrix33 RI21(trans(r.getTransform())*I21);
   Matrix33 RI21R(RI21*r.getTransform());
   
   Matrix33 pRI22R(cross(RI22R, p));
   
   Matrix33 I21new = RI21R - pRI22R;
+  It2(3,0) = I21new(0,0);
+  It2(4,0) = I21new(1,0);
+  It2(5,0) = I21new(2,0);
+  It2(3,1) = I21new(0,1);
   It2(4,1) = I21new(1,1);
   It2(5,1) = I21new(2,1);
-  It2(6,1) = I21new(3,1);
+  It2(3,2) = I21new(0,2);
   It2(4,2) = I21new(1,2);
   It2(5,2) = I21new(2,2);
-  It2(6,2) = I21new(3,2);
-  It2(4,3) = I21new(1,3);
-  It2(5,3) = I21new(2,3);
-  It2(6,3) = I21new(3,3);
   
   InertiaMatrix pRI22Rp(cross(pRI22R, p));
   RI11R -= pRI22Rp;
@@ -288,45 +288,45 @@ inertiaFrom(const Vector3& p, const Rotation& r, const SpatialInertia& I)
   RI11R += InertiaMatrix(pRI21R);
   RI11R += InertiaMatrix(trans(pRI21R));
   
+  It2(0,0) = RI11R(0,0);
+  It2(1,0) = RI11R(1,0);
+  It2(2,0) = RI11R(2,0);
   It2(1,1) = RI11R(1,1);
   It2(2,1) = RI11R(2,1);
-  It2(3,1) = RI11R(3,1);
   It2(2,2) = RI11R(2,2);
-  It2(3,2) = RI11R(3,2);
-  It2(3,3) = RI11R(3,3);
   
   return It2;
 }
 OpenFDM_FORCE_INLINE SpatialInertia
 inertiaFrom(const Vector3& p, const SpatialInertia& I)
 {
-  InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));
-  InertiaMatrix I22(I(4,4), I(5,4), I(6,4), I(5,5), I(6,5), I(6,6));
+  InertiaMatrix I11(I(0,0), I(1,0), I(2,0), I(1,1), I(2,1), I(2,2));
+  InertiaMatrix I22(I(3,3), I(4,3), I(5,3), I(4,4), I(5,4), I(5,5));
   
   SpatialInertia It2;
+  It2(3,3) = I22(0,0);
+  It2(4,3) = I22(1,0);
+  It2(5,3) = I22(2,0);
   It2(4,4) = I22(1,1);
   It2(5,4) = I22(2,1);
-  It2(6,4) = I22(3,1);
   It2(5,5) = I22(2,2);
-  It2(6,5) = I22(3,2);
-  It2(6,6) = I22(3,3);
   
-  Matrix33 I21(I(4,1), I(4,2), I(4,3),
-               I(5,1), I(5,2), I(5,3),
-               I(6,1), I(6,2), I(6,3));
+  Matrix33 I21(I(3,0), I(3,1), I(3,2),
+               I(4,0), I(4,1), I(4,2),
+               I(5,0), I(5,1), I(5,2));
   
   Matrix33 pI22(cross(I22, p));
   
   Matrix33 I21new = I21 - pI22;
+  It2(3,0) = I21new(0,0);
+  It2(4,0) = I21new(1,0);
+  It2(5,0) = I21new(2,0);
+  It2(3,1) = I21new(0,1);
   It2(4,1) = I21new(1,1);
   It2(5,1) = I21new(2,1);
-  It2(6,1) = I21new(3,1);
+  It2(3,2) = I21new(0,2);
   It2(4,2) = I21new(1,2);
   It2(5,2) = I21new(2,2);
-  It2(6,2) = I21new(3,2);
-  It2(4,3) = I21new(1,3);
-  It2(5,3) = I21new(2,3);
-  It2(6,3) = I21new(3,3);
   
   InertiaMatrix pI22p(cross(pI22, p));
   
@@ -335,20 +335,20 @@ inertiaFrom(const Vector3& p, const SpatialInertia& I)
   I11 += InertiaMatrix(pI21);
   I11 += InertiaMatrix(trans(pI21));
   
+  It2(0,0) = I11(0,0);
+  It2(1,0) = I11(1,0);
+  It2(2,0) = I11(2,0);
   It2(1,1) = I11(1,1);
   It2(2,1) = I11(2,1);
-  It2(3,1) = I11(3,1);
   It2(2,2) = I11(2,2);
-  It2(3,2) = I11(3,2);
-  It2(3,3) = I11(3,3);
   
   return It2;
 }
 OpenFDM_FORCE_INLINE SpatialInertia
 inertiaFrom(const Rotation& r, const SpatialInertia& I)
 {
-  InertiaMatrix I11(I(1,1), I(2,1), I(3,1), I(2,2), I(3,2), I(3,3));
-  InertiaMatrix I22(I(4,4), I(5,4), I(6,4), I(5,5), I(6,5), I(6,6));
+  InertiaMatrix I11(I(0,0), I(1,0), I(2,0), I(1,1), I(2,1), I(2,2));
+  InertiaMatrix I22(I(3,3), I(4,3), I(5,3), I(4,4), I(5,4), I(5,5));
   
   Matrix33 RI11(trans(r.getTransform())*I11);
   Matrix33 RI22(trans(r.getTransform())*I22);
@@ -357,36 +357,36 @@ inertiaFrom(const Rotation& r, const SpatialInertia& I)
   InertiaMatrix RI22R(RI22*r.getTransform());
   
   SpatialInertia It2;
+  It2(3,3) = RI22R(0,0);
+  It2(4,3) = RI22R(1,0);
+  It2(5,3) = RI22R(2,0);
   It2(4,4) = RI22R(1,1);
   It2(5,4) = RI22R(2,1);
-  It2(6,4) = RI22R(3,1);
   It2(5,5) = RI22R(2,2);
-  It2(6,5) = RI22R(3,2);
-  It2(6,6) = RI22R(3,3);
   
-  Matrix33 I21(I(4,1), I(4,2), I(4,3),
-               I(5,1), I(5,2), I(5,3),
-               I(6,1), I(6,2), I(6,3));
+  Matrix33 I21(I(3,0), I(3,1), I(3,2),
+               I(4,0), I(4,1), I(4,2),
+               I(5,0), I(5,1), I(5,2));
   Matrix33 RI21(trans(r.getTransform())*I21);
   Matrix33 RI21R(RI21*r.getTransform());
   
   Matrix33 I21new = RI21R;
+  It2(3,0) = I21new(0,0);
+  It2(4,0) = I21new(1,0);
+  It2(5,0) = I21new(2,0);
+  It2(3,1) = I21new(0,1);
   It2(4,1) = I21new(1,1);
   It2(5,1) = I21new(2,1);
-  It2(6,1) = I21new(3,1);
+  It2(3,2) = I21new(0,2);
   It2(4,2) = I21new(1,2);
   It2(5,2) = I21new(2,2);
-  It2(6,2) = I21new(3,2);
-  It2(4,3) = I21new(1,3);
-  It2(5,3) = I21new(2,3);
-  It2(6,3) = I21new(3,3);
   
+  It2(0,0) = RI11R(0,0);
+  It2(1,0) = RI11R(1,0);
+  It2(2,0) = RI11R(2,0);
   It2(1,1) = RI11R(1,1);
   It2(2,1) = RI11R(2,1);
-  It2(3,1) = RI11R(3,1);
   It2(2,2) = RI11R(2,2);
-  It2(3,2) = RI11R(3,2);
-  It2(3,3) = RI11R(3,3);
   
   return It2;
 }

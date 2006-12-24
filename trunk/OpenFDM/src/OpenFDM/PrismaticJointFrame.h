@@ -15,7 +15,7 @@ public:
   PrismaticJointFrame(const std::string& name) :
     CartesianJointFrame<1>(name),
     mZeroPos(Vector3::zeros()),
-    mJointAxis(Vector3::unit(1)),
+    mJointAxis(Vector3::unit(0)),
     mJointPos(0),
     mJointVel(0)
   { }

@@ -60,12 +60,12 @@ public:
       return;
     Vector3 accel = frame->getClassicAccel().getLinear();
     // That is the acceleration like sensed by a gyro
-    mNextAz = accel(3);
+    mNextAz = accel(2);
 
     // Now compute the acceleration like sensed by anything sensing the
     // gravitational stuff too
     accel -= frame->rotFromRef(grav->gravityAccel(frame->getRefPosition()));
-    mNextNlfz = accel(3)/9.81;
+    mNextNlfz = accel(2)/9.81;
   }
 
   const real_type& getNlfz(void) const

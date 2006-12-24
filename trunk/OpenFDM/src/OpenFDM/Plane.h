@@ -17,7 +17,7 @@ public:
   typedef Vector3::value_type value_type;
 
   Plane(void)
-    : mNormal(Vector3::unit(1)), mDist(0)
+    : mNormal(Vector3::unit(0)), mDist(0)
   {}
   Plane(const Plane& plane)
     : mNormal(plane.mNormal), mDist(plane.mDist)

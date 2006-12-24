@@ -35,10 +35,10 @@ public:
    */
   OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
-  { return ref_(r1_.first - 1 + i, r2_.first - 1 + j); }
+  { return ref_(r1_.first + i, r2_.first + j); }
   OpenFDM_FORCE_INLINE
   value_type& operator()(size_type i, size_type j)
-  { return ref_(r1_.first - 1 + i, r2_.first - 1 + j); }
+  { return ref_(r1_.first + i, r2_.first + j); }
 
   OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
@@ -95,7 +95,7 @@ public:
    */
   OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
-  { return ref_(r1_.first - 1 + i, r2_.first - 1 + j); }
+  { return ref_(r1_.first + i, r2_.first + j); }
 
 private:
   const implementation_type& ref_;
@@ -132,10 +132,10 @@ public:
    */
   OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
-  { return ptr_[ i-1 + (j-1)*ld_]; }
+  { return ptr_[i + j*ld_]; }
   OpenFDM_FORCE_INLINE
   value_type& operator()(size_type i, size_type j)
-  { return ptr_[ i-1 + (j-1)*ld_]; }
+  { return ptr_[i + j*ld_]; }
 
   OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)
@@ -190,7 +190,7 @@ public:
    */
   OpenFDM_FORCE_INLINE
   value_type operator()(size_type i, size_type j) const
-  { return ptr_[ i-1 + (j-1)*ld_]; }
+  { return ptr_[i + j*ld_]; }
 
   OpenFDM_FORCE_INLINE
   bool resize(size_type i, size_type j)

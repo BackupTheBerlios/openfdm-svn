@@ -107,7 +107,7 @@ Launchbar::output(const TaskInfo& taskInfo)
 
   // The catapult direction vector
   Vector3 catPos0 = mCatFrame->posToParent(Vector3::zeros());
-  Vector3 catDir = mCatFrame->rotToParent(Vector3::unit(1));
+  Vector3 catDir = mCatFrame->rotToParent(Vector3::unit(0));
 
   // The launchbar's tip position
   Vector3 lbTip(cos(mAngle)*mLength, 0, -sin(mAngle)*mLength);
@@ -125,7 +125,7 @@ Launchbar::output(const TaskInfo& taskInfo)
   
   if (mState == Mounted) {
     // the position of the holdback's deck mount
-    Vector3 hbDeckMount = mCatFrame->posToParent(mPosOnCat*Vector3::unit(1));
+    Vector3 hbDeckMount = mCatFrame->posToParent(mPosOnCat*Vector3::unit(0));
 
     // ok, for now the holback is a stiff spring, will model that different
     // when loop closure contranits are availble ...
@@ -159,7 +159,7 @@ Launchbar::update(const TaskInfo& taskInfo)
 
     // The catapult direction vector
     Vector3 catPos0 = mCatFrame->posToParent(Vector3::zeros());
-    Vector3 catDir = mCatFrame->rotToParent(Vector3::unit(1));
+    Vector3 catDir = mCatFrame->rotToParent(Vector3::unit(0));
     
     real_type angle = computeCurrentLaunchbarAngle();
     // The launchbar's tip position
@@ -215,7 +215,7 @@ Launchbar::update(const TaskInfo& taskInfo)
       if (dist > 1)
         mState = Unmounted;
       
-      Vector3 catPos1 = mCatFrame->posToParent(catLen*Vector3::unit(1));
+      Vector3 catPos1 = mCatFrame->posToParent(catLen*Vector3::unit(0));
       if (dot(catPos1, catDir) < 0)
         mState = Unmounted;
       
@@ -293,15 +293,15 @@ Launchbar::computeCurrentLaunchbarAngle(void)
   real_type d = lp.getDist();
 
   // we are paralell to the plane
-  if (fabs(n(3)) <= Limits<real_type>::min())
+  if (fabs(n(2)) <= Limits<real_type>::min())
     return mAngleCommand;
 
   // that leads to a quadratic equation where we pick the solution pointing
   // backwards:
-  real_type nx2nz2 = n(1)*n(1) + n(3)*n(3);
+  real_type nx2nz2 = n(0)*n(0) + n(2)*n(2);
 
   // we need to didive through that later, with exact operations it should
-  // be safe to not check that because of n(3) being bounded away from zero,
+  // be safe to not check that because of n(2) being bounded away from zero,
   // but due to the square the value can underflow
   if (fabs(nx2nz2) <= Limits<real_type>::min())
     return mAngleCommand;
@@ -313,10 +313,10 @@ Launchbar::computeCurrentLaunchbarAngle(void)
     return mAngleCommand;
 
   // the x coorinate of the tip
-  real_type x = -(d*n(1) - fabs(n(3))*sqrt(discr))/nx2nz2;
+  real_type x = -(d*n(0) - fabs(n(2))*sqrt(discr))/nx2nz2;
 
   // get the z coordinate of the tip from the plane equation
-  real_type z = -(d + x*n(1))/n(3);
+  real_type z = -(d + x*n(0))/n(2);
 
   // ok, now the angle ...
   real_type angle = atan2(-z, x);

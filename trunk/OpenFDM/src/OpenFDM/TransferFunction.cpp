@@ -19,8 +19,8 @@ DiscreteTransferFunction::DiscreteTransferFunction(const std::string& name) :
   mDen(1),
   mNum(1)
 {
-  mNum(1) = 1;
-  mDen(1) = 1;
+  mNum(0) = 1;
+  mDen(0) = 1;
 
   setDirectFeedThrough(true);
 
@@ -79,11 +79,11 @@ DiscreteTransferFunction::init(void)
 
   // Make sure the first, not stored coefficient in the denominator is 1
   // Rescale the other coefficient vectors
-  for (unsigned i = 1; i <= rows(mDen); ++i) {
+  for (unsigned i = 0; i < rows(mDen); ++i) {
     if (mDen(i) != 0) {
       real_type rescale = 1/mDen(i);
       if (i+1 <= rows(mDen)) {
-        mDenNorm = rescale*mDen(Range(i+1, rows(mDen)));
+        mDenNorm = rescale*mDen(Range(i+1, rows(mDen)-1));
       } else {
         mDenNorm.resize(0);
       }
@@ -102,10 +102,10 @@ DiscreteTransferFunction::init(void)
 
   // Split out polynomials from that rational
   if (rows(mDenNorm) < rows(mNumNorm)) {
-    mD = mNumNorm(1);
+    mD = mNumNorm(0);
     if (2 <= rows(mNumNorm)) {
-      Vector tmpNum = mNumNorm(Range(2, rows(mNumNorm)));
-      mNumNorm = tmpNum(Range(1, rows(mDenNorm))) - mD*mDenNorm;
+      Vector tmpNum = mNumNorm(Range(1, rows(mNumNorm)-1));
+      mNumNorm = tmpNum(Range(0, rows(mDenNorm)-1)) - mD*mDenNorm;
     } else {
       mNumNorm.resize(0);
     }
@@ -115,7 +115,7 @@ DiscreteTransferFunction::init(void)
     Vector tmpNum = mNumNorm;
     mNumNorm.resize(mDenNorm);
     mNumNorm.clear();
-    mNumNorm(Range(1+rows(mNumNorm)-rows(tmpNum), rows(mNumNorm))) = tmpNum;
+    mNumNorm(Range(rows(mNumNorm)-rows(tmpNum), rows(mNumNorm)-1)) = tmpNum;
   }
 
   Log(Model, Info) << "Normalized Processing transfer function \"" << getName()
@@ -154,13 +154,13 @@ DiscreteTransferFunction::update(const TaskInfo& taskInfo)
       real_type z = -dt*dot(mDenNorm, mState);
       // Well, pade approximation is the right thing, but for now ...
       if (fabs(exp(z) - 1) <= sqrt(Limits<real_type>::epsilon()))
-        mState(1) += dt*(input + z);
+        mState(0) += dt*(input + z);
       else
-        mState(1) += dt*(exp(z)-1)/z * (input + z);
+        mState(0) += dt*(exp(z)-1)/z * (input + z);
     } else {
       Vector tmpState(mState);
-      mState(1) += dt*(input - dot(mDenNorm, tmpState));
-      for (unsigned i = 2; i <= rows(mState); ++i)
+      mState(0) += dt*(input - dot(mDenNorm, tmpState));
+      for (unsigned i = 1; i < rows(mState); ++i)
         mState(i) += dt*tmpState(i-1);
     }
   }

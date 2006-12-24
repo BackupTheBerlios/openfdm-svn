@@ -33,14 +33,14 @@ typedef LinAlg::Vector<real_type> Vector;
 using LinAlg::Size;
 
 enum {
-  iU     = 1, iV    = 2, iW    = 3,
-  iP     = 1, iQ    = 2, iR    = 3,
-  iL     = 1, iM    = 2, iN    = 3,
-  iX     = 1, iY    = 2, iZ    = 3,
-  iPhi   = 1, iTht  = 2, iPsi  = 3,
-  iNorth = 1, iEast = 2, iDown = 3,
-  sP     = 1, sQ    = 2, sR    = 3, sU = 4, sV = 5, sW = 6,
-  sL     = 1, sM    = 2, sN    = 3, sX = 4, sY = 5, sZ = 6
+  iU     = 0, iV    = 1, iW    = 2,
+  iP     = 0, iQ    = 1, iR    = 2,
+  iL     = 0, iM    = 1, iN    = 2,
+  iX     = 0, iY    = 1, iZ    = 2,
+  iPhi   = 0, iTht  = 1, iPsi  = 2,
+  iNorth = 0, iEast = 1, iDown = 2,
+  sP     = 0, sQ    = 1, sR    = 2, sU = 3, sV = 4, sW = 5,
+  sL     = 0, sM    = 1, sN    = 2, sX = 3, sY = 4, sZ = 5
 };
 
 } // namespace OpenFDM

@@ -40,13 +40,13 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const MatrixRValue<Im
   size_type rows = A.asImpl().rows();
   size_type cols = A.asImpl().cols();
   size_type i, j;
-  for (i = 1; i <= rows; ++i) {
-    if (i == 1)
+  for (i = 0; i < rows; ++i) {
+    if (i == 0)
       os << '[';
     else
       os << ' ';
 
-    for (j = 1; j <= cols; ++j) {
+    for (j = 0; j < cols; ++j) {
       value_type val = A.asImpl()(i, j);
     
       if (val == 0) {
@@ -64,7 +64,7 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const MatrixRValue<Im
       }
     }
 
-    if (i == rows)
+    if (i == rows-1)
       os << ']';
     else
       os << std::endl;

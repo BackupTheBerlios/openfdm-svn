@@ -42,14 +42,14 @@ Function::numJac(value_type t, const invector_type& v, jacobian_type& jac)
   Vector tmpv = v;
   Vector tmpfv;
   size_type i;
-  for (i = 1; i <= insize; ++i) {
+  for (i = 0; i < insize; ++i) {
     tmpv(i) += sqrteps;
 
     // Evaluate then function ...
     eval(t, tmpv, tmpfv);
 
     // ... and compute the differencequotient to approximate the derivative.
-    jac(Range(1, outsize), i) = (1/sqrteps)*(tmpfv-fv);
+    jac(Range(0, outsize-1), i) = (1/sqrteps)*(tmpfv-fv);
 
     // Restore the original value.
     tmpv(i) = v(i);

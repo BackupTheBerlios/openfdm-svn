@@ -82,8 +82,8 @@ dot(const MatrixRValue<Impl1,n1,1>& v1, const MatrixRValue<Impl2,n2,1>& v2)
   size_type rows = v1i.rows();
 
   size_type i;
-  for (i = 1; i <= rows; ++i)
-    d += v1i(i, 1) * v2i(i, 1);
+  for (i = 0; i < rows; ++i)
+    d += v1i(i, 0) * v2i(i, 0);
 
   return d;
 }
@@ -100,10 +100,8 @@ product(const MatrixRValue<Impl,n,1>& v)
   value_type p = static_cast<value_type>(1);
 
   size_type rows = vi.rows();
-
-  size_type i;
-  for (i = 1; i <= rows; ++i)
-    p *= vi(i, 1);
+  for (size_type i = 0; i < rows; ++i)
+    p *= vi(i, 0);
 
   return p;
 }
@@ -120,9 +118,8 @@ norm(const MatrixRValue<Impl,n,1>& v)
   value_type nrm = static_cast<value_type>(0);
 
   size_type rows = vi.rows();
-  size_type i;
-  for (i = 1; i <= rows; ++i) {
-    value_type tmp = vi(i, 1);
+  for (size_type i = 0; i < rows; ++i) {
+    value_type tmp = vi(i, 0);
     nrm += tmp*tmp;
   }
 
@@ -158,10 +155,9 @@ norm1(const MatrixRValue<Impl,m,n>& A)
 
   size_type rows = mi.rows();
   size_type cols = mi.cols();
-  size_type i, j;
-  for (j = 1; j <= cols; ++j) {
+  for (size_type j = 0; j < cols; ++j) {
     value_type sum = static_cast<value_type>(0);
-    for (i = 1; i <= rows; ++i)
+    for (size_type i = 0; i < rows; ++i)
       sum += fabs(mi(i, j));
     if (nrm < sum)
       nrm = sum;
@@ -187,10 +183,9 @@ normInf(const MatrixRValue<Impl,m,n>& A)
 
   size_type rows = mi.rows();
   size_type cols = mi.cols();
-  size_type i, j;
-  for (i = 1; i <= rows; ++i) {
+  for (size_type i = 0; i < rows; ++i) {
     value_type sum = static_cast<value_type>(0);
-    for (j = 1; j <= cols; ++j)
+    for (size_type j = 0; j < cols; ++j)
       sum += fabs(mi(i, j));
     nrm = nrm < sum ? sum : nrm;
   }
@@ -207,14 +202,13 @@ maxIndex(const MatrixRValue<Impl,n,1>& v)
 
   const Impl& vi = v.asImpl();
 
-  size_type idx = 1;
+  size_type idx = 0;
 
   value_type maximum = static_cast<value_type>(0);
 
   size_type rows = vi.rows();
-  size_type i;
-  for (i = 1; i <= rows; ++i) {
-    value_type absval = fabs(vi(i, 1));
+  for (size_type i = 0; i < rows; ++i) {
+    value_type absval = fabs(vi(i, 0));
     if (maximum < absval) {
       maximum = absval;
       idx = i;
@@ -248,9 +242,8 @@ operator==(const MatrixRValue<Impl1,m1,n1>& A1,
   if (cols != A2i.cols())
     return false;
 
-  size_type i, j;
-  for (j = 1; j <= cols; ++j)
-    for (i = 1; i <= rows; ++i)
+  for (size_type j = 0; j < cols; ++j)
+    for (size_type i = 0; i < rows; ++i)
       if (A1i(i,j) != A2i(i,j))
         return false;
 
@@ -301,8 +294,7 @@ equal(const MatrixRValue<Impl1,m1,1>& V1,
   SizeCheck<m1,m2>::Equal(rows, V2i.rows());
 
   value_type nrmd = static_cast<value_type>(0);
-  size_type i;
-  for (i = 1; i <= rows; ++i) {
+  for (size_type i = 0; i < rows; ++i) {
     value_type v1 = V1i(i);
     value_type v2 = V2i(i);
     value_type d = (v1 - v2)/(atol + rtol*max(fabs(v1), fabs(v2)));
@@ -339,10 +331,9 @@ scaledDiff(const MatrixRValue<Impl1,m1,1>& V1,
   SizeCheck<m1,m2>::Equal(rows, V2i.rows());
 
   value_type nrmd = static_cast<value_type>(0);
-  size_type i;
-  for (i = 1; i <= rows; ++i) {
-    value_type v1 = V1i(i, 1);
-    value_type v2 = V2i(i, 1);
+  for (size_type i = 0; i < rows; ++i) {
+    value_type v1 = V1i(i, 0);
+    value_type v2 = V2i(i, 0);
     value_type d = (v1 - v2)/(atol + rtol*max(fabs(v1), fabs(v2)));
     nrmd += d*d;
   }
@@ -377,10 +368,9 @@ scaledErr(const MatrixRValue<Impl1,m1,1>& scale,
   SizeCheck<m1,m2>::Equal(rows, erri.rows());
 
   value_type nrmd = static_cast<value_type>(0);
-  size_type i;
-  for (i = 1; i <= rows; ++i) {
-    value_type s = scalei(i, 1);
-    value_type e = erri(i, 1);
+  for (size_type i = 0; i < rows; ++i) {
+    value_type s = scalei(i, 0);
+    value_type e = erri(i, 0);
     value_type d = e/(atol + rtol*max(max(fabs(s), fabs(s+e)), fabs(s-e)));
     nrmd += d*d;
   }
@@ -415,8 +405,7 @@ equal(const MatrixRValue<Impl1,m1,1>& V1,
   value_type nrmv1 = static_cast<value_type>(0);
   value_type nrmv2 = static_cast<value_type>(0);
   value_type nrmd = static_cast<value_type>(0);
-  size_type i;
-  for (i = 1; i <= rows; ++i) {
+  for (size_type i = 0; i < rows; ++i) {
     value_type v1 = V1i(i);
     value_type v2 = V2i(i);
     value_type d = v1 - v2;
@@ -462,8 +451,8 @@ isFinite(const MatrixRValue<Impl,m,1>& v)
   const Impl& vi = v.asImpl();
 
   size_type rows = vi.rows();
-  for (size_type i = 1; i <= rows; ++i) {
-    value_type val = vi(i, 1);
+  for (size_type i = 0; i < rows; ++i) {
+    value_type val = vi(i, 0);
     if (!isfinite(val))
       return false;
   }
@@ -486,9 +475,9 @@ Vector<typename Impl1::value_type,3>
 cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,1>& v)
 {
   Vector<typename Impl1::value_type,3> ret;
-  ret(1,1) = u.asImpl()(2,1)*v.asImpl()(3,1) - u.asImpl()(3,1)*v.asImpl()(2,1);
-  ret(2,1) = u.asImpl()(3,1)*v.asImpl()(1,1) - u.asImpl()(1,1)*v.asImpl()(3,1);
-  ret(3,1) = u.asImpl()(1,1)*v.asImpl()(2,1) - u.asImpl()(2,1)*v.asImpl()(1,1);
+  ret(0,0) = u.asImpl()(1,0)*v.asImpl()(2,0) - u.asImpl()(2,0)*v.asImpl()(1,0);
+  ret(1,0) = u.asImpl()(2,0)*v.asImpl()(0,0) - u.asImpl()(0,0)*v.asImpl()(2,0);
+  ret(2,0) = u.asImpl()(0,0)*v.asImpl()(1,0) - u.asImpl()(1,0)*v.asImpl()(0,0);
   return ret;
 }
 
@@ -511,17 +500,17 @@ cross(const MatrixRValue<Impl1,3,3>& u, const MatrixRValue<Impl2,3,1>& v)
 {
   Matrix<typename Impl1::value_type,3,3> ret;
 
-  ret(1,1) = v.asImpl()(3,1)*u.asImpl()(1,2) - v.asImpl()(2,1)*u.asImpl()(1,3);
-  ret(2,1) = v.asImpl()(3,1)*u.asImpl()(2,2) - v.asImpl()(2,1)*u.asImpl()(2,3);
-  ret(3,1) = v.asImpl()(3,1)*u.asImpl()(3,2) - v.asImpl()(2,1)*u.asImpl()(3,3);
+  ret(0,0) = v.asImpl()(2,0)*u.asImpl()(0,1) - v.asImpl()(1,0)*u.asImpl()(0,2);
+  ret(1,0) = v.asImpl()(2,0)*u.asImpl()(1,1) - v.asImpl()(1,0)*u.asImpl()(1,2);
+  ret(2,0) = v.asImpl()(2,0)*u.asImpl()(2,1) - v.asImpl()(1,0)*u.asImpl()(2,2);
 
-  ret(1,2) = v.asImpl()(1,1)*u.asImpl()(1,3) - v.asImpl()(3,1)*u.asImpl()(1,1);
-  ret(2,2) = v.asImpl()(1,1)*u.asImpl()(2,3) - v.asImpl()(3,1)*u.asImpl()(2,1);
-  ret(3,2) = v.asImpl()(1,1)*u.asImpl()(3,3) - v.asImpl()(3,1)*u.asImpl()(3,1);
+  ret(0,1) = v.asImpl()(0,0)*u.asImpl()(0,2) - v.asImpl()(2,0)*u.asImpl()(0,0);
+  ret(1,1) = v.asImpl()(0,0)*u.asImpl()(1,2) - v.asImpl()(2,0)*u.asImpl()(1,0);
+  ret(2,1) = v.asImpl()(0,0)*u.asImpl()(2,2) - v.asImpl()(2,0)*u.asImpl()(2,0);
 
-  ret(1,3) = v.asImpl()(2,1)*u.asImpl()(1,1) - v.asImpl()(1,1)*u.asImpl()(1,2);
-  ret(2,3) = v.asImpl()(2,1)*u.asImpl()(2,1) - v.asImpl()(1,1)*u.asImpl()(2,2);
-  ret(3,3) = v.asImpl()(2,1)*u.asImpl()(3,1) - v.asImpl()(1,1)*u.asImpl()(3,2);
+  ret(0,2) = v.asImpl()(1,0)*u.asImpl()(0,0) - v.asImpl()(0,0)*u.asImpl()(0,1);
+  ret(1,2) = v.asImpl()(1,0)*u.asImpl()(1,0) - v.asImpl()(0,0)*u.asImpl()(1,1);
+  ret(2,2) = v.asImpl()(1,0)*u.asImpl()(2,0) - v.asImpl()(0,0)*u.asImpl()(2,1);
 
   return ret;
 }
@@ -546,17 +535,17 @@ cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,3>& v)
 {
   Matrix<typename Impl1::value_type,3,3> ret;
 
-  ret(1,1) = u.asImpl()(2,1)*v.asImpl()(3,1) - u.asImpl()(3,1)*v.asImpl()(2,1);
-  ret(2,1) = u.asImpl()(3,1)*v.asImpl()(1,1) - u.asImpl()(1,1)*v.asImpl()(3,1);
-  ret(3,1) = u.asImpl()(1,1)*v.asImpl()(2,1) - u.asImpl()(2,1)*v.asImpl()(1,1);
+  ret(0,0) = u.asImpl()(1,0)*v.asImpl()(2,0) - u.asImpl()(2,0)*v.asImpl()(1,0);
+  ret(1,0) = u.asImpl()(2,0)*v.asImpl()(0,0) - u.asImpl()(0,0)*v.asImpl()(2,0);
+  ret(2,0) = u.asImpl()(0,0)*v.asImpl()(1,0) - u.asImpl()(1,0)*v.asImpl()(0,0);
 
-  ret(1,2) = u.asImpl()(2,1)*v.asImpl()(3,2) - u.asImpl()(3,1)*v.asImpl()(2,2);
-  ret(2,2) = u.asImpl()(3,1)*v.asImpl()(1,2) - u.asImpl()(1,1)*v.asImpl()(3,2);
-  ret(3,2) = u.asImpl()(1,1)*v.asImpl()(2,2) - u.asImpl()(2,1)*v.asImpl()(1,2);
+  ret(0,1) = u.asImpl()(1,0)*v.asImpl()(2,1) - u.asImpl()(2,0)*v.asImpl()(1,1);
+  ret(1,1) = u.asImpl()(2,0)*v.asImpl()(0,1) - u.asImpl()(0,0)*v.asImpl()(2,1);
+  ret(2,1) = u.asImpl()(0,0)*v.asImpl()(1,1) - u.asImpl()(1,0)*v.asImpl()(0,1);
 
-  ret(1,3) = u.asImpl()(2,1)*v.asImpl()(3,3) - u.asImpl()(3,1)*v.asImpl()(2,3);
-  ret(2,3) = u.asImpl()(3,1)*v.asImpl()(1,3) - u.asImpl()(1,1)*v.asImpl()(3,3);
-  ret(3,3) = u.asImpl()(1,1)*v.asImpl()(2,3) - u.asImpl()(2,1)*v.asImpl()(1,3);
+  ret(0,2) = u.asImpl()(1,0)*v.asImpl()(2,2) - u.asImpl()(2,0)*v.asImpl()(1,2);
+  ret(1,2) = u.asImpl()(2,0)*v.asImpl()(0,2) - u.asImpl()(0,0)*v.asImpl()(2,2);
+  ret(2,2) = u.asImpl()(0,0)*v.asImpl()(1,2) - u.asImpl()(1,0)*v.asImpl()(0,2);
 
   return ret;
 }
@@ -569,9 +558,9 @@ Matrix<typename Impl1::value_type,3,3>
 cross(const MatrixRValue<Impl1,3,1>& u)
 {
   Matrix<typename Impl1::value_type,3,3> ret;
-  ret(1,1) = 0;  ret(1,2) = -u.asImpl()(3,1);  ret(1,3) = u.asImpl()(2,1);
-  ret(2,1) = u.asImpl()(3,1);  ret(2,2) = 0;  ret(2,3) = -u.asImpl()(1,1);
-  ret(3,1) = -u.asImpl()(2,1);  ret(3,2) = u.asImpl()(1,1);  ret(3,3) = 0;
+  ret(0,0) = 0;  ret(0,1) = -u.asImpl()(2,0);  ret(0,2) = u.asImpl()(1,0);
+  ret(1,0) = u.asImpl()(2,0);  ret(1,1) = 0;  ret(1,2) = -u.asImpl()(0,0);
+  ret(2,0) = -u.asImpl()(1,0);  ret(2,1) = u.asImpl()(0,0);  ret(2,2) = 0;
   return ret;
 }
 
@@ -584,11 +573,9 @@ l_substitute(const Matrix<T,dim1,dim1>& A, Vector<T,dim1>& v)
 
   size_type rows = A.rows();
   size_type cols = A.cols();
-  
-  size_type i;
-  for (i = 1; i < rows; ++i) {
+  for (size_type i = 0; i < rows-1; ++i) {
     if (v(i) != static_cast<value_type>(0))
-      v(Range(i+1, cols)) -= v(i)*A(Range(i+1, cols),i);
+      v(Range(i+1, cols-1)) -= v(i)*A(Range(i+1, cols-1),i);
   }
 }
 
@@ -602,12 +589,10 @@ l_substitute(const Matrix<T,dim1,dim1>& A, Matrix<T,dim1,dim2>& v)
   size_type rows = A.rows();
   size_type cols = A.cols();
   size_type vcols = v.cols();
-  
-  size_type i, j;
-  for (i = 1; i < rows; ++i) {
-    for (j = 1; j < vcols; ++j) {
+  for (size_type i = 0; i < rows-1; ++i) {
+    for (size_type j = 0; j < vcols-1; ++j) {
       if (v(i,j) != static_cast<value_type>(0))
-        v(Range(i+1, cols),j) -= v(i,j)*A(Range(i+1, cols),i);
+        v(Range(i+1, cols-1),j) -= v(i,j)*A(Range(i+1, cols-1),i);
     }
   }
 }
@@ -620,9 +605,8 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
   typedef T value_type;
 
   size_type cols = A.cols();
-
-  size_type i;
-  for (i = cols; 0 < i; --i) {
+  for (size_type ii = cols; 0 < ii; --ii) {
+    size_type i = ii - 1;
     if (v(i) != static_cast<value_type>(0)) {
       value_type Aii = A(i,i);
       // If the matrix is exactly singular, compute the solution where the
@@ -632,7 +616,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
       } else {
         v(i) /= Aii;
         if (1 < i)
-          v(Range(1,i-1)) -= v(i)*A(Range(1,i-1),i);
+          v(Range(0,i-1)) -= v(i)*A(Range(0,i-1),i);
       }
     }
   }
@@ -647,10 +631,9 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
 
   size_type cols = A.cols();
   size_type vcols = v.cols();
-
-  size_type i, j;
-  for (i = cols; 0 < i; --i) {
-    for (j = 1; j <= vcols; ++j) {
+  for (size_type ii = cols; 0 < ii; --ii) {
+    size_type i = ii-1;
+    for (size_type j = 0; j < vcols; ++j) {
       if (v(i,j) != static_cast<value_type>(0)) {
         value_type Aii = A(i,i);
         // If the matrix is exactly singular, compute the solution where the
@@ -660,7 +643,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
         } else {
           v(i,j) /= Aii;
           if (1 < i)
-            v(Range(1,i-1),j) -= v(i,j)*A(Range(1,i-1),i);
+            v(Range(0,i-1),j) -= v(i,j)*A(Range(0,i-1),i);
         }
       }
     }
@@ -675,8 +658,7 @@ p_substitute(const Vector<size_type,dim1>& perm, Vector<T,dim1>& v)
   typedef T value_type;
 
   size_type rows = v.rows();
-  size_type i;
-  for (i = 1; i <= rows; ++i) {
+  for (size_type i = 0; i < rows; ++i) {
     size_type ip = perm(i);
     if (ip != i) {
       value_type tmp = v(i);
@@ -695,11 +677,10 @@ p_substitute(const Vector<size_type,dim1>& perm, Matrix<T,dim1,dim2>& v)
 
   size_type rows = v.rows();
   size_type cols = v.cols();
-  size_type i, j;
-  for (i = 1; i <= rows; ++i) {
+  for (size_type i = 0; i < rows; ++i) {
     size_type ip = perm(i);
     if (ip != i) {
-      for (j = 1; j <= cols; ++j) {
+      for (size_type j = 0; j < cols; ++j) {
         value_type tmp = v(i,j);
         v(i,j) = v(ip,j);
         v(ip,j) = tmp;
@@ -768,18 +749,17 @@ lu_factorize(Matrix<T,dim1,dim2>& A)
 
   size_type m = A.rows();
   size_type n = A.cols();
-  size_type j;
-  for (j = 1; j <= n; ++j) {
+  for (size_type j = 0; j < n; ++j) {
     // The matrix is exactly singular.
     if (fabs(A(j,j)) < Limits<value_type>::min())
       nonsingular = false;
     else {
-      if (j < n) {
+      if (j < n-1) {
         // Compute elements J+1:M of J-th column.
-        A(Range(j+1, m), j) *= static_cast<value_type>(1)/A(j,j);
+        A(Range(j+1, m-1), j) *= static_cast<value_type>(1)/A(j,j);
         
-        A(Range(j+1, m), Range(j+1, n))
-          -= A(Range(j+1,m),j)*A(j, Range(j+1, n));
+        A(Range(j+1, m-1), Range(j+1, n-1))
+          -= A(Range(j+1,m-1),j)*A(j, Range(j+1, n-1));
       }
     }
   }
@@ -800,9 +780,8 @@ lu_factorize(Matrix<T,dim1,dim2>& A, Vector<size_type,dim1>& perm)
 
   perm.resize(n, 1);
 
-  size_type j;
-  for (j = 1; j <= n; ++j) {
-    size_type jp = j - 1 + maxIndex(A(Range(j, m), j));
+  for (size_type j = 0; j < n; ++j) {
+    size_type jp = j + maxIndex(A(Range(j, m-1), j));
     perm(j) = jp;
 
     // The matrix is exactly singular.
@@ -811,19 +790,19 @@ lu_factorize(Matrix<T,dim1,dim2>& A, Vector<size_type,dim1>& perm)
     else {
       if (jp != j) {
         // FIXME ...
-//         RangeExpr<Matrix<T,dim1,dim2>,1,0> re1 = A(j, Range(1, n));
-//         RangeExpr<Matrix<T,dim1,dim2>,1,0> re2 = A(jp, Range(1, n));
-        MatrixPointerExpr<Matrix<T,dim1,dim2>,1,0> re1 = A(j, Range(1, n));
-        MatrixPointerExpr<Matrix<T,dim1,dim2>,1,0> re2 = A(jp, Range(1, n));
+//         RangeExpr<Matrix<T,dim1,dim2>,1,0> re1 = A(j, Range(1, n-1));
+//         RangeExpr<Matrix<T,dim1,dim2>,1,0> re2 = A(jp, Range(1, n-1));
+        MatrixPointerExpr<Matrix<T,dim1,dim2>,1,0> re1 = A(j, Range(1, n-1));
+        MatrixPointerExpr<Matrix<T,dim1,dim2>,1,0> re2 = A(jp, Range(1, n-1));
         swap(re1, re2);
       }
     
-      if (j < n) {
+      if (j < n-1) {
         // Compute elements J+1:M of J-th column.
-        A(Range(j+1, m), j) *= static_cast<value_type>(1)/A(j, j);
+        A(Range(j+1, m-1), j) *= static_cast<value_type>(1)/A(j, j);
         
-        A(Range(j+1, m), Range(j+1, n))
-          -= A(Range(j+1,m),j)*A(j, Range(j+1, n));
+        A(Range(j+1, m-1), Range(j+1, n-1))
+          -= A(Range(j+1,m-1),j)*A(j, Range(j+1, n-1));
       }
     }
   }
@@ -848,14 +827,13 @@ q_substitute(const Matrix<T,dim1,dim2>& A, const Vector<T,dim2>& beta,
   size_type m = A.rows();
   size_type n = A.cols();
   
-  size_type j;
-  for (j = 1; j <= n; ++j) {
+  for (size_type j = 0; j < n; ++j) {
     // See Golub, van Loan: Matrix Computations, pp 210
 
-    if (j < m) {
-      Vector<T> v(A(Range(j, m), j));
-      v(1) = 1;
-      x(Range(j, m)) -= (beta(j)*dot(v, x(Range(j, m))))*v;
+    if (j < m-1) {
+      Vector<T> v(A(Range(j, m-1), j));
+      v(0) = 1;
+      x(Range(j, m-1)) -= (beta(j)*dot(v, x(Range(j, m-1))))*v;
     }
   }
 
@@ -939,13 +917,12 @@ qr_factorize(Matrix<T,dim1,dim2>& A, Vector<T,dim2>& beta)
   // FIXME:
   beta.resize(n, 1);
 
-  size_type j;
-  for (j = 1; j <= n; ++j) {
+  for (size_type j = 0; j < n; ++j) {
     // Compute the Householder vector v.
     // See Golub, van Loan: Matrix Computations, pp 210
     
-//     RangeExpr<Matrix<T,dim1,dim2>,0,1> x = A(Range(j+1, m), j);
-    MatrixPointerExpr<Matrix<T,dim1,dim2>,0,1> x = A(Range(j+1, m), j);
+//     RangeExpr<Matrix<T,dim1,dim2>,0,1> x = A(Range(j+1, m-1), j);
+    MatrixPointerExpr<Matrix<T,dim1,dim2>,0,1> x = A(Range(j+1, m-1), j);
 
     qr_reflector(A(j, j), x, beta(j));
 
@@ -956,12 +933,12 @@ qr_factorize(Matrix<T,dim1,dim2>& A, Vector<T,dim2>& beta)
 
     A(j, j) = 1;
     // FIXME:
-//     RangeExpr<Matrix<T,dim1,dim2>,0,1> v = A(Range(j, m), j);
-    MatrixPointerExpr<Matrix<T,dim1,dim2>,0,1> v = A(Range(j, m), j);
+//     RangeExpr<Matrix<T,dim1,dim2>,0,1> v = A(Range(j, m-1), j);
+    MatrixPointerExpr<Matrix<T,dim1,dim2>,0,1> v = A(Range(j, m-1), j);
 
     // FIXME:!!!!!
-    Matrix<T> work(beta(j)*trans(v)*A(Range(j, m), Range(j+1, n)));
-    A(Range(j, m), Range(j+1, n)) -= v*work;
+    Matrix<T> work(beta(j)*trans(v)*A(Range(j, m-1), Range(j+1, n-1)));
+    A(Range(j, m-1), Range(j+1, n-1)) -= v*work;
 
     A(j, j) = Ajj;
   }
@@ -1065,7 +1042,7 @@ public:
   {
     Vector<T,m> tmp(v);
     qr_substitute(qr_factors_, beta_, tmp);
-    return Vector<T,n>(tmp(Range(1, qr_factors_.cols())));
+    return Vector<T,n>(tmp(Range(0, qr_factors_.cols()-1)));
   }
 
 private:

@@ -94,7 +94,7 @@ WheelContact::output(const TaskInfo& taskInfo)
   // The wheel coordinates x asxis is defined by the forward orientation
   // of the wheel, the z axis points perpandicular to the ground
   // plane downwards.
-  Vector3 forward = normalize(cross(Vector3::unit(2), lp.getNormal()));
+  Vector3 forward = normalize(cross(Vector3::unit(1), lp.getNormal()));
   Vector3 side = normalize(cross(lp.getNormal(), forward));
 
   // Transformed velocity to the ground plane
@@ -103,7 +103,7 @@ WheelContact::output(const TaskInfo& taskInfo)
 
   // The wheel rotation speed wrt ground
   Vector3 rotVel = relVel.getAngular();
-  real_type omegaR = rotVel(2) * distHubGround;
+  real_type omegaR = rotVel(1) * distHubGround;
 
 //   Log(Model,Error) << trans(groundVel) << " "
 //                    << trans(wheelVel) << " "
@@ -119,7 +119,7 @@ WheelContact::output(const TaskInfo& taskInfo)
   
   // The resulting force is the sum of both.
   // The minus sign is because of the direction of the surface normal.
-  Vector3 force = fricForce(1)*forward + fricForce(2)*side
+  Vector3 force = fricForce(0)*forward + fricForce(1)*side
     - normForce*lp.getNormal();
   
   // We don't have an angular moment.
@@ -138,13 +138,13 @@ WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
                                    real_type omegaR, real_type friction) const
 {
   // We just get the wheel slip directly here
-  real_type wheelSlip = vel(1)+omegaR;
+  real_type wheelSlip = vel(0)+omegaR;
   
   // The slip angle is the angle between the 'velocity vector' and 
   // the wheel forward direction.
-  real_type slipAngle = rad2deg*atan2(vel(2), fabs(vel(1)));
+  real_type slipAngle = rad2deg*atan2(vel(1), fabs(vel(0)));
 //   slipAngle = saturate(slipAngle, 10*fabs(vel(2)));
-  slipAngle = smoothSaturate(slipAngle, 10*fabs(vel(2)));
+  slipAngle = smoothSaturate(slipAngle, 10*fabs(vel(1)));
   
 //   Vector2 slip(wheelSlip, slipAngle);
 //   if (1 < norm(slip))

@@ -176,10 +176,8 @@ void clearMatrix(Impl& m)
 
   size_type rows = m.rows();
   size_type cols = m.cols();
-
-  size_type i, j;
-  for (j = 1; j <= cols; ++j) {
-    for (i = 1; i <= rows; ++i) {
+  for (size_type j = 0; j < cols; ++j) {
+    for (size_type i = 0; i < rows; ++i) {
       m(i, j) = static_cast<value_type>(0);
     }
   }
@@ -193,10 +191,8 @@ void assignMatrix(Impl1& m1, const Impl2& m2)
   size_type cols = m2.cols();
 
   Impl1 tmp(rows, cols);
-
-  size_type i, j;
-  for (j = 1; j <= cols; ++j) {
-    for (i = 1; i <= rows; ++i) {
+  for (size_type j = 0; j < cols; ++j) {
+    for (size_type i = 0; i < rows; ++i) {
       tmp(i, j) = m2(i, j);
     }
   }
@@ -204,8 +200,8 @@ void assignMatrix(Impl1& m1, const Impl2& m2)
   bool resized = m1.resize(rows, cols);
   OpenFDMLinAlgAssert(resized);
 
-  for (j = 1; j <= cols; ++j) {
-    for (i = 1; i <= rows; ++i) {
+  for (size_type j = 0; j < cols; ++j) {
+    for (size_type i = 0; i < rows; ++i) {
       m1(i, j) = tmp(i, j);
     }
   }
@@ -221,9 +217,8 @@ void directAssignMatrix(Impl1& m1, const Impl2& m2)
   bool resized = m1.resize(rows, cols);
   OpenFDMLinAlgAssert(resized);
 
-  size_type i, j;
-  for (j = 1; j <= cols; ++j) {
-    for (i = 1; i <= rows; ++i) {
+  for (size_type j = 0; j < cols; ++j) {
+    for (size_type i = 0; i < rows; ++i) {
       m1(i, j) = m2(i, j);
     }
   }
@@ -235,10 +230,8 @@ void plusAssignMatrix(Impl1& m1, const Impl2& m2)
 {
   size_type rows = m2.rows();
   size_type cols = m2.cols();
-
-  size_type i, j;
-  for (j = 1; j <= cols; ++j) {
-    for (i = 1; i <= rows; ++i) {
+  for (size_type j = 0; j < cols; ++j) {
+    for (size_type i = 0; i < rows; ++i) {
       m1(i, j) += m2(i, j);
     }
   }
@@ -250,10 +243,8 @@ void minusAssignMatrix(Impl1& m1, const Impl2& m2)
 {
   size_type rows = m2.rows();
   size_type cols = m2.cols();
-
-  size_type i, j;
-  for (j = 1; j <= cols; ++j) {
-    for (i = 1; i <= rows; ++i) {
+  for (size_type j = 0; j < cols; ++j) {
+    for (size_type i = 0; i < rows; ++i) {
       m1(i, j) -= m2(i, j);
     }
   }
@@ -265,10 +256,8 @@ void scalarMultiplyMatrix(Impl& m, typename Impl::value_type scalar)
 {
   size_type rows = m.rows();
   size_type cols = m.cols();
-
-  size_type i, j;
-  for (j = 1; j <= cols; ++j) {
-    for (i = 1; i <= rows; ++i) {
+  for (size_type j = 0; j < cols; ++j) {
+    for (size_type i = 0; i < rows; ++i) {
       m(i, j) *= scalar;
     }
   }
@@ -283,15 +272,10 @@ void swapMatrix(Impl1& m1, Impl2& m2)
 
   size_type rows1 = m1.rows();
   size_type cols1 = m1.cols();
-//   size_type rows2 = m2.rows();
-//   size_type cols2 = m2.cols();
-
-//   OpenFDMLinAlgAssert(rows1 == rows2);
-//   OpenFDMLinAlgAssert(cols1 == cols2);
-
-  size_type i, j;
-  for (j = 1; j <= cols1; ++j) {
-    for (i = 1; i <= rows1; ++i) {
+  OpenFDMLinAlgAssert(rows1 == m2.rows());
+  OpenFDMLinAlgAssert(cols1 == m2.cols());
+  for (size_type j = 0; j < cols1; ++j) {
+    for (size_type i = 0; i < rows1; ++i) {
       value_type2 tmp = static_cast<value_type2>(m1(i, j));
       m1(i, j) = static_cast<value_type1>(m2(i, j));
       m2(i, j) = tmp;

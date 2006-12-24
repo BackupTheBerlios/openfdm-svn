@@ -130,7 +130,7 @@ RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
 {
   CartesianJointFrame<1>::VectorN tau;
   if (mJointForcePort.isConnected()) {
-    tau(1) = mJointForcePort.getRealValue();
+    tau(0) = mJointForcePort.getRealValue();
   } else
     tau.clear();
   mRevoluteJointFrame->jointArticulation(artI, artF, outF, outI, tau);
@@ -141,9 +141,9 @@ RevoluteJoint::setState(const StateStream& state)
 {
   CartesianJointFrame<1>::VectorN v;
   state.readSubState(v);
-  mRevoluteJointFrame->setJointPos(v(1));
+  mRevoluteJointFrame->setJointPos(v(0));
   state.readSubState(v);
-  mRevoluteJointFrame->setJointVel(v(1));
+  mRevoluteJointFrame->setJointVel(v(0));
 }
 
 void

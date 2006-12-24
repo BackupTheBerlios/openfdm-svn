@@ -15,7 +15,7 @@ public:
   RevoluteJointFrame(const std::string& name) :
     CartesianJointFrame<1>(name),
     mZeroOrient(Quaternion::unit()),
-    mJointAxis(Vector3::unit(1)),
+    mJointAxis(Vector3::unit(0)),
     mJointPos(0),
     mJointVel(0)
   { }

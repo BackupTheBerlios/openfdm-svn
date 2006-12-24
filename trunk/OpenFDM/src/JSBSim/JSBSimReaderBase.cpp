@@ -740,7 +740,7 @@ JSBSimReaderBase::addConstModel(const std::string& name, real_type value,
                                 const Model::Path& path)
 {
   Matrix m(1, 1);
-  m(1, 1) = 0;
+  m(0, 0) = 0;
   ConstModel* cModel = new ConstModel(name, m);
   if (path.empty())
     addFCSModel(cModel);
@@ -812,7 +812,7 @@ PortProvider*
 JSBSimReaderBase::addMultiBodyConstModel(const std::string& name, real_type value)
 {
   Matrix m(1, 1);
-  m(1, 1) = value;
+  m(0, 0) = value;
   ConstModel* cModel = new ConstModel(name, m);
   addMultiBodyModel(cModel);
   return cModel->getOutputPort(0);

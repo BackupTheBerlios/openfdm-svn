@@ -62,9 +62,9 @@ DefaultPlanet::toGeod(const Vector3& cart) const
   // H. Vermeille,
   // Direct transformation from geocentric to geodetic ccordinates,
   // Journal of Geodesy (2002) 76:451-454
-  real_type X = cart(1);
-  real_type Y = cart(2);
-  real_type Z = cart(3);
+  real_type X = cart(0);
+  real_type Y = cart(1);
+  real_type Z = cart(2);
   real_type XXpYY = X*X+Y*Y;
   real_type sqrtXXpYY = sqrt(XXpYY);
   real_type p = XXpYY*ra2;

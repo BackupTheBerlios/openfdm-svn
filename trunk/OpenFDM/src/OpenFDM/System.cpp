@@ -460,11 +460,11 @@ public:
     tcv.mStateStream.writeSubState(tmp);
 
     // The orientation
+    tmp = 1e2*smoothDeadBand(eo(0) - en(0), 20*deg2rad);
+    tcv.mStateStream.writeSubState(tmp);
     tmp = 1e2*smoothDeadBand(eo(1) - en(1), 20*deg2rad);
     tcv.mStateStream.writeSubState(tmp);
-    tmp = 1e2*smoothDeadBand(eo(2) - en(2), 20*deg2rad);
-    tcv.mStateStream.writeSubState(tmp);
-    tmp = 1e2*(eo(3) - en(3));
+    tmp = 1e2*(eo(2) - en(2));
     tcv.mStateStream.writeSubState(tmp);
 
 //     tcv.mStateStream.writeSubState(1e2*norm(tcv.mQDot) + norm(tcv.mPosDot - mPosDot));
@@ -507,7 +507,7 @@ public:
   virtual void eval(real_type t, const Vector& v, Vector& out)
   {
     Geodetic geod = mGeodPos;
-    geod.altitude = mGeodPos.altitude - mRange*0.5 + v(1);
+    geod.altitude = mGeodPos.altitude - mRange*0.5 + v(0);
     mMobileRootJoint->setGeodPosition(geod);
     
     unsigned nStates = mSystem.getNumContinousStates();
@@ -523,9 +523,9 @@ public:
     /// is less in higher regions, thus we need to add a 'minimum altitude'
     /// criterion
     out.resize(7, 1);
-    out(Range(1, 6)) = tcv.mVelDot;
-//     out(7) = 1e-1*v(1);
-    out(7) = smoothDeadBand(v(1), mRange);
+    out(Range(0, 5)) = tcv.mVelDot;
+//     out(6) = 1e-1*v(0);
+    out(6) = smoothDeadBand(v(0), mRange);
     
 //     Log(Model,Error) << trans(v) << endl;
 //     Log(Model,Error) << trans(out) << endl;
@@ -562,9 +562,9 @@ System::trim(void)
   TrimFunction trimFunction(*this);
 
   Vector altV(1);
-  altV(1) = 0;
+  altV(0) = 0;
   Vector dk(1);
-  dk(1) = 1;
+  dk(0) = 1;
   Vector res = LineSearch(altTrim, getTime(), altV, dk, range, 1e-3);
   altTrim.eval(getTime(), res, dk /*dummy*/);
   output(taskInfo);
@@ -643,14 +643,14 @@ System::evalJacobian(real_type t, const Vector& v, Matrix& jac)
 
   Vector tmpv = v;
   Vector tmpfv(nStates);
-  for (unsigned i = 1; i <= nStates; ++i) {
+  for (unsigned i = 0; i < nStates; ++i) {
     tmpv(i) += sqrteps;
 
     // Evaluate then function ...
     evalFunction(t, tmpv, tmpfv);
 
     // ... and compute the differencequotient to approximate the derivative.
-    jac(Range(1, nStates), i) = (1/sqrteps)*(tmpfv-fv);
+    jac(Range(0, nStates-1), i) = (1/sqrteps)*(tmpfv-fv);
 
     // Restore the original value.
     tmpv(i) = v(i);

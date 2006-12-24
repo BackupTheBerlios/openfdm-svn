@@ -78,7 +78,7 @@ Product::output(const TaskInfo&)
   for (unsigned i = 0; i < mScalarFactorPorts.size(); ++i)
     scalarFac *= mScalarFactorPorts[i].getRealValue();
   if (mMatrixFactorPorts.empty()) {
-    mProduct(1, 1) = scalarFac;
+    mProduct(0, 0) = scalarFac;
   } else {
     mProduct = mMatrixFactorPorts[0].getMatrixValue();
     for (unsigned i = 1; i < mMatrixFactorPorts.size(); ++i)

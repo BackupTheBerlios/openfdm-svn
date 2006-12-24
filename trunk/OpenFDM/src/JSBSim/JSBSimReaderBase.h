@@ -277,7 +277,7 @@ protected:
   Vector3 structToBody(const Vector3& v)
   {
     Vector3 cgoff = v - mBodyReference;
-    return convertFrom(uInch, Vector3(-cgoff(1), cgoff(2), -cgoff(3)));
+    return convertFrom(uInch, Vector3(-cgoff(0), cgoff(1), -cgoff(2)));
   }
   Vector3 mBodyReference;
 };

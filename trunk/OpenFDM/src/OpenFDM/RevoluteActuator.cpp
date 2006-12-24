@@ -146,7 +146,7 @@ RevoluteActuator::jointArticulation(SpatialInertia& artI, Vector6& artF,
   real_type velErr = desiredVel - mRevoluteActuatorFrame->getJointVel();
 
   CartesianActuatorFrame<1>::VectorN tau;
-  tau(1) = mVelDotGain*velErr;
+  tau(0) = mVelDotGain*velErr;
   mRevoluteActuatorFrame->jointArticulation(artI, artF, outF, outI, tau);
 }
 
@@ -155,9 +155,9 @@ RevoluteActuator::setState(const StateStream& state)
 {
   CartesianActuatorFrame<1>::VectorN v;
   state.readSubState(v);
-  mRevoluteActuatorFrame->setJointPos(v(1));
+  mRevoluteActuatorFrame->setJointPos(v(0));
   state.readSubState(v);
-  mRevoluteActuatorFrame->setJointVel(v(1));
+  mRevoluteActuatorFrame->setJointVel(v(0));
 }
 
 void

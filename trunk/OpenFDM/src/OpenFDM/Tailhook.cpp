@@ -92,14 +92,14 @@ Tailhook::output(const TaskInfo& taskInfo)
   }
 
   // The wire endpoints
-  Vector3 wireEnd0 = mWireFrame->posToParent(width*0.5*Vector3::unit(2));
-  Vector3 wireEnd1 = mWireFrame->posToParent(-width*0.5*Vector3::unit(2));
+  Vector3 wireEnd0 = mWireFrame->posToParent(width*0.5*Vector3::unit(1));
+  Vector3 wireEnd1 = mWireFrame->posToParent(-width*0.5*Vector3::unit(1));
 
 //   Log(Model,Error) << trans(wireEnd0) << trans(wireEnd1) << endl;
 
   // The intersection of the x/z plane with the line between the wire ends
   Vector3 wireDir = wireEnd1 - wireEnd0;
-  Vector3 hookWireInters = (1/width*wireDir(2))*wireDir + wireEnd0;
+  Vector3 hookWireInters = (1/width*wireDir(1))*wireDir + wireEnd0;
   // Ok, the hook intersects the wire but the aircraft is sufficiently
   // far that the hook tip has reached the wire
   if (norm(hookWireInters) < mLength) {
@@ -113,10 +113,10 @@ Tailhook::output(const TaskInfo& taskInfo)
   // make the normal point downwards
 
   // now determine the hooks pos position as it lies axactly in this plane
-  mAngle = atan(-normal(1)/normal(3));
+  mAngle = atan(-normal(0)/normal(2));
 
   // now the relative velocities
-  Vector3 linVel = cross(mWireFrame->getRelVel().getAngular(), Vector3::unit(2));
+  Vector3 linVel = cross(mWireFrame->getRelVel().getAngular(), Vector3::unit(1));
   Vector6 relVel0 = mWireFrame->motionToParent(mWireFrame->getRelVel() + Vector6(Vector3::zeros(), width*0.5*linVel));
   Vector6 relVel1 = mWireFrame->motionToParent(mWireFrame->getRelVel() - Vector6(Vector3::zeros(), width*0.5*linVel));
 
@@ -234,12 +234,12 @@ Tailhook::computeCurrentTailhookAngle(void)
   real_type d = lp.getDist();
 
   // we are paralell to the plane
-  if (fabs(n(3)) <= Limits<real_type>::min())
+  if (fabs(n(2)) <= Limits<real_type>::min())
     return mAngleCommand;
 
   // that leads to a quadratic equation where we pick the solution pointing
   // backwards:
-  real_type nx2nz2 = n(1)*n(1) + n(3)*n(3);
+  real_type nx2nz2 = n(0)*n(0) + n(2)*n(2);
 
   // we need to didive through that later, with exact operations it should
   // be safe to not check that because of n(3) being bounded away from zero,
@@ -254,10 +254,10 @@ Tailhook::computeCurrentTailhookAngle(void)
     return mAngleCommand;
 
   // the x coorinate of the tip
-  real_type x = -(d*n(1) + fabs(n(3))*sqrt(discr))/nx2nz2;
+  real_type x = -(d*n(0) + fabs(n(2))*sqrt(discr))/nx2nz2;
 
   // get the z coordinate of the tip from the plane equation
-  real_type z = -(d + x*n(1))/n(3);
+  real_type z = -(d + x*n(0))/n(2);
 
   // ok, now the angle ...
   real_type angle = atan2(-z, -x);

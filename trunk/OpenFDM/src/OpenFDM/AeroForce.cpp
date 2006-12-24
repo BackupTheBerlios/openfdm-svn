@@ -134,12 +134,12 @@ AeroForce::output(const TaskInfo& taskInfo)
   /// Drag points backward
   for (int i = 0; i < 3; ++i)
     if (mStabilityAxisForce[i].isConnected())
-      stabilityForce(i+1) = mStabilityAxisForce[i].getRealValue();
+      stabilityForce(i) = mStabilityAxisForce[i].getRealValue();
 
   Vector3 bodyTorque = Vector3::zeros();
   for (int i = 0; i < 3; ++i)
     if (mBodyAxisTorque[i].isConnected())
-      bodyTorque(i+1) = mBodyAxisTorque[i].getRealValue();
+      bodyTorque(i) = mBodyAxisTorque[i].getRealValue();
 
   Vector6 force(bodyTorque, Ts2b*stabilityForce);
   Log(ArtBody, Debug3) << "AeroForce::output() "
@@ -273,10 +273,10 @@ AeroForce::getAlpha(void) const
 {
   if (mDirtyAlpha) {
     Vector3 V = getAirSpeed().getLinear();
-    if (fabs(V(iU)) < Limits<real_type>::min())
+    if (fabs(V(0)) < Limits<real_type>::min())
       mAlpha = 0;
     else
-      mAlpha = atan2(V(iW), V(iU));
+      mAlpha = atan2(V(2), V(0));
     mDirtyAlpha = false;
   }
   Log(ArtBody, Debug3) << "AeroForce::getAlpha()" << mAlpha << endl;
@@ -292,7 +292,7 @@ AeroForce::getAlphaDot(void) const
   // at this time. But we just take the past one ...
 //   real_type alphadot = 0;
 //   if (airSpeedUW2 != 0)
-//     alphadot = (airSpeed(1)*stabAccel(3)-airSpeed(3)*stabAccel(1))/airSpeedUW2;
+//     alphadot = (airSpeed(0)*stabAccel(2)-airSpeed(2)*stabAccel(0))/airSpeedUW2;
 
     mAlphaDot = 0;
     mDirtyAlphaDot = false;
@@ -310,7 +310,7 @@ AeroForce::getBeta(void) const
     if (fabs(Vuw) < Limits<real_type>::min())
       mBeta = 0;
     else
-      mBeta = atan2(V(iV), Vuw);
+      mBeta = atan2(V(1), Vuw);
     
     mDirtyBeta = false;
   }
@@ -342,42 +342,42 @@ const real_type&
 AeroForce::getBodyU(void) const
 {
   const Vector6& speed = getAirSpeed();
-  return speed(4);
+  return speed(3);
 }
 
 const real_type&
 AeroForce::getBodyV(void) const
 {
   const Vector6& speed = getAirSpeed();
-  return speed(5);
+  return speed(4);
 }
 
 const real_type&
 AeroForce::getBodyW(void) const
 {
   const Vector6& speed = getAirSpeed();
-  return speed(6);
+  return speed(5);
 }
 
 const real_type&
 AeroForce::getBodyP(void) const
 {
   const Vector6& speed = getAirSpeed();
-  return speed(1);
+  return speed(0);
 }
 
 const real_type&
 AeroForce::getBodyQ(void) const
 {
   const Vector6& speed = getAirSpeed();
-  return speed(2);
+  return speed(1);
 }
 
 const real_type&
 AeroForce::getBodyR(void) const
 {
   const Vector6& speed = getAirSpeed();
-  return speed(3);
+  return speed(2);
 }
 
 const real_type&
@@ -397,7 +397,7 @@ AeroForce::getTrueSpeedUW(void) const
 {
   if (mDirtyTrueSpeedUW) {
     const Vector6& speed = getAirSpeed();
-    mTrueSpeedUW = sqrt(speed(4)*speed(4)+speed(6)*speed(6));
+    mTrueSpeedUW = sqrt(speed(3)*speed(3)+speed(5)*speed(5));
     mDirtyTrueSpeedUW = false;
   }
   Log(ArtBody, Debug3) << "AeroForce::getTrueSpeedUW()"
@@ -552,7 +552,7 @@ AeroForce::getUnitDown(void) const
     // current position.
     Quaternion gcHL = getPlanet()->getGeocHLOrientation(getRefPosition());
     // Transform that unit down vector to the current frame.
-    mUnitDown = mMountFrame->rotFromRef(gcHL.backTransform(Vector3::unit(3)));
+    mUnitDown = mMountFrame->rotFromRef(gcHL.backTransform(Vector3::unit(2)));
     mDirtyUnitDown = false;
   }
   return mUnitDown;
@@ -635,16 +635,16 @@ AeroForce::computeCalEquAirspeed(void) const
   real_type qbar = getDynamicPressure();
   // Calibrated Airspeed
   real_type tube_press;
-  if (mach(1) < 1) {   // Calculate total pressure assuming isentropic flow
-    tube_press = p*pow((1 + 0.2*mach(1)*mach(1)), 3.5);
+  if (mach(0) < 1) {   // Calculate total pressure assuming isentropic flow
+    tube_press = p*pow((1 + 0.2*mach(0)*mach(0)), 3.5);
   } else {
     // Use Rayleigh pitot tube formula for normal shock in front of pitot tube
-    real_type B = 5.76*mach(1)*mach(1)/(5.6*mach(1)*mach(1) - 0.8);
-    real_type D = 0.4167*(2.8*mach(1)*mach(1) - 0.4);
+    real_type B = 5.76*mach(0)*mach(0)/(5.6*mach(0)*mach(0) - 0.8);
+    real_type D = 0.4167*(2.8*mach(0)*mach(0) - 0.4);
     tube_press = p*pow(B, 3.5)*D;
   }
   real_type A = pow(((tube_press-p)/psl+1), 0.28571);
-  if (mach(1) > 0) {
+  if (mach(0) > 0) {
     mCalibratedAirSpeed = sqrt(7*psl/rhosl*(A-1));
     mEquivalentAirSpeed = sqrt(2*qbar/rhosl);
   } else {

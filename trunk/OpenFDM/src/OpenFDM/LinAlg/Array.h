@@ -35,7 +35,7 @@ public:
 
   OpenFDM_FORCE_INLINE
   size_type index(size_type i) const
-  { OpenFDMLinAlgAssert(0 < i && i <= size()); return i-1; }
+  { OpenFDMLinAlgAssert(i < size()); return i; }
 
   /// Size of the vector.
   OpenFDM_FORCE_INLINE
@@ -82,7 +82,7 @@ public:
 
   OpenFDM_FORCE_INLINE
   size_type index(size_type i) const
-  { OpenFDMLinAlgAssert(0 < i && i <= size()); return i-1; }
+  { OpenFDMLinAlgAssert(i < size()); return i; }
 
   /// Size of the vector.
   OpenFDM_FORCE_INLINE
@@ -139,9 +139,9 @@ public:
   OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
-    OpenFDMLinAlgAssert(0 < i && i <= rows());
-    OpenFDMLinAlgAssert(0 < j && j <= cols());
-    return (i-1) + (j-1)*rows_;
+    OpenFDMLinAlgAssert(i < rows());
+    OpenFDMLinAlgAssert(j < cols());
+    return i + j*rows_;
   }
 
   OpenFDM_FORCE_INLINE
@@ -196,9 +196,9 @@ public:
   OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
-    OpenFDMLinAlgAssert(0 < i && i <= rows());
-    OpenFDMLinAlgAssert(0 < j && j <= cols());
-    return (i-1) + (j-1)*rows_;
+    OpenFDMLinAlgAssert(i < rows());
+    OpenFDMLinAlgAssert(j < cols());
+    return i + j*rows_;
   }
 
   OpenFDM_FORCE_INLINE
@@ -262,9 +262,9 @@ public:
   OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
-    OpenFDMLinAlgAssert(0 < i && i <= rows());
-    OpenFDMLinAlgAssert(0 < j && j <= cols());
-    return (i-1) + (j-1)*rows_;
+    OpenFDMLinAlgAssert(i < rows());
+    OpenFDMLinAlgAssert(j < cols());
+    return i + j*rows_;
   }
 
   OpenFDM_FORCE_INLINE
@@ -328,9 +328,9 @@ public:
   OpenFDM_FORCE_INLINE
   size_type index(size_type i, size_type j) const
   {
-    OpenFDMLinAlgAssert(0 < i && i <= rows());
-    OpenFDMLinAlgAssert(0 < j && j <= cols());
-    return (i-1) + (j-1)*rows_;
+    OpenFDMLinAlgAssert(i < rows());
+    OpenFDMLinAlgAssert(j < cols());
+    return i + j*rows_;
   }
 
   OpenFDM_FORCE_INLINE
@@ -394,12 +394,12 @@ public:
   size_type index(size_type i, size_type j) const
   {
     // For details see Golumb/Van Loan: Matrix Computations, 20pp.
-    OpenFDMLinAlgAssert(0 < i && i <= rows());
-    OpenFDMLinAlgAssert(0 < j && j <= cols());
+    OpenFDMLinAlgAssert(i < rows());
+    OpenFDMLinAlgAssert(j < cols());
     if (i >= j)
-      return (j-1)*size_ - (j*(j-1))/2 + i - 1;
+      return j*size_ - (j*(j+1))/2 + i;
     else
-      return (i-1)*size_ - (i*(i-1))/2 + j - 1;
+      return i*size_ - (i*(i+1))/2 + j;
   }
 
   /// Size of the vector.
@@ -455,12 +455,12 @@ public:
   size_type index(size_type i, size_type j) const
   {
     // For details see Golumb/Van Loan: Matrix Computations, 20pp.
-    OpenFDMLinAlgAssert(0 < i && i <= rows());
-    OpenFDMLinAlgAssert(0 < j && j <= cols());
+    OpenFDMLinAlgAssert(i < rows());
+    OpenFDMLinAlgAssert(j < cols());
     if (i >= j)
-      return (j-1)*size_ - (j*(j-1))/2 + i - 1;
+      return j*size_ - (j*(j+1))/2 + i;
     else
-      return (i-1)*size_ - (i*(i-1))/2 + j - 1;
+      return i*size_ - (i*(i+1))/2 + j;
   }
 
   /// Size of the vector.

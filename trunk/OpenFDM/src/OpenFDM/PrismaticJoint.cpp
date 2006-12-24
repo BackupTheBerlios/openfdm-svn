@@ -136,7 +136,7 @@ PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
   // of the joint are.
   CartesianJointFrame<1>::VectorN tau;
   if (mJointForcePort.isConnected()) {
-    tau(1) = mJointForcePort.getRealValue();
+    tau(0) = mJointForcePort.getRealValue();
   } else
     tau.clear();
   mPrismaticJointFrame->jointArticulation(artI, artF, outF, outI, tau);
@@ -147,9 +147,9 @@ PrismaticJoint::setState(const StateStream& state)
 {
   CartesianJointFrame<1>::VectorN v;
   state.readSubState(v);
-  mPrismaticJointFrame->setJointPos(v(1));
+  mPrismaticJointFrame->setJointPos(v(0));
   state.readSubState(v);
-  mPrismaticJointFrame->setJointVel(v(1));
+  mPrismaticJointFrame->setJointVel(v(0));
 }
 
 void

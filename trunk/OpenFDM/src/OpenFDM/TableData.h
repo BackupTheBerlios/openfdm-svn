@@ -118,7 +118,7 @@ public:
     // Empty table??
     // FIXME
     if (mTable.empty())
-      return 1;
+      return 0;
 
     // Find the table bounds for the requested input.
     Table::const_iterator upBoundIt = mTable.upper_bound(input);
@@ -127,7 +127,7 @@ public:
 
     Table::const_iterator beg = mTable.begin();
     if (upBoundIt == beg)
-      return 1;
+      return 0;
     if (upBoundIt == mTable.end()) {
       unsigned last = mTable.rbegin()->second;
       return last;
@@ -189,6 +189,8 @@ public:
 
   TableData& operator=(const TableData& ndarray)
   {
+    if (this == &ndarray)
+      return *this;
     delete[] mData;
     if (ndarray.mData) {
       mSize = ndarray.size();
@@ -209,7 +211,8 @@ public:
   const SizeVector& size(void) const
   { return mSize; }
   unsigned size(unsigned i) const
-  { if (i < 1 || mSize.size() < i) return 0; return mSize(i); }
+  { if (mSize.size() <= i) return 0; return mSize(i); }
+  //   { if (mSize.size() <= i) return 1; /*??may be*/ return mSize(i); }
 
   const real_type& operator()(const Index& multiIndex) const
   { return mData[offset(multiIndex)]; }
@@ -224,10 +227,10 @@ public:
   unsigned offset(const Index& multiIndex) const
   {
     /// FIXME do size bounds checking ...
-    unsigned idx = multiIndex(numDims) - 1;
+    unsigned idx = multiIndex(numDims-1);
     for (unsigned i = numDims-1; 0 < i; --i) {
-      idx *= mSize(i);
-      idx += multiIndex(i) - 1;
+      idx *= mSize(i-1);
+      idx += multiIndex(i-1);
     }
     return idx;
   }
@@ -244,19 +247,19 @@ private:
     if (indexNum == 0)
       return at(curIndex);
 
-    real_type ridx = interp(indexNum);
+    real_type ridx = interp(indexNum-1);
 
     // Check for an out of range index
     // Note that this negated check also catches NaNs
-    if (!(1 <= ridx)) {
-      curIndex(indexNum) = 1;
+    if (!(0 <= ridx)) {
+      curIndex(indexNum-1) = 0;
       return interpolator(indexNum-1, curIndex, interp);
     }
 
     // Check for an out of range index
-    unsigned sz = mSize(indexNum);
-    if (sz < ridx) {
-      curIndex(indexNum) = sz;
+    unsigned sz = mSize(indexNum-1);
+    if (sz <= ridx) {
+      curIndex(indexNum-1) = sz-1;
       return interpolator(indexNum-1, curIndex, interp);
     }
 
@@ -264,16 +267,16 @@ private:
     unsigned i1 = unsigned(ceil(ridx));
     if (i0 == i1) {
       // Exactly hit an integer valued index
-      curIndex(indexNum) = i0;
+      curIndex(indexNum-1) = i0;
       return interpolator(indexNum-1, curIndex, interp);
     }
 
     // Need interpolation in this dimension
-    curIndex(indexNum) = i0;
+    curIndex(indexNum-1) = i0;
     real_type value;
     value = (i1 - ridx) * interpolator(indexNum-1, curIndex, interp);
     
-    curIndex(indexNum) = i1;
+    curIndex(indexNum-1) = i1;
     value += (ridx - i0) * interpolator(indexNum-1, curIndex, interp);
     
     return value;
@@ -288,7 +291,7 @@ inline
 std::basic_ostream<char_type, traits_type>&
 operator<<(std::basic_ostream<char_type, traits_type>& os, const TableLookup& tl)
 {
-  for (unsigned idx = 1; idx <= tl.size(); ++idx) {
+  for (unsigned idx = 0; idx < tl.size(); ++idx) {
     os << tl.getAtIndex(idx) << ' ';
   }
   return os;
@@ -301,9 +304,9 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const TableData<1>& t
 {
   TableData<1>::SizeVector sz = td.size();
 
-  for (unsigned idx = 1; idx <= sz(1); ++idx) {
+  for (unsigned idx = 0; idx < sz(0); ++idx) {
     TableData<1>::Index multiIdx;
-    multiIdx(1) = idx;
+    multiIdx(0) = idx;
     os << td(multiIdx) << ' ';
   }
   return os;
@@ -316,11 +319,11 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const TableData<2>& t
 {
   TableData<2>::SizeVector sz = td.size();
 
-  for (unsigned i = 1; i <= sz(1); ++i) {
-    for (unsigned j = 1; j <= sz(2); ++j) {
+  for (unsigned i = 0; i < sz(0); ++i) {
+    for (unsigned j = 0; j < sz(1); ++j) {
       TableData<2>::Index multiIdx;
-      multiIdx(1) = i;
-      multiIdx(2) = j;
+      multiIdx(0) = i;
+      multiIdx(1) = j;
       os << td(multiIdx) << ' ';
     }
     os << '\n';
@@ -335,13 +338,13 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const TableData<3>& t
 {
   TableData<3>::SizeVector sz = td.size();
 
-  for (unsigned i = 1; i <= sz(1); ++i) {
-    for (unsigned j = 1; j <= sz(2); ++j) {
-      for (unsigned k = 1; k <= sz(3); ++k) {
+  for (unsigned i = 0; i < sz(0); ++i) {
+    for (unsigned j = 0; j < sz(1); ++j) {
+      for (unsigned k = 0; k < sz(2); ++k) {
         TableData<3>::Index multiIdx;
-        multiIdx(1) = i;
-        multiIdx(2) = j;
-        multiIdx(3) = k;
+        multiIdx(0) = i;
+        multiIdx(1) = j;
+        multiIdx(2) = k;
         os << td(multiIdx) << ' ';
       }
       os << '\n';

@@ -34,7 +34,7 @@ public:
   }
   // FIXME, move evaluate into seperate method
   real_type getRealValue(void)
-  { evaluate(); return mValue(1, 1); }
+  { evaluate(); return mValue(0, 0); }
 protected:
   Matrix mValue;
 };
@@ -57,7 +57,7 @@ public:
     mSourceModel(sourceModel), mGetter(getter)
   { }
   virtual void evaluate(void)
-  { mValue(1, 1) = (mSourceModel->*mGetter)(); }
+  { mValue(0, 0) = (mSourceModel->*mGetter)(); }
 private:
   WeakPtr<M> mSourceModel;
   Getter mGetter;

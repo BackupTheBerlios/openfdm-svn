@@ -340,17 +340,17 @@ real_type convertFrom(Unit unit, real_type value)
 // Convert from native units to the unit given in the unit argument.
 Vector3 convertTo(Unit unit, const Vector3& v)
 {
-  return Vector3(convertTo(unit, v(1)),
-                 convertTo(unit, v(2)),
-                 convertTo(unit, v(3)));
+  return Vector3(convertTo(unit, v(0)),
+                 convertTo(unit, v(1)),
+                 convertTo(unit, v(2)));
 }
 
 // Convert to native units from the unit given in the unit argument.
 Vector3 convertFrom(Unit unit, const Vector3& v)
 {
-  return Vector3(convertFrom(unit, v(1)),
-                 convertFrom(unit, v(2)),
-                 convertFrom(unit, v(3)));
+  return Vector3(convertFrom(unit, v(0)),
+                 convertFrom(unit, v(1)),
+                 convertFrom(unit, v(2)));
 }
 
 Unit2 Unit2::dimless;

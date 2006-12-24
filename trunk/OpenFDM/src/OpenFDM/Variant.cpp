@@ -100,7 +100,7 @@ Variant::toReal() const
     const MatrixVariantData* matrixData = mData->toMatrixVariant();
     if (matrixData &&
         matrixData->mData.rows() == 1 && matrixData->mData.cols() == 1)
-      return matrixData->mData(1,1);
+      return matrixData->mData(0,0);
   }
 
   return 0;
@@ -125,7 +125,7 @@ Variant::toInteger() const
     const MatrixVariantData* matrixData = mData->toMatrixVariant();
     if (matrixData &&
         matrixData->mData.rows() == 1 && matrixData->mData.cols() == 1)
-      return static_cast<int>(floor(matrixData->mData(1,1)));
+      return static_cast<int>(floor(matrixData->mData(0,0)));
   }
 
   return 0;
@@ -154,19 +154,19 @@ Variant::toMatrix() const
     Matrix m(1, 1);
     const RealVariantData* realData = mData->toRealVariant();
     if (realData) {
-      m(1, 1) = realData->mData;
+      m(0, 0) = realData->mData;
       return m;
     }
 
     const IntegerVariantData* integerData = mData->toIntegerVariant();
     if (integerData) {
-      m(1, 1) = integerData->mData;
+      m(0, 0) = integerData->mData;
       return m;
     }
 
     const UnsignedVariantData* unsignedData = mData->toUnsignedVariant();
     if (unsignedData) {
-      m(1, 1) = unsignedData->mData;
+      m(0, 0) = unsignedData->mData;
       return m;
     }
   }

@@ -25,16 +25,16 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   mInputSaturation = new Saturation("Input Saturation");
   getModelGroup()->addModel(mInputSaturation);
   Matrix tmp(1, 1);
-  tmp(1, 1) = -1;
+  tmp(0, 0) = -1;
   mInputSaturation->setMinSaturation(tmp);
-  tmp(1, 1) = 1;
+  tmp(0, 0) = 1;
   mInputSaturation->setMaxSaturation(tmp);
 
   mTablePreLookup = new TablePreLookup("Table Lookup");
   TableLookup tl;
-  tl.setAtIndex(1, -1);
-  tl.setAtIndex(2, 0);
-  tl.setAtIndex(3, 1);
+  tl.setAtIndex(0, -1);
+  tl.setAtIndex(1, 0);
+  tl.setAtIndex(2, 1);
   mTablePreLookup->setTableLookup(tl);
   getModelGroup()->addModel(mTablePreLookup);
   Connection::connect(mTablePreLookup->getInputPort(0),
@@ -42,14 +42,14 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
 
   mTable = new Table1D("Table");
   TableData<1>::SizeVector sv;
-  sv(1) = 3;
+  sv(0) = 3;
   TableData<1> tableData(sv);
   TableData<1>::Index iv;
-  iv(1) = 1;
+  iv(0) = 0;
   tableData(iv) = -mGain;
-  iv(1) = 2;
+  iv(0) = 1;
   tableData(iv) = 0;
-  iv(1) = 3;
+  iv(0) = 2;
   tableData(iv) = mGain;
   mTable->setTableData(tableData);
   getModelGroup()->addModel(mTable);
@@ -78,10 +78,10 @@ void
 JSBSimAerosurfaceScale::setMinDomain(real_type minDomain)
 {
   Matrix tmp(1, 1);
-  tmp(1, 1) = minDomain;
+  tmp(0, 0) = minDomain;
   mInputSaturation->setMinSaturation(tmp);
   TableLookup tl = mTablePreLookup->getTableLookup();
-  tl.setAtIndex(1, minDomain);
+  tl.setAtIndex(0, minDomain);
   mTablePreLookup->setTableLookup(tl);
 }
 
@@ -89,10 +89,10 @@ void
 JSBSimAerosurfaceScale::setMaxDomain(real_type maxDomain)
 {
   Matrix tmp(1, 1);
-  tmp(1, 1) = maxDomain;
+  tmp(0, 0) = maxDomain;
   mInputSaturation->setMaxSaturation(tmp);
   TableLookup tl = mTablePreLookup->getTableLookup();
-  tl.setAtIndex(tl.size(), maxDomain);
+  tl.setAtIndex(tl.size()-1, maxDomain);
   mTablePreLookup->setTableLookup(tl);
 }
 
@@ -108,31 +108,31 @@ JSBSimAerosurfaceScale::setCentered(bool centered)
   TableData<1>::Index iv;
 
   if (centered) {
-    tl.setAtIndex(1, tlOld.getAtIndex(1));
-    tl.setAtIndex(2, 0);
-    tl.setAtIndex(3, tlOld.getAtIndex(tlOld.size()));
+    tl.setAtIndex(0, tlOld.getAtIndex(0));
+    tl.setAtIndex(1, 0);
+    tl.setAtIndex(2, tlOld.getAtIndex(tlOld.size()-1));
 
-    sz(1) = 3;
+    sz(0) = 3;
     tableData = TableData<1>(sz);
-    iv(1) = 1;
+    iv(0) = 0;
     tableData(iv) = tableDataOld(iv);
-    iv(1) = 2;
+    iv(0) = 1;
     tableData(iv) = 0;
-    iv = tableDataOld.size();
+    iv(0) = tableDataOld.size(0)-1;
     real_type oldVal = tableDataOld(iv);
-    iv(1) = 3;
+    iv(0) = 2;
     tableData(iv) = oldVal;
   } else {
-    tl.setAtIndex(1, tlOld.getAtIndex(1));
-    tl.setAtIndex(2, tlOld.getAtIndex(tlOld.size()));
+    tl.setAtIndex(0, tlOld.getAtIndex(0));
+    tl.setAtIndex(1, tlOld.getAtIndex(tlOld.size()-1));
 
-    sz(1) = 2;
+    sz(0) = 2;
     tableData = TableData<1>(sz);
-    iv(1) = 1;
+    iv(0) = 0;
     tableData(iv) = tableDataOld(iv);
-    iv = tableDataOld.size();
+    iv(0) = tableDataOld.size(0)-1;
     real_type oldVal = tableDataOld(iv);
-    iv(1) = 2;
+    iv(0) = 1;
     tableData(iv) = oldVal;
   }
 
@@ -145,7 +145,7 @@ JSBSimAerosurfaceScale::setMinValue(real_type minValue)
 {
   TableData<1> tableData = mTable->getTableData();
   TableData<1>::Index iv;
-  iv(1) = 1;
+  iv(0) = 0;
   tableData(iv) = mGain*minValue;
   mTable->setTableData(tableData);
 }
@@ -156,7 +156,7 @@ JSBSimAerosurfaceScale::setMaxValue(real_type maxValue)
   TableLookup tl = mTablePreLookup->getTableLookup();
   TableData<1> tableData = mTable->getTableData();
   TableData<1>::Index iv;
-  iv(1) = tl.size();
+  iv(0) = tl.size()-1;
   tableData(iv) = mGain*maxValue;
   mTable->setTableData(tableData);
 }
@@ -167,9 +167,9 @@ JSBSimAerosurfaceScale::setGain(real_type gain)
   TableLookup tl = mTablePreLookup->getTableLookup();
   TableData<1> tableData = mTable->getTableData();
   TableData<1>::Index iv;
-  iv(1) = 1;
+  iv(0) = 0;
   tableData(iv) *= gain/mGain;
-  iv(1) = tl.size();
+  iv(0) = tl.size()-1;
   tableData(iv) *= gain/mGain;
   mTable->setTableData(tableData);
   mGain = gain;
