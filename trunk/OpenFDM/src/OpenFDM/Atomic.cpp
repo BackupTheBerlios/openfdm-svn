@@ -23,7 +23,7 @@ unsigned __sync_sub_and_fetch_4(volatile void *ptr, unsigned value)
                        : "=r" (result), "=m" (*mem)
                        : "0" (-value), "m" (*mem)
                        : "memory");
-  return result;
+  return result - value;
 }
 
 unsigned __sync_add_and_fetch_4(volatile void *ptr, unsigned value)
@@ -34,7 +34,7 @@ unsigned __sync_add_and_fetch_4(volatile void *ptr, unsigned value)
                        : "=r" (result), "=m" (*mem)
                        : "0" (value), "m" (*mem)
                        : "memory");
-  return result;
+  return result + value;
 }
 
 void __sync_synchronize()
