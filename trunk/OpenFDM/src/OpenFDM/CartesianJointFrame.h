@@ -77,6 +77,8 @@ public:
                          const Vector6& outF, const SpatialInertia& outI,
                          const VectorN& jointForce)
   {
+    // The formulas conform to Roy Featherstones book eqn (6.37), (6.38)
+
     // Store the outboard values since we will need them later in velocity
     // derivative computations
     mOutboardInertia = outI;

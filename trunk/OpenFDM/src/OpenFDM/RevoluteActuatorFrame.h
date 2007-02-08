@@ -31,8 +31,6 @@ public:
     mJointAxis = axis;
     setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
     setAngularRelVel(mJointVel*mJointAxis);
-
-    setJointMatrix(Vector6(axis, Vector3::zeros()));
   }
 
   /// Returns the joint position.
@@ -40,7 +38,7 @@ public:
   { return mJointPos; }
 
   /// Sets the joint position.
-  void setJointPos(real_type pos)
+  void setJointPos(const real_type& pos)
   {
     mJointPos = pos;
     setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
@@ -51,14 +49,22 @@ public:
   { return mJointVel; }
 
   /// Sets the joint velocity.
-  void setJointVel(real_type vel)
-  { setAngularRelVel(mJointVel*mJointAxis); mJointVel = vel; }
+  void setJointVel(const real_type& vel)
+  { mJointVel = vel; setAngularRelVel(mJointVel*mJointAxis); }
+
+  /// Returns the joint acceleration.
+  const real_type& getJointVelDot(void) const
+  { return mJointVelDot; }
+
+  /// Sets the joint velocity.
+  void setJointVelDot(const real_type& velDot)
+  { mJointVelDot = velDot; setAngularRelVelDot(mJointVelDot*mJointAxis); }
 
   /// Sets the zero orientation of the joint.
   void setZeroOrientation(const Quaternion& zeroOrient)
   {
-    setOrientation(zeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
     mZeroOrient = zeroOrient;
+    setOrientation(zeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
   }
   const Quaternion& getZeroOrientation(void) const
   { return mZeroOrient; }
@@ -77,6 +83,9 @@ private:
 
   /// The rotational velocity with respect to the rotation axis.
   real_type mJointVel;
+
+  /// The rotational acceleration with respect to the rotation axis.
+  real_type mJointVelDot;
 };
 
 } // namespace OpenFDM

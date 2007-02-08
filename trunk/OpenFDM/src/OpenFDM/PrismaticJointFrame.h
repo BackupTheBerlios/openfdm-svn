@@ -18,7 +18,9 @@ public:
     mJointAxis(Vector3::unit(0)),
     mJointPos(0),
     mJointVel(0)
-  { }
+  {
+    setJointMatrix(Vector6(Vector3::zeros(), mJointAxis));
+  }
   virtual ~PrismaticJointFrame(void) {}
 
   /// Gets the joint axis where this joint is allowed to rotate around.
@@ -29,9 +31,9 @@ public:
   void setJointAxis(const Vector3& axis)
   {
     mJointAxis = axis;
+    setJointMatrix(Vector6(Vector3::zeros(), axis));
     setPosition(mZeroPos + mJointPos*mJointAxis);
     setLinearRelVel(mJointVel*mJointAxis);
-    setJointMatrix(Vector6(Vector3::zeros(), axis));
   }
 
   /// Returns the joint position.
@@ -39,7 +41,7 @@ public:
   { return mJointPos; }
 
   /// Sets the joint position.
-  void setJointPos(real_type pos)
+  void setJointPos(const real_type& pos)
   { mJointPos = pos; setPosition(mZeroPos + mJointPos*mJointAxis); }
 
   /// Returns the joint velocity.
@@ -47,12 +49,12 @@ public:
   { return mJointVel; }
 
   /// Sets the joint velocity.
-  void setJointVel(real_type vel)
-  { setLinearRelVel(mJointVel*mJointAxis); mJointVel = vel; }
+  void setJointVel(const real_type& vel)
+  { mJointVel = vel; setLinearRelVel(mJointVel*mJointAxis); }
 
   /// Sets the zero position of the joint.
   void setZeroPosition(const Vector3& zeroPos)
-  { setPosition(mZeroPos + mJointPos*mJointAxis); mZeroPos = zeroPos; }
+  { mZeroPos = zeroPos; setPosition(mZeroPos + mJointPos*mJointAxis); }
   const Vector3& getZeroPosition(void) const
   { return mZeroPos; }
 

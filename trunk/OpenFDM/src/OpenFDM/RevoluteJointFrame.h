@@ -18,7 +18,9 @@ public:
     mJointAxis(Vector3::unit(0)),
     mJointPos(0),
     mJointVel(0)
-  { }
+  {
+    setJointMatrix(Vector6(mJointAxis, Vector3::zeros()));
+  }
   virtual ~RevoluteJointFrame(void) {}
 
   /// Gets the joint axis where this joint is allowed to rotate around.
@@ -29,10 +31,10 @@ public:
   void setJointAxis(const Vector3& axis)
   {
     mJointAxis = axis;
+    setJointMatrix(Vector6(axis, Vector3::zeros()));
     setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
     setAngularRelVel(mJointVel*mJointAxis);
 
-    setJointMatrix(Vector6(axis, Vector3::zeros()));
   }
 
   /// Returns the joint position.
@@ -40,7 +42,7 @@ public:
   { return mJointPos; }
 
   /// Sets the joint position.
-  void setJointPos(real_type pos)
+  void setJointPos(const real_type& pos)
   {
     mJointPos = pos;
     setOrientation(mZeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
@@ -51,14 +53,14 @@ public:
   { return mJointVel; }
 
   /// Sets the joint velocity.
-  void setJointVel(real_type vel)
-  { setAngularRelVel(mJointVel*mJointAxis); mJointVel = vel; }
+  void setJointVel(const real_type& vel)
+  { mJointVel = vel; setAngularRelVel(mJointVel*mJointAxis); }
 
   /// Sets the zero orientation of the joint.
   void setZeroOrientation(const Quaternion& zeroOrient)
   {
-    setOrientation(zeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
     mZeroOrient = zeroOrient;
+    setOrientation(zeroOrient*Quaternion::fromAngleAxis(mJointPos, mJointAxis));
   }
   const Quaternion& getZeroOrientation(void) const
   { return mZeroOrient; }

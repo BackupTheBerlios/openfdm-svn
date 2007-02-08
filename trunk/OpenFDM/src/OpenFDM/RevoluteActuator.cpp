@@ -137,17 +137,24 @@ RevoluteActuator::jointArticulation(SpatialInertia& artI, Vector6& artF,
                                  const SpatialInertia& outI,
                                  const Vector6& outF)
 {
+  // This is a simple second order system with velocity limits.
+  // the joints accelerations, velocities and positions must fit together
+  // otherwise the articulated body dynamics get fooled ...
+
+  // The desired position input
   real_type desiredPos = mDesiredPositionPort.getRealValue();
-
+  // Compute the error ...
   real_type posErr = desiredPos - mRevoluteActuatorFrame->getJointPos();
-
+  // ... and compute a desired velocity within the given limits from that.
   real_type desiredVel = smoothSaturate(mVelGain*posErr, mMaxVel);
-
+  // The usual control loops: there we get a velocity error
   real_type velErr = desiredVel - mRevoluteActuatorFrame->getJointVel();
+  // and accelerate that proportional to that error ...
+  mRevoluteActuatorFrame->setJointVelDot(mVelDotGain*velErr);
 
-  CartesianActuatorFrame<1>::VectorN tau;
-  tau(0) = mVelDotGain*velErr;
-  mRevoluteActuatorFrame->jointArticulation(artI, artF, outF, outI, tau);
+  // now that the joints acceleration is known, compute the articulated
+  // body force and inertia ...
+  mRevoluteActuatorFrame->jointArticulation(artI, artF, outF, outI);
 }
 
 void
