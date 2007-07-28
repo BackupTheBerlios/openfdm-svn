@@ -41,8 +41,9 @@ void
 Model::ascend(ModelVisitor& visitor)
 {
   SharedPtr<ModelGroup> parentGroup = mParentModel.lock();
-  if (parentGroup)
-    parentGroup->accept(visitor);
+  if (!parentGroup)
+    return;
+  parentGroup->accept(visitor);
 }
 
 const ModelGroup*
