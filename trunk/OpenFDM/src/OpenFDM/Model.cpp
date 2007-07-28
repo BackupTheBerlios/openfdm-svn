@@ -217,36 +217,48 @@ Model::getOutputPortName(unsigned i) const
   return mOutputPorts[i]->getName();
 }
 
-class ModelPathCollector :
+class ModelPathStringCollector :
     public ModelVisitor {
 public:
-  virtual ~ModelPathCollector(void)
-  { }
   virtual void apply(Model& model)
-  { ascend(model); path += "/"; path += model.getName(); }
+  {
+    // First go up and collect the path above when back here append the own one
+    ascend(model);
+    path += "/";
+    path += model.getName();
+  }
   std::string path;
 };
 
 std::string
 Model::getPathString(void)
 {
-  ModelPathCollector modelPathCollector;
-  accept(modelPathCollector);
-  return modelPathCollector.path;
+  ModelPathStringCollector modelPathStringCollector;
+  accept(modelPathStringCollector);
+  return modelPathStringCollector.path;
 }
+
+class ModelPathCollector :
+    public ModelVisitor {
+public:
+  virtual void apply(Model& model)
+  {
+    // First go up and collect the path above when back here append the own one
+    ascend(model);
+    ModelGroup* modelGroup = model.toModelGroup();
+    if (!modelGroup)
+      return;
+    path.push_back(modelGroup);
+  }
+  Model::Path path;
+};
 
 Model::Path
 Model::getPath()
 {
-  Path path;
-
-  SharedPtr<ModelGroup> model = getParent();
-  while(model) {
-    path.push_front(model);
-    model = model->getParent();
-  }
-
-  return path;
+  ModelPathCollector modelPathCollector;
+  accept(modelPathCollector);
+  return modelPathCollector.path;
 }
 
 const ModelGroup*
