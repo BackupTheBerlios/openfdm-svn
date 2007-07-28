@@ -222,7 +222,8 @@ class ModelPathStringCollector :
 public:
   virtual void apply(Model& model)
   {
-    // First go up and collect the path above when back here append the own one
+    // First go up and collect the path above.
+    // When we are back here append this.
     ascend(model);
     path += "/";
     path += model.getName();
@@ -242,13 +243,13 @@ class ModelPathCollector :
     public ModelVisitor {
 public:
   virtual void apply(Model& model)
+  { ascend(model); }
+  virtual void apply(ModelGroup& modelGroup)
   {
-    // First go up and collect the path above when back here append the own one
-    ascend(model);
-    ModelGroup* modelGroup = model.toModelGroup();
-    if (!modelGroup)
-      return;
-    path.push_back(modelGroup);
+    // First go up and collect the path above.
+    // When we are back here append this.
+    ascend(modelGroup);
+    path.push_back(&modelGroup);
   }
   Model::Path path;
 };
@@ -257,7 +258,7 @@ Model::Path
 Model::getPath()
 {
   ModelPathCollector modelPathCollector;
-  accept(modelPathCollector);
+  ascend(modelPathCollector);
   return modelPathCollector.path;
 }
 
