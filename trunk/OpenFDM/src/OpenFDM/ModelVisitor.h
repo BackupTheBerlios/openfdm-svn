@@ -8,6 +8,7 @@
 #include "Model.h"
 #include "ModelGroup.h"
 #include "RigidBody.h"
+#include "MobileRootJoint.h"
 #include "System.h"
 
 namespace OpenFDM {
