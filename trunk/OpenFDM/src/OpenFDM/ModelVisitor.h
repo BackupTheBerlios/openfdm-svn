@@ -19,15 +19,15 @@ public:
   virtual void apply(Model& model)
   { }
   virtual void apply(ModelGroup& modelGroup)
-  { apply((Model&)modelGroup); }
+  { apply(static_cast<Model&>(modelGroup)); }
   virtual void apply(System& system)
-  { apply((ModelGroup&)system); }
+  { apply(static_cast<ModelGroup&>(system)); }
   virtual void apply(Interact& interact)
-  { apply((Model&)interact); }
+  { apply(static_cast<Model&>(interact)); }
   virtual void apply(Joint& joint)
-  { apply((Interact&)joint); }
+  { apply(static_cast<Interact&>(joint)); }
   virtual void apply(MobileRootJoint& mobileRootJoint)
-  { apply((Joint&)mobileRootJoint); }
+  { apply(static_cast<Joint&>(mobileRootJoint)); }
 protected:
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse downward
