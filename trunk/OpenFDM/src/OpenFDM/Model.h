@@ -57,9 +57,9 @@ public:
   Model(const std::string& name);
   virtual ~Model(void);
 
-  /// Double dispatch helper for the multibody system visitor
+  /// Double dispatch helper for the system visitor
   virtual void accept(ModelVisitor& visitor);
-  /// Double dispatch helper for the multibody system visitor
+  /// Double dispatch helper for the system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
   /// Hmm ...
@@ -263,10 +263,6 @@ protected:
 
 private:
   void setEnabledUnconditional(bool enabled);
-
-  /// FIXME: use visitor for that
-  void adjustNumContinousStates(unsigned newCount, unsigned oldCount);
-  void adjustNumDiscreteStates(unsigned newCount, unsigned oldCount);
 
   WeakPtr<ModelGroup> mParentModel;
   unsigned mNumContinousStates;

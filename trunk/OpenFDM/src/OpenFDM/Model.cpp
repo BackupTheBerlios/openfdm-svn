@@ -319,15 +319,8 @@ Model::setOutputPort(unsigned i, const std::string& name,
 void
 Model::setParent(ModelGroup* model)
 {
-  if (mParentModel) {
-    mParentModel->adjustNumDiscreteStates(0, getNumDiscreteStates());
-    mParentModel->adjustNumContinousStates(0, getNumContinousStates());
-  }
   mParentModel = model;
-  if (mParentModel) {
-    mParentModel->adjustNumDiscreteStates(getNumDiscreteStates(), 0);
-    mParentModel->adjustNumContinousStates(getNumContinousStates(), 0);
-  } else {
+  if (!mParentModel) {
     unsigned num = getNumInputPorts();
     for (unsigned i = 0; i < num; ++i)
       mInputPorts[i]->removeAllConnections();
@@ -340,18 +333,12 @@ Model::setParent(ModelGroup* model)
 void
 Model::setNumContinousStates(unsigned numContinousStates)
 {
-  if (mParentModel)
-    mParentModel->adjustNumContinousStates(numContinousStates,
-                                           mNumContinousStates);
   mNumContinousStates = numContinousStates;
 }
 
 void
 Model::setNumDiscreteStates(unsigned numDiscreteStates)
 {
-  if (mParentModel)
-    mParentModel->adjustNumDiscreteStates(numDiscreteStates,
-                                          mNumDiscreteStates);
   mNumDiscreteStates = numDiscreteStates;
 }
 
@@ -386,26 +373,6 @@ Model::setEnabledUnconditional(bool enabled)
   }
 
   mEnabled = enabled;
-}
-
-void
-Model::adjustNumContinousStates(unsigned newCount, unsigned oldCount)
-{
-  unsigned numContinousStates = getNumContinousStates();
-  OpenFDMAssert(oldCount <= numContinousStates);
-  numContinousStates -= oldCount;
-  numContinousStates += newCount;
-  setNumContinousStates(numContinousStates);
-}
-
-void
-Model::adjustNumDiscreteStates(unsigned newCount, unsigned oldCount)
-{
-  unsigned numDiscreteStates = getNumDiscreteStates();
-  OpenFDMAssert(oldCount <= numDiscreteStates);
-  numDiscreteStates -= oldCount;
-  numDiscreteStates += newCount;
-  setNumDiscreteStates(numDiscreteStates);
 }
 
 } // namespace OpenFDM
