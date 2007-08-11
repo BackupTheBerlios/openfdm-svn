@@ -12,7 +12,5 @@ touch $srcdir/src/OpenFDM/OpenFDMConfig.h.in $srcdir/src/OpenFDM/config.h.in
 # aclocal
 # autoconf
 # automake --add-missing
-autoreconf -v --install || exit 1
-cd $ORIGDIR || exit $?
+autoreconf -v --install --symlink || exit $?
 
-$srcdir/configure --enable-maintainer-mode "$@"
