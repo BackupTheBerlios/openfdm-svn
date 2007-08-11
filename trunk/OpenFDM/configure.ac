@@ -112,7 +112,8 @@ AC_SUBST(QT_MOC)
 AC_SUBST(QT_UIC)
 
 dnl simple check for osg
-AC_CHECK_HEADERS([osg/Object],[openfdm_have_osg="yes"])
+dnl AC_CHECK_HEADERS([osg/Version],[openfdm_have_osg="yes"])
+openfdm_have_osg="no"
 
 dnl avoid trying to build the editor if qt4 or osg is missing
 if test "x$openfdm_have_qt4" = "xyes" && test "x$openfdm_have_osg" = "xyes"
