@@ -17,6 +17,8 @@ class ModelVisitor {
 public:
   virtual ~ModelVisitor(void)
   { }
+  virtual void apply(Node& node)
+  { }
   virtual void apply(Model& model)
   { }
   virtual void apply(ModelGroup& modelGroup)
@@ -38,6 +40,8 @@ protected:
   /// traverse upward
   inline void ascend(Model& model)
   { model.ascend(*this); }
+  inline void ascend(Node& node)
+  { node.ascend(*this); }
 };
 
 } // namespace OpenFDM

@@ -4,19 +4,116 @@
 
 #include "Model.h"
 
+#include <algorithm>
+
 #include "LogStream.h"
 #include "ModelVisitor.h"
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Model, Object)
+BEGIN_OPENFDM_OBJECT_DEF(Node, Object)
+  END_OPENFDM_OBJECT_DEF
+
+Node::Node(const std::string& name) :
+  Object(name)
+{
+}
+
+Node::~Node(void)
+{
+}
+
+void
+Node::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
+}
+
+void
+Node::ascend(ModelVisitor& visitor)
+{
+  for (ParentList::iterator i = mParents.begin(); i != mParents.end(); ++i) {
+    SharedPtr<Group> group = i->lock();
+    if (!group)
+      continue;
+    group->accept(visitor);
+  }
+}
+
+const Model*
+Node::toModel(void) const
+{
+  return 0;
+}
+
+Model*
+Node::toModel(void)
+{
+  return 0;
+}
+
+const Group*
+Node::toGroup(void) const
+{
+  return 0;
+}
+
+Group*
+Node::toGroup(void)
+{
+  return 0;
+}
+
+unsigned
+Node::getNumParents(void) const
+{
+  return mParents.size();
+}
+
+WeakPtr<const Group>
+Node::getParent(unsigned idx) const
+{
+  if (mParents.size() <= idx)
+    return WeakPtr<const Group>(0);
+  return mParents[idx];
+}
+
+WeakPtr<Group>
+Node::getParent(unsigned idx)
+{
+  if (mParents.size() <= idx)
+    return WeakPtr<Group>(0);
+  return mParents[idx];
+}
+
+unsigned
+Node::addParent(Group* model)
+{
+  if (!model)
+    return ~0u;
+  mParents.push_back(WeakPtr<Group>(model));
+  return mParents.size() - 1;
+}
+
+void
+Node::removeParent(unsigned idx)
+{
+  if (idx <= mParents.size())
+    return;
+  ParentList::iterator i = mParents.begin();
+  std::advance(i, idx);
+  mParents.erase(i);
+}
+
+
+BEGIN_OPENFDM_OBJECT_DEF(Model, Node)
   DEF_OPENFDM_ROPROP(Unsigned, NumContinousStates)
   DEF_OPENFDM_ROPROP(Unsigned, NumDiscreteStates)
   DEF_OPENFDM_ROPROP(Bool, DirectFeedThrough)
   END_OPENFDM_OBJECT_DEF
 
 Model::Model(const std::string& name) :
-  Object(name),
+  Node(name),
   mNumContinousStates(0l),
   mNumDiscreteStates(0l),
   mDirectFeedThrough(false),
@@ -40,7 +137,7 @@ Model::accept(ModelVisitor& visitor)
 void
 Model::ascend(ModelVisitor& visitor)
 {
-  SharedPtr<ModelGroup> parentGroup = mParentModel.lock();
+  SharedPtr<ModelGroup> parentGroup = Node::getParent(0).lock();
   if (!parentGroup)
     return;
   parentGroup->accept(visitor);
@@ -266,13 +363,13 @@ Model::getPath()
 const ModelGroup*
 Model::getParent(void) const
 {
-  return mParentModel;
+  return Node::getParent(0);
 }
 
 ModelGroup*
 Model::getParent(void)
 {
-  return mParentModel;
+  return Node::getParent(0);
 }
 
 void
@@ -319,8 +416,10 @@ Model::setOutputPort(unsigned i, const std::string& name,
 void
 Model::setParent(ModelGroup* model)
 {
-  mParentModel = model;
-  if (!mParentModel) {
+  removeParent(0);
+  if (model) {
+    addParent(model);
+  } else {
     unsigned num = getNumInputPorts();
     for (unsigned i = 0; i < num; ++i)
       mInputPorts[i]->removeAllConnections();

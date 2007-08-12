@@ -38,8 +38,50 @@ class MobileRootJoint;
 class ModelVisitor;
 class TaskInfo;
 
-class Model : public Object {
-  OPENFDM_OBJECT(Model, Object);
+
+
+typedef ModelGroup Group;
+
+class Node : public Object {
+  OPENFDM_OBJECT(Node, Object);
+public:
+  typedef std::vector<SharedPtr<Group> > Path;
+
+  Node(const std::string& name);
+  virtual ~Node(void);
+
+  /// Double dispatch helper for the system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
+
+  /// Double dispatch helper for the system visitor
+  void ascend(ModelVisitor& visitor);
+  /// Double dispatch helper for the system visitor
+//   void ascend(ConstModelVisitor& visitor) const;
+
+  virtual const Model* toModel(void) const;
+  virtual Model* toModel(void);
+
+  virtual const Group* toGroup(void) const;
+  virtual Group* toGroup(void);
+
+protected:
+  // Sets the parent model.
+  unsigned getNumParents(void) const;
+  WeakPtr<const Group> getParent(unsigned idx) const;
+  WeakPtr<Group> getParent(unsigned idx);
+  unsigned addParent(Group* model);
+  void removeParent(unsigned idx);
+
+private:
+  typedef std::vector<WeakPtr<Group> > ParentList;
+  ParentList mParents;
+};
+
+
+class Model : public Node {
+  OPENFDM_OBJECT(Model, Node);
 public:
   enum DisableMode {
     /// If disabled, the models output/state is just held.
@@ -264,7 +306,6 @@ protected:
 private:
   void setEnabledUnconditional(bool enabled);
 
-  WeakPtr<ModelGroup> mParentModel;
   unsigned mNumContinousStates;
   unsigned mNumDiscreteStates;
   bool mDirectFeedThrough;
