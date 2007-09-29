@@ -110,12 +110,19 @@ System::init(void)
   ModelCollectVisitor modelCollectVisitor;
   accept(modelCollectVisitor);
 
+  // sett the environment, FIXME move somewhere into task
+  ModelList2::const_iterator mit;
+  mit = modelCollectVisitor.modelList.begin();
+  while (mit != modelCollectVisitor.modelList.end()) {
+    mit->model->setEnvironment(mEnvironment);
+    ++mit;
+  }
+ 
   OpenFDM::sortModels(modelCollectVisitor.modelList);
 
   // build up the lists of stateful models and count the number of states
   unsigned numContinousStates = 0;
   unsigned numDiscreteStates = 0;
-  ModelList2::const_iterator mit;
   mit = modelCollectVisitor.modelList.begin();
   while (mit != modelCollectVisitor.modelList.end()) {
     if (mit->model->getNumContinousStates()) {

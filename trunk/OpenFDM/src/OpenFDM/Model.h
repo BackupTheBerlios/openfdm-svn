@@ -28,6 +28,7 @@ class ModelGroup;
 class Environment;
 class GroupInput;
 class GroupOutput;
+class System;
 
 class Input;
 class Output;
@@ -294,6 +295,8 @@ protected:
                      const Matrix& (M::*getter)(void) const)
   { addOutputPort(name, new MatrixGetterPortInterface<M>(model, getter)); }
 
+  // FIXME
+  friend class System;
   virtual void setEnvironment(Environment* environment);
 
 // private:

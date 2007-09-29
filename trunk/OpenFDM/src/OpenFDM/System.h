@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ModelGroup.h"
+#include "Environment.h"
 
 namespace OpenFDM {
 
@@ -93,6 +94,8 @@ private:
   typedef std::vector<SharedPtr<Model> > ModelList;
   ModelList mDiscreteModelList;
   ModelList mContinousModelList;
+
+  SharedPtr<Environment> mEnvironment;
 
   /// The actual simulation time for the system
   real_type mTime;

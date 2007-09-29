@@ -153,7 +153,6 @@ ModelGroup::addModel(Model* model, bool allowRename)
 
   // Update the number of states.
   model->setParent(this);
-  model->setEnvironment(mEnvironment);
 
   // add to the model list.
   mModels.push_back(model);
@@ -197,7 +196,6 @@ ModelGroup::removeModel(Model* model)
 
   // remove the backreference to this group
   // this also updates the number of states
-  model->setEnvironment(0);
   model->setParent(0);
 
   // remove from the model list.
@@ -250,17 +248,6 @@ ModelGroup::getConnection(unsigned i) const
   if (mConnections.size() <= i)
     return 0;
   return mConnections[i];
-}
-
-void
-ModelGroup::setEnvironment(Environment* environment)
-{
-  mEnvironment = environment;
-  ModelList::iterator i = mModels.begin();
-  while (i != mModels.end()) {
-    (*i)->setEnvironment(environment);
-    ++i;
-  }
 }
 
 Model::Path
