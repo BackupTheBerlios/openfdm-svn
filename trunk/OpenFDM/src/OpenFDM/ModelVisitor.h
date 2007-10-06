@@ -13,6 +13,8 @@
 
 namespace OpenFDM {
 
+typedef std::list<SharedPtr<Node> > NodePath;
+
 class ModelVisitor {
 public:
   virtual ~ModelVisitor(void)
@@ -31,15 +33,30 @@ public:
   { apply(static_cast<Interact&>(joint)); }
   virtual void apply(MobileRootJoint& mobileRootJoint)
   { apply(static_cast<Joint&>(mobileRootJoint)); }
+
+  const NodePath& getNodePath() const
+  { return mNodePath; }
+
 protected:
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse downward
   inline void traverse(ModelGroup& modelGroup)
-  { modelGroup.traverse(*this); }
+  {
+    mNodePath.push_back(&modelGroup);
+    modelGroup.traverse(*this);
+    mNodePath.pop_back();
+  }
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse upward
   inline void ascend(Node& node)
-  { node.ascend(*this); }
+  {
+    mNodePath.push_back(&node);
+    node.ascend(*this);
+    mNodePath.pop_back();
+  }
+private:
+  // The path that visitor has passed
+  NodePath mNodePath;
 };
 
 } // namespace OpenFDM

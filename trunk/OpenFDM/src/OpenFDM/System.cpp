@@ -24,6 +24,7 @@ BEGIN_OPENFDM_OBJECT_DEF(System, ModelGroup)
 
 struct ModelListEntry {
   SharedPtr<Model> model;
+  NodePath nodePath;
   SampleTimeSet sampleTimeSet;  
 };
 
@@ -38,6 +39,7 @@ public:
   {
     ModelListEntry entry;
     entry.model = &model;
+    entry.nodePath = getNodePath();
     entry.sampleTimeSet = model.getSampleTimeSet();
     if (entry.sampleTimeSet.isInherited()) {
       SampleTimeSet::const_iterator it;
@@ -748,13 +750,17 @@ sortModels(ModelList2& mModels)
   mModels.swap(newList);
 
   // print the schedule ...
-//   ModelList2::const_iterator it;
-//   it = mModels.begin();
-//   while (it != mModels.end()) {
-//     Log(Model,Error) << it->model->getPathString() << " "
-//                      << it->sampleTimeSet << endl;
-//     ++it;
-//   }
+  Log(Schedule,Info) << "Model Schedule:" << endl;
+  ModelList2::const_iterator it;
+  it = mModels.begin();
+  while (it != mModels.end()) {
+    NodePath::const_iterator ni;
+    for (ni = it->nodePath.begin(); ni != it->nodePath.end(); ++ni)
+      Log(Schedule,Info) << "/" << (*ni)->getName();
+    Log(Schedule,Info) << "/" << it->model->getName() << " "
+                       << it->sampleTimeSet << endl;
+    ++it;
+  }
 
   return true;
 }
