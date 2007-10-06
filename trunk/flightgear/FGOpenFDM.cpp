@@ -578,7 +578,7 @@ FGOpenFDM::tieModelGroup(SGPropertyNode* base, ModelGroup* modelGroup)
 {
   unsigned numModels = modelGroup->getNumModels();
   for (unsigned i = 0; i < numModels; ++i) {
-    Model* model = modelGroup->getModel(i);
+    Node* model = modelGroup->getModel(i);
     std::string pName = toPropname(model->getName());
     SGPropertyNode* sgProp = base->getNode(pName.c_str(), true);
     tieObject(sgProp, model);
