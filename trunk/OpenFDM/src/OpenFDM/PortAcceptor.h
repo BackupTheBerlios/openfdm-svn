@@ -14,7 +14,7 @@ class PortProvider;
 class PortAcceptor :
     public Port {
 public:
-  PortAcceptor(Model* model);
+  PortAcceptor(Node* node);
   virtual ~PortAcceptor();
 
   virtual ConnectResult addConnection(Connection* connection);

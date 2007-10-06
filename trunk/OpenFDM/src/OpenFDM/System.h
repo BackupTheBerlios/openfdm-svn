@@ -76,6 +76,17 @@ public:
   Environment* getEnvironment(void) const
   { return mEnvironment; }
 
+  /// Return the number of continous states
+  unsigned getNumContinousStates(void) const
+  { return mNumContinousStates; }
+  /// Return the number of discrete states
+  unsigned getNumDiscreteStates(void) const
+  { return mNumDiscreteStates; }
+
+protected:
+  void setNumContinousStates(unsigned numContinousStates);
+  void setNumDiscreteStates(unsigned numDiscreteStates);
+
 private:
   /// The timestepper used to get time discrete approximate solutions to the
   /// continous system
@@ -99,6 +110,11 @@ private:
 
   /// The actual simulation time for the system
   real_type mTime;
+
+  /// The number of states in the whole System,
+  /// might move into something like IntegrationGroup
+  unsigned mNumContinousStates;
+  unsigned mNumDiscreteStates;
 };
 
 } // namespace OpenFDM

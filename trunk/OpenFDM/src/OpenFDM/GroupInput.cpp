@@ -20,25 +20,31 @@ GroupInput::~GroupInput()
 {
 }
 
-void
-GroupInput::setParent(ModelGroup* modelGroup)
+unsigned
+GroupInput::addParent(Group* group)
 {
-  if (modelGroup) {
-    // attach to a ModelGroup
-    mPortProxy = new NumericPortProxy(modelGroup, getOutputPort(0));
-    mPortProxy->setName(getName());
-    modelGroup->addInputPort(mPortProxy);
+  unsigned parentIndex = Model::addParent(group);
+  if (parentIndex == ~0u)
+    return parentIndex;
     
-  } else {
-    ModelGroup* oldParent = getParent();
-    if (oldParent) {
-      // detach from a ModelGroup
-      oldParent->removeInputPort(mPortProxy);
-      mPortProxy = 0;
-    }
+  mPortProxy = new NumericPortProxy(group, getOutputPort(0));
+  mPortProxy->setName(getName());
+  group->addInputPort(mPortProxy);
+
+  return parentIndex;
+}
+
+void
+GroupInput::removeParent(unsigned idx)
+{
+  SharedPtr<Group> oldParent = getParent(idx).lock();
+  if (oldParent) {
+    // detach from a ModelGroup
+    oldParent->removeInputPort(mPortProxy);
+    mPortProxy = 0;
   }
   
-  Model::setParent(modelGroup);
+  Model::removeParent(idx);
 }
 
 } // namespace OpenFDM

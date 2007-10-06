@@ -15,8 +15,8 @@
 
 namespace OpenFDM {
 
-Port::Port(Model* model) :
-  mModel(model)
+Port::Port(Node* node) :
+  mNode(node)
 {
 }
 
@@ -28,13 +28,13 @@ void
 Port::invalidate()
 {
   removeAllConnections();
-  mModel = 0;
+  mNode = 0;
 }
 
-WeakPtr<Model>
+WeakPtr<Node>
 Port::getModel() const
 {
-  return mModel;
+  return mNode;
 }
 
 } // namespace OpenFDM

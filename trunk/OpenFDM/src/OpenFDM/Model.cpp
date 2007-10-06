@@ -53,21 +53,15 @@ Node::toModel(void)
 }
 
 const Group*
-Node::toGroup(void) const
+Node::toModelGroup(void) const
 {
   return 0;
 }
 
 Group*
-Node::toGroup(void)
+Node::toModelGroup(void)
 {
   return 0;
-}
-
-unsigned
-Node::getNumParents(void) const
-{
-  return mParents.size();
 }
 
 WeakPtr<const Group>
@@ -86,6 +80,35 @@ Node::getParent(unsigned idx)
   return mParents[idx];
 }
 
+class ModelPathCollector :
+    public ModelVisitor {
+public:
+  virtual void apply(Model& model)
+  { ascend(model); }
+  virtual void apply(ModelGroup& modelGroup)
+  {
+    // First go up and collect the path above.
+    // When we are back here append this.
+    ascend(modelGroup);
+    path.push_back(&modelGroup);
+  }
+  Node::Path path;
+};
+
+Node::Path
+Node::getPath()
+{
+  ModelPathCollector modelPathCollector;
+  ascend(modelPathCollector);
+  return modelPathCollector.path;
+}
+
+unsigned
+Node::getNumParents(void) const
+{
+  return mParents.size();
+}
+
 unsigned
 Node::addParent(Group* model)
 {
@@ -98,12 +121,39 @@ Node::addParent(Group* model)
 void
 Node::removeParent(unsigned idx)
 {
-  if (idx <= mParents.size())
+  if (mParents.size() <= idx)
     return;
   ParentList::iterator i = mParents.begin();
   std::advance(i, idx);
   mParents.erase(i);
 }
+
+void
+Node::setNumInputPorts(unsigned num)
+{
+  // Ok, strange, but required ...
+  unsigned oldSize = mInputPorts.size();
+  mInputPorts.resize(num);
+  for (; oldSize < mInputPorts.size(); ++oldSize) {
+    mInputPorts[oldSize] = new NumericPortAcceptor(this);
+  }
+}
+
+void
+Node::setNumOutputPorts(unsigned num)
+{
+  // Ok, strange, but required ...
+  unsigned oldSize = mOutputPorts.size();
+  mOutputPorts.resize(num);
+  for (; oldSize < mOutputPorts.size(); ++oldSize) {
+    mOutputPorts[oldSize] = new NumericPortProvider(this);
+  }
+}
+
+
+
+
+
 
 
 BEGIN_OPENFDM_OBJECT_DEF(Model, Node)
@@ -132,15 +182,6 @@ void
 Model::accept(ModelVisitor& visitor)
 {
   visitor.apply(*this);
-}
-
-void
-Model::ascend(ModelVisitor& visitor)
-{
-  SharedPtr<ModelGroup> parentGroup = Node::getParent(0).lock();
-  if (!parentGroup)
-    return;
-  parentGroup->accept(visitor);
 }
 
 const ModelGroup*
@@ -281,18 +322,6 @@ Model::getInputPort(const std::string& name)
 }
 
 NumericPortProvider*
-Model::getOutputPort(unsigned i)
-{
-  if (mOutputPorts.size() <= i) {
-    Log(Model, Error) << "Output port index " << i << "out of range in \""
-                      << getName() << "\"" << endl;
-    return 0;
-  }
-
-  return mOutputPorts[i];
-}
-
-NumericPortProvider*
 Model::getOutputPort(const std::string& name)
 {
   // Check if this one exists and return its value.
@@ -315,90 +344,11 @@ Model::getOutputPortName(unsigned i) const
   return mOutputPorts[i]->getName();
 }
 
-class ModelPathStringCollector :
-    public ModelVisitor {
-public:
-  virtual void apply(Model& model)
-  {
-    // First go up and collect the path above.
-    // When we are back here append this.
-    ascend(model);
-    path += "/";
-    path += model.getName();
-  }
-  std::string path;
-};
-
-std::string
-Model::getPathString(void)
-{
-  ModelPathStringCollector modelPathStringCollector;
-  accept(modelPathStringCollector);
-  return modelPathStringCollector.path;
-}
-
-class ModelPathCollector :
-    public ModelVisitor {
-public:
-  virtual void apply(Model& model)
-  { ascend(model); }
-  virtual void apply(ModelGroup& modelGroup)
-  {
-    // First go up and collect the path above.
-    // When we are back here append this.
-    ascend(modelGroup);
-    path.push_back(&modelGroup);
-  }
-  Model::Path path;
-};
-
-Model::Path
-Model::getPath()
-{
-  ModelPathCollector modelPathCollector;
-  ascend(modelPathCollector);
-  return modelPathCollector.path;
-}
-
-const ModelGroup*
-Model::getParent(void) const
-{
-  return Node::getParent(0);
-}
-
-ModelGroup*
-Model::getParent(void)
-{
-  return Node::getParent(0);
-}
-
-void
-Model::setNumInputPorts(unsigned num)
-{
-  // Ok, strange, but required ...
-  unsigned oldSize = mInputPorts.size();
-  mInputPorts.resize(num);
-  for (; oldSize < mInputPorts.size(); ++oldSize) {
-    mInputPorts[oldSize] = new NumericPortAcceptor(this);
-  }
-}
-
 void
 Model::setInputPortName(unsigned i, const std::string& name)
 {
   OpenFDMAssert(i < mInputPorts.size());
   mInputPorts[i]->setName(name);
-}
-
-void
-Model::setNumOutputPorts(unsigned num)
-{
-  // Ok, strange, but required ...
-  unsigned oldSize = mOutputPorts.size();
-  mOutputPorts.resize(num);
-  for (; oldSize < mOutputPorts.size(); ++oldSize) {
-    mOutputPorts[oldSize] = new NumericPortProvider(this);
-  }
 }
 
 void
@@ -411,22 +361,6 @@ Model::setOutputPort(unsigned i, const std::string& name,
   portProvider->setPortInterface(portInterface);
   portProvider->setName(name);
   mOutputPorts[i] = portProvider;
-}
-
-void
-Model::setParent(ModelGroup* model)
-{
-  removeParent(0);
-  if (model) {
-    addParent(model);
-  } else {
-    unsigned num = getNumInputPorts();
-    for (unsigned i = 0; i < num; ++i)
-      mInputPorts[i]->removeAllConnections();
-    num = getNumOutputPorts();
-    for (unsigned i = 0; i < num; ++i)
-      mOutputPorts[i]->removeAllConnections();
-  }
 }
 
 void

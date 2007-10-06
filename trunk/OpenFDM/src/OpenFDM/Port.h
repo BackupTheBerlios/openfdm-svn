@@ -10,7 +10,7 @@
 
 namespace OpenFDM {
 
-class Model;
+class Node;
 class Connection;
 
 class Port :
@@ -28,7 +28,7 @@ public:
     IncompatibelSize  // The port is not compatible with the other end
   };
 
-  Port(Model* model);
+  Port(Node* node);
   virtual ~Port();
 
   /// Interface to the /user/.
@@ -45,10 +45,10 @@ public:
   void invalidate();
 
   /// Return the model this port belongs to
-  WeakPtr<Model> getModel() const;
+  WeakPtr<Node> getModel() const;
 
 private:
-  WeakPtr<Model> mModel;
+  WeakPtr<Node> mNode;
 };
 
 } // namespace OpenFDM

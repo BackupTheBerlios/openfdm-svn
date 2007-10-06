@@ -10,8 +10,8 @@
 
 namespace OpenFDM {
 
-PortProvider::PortProvider(Model* model) :
-  Port(model)
+PortProvider::PortProvider(Node* node) :
+  Port(node)
 {
 }
 

@@ -12,11 +12,11 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(ModelGroup, Model)
+BEGIN_OPENFDM_OBJECT_DEF(ModelGroup, Node)
   END_OPENFDM_OBJECT_DEF
 
 ModelGroup::ModelGroup(const std::string& name) :
-  Model(name)
+  Node(name)
 {
 }
 
@@ -25,9 +25,6 @@ ModelGroup::~ModelGroup(void)
   // Remove all references to this group.
   while (!mModels.empty())
     removeModel(mModels.front());
-  // Make sure we can count right ...
-  OpenFDMAssert(getNumDiscreteStates() == 0u);
-  OpenFDMAssert(getNumContinousStates() == 0u);
 }
 
 void
@@ -55,7 +52,7 @@ ModelGroup::toModelGroup(void)
   return this;
 }
 
-const Model*
+const Node*
 ModelGroup::getModel(unsigned idx) const
 {
   if (idx < mModels.size())
@@ -64,7 +61,7 @@ ModelGroup::getModel(unsigned idx) const
     return 0;
 }
 
-Model*
+Node*
 ModelGroup::getModel(unsigned idx)
 {
   if (idx < mModels.size())
@@ -73,13 +70,13 @@ ModelGroup::getModel(unsigned idx)
     return 0;
 }
 
-const Model*
+const Node*
 ModelGroup::getModel(const std::string& name) const
 {
   return getModel(getModelIndex(name));
 }
 
-Model*
+Node*
 ModelGroup::getModel(const std::string& name)
 {
   return getModel(getModelIndex(name));
@@ -100,7 +97,7 @@ ModelGroup::getModelIndex(const std::string& name) const
 }
 
 unsigned
-ModelGroup::getModelIndex(const Model* const model) const
+ModelGroup::getModelIndex(const Node* const model) const
 {
   unsigned idx = 0u;
   ModelList::const_iterator it = mModels.begin();
@@ -114,7 +111,7 @@ ModelGroup::getModelIndex(const Model* const model) const
 }
 
 unsigned
-ModelGroup::addModel(Model* model, bool allowRename)
+ModelGroup::addModel(Node* model, bool allowRename)
 {
   // cannot add no model ...
   if (!model) {
@@ -124,8 +121,8 @@ ModelGroup::addModel(Model* model, bool allowRename)
     return ~0u;
   }
 
-  // cannot add a model to two groups.
-  if (model->getParent()) {
+  // cannot add a model to two groups. FIXME, will not be true in the future
+  if (0 < model->getNumParents()) {
     Log(Model, Warning)
       << "While adding the OpenFDM::Model \"" << model->getName()
       << "\" to OpenFDM::ModelGroup \"" << getName()
@@ -152,7 +149,7 @@ ModelGroup::addModel(Model* model, bool allowRename)
   }
 
   // Update the number of states.
-  model->setParent(this);
+  model->addParent(this);
 
   // add to the model list.
   mModels.push_back(model);
@@ -161,7 +158,7 @@ ModelGroup::addModel(Model* model, bool allowRename)
 }
 
 void
-ModelGroup::removeModel(Model* model)
+ModelGroup::removeModel(Node* model)
 {
   // cannot remove no model ...
   if (!model) {
@@ -171,37 +168,35 @@ ModelGroup::removeModel(Model* model)
     return;
   }
 
-  // cannot remove if we are not its parent.
-  if (model->getParent() != this) {
-    Log(Model, Warning)
-      << "Trying to remove OpenFDM::Model \"" << model->getName()
-      << "\" from OpenFDM::ModelGroup \"" << getName() << "\"" << endl;
-    return;
-  }
+  for (;;) {
+    ModelList::iterator it = mModels.begin();
+    while (it != mModels.end()) {
+      if ((*it) == model)
+        break;
+      ++it;
+    }
+    // Termination condition ...
+    if (it == mModels.end())
+      return;
 
-  ModelList::iterator it = mModels.begin();
-  while (it != mModels.end()) {
-    if ((*it) == model)
-      break;
-    ++it;
-  }
-  // Ooops, we have not found the child?
-  if (it == mModels.end()) {
-    Log(Model, Warning)
-      << "Trying to remove OpenFDM::Model \"" << model->getName()
-      << "\" from OpenFDM::ModelGroup \"" << getName()
-      << "\": cannot find model in this group!" << endl;
-    return;
-  }
+    // cannot remove if we are not its parent.
+    unsigned parentIdx = 0;
+    for (; parentIdx < model->getNumParents(); ++parentIdx) {
+      SharedPtr<Node> parentNode = model->getParent(parentIdx).lock();
+      if (parentNode == this)
+        break;
+    }
+    OpenFDMAssert(parentIdx < model->getNumParents());
 
-  // remove the backreference to this group
-  // this also updates the number of states
-  model->setParent(0);
-
-  // remove from the model list.
-  // note that erasing might delete the model object, thus delete it past
-  // correction of the number of states.
-  mModels.erase(it);
+    // remove the backreference to this group
+    // this also updates the number of states
+    model->removeParent(parentIdx);
+  
+    // remove from the model list.
+    // note that erasing might delete the model object, thus delete it past
+    // correction of the number of states.
+    mModels.erase(it);
+  }
 }
 
 void

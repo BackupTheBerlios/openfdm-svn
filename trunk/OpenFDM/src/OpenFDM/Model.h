@@ -29,6 +29,7 @@ class Environment;
 class GroupInput;
 class GroupOutput;
 class System;
+class Model;
 
 class Input;
 class Output;
@@ -46,7 +47,7 @@ typedef ModelGroup Group;
 class Node : public Object {
   OPENFDM_OBJECT(Node, Object);
 public:
-  typedef std::vector<SharedPtr<Group> > Path;
+  typedef std::list<SharedPtr<Group> > Path;
 
   Node(const std::string& name);
   virtual ~Node(void);
@@ -64,20 +65,95 @@ public:
   virtual const Model* toModel(void) const;
   virtual Model* toModel(void);
 
-  virtual const Group* toGroup(void) const;
-  virtual Group* toGroup(void);
+  virtual const Group* toModelGroup(void) const;
+  virtual Group* toModelGroup(void);
+
+  WeakPtr<const Group> getParent(unsigned idx) const;
+  WeakPtr<Group> getParent(unsigned idx);
+
+  Path getPath() /* FIXME const*/;
+
+  /// Returns the number of input properties.
+  unsigned getNumInputPorts(void) const
+  { return mInputPorts.size(); }
+  unsigned getNumOutputPorts(void) const
+  { return mOutputPorts.size(); }
 
 protected:
   // Sets the parent model.
   unsigned getNumParents(void) const;
-  WeakPtr<const Group> getParent(unsigned idx) const;
-  WeakPtr<Group> getParent(unsigned idx);
-  unsigned addParent(Group* model);
-  void removeParent(unsigned idx);
+  // FIXME: remove virtual here ...
+  virtual unsigned addParent(Group* model);
+  virtual void removeParent(unsigned idx);
+
+public:
+  /// FIXME
+  /// Sets the number of input properties.
+  void setNumInputPorts(unsigned num);
+  NumericPortAcceptor* getInputPort(unsigned i)
+  {
+    OpenFDMAssert(i < mInputPorts.size());
+    return mInputPorts[i];
+  }
+  void addInputPort(NumericPortAcceptor* port)
+  {
+    unsigned num = getNumInputPorts();
+    setNumInputPorts(num+1);
+    mInputPorts[num] = port;
+  }
+  void removeInputPort(NumericPortAcceptor* port)
+  {
+    InputPortVector::iterator i = std::find(mInputPorts.begin(),
+                                            mInputPorts.end(), port);
+    if (i == mInputPorts.end()) {
+      Log(Model,Error) << "Trying to remove foreign port" << endl;
+      return;
+    }
+    (*i)->invalidate();
+    mInputPorts.erase(i);
+  }
+
+  /// Sets the number of output properties.
+  void setNumOutputPorts(unsigned num);
+  NumericPortProvider* getOutputPort(unsigned i)
+  {
+    OpenFDMAssert(i < mOutputPorts.size());
+    return mOutputPorts[i];
+  }
+
+  /// Convenience shortcuts
+  void addOutputPort(NumericPortProvider* port)
+  {
+    unsigned num = getNumOutputPorts();
+    setNumOutputPorts(num+1);
+    mOutputPorts[num] = port;
+  }
+  void removeOutputPort(NumericPortProvider* port)
+  {
+    OutputPortVector::iterator i = std::find(mOutputPorts.begin(),
+                                             mOutputPorts.end(), port);
+    if (i == mOutputPorts.end()) {
+      Log(Model,Error) << "Trying to remove foreign port" << endl;
+      return;
+    }
+    (*i)->invalidate();
+    mOutputPorts.erase(i);
+  }
+
+protected:
+  typedef std::vector<SharedPtr<NumericPortAcceptor> > InputPortVector;
+  typedef std::vector<SharedPtr<NumericPortProvider> > OutputPortVector;
+  InputPortVector mInputPorts;
+  OutputPortVector mOutputPorts;
+  friend class GroupInput;
+  friend class GroupOutput;
 
 private:
   typedef std::vector<WeakPtr<Group> > ParentList;
   ParentList mParents;
+
+  // FIXME
+  friend class ModelGroup;
 };
 
 
@@ -95,8 +171,6 @@ public:
     ResetHold
   };
 
-  typedef std::list<SharedPtr<ModelGroup> > Path;
-
   Model(const std::string& name);
   virtual ~Model(void);
 
@@ -104,9 +178,6 @@ public:
   virtual void accept(ModelVisitor& visitor);
   /// Double dispatch helper for the system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
-
-  /// Hmm ...
-  void ascend(ModelVisitor& visitor);
 
   virtual const ModelGroup* toModelGroup(void) const;
   virtual ModelGroup* toModelGroup(void);
@@ -186,35 +257,18 @@ public:
   { return mSampleTimeSet; }
   
 
-  /// Returns the number of input properties.
-  unsigned getNumInputPorts(void) const
-  { return mInputPorts.size(); }
-
   /// Returns the name of the i-th input property.
   const std::string& getInputPortName(unsigned i) const;
 
   /// Sets the i-th input property.
   NumericPortAcceptor* getInputPort(const std::string& name);
-  NumericPortAcceptor* getInputPort(unsigned i)
-  {
-    OpenFDMAssert(i < mInputPorts.size());
-    return mInputPorts[i];
-  }
   NumericPortAcceptor* getEnablePort(void)
   { return mEnablePort; }
+  using Node::getInputPort;
 
-  unsigned getNumOutputPorts(void) const
-  { return mOutputPorts.size(); }
-
-  NumericPortProvider* getOutputPort(unsigned i);
   NumericPortProvider* getOutputPort(const std::string& name);
   const std::string& getOutputPortName(unsigned i) const;
-
-  std::string getPathString(void) /* FIXME const*/;
-  Path getPath() /* FIXME const*/;
-
-  const ModelGroup* getParent(void) const;
-  ModelGroup* getParent(void);
+  using Node::getOutputPort;
 
 protected:
   void setNumContinousStates(unsigned numContinousStates);
@@ -222,31 +276,8 @@ protected:
   void setDirectFeedThrough(bool directFeedThrough)
   { mDirectFeedThrough = directFeedThrough; }
 
-  /// Sets the number of input properties.
-  void setNumInputPorts(unsigned num);
-
   /// Sets the name of the i-th input property.
   void setInputPortName(unsigned i, const std::string& name);
-  void addInputPort(NumericPortAcceptor* port)
-  {
-    unsigned num = getNumInputPorts();
-    setNumInputPorts(num+1);
-    mInputPorts[num] = port;
-  }
-  void removeInputPort(NumericPortAcceptor* port)
-  {
-    InputPortVector::iterator i = std::find(mInputPorts.begin(),
-                                            mInputPorts.end(), port);
-    if (i == mInputPorts.end()) {
-      Log(Model,Error) << "Trying to remove foreign port" << endl;
-      return;
-    }
-    (*i)->invalidate();
-    mInputPorts.erase(i);
-  }
-
-  /// Sets the number of output properties.
-  void setNumOutputPorts(unsigned num);
 
   /// Sets the name of the i-th output property.
   void setOutputPort(unsigned i, const std::string& name,
@@ -260,25 +291,6 @@ protected:
   void setOutputPort(unsigned i, const std::string& name, M* model,
                      const Matrix& (M::*getter)(void) const)
   { setOutputPort(i, name, new MatrixGetterPortInterface<M>(model, getter)); }
-
-  /// Convenience shortcuts
-  void addOutputPort(NumericPortProvider* port)
-  {
-    unsigned num = getNumOutputPorts();
-    setNumOutputPorts(num+1);
-    mOutputPorts[num] = port;
-  }
-  void removeOutputPort(NumericPortProvider* port)
-  {
-    OutputPortVector::iterator i = std::find(mOutputPorts.begin(),
-                                             mOutputPorts.end(), port);
-    if (i == mOutputPorts.end()) {
-      Log(Model,Error) << "Trying to remove foreign port" << endl;
-      return;
-    }
-    (*i)->invalidate();
-    mOutputPorts.erase(i);
-  }
 
   void addOutputPort(const std::string& name, PortInterface* portInterface)
   {
@@ -299,13 +311,6 @@ protected:
   friend class System;
   virtual void setEnvironment(Environment* environment);
 
-// private:
-  // Sets the parent model.
-  // That is the one which is informed if the number of states changes.
-  virtual void setParent(ModelGroup* model);
-  friend class GroupInput;
-  friend class GroupOutput;
-
 private:
   void setEnabledUnconditional(bool enabled);
 
@@ -319,12 +324,6 @@ private:
   RealPortHandle mEnablePortHandle;
   DisableMode mDisableMode;
   SampleTimeSet mSampleTimeSet;
-
-protected:
-  typedef std::vector<SharedPtr<NumericPortAcceptor> > InputPortVector;
-  typedef std::vector<SharedPtr<NumericPortProvider> > OutputPortVector;
-  InputPortVector mInputPorts;
-  OutputPortVector mOutputPorts;
 
   // FIXME
   friend class ModelGroup;

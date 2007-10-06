@@ -13,8 +13,8 @@ namespace OpenFDM {
 class NumericPortProxy :
     public NumericPortAcceptor {
 public:
-  NumericPortProxy(Model* model, NumericPortProvider* provider) :
-    NumericPortAcceptor(model),
+  NumericPortProxy(Node* node, NumericPortProvider* provider) :
+    NumericPortAcceptor(node),
     mPortProvider(provider)
   { }
 

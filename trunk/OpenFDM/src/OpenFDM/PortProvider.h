@@ -15,7 +15,7 @@ class NumericPortAcceptor;
 class PortProvider :
     public Port {
 public:
-  PortProvider(Model* model);
+  PortProvider(Node* node);
   virtual ~PortProvider();
 
   virtual Port::ConnectResult addConnection(Connection* connection);
@@ -25,11 +25,6 @@ public:
   { return Port::IncompatiblePort; }
   virtual bool unprovide(NumericPortAcceptor* port)
   { return false; }
-
-//   virtual Port::ConnectResult provide(MechanicPortAcceptor* port)
-//   { return Port::IncompatiblePort; }
-//   virtual bool unprovide(MechanicPortAcceptor* port)
-//   { return false; }
 };
 
 } // namespace OpenFDM

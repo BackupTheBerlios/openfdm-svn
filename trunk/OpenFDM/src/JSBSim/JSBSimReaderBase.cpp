@@ -216,7 +216,7 @@ bool
 JSBSimReaderBase::connectJSBExpression(const std::string& name,
                                        PortAcceptor* pa, bool recheckAeroProp)
 {
-  SharedPtr<Model> model = pa->getModel().lock();
+  SharedPtr<Node> model = pa->getModel().lock();
   if (!model)
     return false;
   Model::Path path = model->getPath();
@@ -693,7 +693,7 @@ JSBSimReaderBase::addOutputModel(PortProvider* out,
 {
   SharedPtr<ModelGroup> modelGroup = getModelGroup(out);
   if (!modelGroup) {
-    std::cerr << "Could not add output model " << name << std::endl;
+    std::cerr << "Could not add output model \"" << name << "\"" << std::endl;
     return;
   }
   Output* output = new Output(name + " Output");
@@ -708,7 +708,7 @@ JSBSimReaderBase::addInverterModel(const std::string& name, PortProvider* in)
 {
   SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
   if (!modelGroup) {
-    std::cerr << "Could not add inverter model " << name << std::endl;
+    std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
   UnaryFunctionModel *unary
@@ -724,7 +724,7 @@ JSBSimReaderBase::addAbsModel(const std::string& name, PortProvider* in)
 {
   SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
   if (!modelGroup) {
-    std::cerr << "Could not add inverter model " << name << std::endl;
+    std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
   UnaryFunctionModel *unary
@@ -754,7 +754,7 @@ JSBSimReaderBase::addToUnit(const std::string& name, Unit u, PortProvider* in)
 {
   SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
   if (!modelGroup) {
-    std::cerr << "Could not add inverter model " << name << std::endl;
+    std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
   UnitConversionModel* unitConv
@@ -770,7 +770,7 @@ JSBSimReaderBase::addFromUnit(const std::string& name, Unit u, PortProvider* in)
 {
   SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
   if (!modelGroup) {
-    std::cerr << "Could not add inverter model " << name << std::endl;
+    std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
   UnitConversionModel* unitConv
@@ -785,24 +785,27 @@ SharedPtr<ModelGroup>
 JSBSimReaderBase::getModelGroup(PortProvider* in)
 {
   if (!in) {
-    std::cerr << "Could not find model group for input port" << std::endl;
+    std::cerr << "Could not find model group for input port: "
+      "no port given!" << std::endl;
     return 0;
   }
-  SharedPtr<Model> model = in->getModel().lock();
-  if (!model) {
-    std::cerr << "Could not find model group for input port" << std::endl;
+  SharedPtr<Node> node = in->getModel().lock();
+  if (!node) {
+    std::cerr << "Could not find model group for input port: "
+      "port does not belong to a Node!" << std::endl;
     return 0;
   }
-  SharedPtr<ModelGroup> modelGroup = model->getParent();
+  SharedPtr<ModelGroup> modelGroup = node->getParent(0).lock();
   if (!modelGroup) {
-    std::cerr << "Could not find model group for input port" << std::endl;
+    std::cerr << "Could not find model group for input port: "
+      "model has no parent!" << std::endl;
     return 0;
   }
   return modelGroup;
 }
 
 void
-JSBSimReaderBase::addFCSModel(Model* model)
+JSBSimReaderBase::addFCSModel(Node* model)
 {
   // FIXME
   mVehicle->getModelGroup()->addModel(model, true);

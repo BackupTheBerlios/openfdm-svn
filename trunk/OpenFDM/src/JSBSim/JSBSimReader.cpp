@@ -1215,7 +1215,7 @@ bool
 JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
 {
   // The model we put into the fcs group in the end ...
-  SharedPtr<Model> model;
+  SharedPtr<Node> model;
 
   // The final output property.
   SharedPtr<PortProvider> out;

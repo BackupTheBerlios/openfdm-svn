@@ -49,9 +49,9 @@ public:
     PathPort pathPort;
     pathPort.portProvider = sourcePortProvider;
 
-    SharedPtr<Model> model = sourcePortProvider->getModel().lock();
-    if (model)
-      pathPort.modelPath = model->getPath();
+    SharedPtr<Node> node = sourcePortProvider->getModel().lock();
+    if (node)
+      pathPort.modelPath = node->getPath();
 
     mPortProviderList.push_back(pathPort);
   }
@@ -258,7 +258,7 @@ protected:
   PortProvider* addFromUnit(const std::string& name, Unit u, PortProvider* in);
 
   static SharedPtr<ModelGroup> getModelGroup(PortProvider* in);
-  void addFCSModel(Model* model);
+  void addFCSModel(Node* model);
 
   PortProvider* addMultiBodyConstModel(const std::string& name, real_type value);
   void addMultiBodyModel(Model* model);

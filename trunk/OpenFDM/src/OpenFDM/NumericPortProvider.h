@@ -13,7 +13,7 @@ namespace OpenFDM {
 class NumericPortProvider :
     public PortProvider {
 public:
-  NumericPortProvider(Model* model) : PortProvider(model) {}
+  NumericPortProvider(Node* node) : PortProvider(node) {}
 
   virtual Port::ConnectResult addConnection(Connection* connection)
   {

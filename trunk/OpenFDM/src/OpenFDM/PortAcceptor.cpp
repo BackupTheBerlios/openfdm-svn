@@ -10,8 +10,8 @@
 
 namespace OpenFDM {
 
-PortAcceptor::PortAcceptor(Model* model) :
-  Port(model)
+PortAcceptor::PortAcceptor(Node* node) :
+  Port(node)
 {
 }
 

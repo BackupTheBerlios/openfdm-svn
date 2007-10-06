@@ -74,7 +74,9 @@ public:
 
 System::System(const std::string& name) :
   ModelGroup(name),
-  mTime(0)
+  mTime(0),
+  mNumContinousStates(0),
+  mNumDiscreteStates(0)
 {
   setTimestepper(new ExplicitEuler);
   mEnvironment = new Environment;
@@ -671,6 +673,19 @@ System::evalJacobian(real_type t, const Vector& v, Matrix& jac)
     tmpv(i) = v(i);
   }
 }
+
+void
+System::setNumContinousStates(unsigned numContinousStates)
+{
+  mNumContinousStates = numContinousStates;
+}
+
+void
+System::setNumDiscreteStates(unsigned numDiscreteStates)
+{
+  mNumDiscreteStates = numDiscreteStates;
+}
+
 
 // FIXME make a member of TaskInfo
 static void

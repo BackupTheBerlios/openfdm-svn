@@ -20,9 +20,9 @@ public:
   virtual void apply(Node& node)
   { }
   virtual void apply(Model& model)
-  { }
+  { apply(static_cast<Node&>(model)); }
   virtual void apply(ModelGroup& modelGroup)
-  { apply(static_cast<Model&>(modelGroup)); }
+  { apply(static_cast<Node&>(modelGroup)); }
   virtual void apply(System& system)
   { apply(static_cast<ModelGroup&>(system)); }
   virtual void apply(Interact& interact)
@@ -38,8 +38,6 @@ protected:
   { modelGroup.traverse(*this); }
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse upward
-  inline void ascend(Model& model)
-  { model.ascend(*this); }
   inline void ascend(Node& node)
   { node.ascend(*this); }
 };

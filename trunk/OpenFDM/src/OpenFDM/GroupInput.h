@@ -17,8 +17,8 @@ public:
   GroupInput(const std::string& name);
   virtual ~GroupInput();
   
-  /// Just 
-  virtual void setParent(ModelGroup* modelGroup);
+  virtual unsigned addParent(Group* model);
+  virtual void removeParent(unsigned idx);
 
   NumericPortAcceptor* getGroupInput()
   { return mPortProxy; }

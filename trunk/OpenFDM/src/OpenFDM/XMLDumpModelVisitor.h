@@ -74,18 +74,18 @@ private:
       dumpProperties(*connection);
       const PortProvider* portProvider = connection->getPortProvider();
       if (portProvider) {
-        SharedPtr<Model> model = portProvider->getModel().lock();
-        if (model) {
-          indent() << "<PortProvider ModelName=\"" << model->getName()
+        SharedPtr<Node> node = portProvider->getModel().lock();
+        if (node) {
+          indent() << "<PortProvider ModelName=\"" << node->getName()
                    << "\" PortName=\"" << portProvider->getName()
                    << "\"/>\n";
         }
       }
       const PortAcceptor* portAcceptor = connection->getPortAcceptor();
       if (portAcceptor) {
-        SharedPtr<Model> model = portAcceptor->getModel().lock();
-        if (model) {
-          indent() << "<PortAcceptor ModelName=\"" << model->getName()
+        SharedPtr<Node> node = portAcceptor->getModel().lock();
+        if (node) {
+          indent() << "<PortAcceptor ModelName=\"" << node->getName()
                    << "\" PortName=\"" << portAcceptor->getName()
                    << "\"/>\n";
         }

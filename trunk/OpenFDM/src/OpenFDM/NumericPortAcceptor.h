@@ -114,7 +114,7 @@ private:
 class NumericPortAcceptor :
     public PortAcceptor {
 public:
-  NumericPortAcceptor(Model* model) : PortAcceptor(model) {}
+  NumericPortAcceptor(Node* node) : PortAcceptor(node) {}
 
   virtual Port::ConnectResult addConnection(Connection* connection)
   {

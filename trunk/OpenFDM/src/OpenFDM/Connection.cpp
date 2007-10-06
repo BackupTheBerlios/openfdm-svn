@@ -39,22 +39,22 @@ Connection::setPortProvider(PortProvider* portProvider)
     return Port::Success;
   }
 
-  SharedPtr<Model> providerModel = portProvider->getModel().lock();
+  SharedPtr<Node> providerModel = portProvider->getModel().lock();
   if (!providerModel)
     return Port::StalePort;
-  if (!providerModel->getParent())
+  if (!providerModel->getParent(0))
     return Port::IsolatedModel;
 
   // if the other side is not yet connected, we are ok here
   if (!mPortAcceptor) {
     mPortProvider = portProvider;
-    ModelGroup* modelGroup = providerModel->getParent();
+    ModelGroup* modelGroup = providerModel->getParent(0);
     modelGroup->addConnection(this);
     return Port::Success;
   }
 
-  SharedPtr<Model> acceptorModel = mPortAcceptor->getModel().lock();
-  if (acceptorModel->getParent() != providerModel->getParent()) {
+  SharedPtr<Node> acceptorModel = mPortAcceptor->getModel().lock();
+  if (acceptorModel->getParent(0) != providerModel->getParent(0)) {
     mPortProvider = 0;
     return Port::DifferentGroups;
   }
@@ -84,23 +84,23 @@ Connection::setPortAcceptor(PortAcceptor* portAcceptor)
     return Port::Success;
   }
     
-  SharedPtr<Model> acceptorModel = portAcceptor->getModel().lock();
+  SharedPtr<Node> acceptorModel = portAcceptor->getModel().lock();
   if (!acceptorModel)
     return Port::StalePort;
-  if (!acceptorModel->getParent())
+  if (!acceptorModel->getParent(0))
     return Port::IsolatedModel;
 
   // if the other side is not yet connected, we are ok here
   if (!mPortProvider) {
     mPortAcceptor = portAcceptor;
-    ModelGroup* modelGroup = acceptorModel->getParent();
+    ModelGroup* modelGroup = acceptorModel->getParent(0);
     modelGroup->addConnection(this);
 
     return Port::Success;
   }
 
-  SharedPtr<Model> providerModel = mPortProvider->getModel().lock();
-  if (acceptorModel->getParent() != providerModel->getParent()) {
+  SharedPtr<Node> providerModel = mPortProvider->getModel().lock();
+  if (acceptorModel->getParent(0) != providerModel->getParent(0)) {
     mPortAcceptor = 0;
     return Port::DifferentGroups;
   }
@@ -128,7 +128,7 @@ Port::ConnectResult
 Connection::connectRoute(PortProvider* port0, PortAcceptor* port1)
 {
   Model::Path path0;
-  SharedPtr<Model> model = port0->getModel().lock();
+  SharedPtr<Node> model = port0->getModel().lock();
   if (!model)
     return Port::IsolatedModel;
   path0 = model->getPath();
