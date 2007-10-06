@@ -42,12 +42,10 @@ class TaskInfo;
 
 
 
-typedef ModelGroup Group;
-
 class Node : public Object {
   OPENFDM_OBJECT(Node, Object);
 public:
-  typedef std::list<SharedPtr<Group> > Path;
+  typedef std::list<SharedPtr<ModelGroup> > Path;
 
   Node(const std::string& name);
   virtual ~Node(void);
@@ -65,11 +63,11 @@ public:
   virtual const Model* toModel(void) const;
   virtual Model* toModel(void);
 
-  virtual const Group* toModelGroup(void) const;
-  virtual Group* toModelGroup(void);
+  virtual const ModelGroup* toModelGroup(void) const;
+  virtual ModelGroup* toModelGroup(void);
 
-  WeakPtr<const Group> getParent(unsigned idx) const;
-  WeakPtr<Group> getParent(unsigned idx);
+  WeakPtr<const ModelGroup> getParent(unsigned idx) const;
+  WeakPtr<ModelGroup> getParent(unsigned idx);
 
   Path getPath() /* FIXME const*/;
 
@@ -83,7 +81,7 @@ protected:
   // Sets the parent model.
   unsigned getNumParents(void) const;
   // FIXME: remove virtual here ...
-  virtual unsigned addParent(Group* model);
+  virtual unsigned addParent(ModelGroup* model);
   virtual void removeParent(unsigned idx);
 
 public:
@@ -149,7 +147,7 @@ protected:
   friend class GroupOutput;
 
 private:
-  typedef std::vector<WeakPtr<Group> > ParentList;
+  typedef std::vector<WeakPtr<ModelGroup> > ParentList;
   ParentList mParents;
 
   // FIXME
@@ -178,9 +176,6 @@ public:
   virtual void accept(ModelVisitor& visitor);
   /// Double dispatch helper for the system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
-
-  virtual const ModelGroup* toModelGroup(void) const;
-  virtual ModelGroup* toModelGroup(void);
 
   virtual const Input* toInput(void) const;
   virtual Input* toInput(void);

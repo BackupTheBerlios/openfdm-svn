@@ -33,7 +33,7 @@ void
 Node::ascend(ModelVisitor& visitor)
 {
   for (ParentList::iterator i = mParents.begin(); i != mParents.end(); ++i) {
-    SharedPtr<Group> group = i->lock();
+    SharedPtr<ModelGroup> group = i->lock();
     if (!group)
       continue;
     group->accept(visitor);
@@ -52,31 +52,31 @@ Node::toModel(void)
   return 0;
 }
 
-const Group*
+const ModelGroup*
 Node::toModelGroup(void) const
 {
   return 0;
 }
 
-Group*
+ModelGroup*
 Node::toModelGroup(void)
 {
   return 0;
 }
 
-WeakPtr<const Group>
+WeakPtr<const ModelGroup>
 Node::getParent(unsigned idx) const
 {
   if (mParents.size() <= idx)
-    return WeakPtr<const Group>(0);
+    return WeakPtr<const ModelGroup>(0);
   return mParents[idx];
 }
 
-WeakPtr<Group>
+WeakPtr<ModelGroup>
 Node::getParent(unsigned idx)
 {
   if (mParents.size() <= idx)
-    return WeakPtr<Group>(0);
+    return WeakPtr<ModelGroup>(0);
   return mParents[idx];
 }
 
@@ -110,11 +110,11 @@ Node::getNumParents(void) const
 }
 
 unsigned
-Node::addParent(Group* model)
+Node::addParent(ModelGroup* model)
 {
   if (!model)
     return ~0u;
-  mParents.push_back(WeakPtr<Group>(model));
+  mParents.push_back(WeakPtr<ModelGroup>(model));
   return mParents.size() - 1;
 }
 
@@ -182,18 +182,6 @@ void
 Model::accept(ModelVisitor& visitor)
 {
   visitor.apply(*this);
-}
-
-const ModelGroup*
-Model::toModelGroup(void) const
-{
-  return 0;
-}
-
-ModelGroup*
-Model::toModelGroup(void)
-{
-  return 0;
 }
 
 const Input*

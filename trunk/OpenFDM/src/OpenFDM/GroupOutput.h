@@ -17,7 +17,7 @@ public:
   GroupOutput(const std::string& name);
   virtual ~GroupOutput();
 
-  virtual unsigned addParent(Group* model);
+  virtual unsigned addParent(ModelGroup* model);
   virtual void removeParent(unsigned idx);
 
   PortProvider* getGroupOutput()

@@ -21,7 +21,7 @@ GroupInput::~GroupInput()
 }
 
 unsigned
-GroupInput::addParent(Group* group)
+GroupInput::addParent(ModelGroup* group)
 {
   unsigned parentIndex = Model::addParent(group);
   if (parentIndex == ~0u)
@@ -37,7 +37,7 @@ GroupInput::addParent(Group* group)
 void
 GroupInput::removeParent(unsigned idx)
 {
-  SharedPtr<Group> oldParent = getParent(idx).lock();
+  SharedPtr<ModelGroup> oldParent = getParent(idx).lock();
   if (oldParent) {
     // detach from a ModelGroup
     oldParent->removeInputPort(mPortProxy);

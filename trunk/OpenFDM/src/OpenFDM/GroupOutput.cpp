@@ -22,7 +22,7 @@ GroupOutput::~GroupOutput()
 }
 
 unsigned
-GroupOutput::addParent(Group* group)
+GroupOutput::addParent(ModelGroup* group)
 {
   unsigned parentIndex = Model::addParent(group);
   if (parentIndex == ~0u)
@@ -39,7 +39,7 @@ GroupOutput::addParent(Group* group)
 void
 GroupOutput::removeParent(unsigned idx)
 {
-  SharedPtr<Group> oldParent = getParent(idx).lock();
+  SharedPtr<ModelGroup> oldParent = getParent(idx).lock();
   if (oldParent) {
     // detach from a ModelGroup
     oldParent->removeOutputPort(mPortProxy->getPortProvider());
