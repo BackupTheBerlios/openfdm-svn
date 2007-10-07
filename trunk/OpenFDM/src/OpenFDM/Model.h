@@ -69,7 +69,7 @@ public:
   WeakPtr<const ModelGroup> getParent(unsigned idx) const;
   WeakPtr<ModelGroup> getParent(unsigned idx);
 
-  Path getPath() /* FIXME const*/;
+  Path getPath() OpenFDM_DEPRECATED;
 
   /// Returns the number of input properties.
   unsigned getNumInputPorts(void) const
