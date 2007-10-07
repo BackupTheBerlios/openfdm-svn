@@ -1,0 +1,31 @@
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2006 Mathias Froehlich 
+ *
+ */
+
+#ifndef OpenFDM_OpenFDMConfig_H
+#define OpenFDM_OpenFDMConfig_H
+
+#if defined(__GNUC__) && (4 <= __GNUC__) && (1 <= __GNUC_MINOR__)
+#define OpenFDM_DEPRECATED __attribute__ ((deprecated))
+#else
+#define OpenFDM_DEPRECATED
+#endif
+
+// FIXME: move these tests into autoconf and define one of the following
+// at configure time. This will guarantee that the binaries do work if
+// they compile.
+#if defined(__GNUC__) && (4 <= __GNUC__) && (1 <= __GNUC_MINOR__)
+// No need to include something. Is a Compiler API ...
+# define OpenFDM_USE_GCC4_BUILTINS
+#elif defined(__sgi) && defined(_COMPILER_VERSION) && (_COMPILER_VERSION>=730)
+// No need to include something. Is a Compiler API ...
+# define OpenFDM_USE_MIPSPRO_BUILTINS
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+// Neat old Win32 functions
+# define OpenFDM_USE_WIN32_INTERLOCKED
+#else
+// The sledge hammer ...
+# define OpenFDM_USE_MUTEX
+#endif
+
+#endif

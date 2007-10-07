@@ -5,18 +5,11 @@
 #ifndef OpenFDM_Atomic_H
 #define OpenFDM_Atomic_H
 
-#if defined(__GNUC__) && (4 <= __GNUC__) && (1 <= __GNUC_MINOR__)
-// No need to include something. Is a Compiler API ...
-# define OpenFDM_USE_GCC4_BUILTINS
-#elif defined(__sgi) && defined(_COMPILER_VERSION) && (_COMPILER_VERSION>=730)
-// No need to include something. Is a Compiler API ...
-# define OpenFDM_USE_MIPSPRO_BUILTINS
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
-// Neat old Win32 functions
+#include "OpenFDMConfig.h"
+
+#if defined(OpenFDM_USE_WIN32_INTERLOCKED)
 # include <windows.h>
-# define OpenFDM_USE_WIN32_INTERLOCKED
-#else
-// The sledge hammer ...
+#elif defined(OpenFDM_USE_MUTEX)
 # include "Mutex.h"
 # include "ScopeLock.h"
 #endif
@@ -35,8 +28,10 @@ public:
     return __add_and_fetch(&mValue, 1);
 #elif defined(OpenFDM_USE_WIN32_INTERLOCKED)
     return InterlockedIncrement(reinterpret_cast<long volatile*>(&mValue));
-#else
+#elif defined(OpenFDM_USE_MUTEX)
     ScopeLock lock(mMutex);
+    return ++mValue;
+#else
     return ++mValue;
 #endif
   }
@@ -48,8 +43,10 @@ public:
     return __sub_and_fetch(&mValue, 1);
 #elif defined(OpenFDM_USE_WIN32_INTERLOCKED)
     return InterlockedDecrement(reinterpret_cast<long volatile*>(&mValue));
-#else
+#elif defined(OpenFDM_USE_MUTEX)
     ScopeLock lock(mMutex);
+    return --mValue;
+#else
     return --mValue;
 #endif
   }
@@ -63,8 +60,10 @@ public:
     return mValue;
 #elif defined(OpenFDM_USE_WIN32_INTERLOCKED)
     return static_cast<unsigned const volatile &>(mValue);
-#else
+#elif defined(OpenFDM_USE_MUTEX)
     ScopeLock lock(mMutex);
+    return mValue;
+#else
     return mValue;
 #endif
  }
@@ -73,12 +72,10 @@ private:
   Atomic(const Atomic&);
   Atomic& operator=(const Atomic&);
 
-#if !defined(OpenFDM_USE_GCC4_BUILTINS) \
-  && !defined(OpenFDM_USE_MIPOSPRO_BUILTINS) \
-  && !defined(OpenFDM_USE_WIN32_INTERLOCKED)
+#if defined(OpenFDM_USE_MUTEX)
   mutable Mutex mMutex;
 #endif
-#ifdef OpenFDM_USE_WIN32_INTERLOCKED
+#if defined(OpenFDM_USE_WIN32_INTERLOCKED)
   __declspec(align(32))
 #endif
   unsigned mValue;
