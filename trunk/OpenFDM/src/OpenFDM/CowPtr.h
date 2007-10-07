@@ -27,7 +27,7 @@ protected:
 
   T* ptr(void)
   {
-    if (mPtr->isShared())
+    if (shared(mPtr))
       mPtr = mPtr->clone();
     return mPtr;
   }
