@@ -27,6 +27,12 @@ protected:
 
   T* ptr(void)
   {
+    // Ok, asking here if the data is shared one time is suficient.
+    // For the first cut, it might happen that just past shared returned
+    // false a new reference is generated in an othe thread.
+    // That can not happen, since a reference in an other thread would
+    // cause a reference count > 1 what means that we cannot use
+    // the shared copy anyway and we have already made a copy anyway.
     if (shared(mPtr))
       mPtr = mPtr->clone();
     return mPtr;
