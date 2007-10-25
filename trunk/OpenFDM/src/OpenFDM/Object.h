@@ -9,6 +9,8 @@
 #include <map>
 #include <string>
 
+#include "OpenFDMConfig.h"
+
 #include "SharedPtr.h"
 #include "WeakReferenced.h"
 #include "Variant.h"
