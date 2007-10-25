@@ -5,6 +5,7 @@
 #ifndef OpenFDM_Referenced_H
 #define OpenFDM_Referenced_H
 
+#include "OpenFDMConfig.h"
 #include "Atomic.h"
 
 namespace OpenFDM {
