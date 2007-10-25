@@ -5,6 +5,8 @@
 #ifndef OpenFDM_Connection_H
 #define OpenFDM_Connection_H
 
+#include "OpenFDMConfig.h"
+
 #include "Object.h"
 #include "SharedPtr.h"
 #include "PortAcceptor.h"
@@ -46,7 +48,8 @@ public:
   /// The two ports must just belong to models of the same system.
   /// If required ModelGroup inputs or outputs are inserted.
   static Port::ConnectResult connectRoute(PortProvider* port0,
-                                          PortAcceptor* port1);
+                                          PortAcceptor* port1)
+    OpenFDM_DEPRECATED;
 
 private:
   /// Disconnect this connection from all attached Ports
