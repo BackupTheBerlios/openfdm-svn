@@ -11,7 +11,7 @@
 #include <Main/fg_props.hxx>
 
 #include <JSBSim/JSBSimReader.h>
-#include <OpenFDM/Units.h>
+#include <OpenFDM/Unit.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/Input.h>
 #include <OpenFDM/Output.h>
@@ -206,7 +206,7 @@ public:
     double east = fgGetDouble("/environment/wind-from-east-fps");
     double down = fgGetDouble("/environment/wind-from-down-fps");
 
-    return convertFrom(uFeetPSecond, T*Vector3(north, east, down));
+    return Unit::footPerSecond().convertFrom(T*Vector3(north, east, down));
   }
 };
 
@@ -335,7 +335,7 @@ void FGOpenFDM::init()
   // Check the position
   Geodetic gp = Geodetic(get_Latitude(),
                          get_Longitude(),
-                         convertFrom(uFoot, get_Altitude()));
+                         Unit::foot().convertFrom(get_Altitude()));
   SG_LOG(SG_FLIGHT, SG_INFO, "Geod Pos " << gp << " set.");
   mobileRootJoint->setGeodPosition(gp);
 
@@ -351,7 +351,7 @@ void FGOpenFDM::init()
   if (speed_set == "UVW") {
     Vector3 bodyVel(get_uBody(), get_vBody(), get_wBody());
     mobileRootJoint->setAngularRelVel(Vector3::zeros());
-    mobileRootJoint->setLinearRelVel(convertFrom(uFeetPSecond, bodyVel));
+    mobileRootJoint->setLinearRelVel(Unit::footPerSecond().convertFrom(bodyVel));
 //   } else if (speed_set == "NED") {
 //   } else if (speed_set == "KNOTS") {
 //   } else if (speed_set == "MACH") {
@@ -366,7 +366,7 @@ void FGOpenFDM::init()
   // Copy the trim results back
   gp = vehicle->getGeodPosition();
   _updateGeodeticPosition(gp.latitude, gp.longitude,
-                          convertTo(uFoot, gp.altitude));
+                          Unit::foot().convertTo(gp.altitude));
 
   Rotation geodOr = vehicle->getGeodOrientation();
   Vector3 euler = geodOr.getEuler();
@@ -414,7 +414,7 @@ FGOpenFDM::update(double dt)
   // Check the position
   Geodetic gp = Geodetic(get_Latitude(),
                          get_Longitude(),
-                         convertFrom(uFoot, get_Altitude()));
+                         Unit::foot().convertFrom(get_Altitude()));
   if (!equal(vehicle->getPlanet()->toCart(gp), vehicle->getCartPosition())) {
     SG_LOG(SG_FLIGHT, SG_INFO,
            "Geod Pos set, error = "
@@ -454,7 +454,7 @@ FGOpenFDM::update(double dt)
   // Now write the newly computed values into the interface class.
   gp = vehicle->getGeodPosition();
   _updateGeodeticPosition(gp.latitude, gp.longitude,
-                          convertTo(uFoot, gp.altitude));
+                          Unit::foot().convertTo(gp.altitude));
 //   _set_Altitude_AGL(model->getAGL() * M2FT);
 
   Rotation geodOr = vehicle->getGeodOrientation();
@@ -463,23 +463,23 @@ FGOpenFDM::update(double dt)
 
   // FIXME: wrong velocities are set here ...
   Vector3 velWrtWind = vehicle->getVelocity().getLinear();
-  _set_V_rel_wind(convertTo(uFeetPSecond, norm(velWrtWind)));
-  _set_Velocities_Wind_Body(convertTo(uFeetPSecond, velWrtWind(0)),
-                            convertTo(uFeetPSecond, velWrtWind(1)),
-                            convertTo(uFeetPSecond, velWrtWind(2)));
-  _set_V_equiv_kts(convertTo(uKnots, norm(velWrtWind)));
-  _set_V_calibrated_kts(convertTo(uKnots, norm(velWrtWind)));
+  _set_V_rel_wind(Unit::footPerSecond().convertTo(norm(velWrtWind)));
+  _set_Velocities_Wind_Body(Unit::footPerSecond().convertTo(velWrtWind(0)),
+                            Unit::footPerSecond().convertTo(velWrtWind(1)),
+                            Unit::footPerSecond().convertTo(velWrtWind(2)));
+  _set_V_equiv_kts(Unit::knots().convertTo(norm(velWrtWind)));
+  _set_V_calibrated_kts(Unit::knots().convertTo(norm(velWrtWind)));
   _set_Mach_number(norm(velWrtWind)/340);
 
-  Vector3 localVel = convertTo(uFeetPSecond, geodOr.backTransform(velWrtWind));
+  Vector3 localVel = Unit::footPerSecond().convertTo(geodOr.backTransform(velWrtWind));
   _set_Velocities_Local(localVel(0),localVel(1), localVel(2));
-  _set_V_ground_speed(convertTo(uFeetPSecond,
+  _set_V_ground_speed(Unit::footPerSecond().convertTo(
              sqrt(localVel(0)*localVel(0) + localVel(1)*localVel(1))));
   _set_Velocities_Ground(localVel(0), localVel(1), -localVel(2));;
   _set_Climb_Rate(-localVel(2));
 
   const RigidBody* topBody = vehicle->getTopBody();
-  Vector3 bodyAccel = convertTo(uFeetPSec2, topBody->getFrame()->getClassicAccel().getLinear());
+  Vector3 bodyAccel = Unit::footPerSecond2().convertTo(topBody->getFrame()->getClassicAccel().getLinear());
   _set_Accels_Body(bodyAccel(0), bodyAccel(1), bodyAccel(2));
   _set_Accels_Pilot_Body(bodyAccel(0), bodyAccel(1), bodyAccel(2));
   _set_Accels_CG_Body(bodyAccel(0), bodyAccel(1), bodyAccel(2));
@@ -488,7 +488,7 @@ FGOpenFDM::update(double dt)
   Vector3 localAccel = geodOr.backTransform(bodyAccel);
   _set_Accels_Local(localAccel(0), localAccel(1), localAccel(2));
 
-  Vector3 nAccel = 1/convertTo(uFeetPSec2, 9.81) * bodyAccel;
+  Vector3 nAccel = 1/Unit::footPerSecond2().convertTo(9.81) * bodyAccel;
   _set_Accels_CG_Body_N(nAccel(0), nAccel(1), nAccel(2));
 
 
