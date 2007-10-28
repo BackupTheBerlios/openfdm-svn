@@ -82,6 +82,7 @@ nobase_OpenFDMinclude_HEADERS = \
   ODESolver.h \
   OpenFDMConfig.h \
   Output.h \
+  PhysicalDimension.h \
   Plane.h \
   Planet.h \
   Port.h \
@@ -122,7 +123,7 @@ nobase_OpenFDMinclude_HEADERS = \
   TypeInfo.h \
   Types.h \
   UnaryFunctionModel.h \
-  Units.h \
+  Unit.h \
   Variant.h \
   Vector.h \
   Vehicle.h \
@@ -207,7 +208,7 @@ libOpenFDM_la_SOURCES = \
   TimeDerivative.cpp \
   TransferFunction.cpp \
   UnaryFunctionModel.cpp \
-  Units.cpp \
+  Unit.cpp \
   Variant.cpp \
   Vehicle.cpp \
   WheelContact.cpp

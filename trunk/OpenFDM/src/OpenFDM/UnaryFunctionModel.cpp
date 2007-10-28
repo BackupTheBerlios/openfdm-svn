@@ -238,7 +238,7 @@ BEGIN_OPENFDM_OBJECT_DEF(UnitConversionModel, Model)
   END_OPENFDM_OBJECT_DEF
 
 UnitConversionModel::UnitConversionModel(const std::string& name,
-                                         Type type, Unit unit) :
+                                         Type type, const Unit& unit) :
   Model(name),
   mType(type),
   mUnit(unit)
@@ -277,9 +277,9 @@ UnitConversionModel::output(const TaskInfo&)
   OpenFDMAssert(mInputPort.isConnected());
   real_type value = mInputPort.getRealValue();
   if (mType == UnitToSi) {
-    mValue = convertFrom(mUnit, value);
+    mValue = mUnit.convertFrom(value);
   } else {
-    mValue = convertTo(mUnit, value);
+    mValue = mUnit.convertTo(value);
   }
 }
 
@@ -302,12 +302,12 @@ UnitConversionModel::getType(void) const
 }
 
 void
-UnitConversionModel::setUnit(Unit unit)
+UnitConversionModel::setUnit(const Unit& unit)
 {
   mUnit = unit;
 }
 
-Unit
+const Unit&
 UnitConversionModel::getUnit(void) const
 {
   return mUnit;

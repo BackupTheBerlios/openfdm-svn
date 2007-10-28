@@ -40,7 +40,7 @@
 #include <OpenFDM/Table.h>
 #include <OpenFDM/TimeDerivative.h>
 #include <OpenFDM/UnaryFunctionModel.h>
-#include <OpenFDM/Units.h>
+#include <OpenFDM/Unit.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/WheelContact.h>
 #include <OpenFDM/DiscBrake.h>
@@ -421,43 +421,43 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
 
     } else if (propName == "fdm/jsbsim/fcs/elevator-pos-rad") {
       port = lookupJSBExpression("fcs/elevator-pos-deg", path, false);
-      port = addFromUnit("elevator-pos-rad unit", uDegree, port);
+      port = addFromUnit("elevator-pos-rad unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/elevator-pos-deg") {
       port = lookupJSBExpression("fcs/elevator-pos-rad", path, false);
-      port = addToUnit("elevator-pos-deg unit", uDegree, port);
+      port = addToUnit("elevator-pos-deg unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/left-aileron-pos-rad") {
       port = lookupJSBExpression("fcs/left-aileron-pos-deg", path, false);
-      port = addFromUnit("left-aileron-pos-rad unit", uDegree, port);
+      port = addFromUnit("left-aileron-pos-rad unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/left-aileron-pos-deg") {
       port = lookupJSBExpression("fcs/left-aileron-pos-rad", path, false);
-      port = addToUnit("left-aileron-pos-deg unit", uDegree, port);
+      port = addToUnit("left-aileron-pos-deg unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/right-aileron-pos-rad") {
       port = lookupJSBExpression("fcs/right-aileron-pos-deg", path, false);
-      port = addFromUnit("right-aileron-pos-rad unit", uDegree, port);
+      port = addFromUnit("right-aileron-pos-rad unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/right-aileron-pos-deg") {
       port = lookupJSBExpression("fcs/right-aileron-pos-rad", path, false);
-      port = addToUnit("right-aileron-pos-deg unit", uDegree, port);
+      port = addToUnit("right-aileron-pos-deg unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/aileron-pos-rad") {
       port = lookupJSBExpression("fcs/aileron-pos-deg", path, false);
-      port = addFromUnit("aileron-pos-rad unit", uDegree, port);
+      port = addFromUnit("aileron-pos-rad unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/aileron-pos-deg") {
       port = lookupJSBExpression("fcs/aileron-pos-rad", path, false);
-      port = addToUnit("aileron-pos-deg unit", uDegree, port);
+      port = addToUnit("aileron-pos-deg unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/rudder-pos-rad") {
       port = lookupJSBExpression("fcs/rudder-pos-deg", path, false);
-      port = addFromUnit("rudder-pos-rad unit", uDegree, port);
+      port = addFromUnit("rudder-pos-rad unit", Unit::degree(), port);
 
     } else if (propName == "fdm/jsbsim/fcs/rudder-pos-deg") {
       port = lookupJSBExpression("fcs/rudder-pos-rad", path, false);
-      port = addToUnit("rudder-pos-deg unit", uDegree, port);
+      port = addToUnit("rudder-pos-deg unit", Unit::degree(), port);
 
     } else if (propName.substr(0, 19) == "fdm/jsbsim/fcs/mag-") {
       // Special absolute modules for fcs/mag-*
@@ -489,24 +489,24 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
     port = mAeroForce->getOutputPort("trueSpeed");
   } else if (propName == "fdm/jsbsim/velocities/vt-fps") {
     port = mAeroForce->getOutputPort("trueSpeed");
-    port = addToUnit("True Speed fps", uFeetPSecond, port);
+    port = addToUnit("True Speed fps", Unit::footPerSecond(), port);
   } else if (propName == "fdm/jsbsim/velocities/vt-kts") {
     port = mAeroForce->getOutputPort("trueSpeed");
-    port = addToUnit("True Speed kts", uKnots, port);
+    port = addToUnit("True Speed kts", Unit::knots(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/vc-fps") {
     port = mAeroForce->getOutputPort("calibratedAirSpeed");
-    port = addToUnit("Calibrated Speed fps", uFeetPSecond, port);
+    port = addToUnit("Calibrated Speed fps", Unit::footPerSecond(), port);
   } else if (propName == "fdm/jsbsim/velocities/vc-kts") {
     port = mAeroForce->getOutputPort("calibratedAirSpeed");
-    port = addToUnit("Calibrated Speed kts", uKnots, port);
+    port = addToUnit("Calibrated Speed kts", Unit::knots(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/ve-fps") {
     port = mAeroForce->getOutputPort("calibratedAirSpeed");
-    port = addToUnit("Equivalent Speed fps", uFeetPSecond, port);
+    port = addToUnit("Equivalent Speed fps", Unit::footPerSecond(), port);
   } else if (propName == "fdm/jsbsim/velocities/ve-kts") {
     port = mAeroForce->getOutputPort("calibratedAirSpeed");
-    port = addToUnit("Equivalent Speed kts", uKnots, port);
+    port = addToUnit("Equivalent Speed kts", Unit::knots(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/mach-norm" ||
              propName == "fdm/jsbsim/velocities/mach") {
@@ -516,72 +516,72 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
     port = mAeroForce->getOutputPort("p");
   } else if (propName == "fdm/jsbsim/velocities/p-deg_sec") {
     port = mAeroForce->getOutputPort("p");
-    port = addToUnit("P deg_sec", uDegree, port);
+    port = addToUnit("P deg_sec", Unit::degree(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/q-rad_sec") {
     port = mAeroForce->getOutputPort("q");
   } else if (propName == "fdm/jsbsim/velocities/q-deg_sec") {
     port = mAeroForce->getOutputPort("q");
-    port = addToUnit("Q deg_sec", uDegree, port);
+    port = addToUnit("Q deg_sec", Unit::degree(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/r-rad_sec") {
     port = mAeroForce->getOutputPort("r");
   } else if (propName == "fdm/jsbsim/velocities/r-deg_sec") {
     port = mAeroForce->getOutputPort("r");
-    port = addToUnit("R deg_sec", uDegree, port);
+    port = addToUnit("R deg_sec", Unit::degree(), port);
 
     /// FIXME: the aero stuff is yet missing!!!
   } else if (propName == "fdm/jsbsim/velocities/p-aero-rad_sec") {
     port = mAeroForce->getOutputPort("p");
   } else if (propName == "fdm/jsbsim/velocities/p-aero-deg_sec") {
     port = mAeroForce->getOutputPort("p");
-    port = addToUnit("P-aero deg_sec", uDegree, port);
+    port = addToUnit("P-aero deg_sec", Unit::degree(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/q-aero-rad_sec") {
     port = mAeroForce->getOutputPort("q");
   } else if (propName == "fdm/jsbsim/velocities/q-aero-deg_sec") {
     port = mAeroForce->getOutputPort("q");
-    port = addToUnit("Q-aero deg_sec", uDegree, port);
+    port = addToUnit("Q-aero deg_sec", Unit::degree(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/r-aero-rad_sec") {
     port = mAeroForce->getOutputPort("r");
   } else if (propName == "fdm/jsbsim/velocities/r-aero-deg_sec") {
     port = mAeroForce->getOutputPort("r");
-    port = addToUnit("R-aero deg_sec", uDegree, port);
+    port = addToUnit("R-aero deg_sec", Unit::degree(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/u-aero-mps") {
     port = mAeroForce->getOutputPort("u");
   } else if (propName == "fdm/jsbsim/velocities/u-aero-fps") {
     port = mAeroForce->getOutputPort("u");
-    port = addToUnit("U-aero fps", uFeetPSecond, port);
+    port = addToUnit("U-aero fps", Unit::footPerSecond(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/v-aero-mps") {
     port = mAeroForce->getOutputPort("v");
   } else if (propName == "fdm/jsbsim/velocities/v-aero-fps") {
     port = mAeroForce->getOutputPort("v");
-    port = addToUnit("V-aero fps", uFeetPSecond, port);
+    port = addToUnit("V-aero fps", Unit::footPerSecond(), port);
 
   } else if (propName == "fdm/jsbsim/velocities/w-aero-mps") {
     port = mAeroForce->getOutputPort("w");
   } else if (propName == "fdm/jsbsim/velocities/w-aero-fps") {
     port = mAeroForce->getOutputPort("w");
-    port = addToUnit("W-aero fps", uFeetPSecond, port);
+    port = addToUnit("W-aero fps", Unit::footPerSecond(), port);
 
   } else if (propName == "fdm/jsbsim/aero/qbar-pa") {
     port = mAeroForce->getOutputPort("dynamicPressure");
   } else if (propName == "fdm/jsbsim/aero/qbar-psf") {
     port = mAeroForce->getOutputPort("dynamicPressure");
-    port = addToUnit("Dynamic pressure psf", uPoundPFt2, port);
+    port = addToUnit("Dynamic pressure psf", Unit::lbfPerSquareFoot(), port);
 
   } else if (propName == "fdm/jsbsim/propulsion/tat-r") {
     port = mAeroForce->getOutputPort("temperature");
-    port = addToUnit("Temperature Rankine", uRankine, port);
+    port = addToUnit("Temperature Rankine", Unit::rankine(), port);
   } else if (propName == "fdm/jsbsim/propulsion/tat-f") {
     port = mAeroForce->getOutputPort("temperature");
-    port = addToUnit("Degree Fahrenheit", uFahrenheit, port);
+    port = addToUnit("Degree Fahrenheit", Unit::degreeFarenheit(), port);
   } else if (propName == "fdm/jsbsim/propulsion/tat-c") {
     port = mAeroForce->getOutputPort("temperature");
-    port = addToUnit("Degree Centigrade", uDegC, port);
+    port = addToUnit("Degree Centigrade", Unit::degreeCelsius(), port);
     // Braindead: a tepmerature value in velocities ...
   } else if (propName == "fdm/jsbsim/velocities/tat-r") {
     port = lookupJSBExpression("propulsion/tat-r", path);
@@ -594,7 +594,7 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
     port = mAeroForce->getOutputPort("pressure");
   } else if (propName == "fdm/jsbsim/propulsion/pt-lbs_sqft") {
     port = mAeroForce->getOutputPort("pressure");
-    port = addToUnit("Static pressure psf", uPoundPFt2, port);
+    port = addToUnit("Static pressure psf", Unit::lbfPerSquareFoot(), port);
     // Braindead: a pressure value in velocities ...
   } else if (propName == "fdm/jsbsim/velocities/pt-pa") {
     port = lookupJSBExpression("propulsion/pt-pa", path);
@@ -608,7 +608,7 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
     port = addAbsModel("Angle of attack mag", port);
   } else if (propName == "fdm/jsbsim/aero/alpha-deg") {
     port = mAeroForce->getOutputPort("alpha");
-    port = addToUnit("Angle of attack deg", uDegree, port);
+    port = addToUnit("Angle of attack deg", Unit::degree(), port);
   } else if (propName == "fdm/jsbsim/aero/mag-alpha-deg") {
     port = lookupJSBExpression("aero/alpha-deg", path);
     port = addAbsModel("Angle of attack mag deg", port);
@@ -620,7 +620,7 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
     port = addAbsModel("Angle of sideslip mag", port);
   } else if (propName == "fdm/jsbsim/aero/beta-deg") {
     port = mAeroForce->getOutputPort("beta");
-    port = addToUnit("Angle of sideslip deg", uDegree, port);
+    port = addToUnit("Angle of sideslip deg", Unit::degree(), port);
   } else if (propName == "fdm/jsbsim/aero/mag-beta-deg") {
     port = lookupJSBExpression("aero/beta-deg", path);
     port = addAbsModel("Angle of sideslip mag deg", port);
@@ -629,28 +629,28 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
     port = mAeroForce->getOutputPort("alphaDot");
   } else if (propName == "fdm/jsbsim/aero/alphadot-deg_sec") {
     port = mAeroForce->getOutputPort("alphaDot");
-    port = addToUnit("Angle of attack deriv deg_sec", uDegree, port);
+    port = addToUnit("Angle of attack deriv deg_sec", Unit::degree(), port);
 
   } else if (propName == "fdm/jsbsim/aero/betadot-rad_sec") {
     port = mAeroForce->getOutputPort("betaDot");
   } else if (propName == "fdm/jsbsim/aero/betadot-deg_sec") {
     port = mAeroForce->getOutputPort("betaDot");
-    port = addToUnit("Angle of sideslip deriv deg_sec", uDegree, port);
+    port = addToUnit("Angle of sideslip deriv deg_sec", Unit::degree(), port);
 
   } else if (propName == "fdm/jsbsim/metrics/bw-ft") {
     /// FIXME, just schedule a constant block for that??
     port = mAeroForce->getOutputPort("wingSpan");
-    port = addToUnit("Wingspan ft", uFoot, port);
+    port = addToUnit("Wingspan ft", Unit::foot(), port);
 
   } else if (propName == "fdm/jsbsim/metrics/Sw-sqft") {
     /// FIXME, just schedule a constant block for that??
     port = mAeroForce->getOutputPort("wingArea");
-    port = addToUnit("Wingarea ft2", uFoot2, port);
+    port = addToUnit("Wingarea ft2", Unit::squareFoot(), port);
 
   } else if (propName == "fdm/jsbsim/metrics/cbarw-ft") {
     /// FIXME, just schedule a constant block for that??
     port = mAeroForce->getOutputPort("coord");
-    port = addToUnit("Coord ft", uFoot, port);
+    port = addToUnit("Coord ft", Unit::foot(), port);
 
   } else if (propName == "fdm/jsbsim/aero/bi2vel") {
     port = mAeroForce->getOutputPort("wingSpanOver2Speed");

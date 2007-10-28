@@ -8,7 +8,7 @@
 #include <string>
 
 #include "Types.h"
-#include "Units.h"
+#include "Unit.h"
 #include "Model.h"
 
 namespace OpenFDM {
@@ -61,7 +61,7 @@ public:
     SiToUnit
   };
 
-  UnitConversionModel(const std::string& name, Type type, Unit unit);
+  UnitConversionModel(const std::string& name, Type type, const Unit& unit);
   virtual ~UnitConversionModel(void);
 
   virtual bool init(void);
@@ -72,8 +72,8 @@ public:
   void setType(Type type);
   Type getType(void) const;
 
-  void setUnit(Unit unit);
-  Unit getUnit(void) const;
+  void setUnit(const Unit& unit);
+  const Unit& getUnit(void) const;
 
 private:
   Type mType;

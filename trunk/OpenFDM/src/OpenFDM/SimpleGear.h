@@ -6,7 +6,7 @@
 #define OpenFDM_SimpleGear_H
 
 #include "Assert.h"
-#include "Units.h"
+#include "Unit.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Frame.h"

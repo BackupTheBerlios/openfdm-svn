@@ -6,14 +6,14 @@
 #include <sstream>
 #include <string>
 
-#include <OpenFDM/Units.h>
+#include <OpenFDM/Unit.h>
 
 using namespace OpenFDM;
 
 template<typename char_type, typename traits_type> 
 inline
 std::basic_istream<char_type, traits_type>&
-operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
+operator>>(std::basic_istream<char_type, traits_type>& stream, Unit& u)
 {
   // need to know the locale
   std::locale loc = stream.getloc();
@@ -34,7 +34,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       char_type third = stream.peek();
       if (third == stream.widen('l')) {
         // calories ...
-        u = Unit2::energy(4.1868/*FIXME*/);
+        u = Unit::energy(4.1868/*FIXME*/);
         return stream;
       } else {
         stream.setstate(std::ios::failbit); // FIXME true?
@@ -42,13 +42,13 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       }
     } else if (second == stream.widen('m')) {
       // centimeters
-      u = Unit2::length(1e-2);
+      u = Unit::length(1e-2);
       return stream;
     } else {
       // now c must be centi = 1e-2
-      Unit2 tmpU;
+      Unit tmpU;
       stream >> tmpU;
-      u = Unit2(tmpU.getPhysicalDimension(), 1e-2*tmpU.getFactor(),
+      u = Unit(tmpU.getPhysicalDimension(), 1e-2*tmpU.getFactor(),
                 tmpU.getOffset());
       return stream;
     }
@@ -58,7 +58,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
     if (second == stream.widen('t')) {
       stream.get();
       // feet ...
-      u = Unit2::feet;
+      u = Unit::foot();
       return stream;
     } else {
       stream.setstate(std::ios::failbit); // FIXME true?
@@ -67,7 +67,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
   } else if (first == stream.widen('g')) {
     // g for gramm
     stream.get();
-    u = Unit2::mass(1e-3);
+    u = Unit::mass(1e-3);
     return stream;
   } else if (first == stream.widen('h')) {
     // h
@@ -84,7 +84,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
         if (fourth == stream.widen('r')) {
           // hour
           stream.get();
-          u = Unit2::hour;
+          u = Unit::hour();
           return stream;
         } else {
           // hou*
@@ -98,7 +98,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       }
     } else {
       // just h
-      u = Unit2::hour;
+      u = Unit::hour();
       return stream;
     }
   } else if (first == stream.widen('i')) {
@@ -107,7 +107,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
     if (second == stream.widen('n')) {
       stream.get();
       // inch ...
-      u = Unit2::inch;
+      u = Unit::inch();
       return stream;
     } else {
       stream.setstate(std::ios::failbit); // FIXME true?
@@ -124,7 +124,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       if (third == stream.widen('s')) {
         // kts
         stream.get();
-        u = Unit2::knots;
+        u = Unit::knots();
         return stream;
       } else {
         stream.setstate(std::ios::failbit); // FIXME true?
@@ -132,9 +132,9 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       }
     } else {
       // k must be kilo = 1e3
-      Unit2 tmpU;
+      Unit tmpU;
       stream >> tmpU;
-      u = Unit2(tmpU.getPhysicalDimension(), 1e3*tmpU.getFactor(),
+      u = Unit(tmpU.getPhysicalDimension(), 1e3*tmpU.getFactor(),
                 tmpU.getOffset());
       return stream;
     }
@@ -149,21 +149,21 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       if (third == stream.widen('s')) {
         // lbs
         stream.get();
-        u = Unit2::lbs;
+        u = Unit::lbs();
         return stream;
       } else if (third == stream.widen('f')) {
         // lbf
         stream.get();
-        u = Unit2::lbf;
+        u = Unit::lbf();
         return stream;
       } else {
         // just lb
-        u = Unit2::lbf;
+        u = Unit::lbf();
         return stream;
       }
     } else {
       // just l is liters
-      u = Unit2::volume(1e-3);
+      u = Unit::volume(1e-3);
       return stream;
     }
   } else if (first == stream.widen('m')) {
@@ -174,7 +174,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       // mm
       stream.get();
       // milimeter ...
-      u = Unit2::length(1e-3);
+      u = Unit::length(1e-3);
       return stream;
     } else if (second == stream.widen('i')) {
       // mi
@@ -183,7 +183,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       if (third == stream.widen('n')) {
         // min
         stream.get();
-        u = Unit2::minute;
+        u = Unit::minute();
         return stream;
       } else {
         stream.setstate(std::ios::failbit); // FIXME true?
@@ -191,14 +191,14 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       }
     } else if (std::isalpha(second, loc)) {
       // hmm m must be milli = 1e-3 ?? FIXME
-      Unit2 tmpU;
+      Unit tmpU;
       stream >> tmpU;
-      u = Unit2(tmpU.getPhysicalDimension(), 1e-3*tmpU.getFactor(),
+      u = Unit(tmpU.getPhysicalDimension(), 1e-3*tmpU.getFactor(),
                 tmpU.getOffset());
       return stream;
     } else {
       // Ok, must have been a meters length
-      u = Unit2::length();
+      u = Unit::length();
       return stream;
     }
   } else if (first == stream.widen('n')) {
@@ -212,11 +212,11 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       if (third == stream.widen('i')) {
         // nmi for nautical miles
         stream.get();
-        u = Unit2::nauticalMile;
+        u = Unit::nauticalMile();
         return stream;
       } else {
         // just nm
-        u = Unit2::nauticalMile;
+        u = Unit::nauticalMile();
         return stream;
       }
     } else {
@@ -234,7 +234,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       if (third == stream.widen('c')) {
         // sec
         stream.get();
-        u = Unit2::time();
+        u = Unit::time();
         return stream;
       } else {
         stream.setstate(std::ios::failbit); // FIXME true?
@@ -251,7 +251,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
         if (fourth == stream.widen('g')) {
           // slug
           stream.get();
-          u = Unit2::slugs;
+          u = Unit::slug();
           return stream;
         } else {
           stream.setstate(std::ios::failbit); // FIXME true?
@@ -268,7 +268,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       if (third == stream.widen('i')) {
         // smi for statute miles
         stream.get();
-        u = Unit2::statuteMile;
+        u = Unit::statuteMile();
         return stream;
       } else {
         stream.setstate(std::ios::failbit); // FIXME true?
@@ -276,49 +276,49 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
       }
     } else {
       // just s for seconds
-      u = Unit2::time();
+      u = Unit::time();
       return stream;
     }
   } else if (first == stream.widen('C')) {
     // C elsius //FIXME C oulomb
     stream.get();
-    u = Unit2::degreeCelsius;
+    u = Unit::degreeCelsius();
     return stream;
   } else if (first == stream.widen('F')) {
     // F arenheit //FIXME F arrad
     stream.get();
-    u = Unit2::degreeFarenheit;
+    u = Unit::degreeFarenheit();
     return stream;
   } else if (first == stream.widen('G')) {
     // G must be giga = 1e9
     stream.get();
-    Unit2 tmpU;
+    Unit tmpU;
     stream >> tmpU;
-    u = Unit2(tmpU.getPhysicalDimension(), 1e9*tmpU.getFactor(),
+    u = Unit(tmpU.getPhysicalDimension(), 1e9*tmpU.getFactor(),
               tmpU.getOffset());
     return stream;
   } else if (first == stream.widen('J')) {
     // J oule
     stream.get();
-    u = Unit2::energy();
+    u = Unit::energy();
     return stream;
   } else if (first == stream.widen('K')) {
     // K elvin
     stream.get();
-    u = Unit2::temperature();
+    u = Unit::temperature();
     return stream;
   } else if (first == stream.widen('M')) {
     // M must be mega = 1e6
     stream.get();
-    Unit2 tmpU;
+    Unit tmpU;
     stream >> tmpU;
-    u = Unit2(tmpU.getPhysicalDimension(), 1e6*tmpU.getFactor(),
+    u = Unit(tmpU.getPhysicalDimension(), 1e6*tmpU.getFactor(),
               tmpU.getOffset());
     return stream;
   } else if (first == stream.widen('N')) {
     // N ewton
     stream.get();
-    u = Unit2::N;
+    u = Unit::newton();
     return stream;
   } else if (first == stream.widen('P')) {
     // P
@@ -327,7 +327,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
     if (second == stream.widen('a')) {
       // Pa
       stream.get();
-      u = Unit2::Pa;
+      u = Unit::Pa();
       return stream;
     } else {
       stream.setstate(std::ios::failbit); // FIXME true?
@@ -336,20 +336,20 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
   } else if (first == stream.widen('R')) {
     // R ankine
     stream.get();
-    u = Unit2::rankine;
+    u = Unit::rankine();
     return stream;
   } else if (first == stream.widen('T')) {
     // T must be terra = 1e12
     stream.get();
-    Unit2 tmpU;
+    Unit tmpU;
     stream >> tmpU;
-    u = Unit2(tmpU.getPhysicalDimension(), 1e12*tmpU.getFactor(),
+    u = Unit(tmpU.getPhysicalDimension(), 1e12*tmpU.getFactor(),
               tmpU.getOffset());
     return stream;
   } else if (first == stream.widen('W')) {
     // W att
     stream.get();
-    u = Unit2::power();
+    u = Unit::power();
     return stream;
   }
 
@@ -446,10 +446,10 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit2& u)
   return stream;
 }
 
-Unit2 stringToUnit(const std::string& s)
+Unit stringToUnit(const std::string& s)
 {
   std::stringstream sstr(s);
-  Unit2 unit;
+  Unit unit;
   sstr >> unit;
   return unit;
 }
@@ -495,9 +495,9 @@ int main(int argc, char *argv[])
   printConversion("km h-1"); // FIXME
   printConversion("km/h"); // FIXME
   printConversion("ft/s"); // FIXME
+  printConversion("ft s-1"); // FIXME
   printConversion("ft/min"); // FIXME
   printConversion("ft min-1"); // FIXME
-  printConversion("ft s-1"); // FIXME
 
   std::cout << "\nAngular nonunits:\n";
   printConversion("deg");
@@ -528,13 +528,13 @@ int main(int argc, char *argv[])
   std::cout << "\nPower units:\n";
   printConversion("W");
 
-//   std::cout << "m/s:       " << Unit2::meterPerSecond << std::endl;
-//   std::cout << "km/h:      " << Unit2::kiloMeterPerHour << std::endl;
-//   std::cout << "ft/s:      " << Unit2::feetPerSecond << std::endl;
-//   std::cout << "ft/min:    " << Unit2::feetPerMinute << std::endl;
-//   std::cout << "kts:       " << Unit2::knots << std::endl;
+//   std::cout << "m/s:       " << Unit::meterPerSecond << std::endl;
+//   std::cout << "km/h:      " << Unit::kiloMeterPerHour << std::endl;
+//   std::cout << "ft/s:      " << Unit::feetPerSecond << std::endl;
+//   std::cout << "ft/min:    " << Unit::feetPerMinute << std::endl;
+//   std::cout << "kts:       " << Unit::knots << std::endl;
 
-//   std::cout << "m/s^2:     " << Unit2::meterPerSecond2 << std::endl;
+//   std::cout << "m/s^2:     " << Unit::meterPerSecond2 << std::endl;
 
   return 0;
 }

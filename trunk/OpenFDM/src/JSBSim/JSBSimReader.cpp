@@ -41,7 +41,7 @@
 #include <OpenFDM/Tailhook.h>
 #include <OpenFDM/TimeDerivative.h>
 #include <OpenFDM/UnaryFunctionModel.h>
-#include <OpenFDM/Units.h>
+#include <OpenFDM/Unit.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/WheelContact.h>
 #include <OpenFDM/DiscBrake.h>
@@ -360,14 +360,14 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
 
   /// FIXME: unit handling??
   real_type wingarea = realData(metricsElem->getElement("wingarea"), 0);
-  mAeroForce->setWingArea(convertFrom(uFoot2, wingarea));
+  mAeroForce->setWingArea(Unit::squareFoot().convertFrom(wingarea));
 
   real_type wingspan = realData(metricsElem->getElement("wingspan"), 0);
-  mAeroForce->setWingSpan(convertFrom(uFoot, wingspan));
+  mAeroForce->setWingSpan(Unit::foot().convertFrom(wingspan));
 
   real_type chord = realData(metricsElem->getElement("chord"), 0);
   /// FIXME wrong written
-  mAeroForce->setCoord(convertFrom(uFoot, chord));
+  mAeroForce->setCoord(Unit::foot().convertFrom(chord));
 
   const XMLElement* iwElem = metricsElem->getElement("wing_incidence");
   if (iwElem) {
@@ -459,20 +459,20 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
   masslist masses;
 
   real_type ixx = realData(massBalance->getElement("ixx"), 0);
-  I(0, 0) = convertFrom(uSlugFt2, ixx);
+  I(0, 0) = Unit::slugSquareFoot().convertFrom(ixx);
   real_type iyy = realData(massBalance->getElement("iyy"), 0);
-  I(1, 1) = convertFrom(uSlugFt2, iyy);
+  I(1, 1) = Unit::slugSquareFoot().convertFrom(iyy);
   real_type izz = realData(massBalance->getElement("izz"), 0);
-  I(2, 2) = convertFrom(uSlugFt2, izz);
+  I(2, 2) = Unit::slugSquareFoot().convertFrom(izz);
   real_type ixy = realData(massBalance->getElement("ixy"), 0);
-  I(0, 1) = convertFrom(uSlugFt2, ixy);
+  I(0, 1) = Unit::slugSquareFoot().convertFrom(ixy);
   real_type ixz = realData(massBalance->getElement("ixz"), 0);
-  I(0, 2) = convertFrom(uSlugFt2, ixz);
+  I(0, 2) = Unit::slugSquareFoot().convertFrom(ixz);
   real_type iyz = realData(massBalance->getElement("iyz"), 0);
-  I(1, 2) = convertFrom(uSlugFt2, iyz);
+  I(1, 2) = Unit::slugSquareFoot().convertFrom(iyz);
   
   mass = realData(massBalance->getElement("emptywt"), 0);
-  mass = convertFrom(uPoundSealevel, mass);
+  mass = Unit::lbs().convertFrom(mass);
 
   std::list<const XMLElement*> locList = massBalance->getElements("location");
   Vector3 cg = locationData(locList, "CG", Vector3(0, 0, 0));
@@ -484,7 +484,7 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
     std::list<const XMLElement*> locList = (*pmit)->getElements("location");
     Vector3 loc = locationData(locList, "POINTMASS", Vector3(0, 0, 0));
     real_type weight = realData((*pmit)->getElement("weight"), 0);
-    weight = convertFrom(uPoundSealevel, weight);
+    weight = Unit::lbs().convertFrom(weight);
     masses.push_back(masspoint(loc, weight));
     ++pmit;
   }
@@ -495,7 +495,7 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
   spi = inertiaFrom(structToBody(cg), spi);
   masslist::iterator it = masses.begin();
   while (it != masses.end()) {
-    SpatialInertia inertia(convertFrom(uPoundSealevel, it->second));
+    SpatialInertia inertia(Unit::lbs().convertFrom(it->second));
     spi += inertiaFrom(structToBody(it->first), inertia);
     ++it;
   }
@@ -570,9 +570,9 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
   wheel->addInteract(wc);
   wc->setWheelRadius(0.5*wheelDiam);
   real_type tireSpring = realData(wheelElem->getElement("tireSpring"));
-  wc->setSpringConstant(convertFrom(uPoundForcePFt, tireSpring));
+  wc->setSpringConstant(Unit::lbfPerFoot().convertFrom(tireSpring));
   real_type tireDamp = realData(wheelElem->getElement("tireDamping"));
-  wc->setSpringDamping(convertFrom(uPoundForcePFt, tireDamp));
+  wc->setSpringDamping(Unit::lbfPerFoot().convertFrom(tireDamp));
   real_type fc = realData(wheelElem->getElement("frictionCoef"), 0.9);
   wc->setFrictionCoeficient(fc);
   
@@ -580,7 +580,7 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
   std::string nameBase = "Wheel " + numStr + " Position";
   addOutputModel(port, nameBase,
                  "gear/gear[" + numStr + "]/wheel-position-rad");
-  port = addToUnit(nameBase + " converter", uDegree, port);
+  port = addToUnit(nameBase + " converter", Unit::degree(), port);
   addOutputModel(port, nameBase + " Deg",
                  "gear/gear[" + numStr + "]/wheel-position-deg");
 }
@@ -609,13 +609,9 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         sg->setPosition(structToBody(loc));
         
         real_type k = realData((*it)->getElement("spring_coeff"), 0);
-        sg->setSpringConstant(convertFrom(uPoundForcePFt, k));
-        // FIXME: conversion factor:
-        // Works since it is used as N/(m/s)=Ns/m (seconds don't change)
-        // Note that friction coefficients are different from that but
-        // viscosous friction is just used in that way ...
+        sg->setSpringConstant(Unit::lbfPerFoot().convertFrom(k));
         real_type d = realData((*it)->getElement("damping_coeff"), 0);
-        sg->setSpringDamping(convertFrom(uPoundForcePFt, d));
+        sg->setSpringDamping(Unit::lbfPerFootPerSecond().convertFrom(d));
         real_type fs = realData((*it)->getElement("static_friction"), 0);
         sg->setFrictionCoeficient(fs);
         
@@ -664,7 +660,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           UnitConversionModel* unitConv
             = new UnitConversionModel(name + " Degree Conversion",
                                       UnitConversionModel::UnitToSi,
-                                      uDegree);
+                                      Unit::degree());
           addFCSModel(unitConv);
           Connection::connect(gain->getOutputPort(0),
                               unitConv->getInputPort(0));
@@ -694,13 +690,9 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         sc->setPosition(structToBody(loc));
 
         real_type k = realData((*it)->getElement("spring_coeff"), 0);
-        sc->setSpringConstant(convertFrom(uPoundForcePFt, k));
-        // FIXME: conversion factor:
-        // Works since it is used as N/(m/s)=Ns/m (seconds don't change)
-        // Note that friction coefficients are different from that but
-        // viscosous friction is just used in that way ...
+        sc->setSpringConstant(Unit::lbfPerFoot().convertFrom(k));
         real_type d = realData((*it)->getElement("damping_coeff"), 0);
-        sc->setSpringDamping(convertFrom(uPoundForcePFt, d));
+        sc->setSpringDamping(Unit::lbfPerFootPerSecond().convertFrom(d));
         real_type fs = realData((*it)->getElement("static_friction"), 0);
         sc->setFrictionCoeficient(fs);
         
@@ -761,7 +753,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           std::string nameBase = "Steering " + numStr + " Position";
           addOutputModel(port, nameBase,
                          "gear/gear[" + numStr + "]/steering-pos-rad");
-          port = addToUnit(nameBase + " converter", uDegree, port);
+          port = addToUnit(nameBase + " converter", Unit::degree(), port);
           addOutputModel(port, nameBase + " Deg",
                          "gear/gear[" + numStr + "]/steering-pos-deg");
         }
@@ -774,9 +766,9 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           real_type length = realData(launchbarElem->getElement("length"), 0.5);
           launchbar->setLength(length);
           real_type upAngle = realData(launchbarElem->getElement("upAngle"), 30);
-          launchbar->setUpAngle(convertFrom(uDegree, upAngle));
+          launchbar->setUpAngle(Unit::degree().convertFrom(upAngle));
           real_type downAngle = realData(launchbarElem->getElement("downAngle"), -50);
-          launchbar->setDownAngle(convertFrom(uDegree, downAngle));
+          launchbar->setDownAngle(Unit::degree().convertFrom(downAngle));
           real_type force = realData(launchbarElem->getElement("launchForce"), 1000);
           launchbar->setLaunchForce(force);
           Vector3 loc = structToBody(locationData(launchbarElem->getElement("location")));
@@ -794,7 +786,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           PortProvider* port = launchbar->getOutputPort(0);
           std::string nameBase = "Launchbar Position";
           addOutputModel(port, nameBase, "gear/launchbar-pos-rad");
-          port = addToUnit(nameBase + " converter", uDegree, port);
+          port = addToUnit(nameBase + " converter", Unit::degree(), port);
           addOutputModel(port, nameBase + " Deg", "gear/launchbar-pos-deg");
         }
 
@@ -872,10 +864,10 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         /// FIXME that ordering in attachment is messy!
         Vector3 asMnt0 = locationData((*it)->getElement("springMount0"),
                                       compressJointPos -
-                                      convertTo(uInch, Vector3(0.1, 0, 0.5)));
+                                      Unit::inch().convertTo(Vector3(0.1, 0, 0.5)));
         Vector3 asMnt1 = locationData((*it)->getElement("springMount1"),
                                       compressJointPos +
-                                      convertTo(uInch, Vector3(-0.5, 0, 0)));
+                                      Unit::inch().convertTo(Vector3(-0.5, 0, 0)));
         lineForce->setPosition0(structToBody(asMnt0));
         lineForce->setPosition1(structToBody(asMnt1)
                                 - structToBody(compressJointPos));
@@ -915,9 +907,9 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         real_type length = realData(tailhookElem->getElement("length"), 0.5);
         tailhook->setLength(length);
         real_type upAngle = realData(tailhookElem->getElement("upAngle"), 10);
-        tailhook->setUpAngle(convertFrom(uDegree, upAngle));
+        tailhook->setUpAngle(Unit::degree().convertFrom(upAngle));
         real_type downAngle = realData(tailhookElem->getElement("downAngle"), -75);
-        tailhook->setDownAngle(convertFrom(uDegree, downAngle));
+        tailhook->setDownAngle(Unit::degree().convertFrom(downAngle));
         Vector3 loc = structToBody(locationData(tailhookElem->getElement("location")));
         tailhook->setPosition(loc);
         addMultiBodyModel(tailhook);
@@ -931,7 +923,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         PortProvider* port = tailhook->getOutputPort(0);
         std::string nameBase = "Tailhook Position";
         addOutputModel(port, nameBase, "gear/tailhook/position-rad");
-        port = addToUnit(nameBase + " converter", uDegree, port);
+        port = addToUnit(nameBase + " converter", Unit::degree(), port);
         addOutputModel(port, nameBase + " Deg", "gear/tailhook/position-deg");
 
       } else {
@@ -1156,7 +1148,7 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
   std::string namestr = "Engine<" + number + ">";
   ConstModel* fullForce = new ConstModel(namestr + " full");
   addMultiBodyModel(fullForce);
-  fullForce->setValue(Vector6(0, 0, 0, convertFrom(uPoundForce, maxThrust), 0, 0));
+  fullForce->setValue(Vector6(0, 0, 0, Unit::lbf().convertFrom(maxThrust), 0, 0));
 
   Product* prod = new Product(namestr + " modulation");
   addMultiBodyModel(prod);
@@ -1531,22 +1523,22 @@ JSBSimReader::convertAerodynamics(const XMLElement* aero)
       PortProvider* port = sum->getOutputPort(0);
 
       if (axisname == "LIFT") {
-        port = addFromUnit("LIFT unit convert", uPoundForce, port);
+        port = addFromUnit("LIFT unit convert", Unit::lbf(), port);
         Connection::connect(port, mAeroForce->getInputPort("lift"));
       } else if (axisname == "DRAG") {
-        port = addFromUnit("DRAG unit convert", uPoundForce, port);
+        port = addFromUnit("DRAG unit convert", Unit::lbf(), port);
         Connection::connect(port, mAeroForce->getInputPort("drag"));
       } else if (axisname == "SIDE") {
-        port = addFromUnit("SIDE unit convert", uPoundForce, port);
+        port = addFromUnit("SIDE unit convert", Unit::lbf(), port);
         Connection::connect(port, mAeroForce->getInputPort("side"));
       } else if (axisname == "ROLL") {
-        port = addFromUnit("ROLL unit convert", uPoundForceFt, port);
+        port = addFromUnit("ROLL unit convert", Unit::lbfFoot(), port);
         Connection::connect(port, mAeroForce->getInputPort("roll"));
       } else if (axisname == "PITCH") {
-        port = addFromUnit("PITCH unit convert", uPoundForceFt, port);
+        port = addFromUnit("PITCH unit convert", Unit::lbfFoot(), port);
         Connection::connect(port, mAeroForce->getInputPort("pitch"));
       } else if (axisname == "YAW") {
-        port = addFromUnit("YAW unit convert", uPoundForceFt, port);
+        port = addFromUnit("YAW unit convert", Unit::lbfFoot(), port);
         Connection::connect(port, mAeroForce->getInputPort("yaw"));
       } else
         return error("Unknown aerodynamic axis!");
