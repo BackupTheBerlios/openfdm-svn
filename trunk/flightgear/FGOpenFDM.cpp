@@ -364,9 +364,8 @@ void FGOpenFDM::init()
     SG_LOG(SG_FLIGHT, SG_WARN, "Trimming failed!");
 
   // Copy the trim results back
-  gp = vehicle->getGeodPosition();
-  _updateGeodeticPosition(gp.latitude, gp.longitude,
-                          Unit::foot().convertTo(gp.altitude));
+  Vector3 cart = vehicle->getCartPosition();
+  _updatePositionM(SGVec3d(cart(0), cart(1), cart(2)));
 
   Rotation geodOr = vehicle->getGeodOrientation();
   Vector3 euler = geodOr.getEuler();
@@ -452,9 +451,8 @@ FGOpenFDM::update(double dt)
   vehicle->update(dt);
 
   // Now write the newly computed values into the interface class.
-  gp = vehicle->getGeodPosition();
-  _updateGeodeticPosition(gp.latitude, gp.longitude,
-                          Unit::foot().convertTo(gp.altitude));
+  cart = vehicle->getCartPosition();
+  _updatePositionM(SGVec3d(cart(0), cart(1), cart(2)));
 //   _set_Altitude_AGL(model->getAGL() * M2FT);
 
   Rotation geodOr = vehicle->getGeodOrientation();
