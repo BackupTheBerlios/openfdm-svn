@@ -21,24 +21,28 @@ namespace OpenFDM {
 /// implementing its destructors and clone method as a virtual class member.
 template<typename T>
 class CowPtr {
+public:
+  void detach()
+  { mutablePtr(); }
+  
 protected:
   explicit CowPtr(T* ptr) : mPtr(ptr)
   { OpenFDMAssert(mPtr); }
 
-  T* ptr(void)
+  T* mutablePtr(void)
   {
     // Ok, asking here if the data is shared one time is suficient.
     // For the first cut, it might happen that just past shared returned
-    // false a new reference is generated in an othe thread.
+    // false a new reference is generated in an other thread.
     // That can not happen, since a reference in an other thread would
     // cause a reference count > 1 what means that we cannot use
     // the shared copy anyway and we have already made a copy anyway.
     if (shared(mPtr))
-      mPtr = mPtr->clone();
+      mPtr = new T(*mPtr);
     return mPtr;
   }
 
-  const T* ptr(void) const
+  const T* constPtr(void) const
   { return mPtr; }
 
 private:
