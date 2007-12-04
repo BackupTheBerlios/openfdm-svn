@@ -37,7 +37,7 @@ protected:
     // That can not happen, since a reference in an other thread would
     // cause a reference count > 1 what means that we cannot use
     // the shared copy anyway and we have already made a copy anyway.
-    if (shared(mPtr))
+    if (mPtr.isShared())
       mPtr = new T(*mPtr);
     return mPtr;
   }
