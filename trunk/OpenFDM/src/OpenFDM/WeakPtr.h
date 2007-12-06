@@ -5,6 +5,7 @@
 #ifndef OpenFDM_WeakPtr_H
 #define OpenFDM_WeakPtr_H
 
+// #include "OpenFDMConfig.h"
 #include "WeakReferenced.h"
 
 namespace OpenFDM {
@@ -17,7 +18,7 @@ class WeakPtr {
 public:
   WeakPtr(void)
   { }
-  WeakPtr(T* ptr)
+  WeakPtr(T* ptr) // OpenFDM_DEPRECATED
   { assign(ptr); }
   WeakPtr(const WeakPtr& p) : mWeakDataPtr(p.mWeakDataPtr)
   { }
@@ -36,27 +37,29 @@ public:
   template<typename U>
   WeakPtr& operator=(const WeakPtr<U>& p)
   { assign(p.ptr()); return *this; }
-  WeakPtr& operator=(T* p)
+  WeakPtr& operator=(T* p) // OpenFDM_DEPRECATED
   { assign(p); return *this; }
   WeakPtr& operator=(const WeakPtr& p)
   { mWeakDataPtr = p.mWeakDataPtr; return *this; }
 
   SharedPtr<T> lock(void) const
   {
-    T* p = ptr();
-    if (Referenced::count(p))
-      return SharedPtr<T>(p);
-    else
+    if (!mWeakDataPtr)
       return SharedPtr<T>();
+    ScopeLock scopeLock(mWeakDataPtr->mutex);
+    T* p = static_cast<T*>(mWeakDataPtr->object);
+    if (!Referenced::count(p))
+      return SharedPtr<T>();
+    return SharedPtr<T>(p);
   }
 
-  T* operator->(void) const
+  T* operator->(void) const // OpenFDM_DEPRECATED
   { return ptr(); }
 
-  T& operator*(void) const
+  T& operator*(void) const // OpenFDM_DEPRECATED
   { return *ptr(); }
 
-  operator T*(void) const
+  operator T*(void) const // OpenFDM_DEPRECATED
   { return ptr(); }
 
 private:

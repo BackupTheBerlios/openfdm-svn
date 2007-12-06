@@ -5,7 +5,9 @@
 #ifndef OpenFDM_WeakReferenced_H
 #define OpenFDM_WeakReferenced_H
 
+#include "Mutex.h"
 #include "Referenced.h"
+#include "ScopeLock.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
@@ -21,7 +23,7 @@ public:
   WeakReferenced(const WeakReferenced&) : mWeakDataPtr(new WeakData(this))
   {}
   ~WeakReferenced(void)
-  { mWeakDataPtr->object = 0; }
+  { ScopeLock scopeLock(mWeakDataPtr->mutex); mWeakDataPtr->object = 0; }
 
   /// Do not copy the weak backward references ...
   WeakReferenced& operator=(const WeakReferenced&)
@@ -33,6 +35,7 @@ private:
   /// reference which is zeroed out on destruction of the current object
   struct WeakData : public Referenced {
     WeakData(WeakReferenced* o) : object(o) {}
+    Mutex mutex;
     WeakReferenced* object;
   private:
     WeakData(void);
