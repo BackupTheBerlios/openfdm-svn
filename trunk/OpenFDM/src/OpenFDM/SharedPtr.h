@@ -51,6 +51,9 @@ public:
   operator T*(void) const
   { return _ptr; }
 
+  T* release()
+  { T* tmp = _ptr; _ptr = 0; Referenced::put(tmp); return tmp; }
+
   bool isShared(void) const
   { return Referenced::shared(_ptr); }
   unsigned getNumRefs(void) const

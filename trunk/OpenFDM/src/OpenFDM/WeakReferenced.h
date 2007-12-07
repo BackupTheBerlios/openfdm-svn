@@ -17,13 +17,15 @@ class WeakPtr;
 
 class WeakReferenced : public Referenced {
 public:
+  /// Note that object construction is atomic anyway.
+  /// This way we do not need to guard setting the mWeakDataPtr variable
   WeakReferenced(void) : mWeakDataPtr(new WeakData(this))
   {}
-  /// Do not copy the weak backward references ...
+  // Do not copy the weak backward references ...
   WeakReferenced(const WeakReferenced&) : mWeakDataPtr(new WeakData(this))
   {}
   ~WeakReferenced(void)
-  { ScopeLock scopeLock(mWeakDataPtr->mutex); mWeakDataPtr->object = 0; }
+  { mWeakDataPtr->clear(); }
 
   /// Do not copy the weak backward references ...
   WeakReferenced& operator=(const WeakReferenced&)
@@ -33,14 +35,31 @@ private:
   /// Support for weak references, not increasing the reference count
   /// that is done through that small helper class which holds an uncounted
   /// reference which is zeroed out on destruction of the current object
-  struct WeakData : public Referenced {
-    WeakData(WeakReferenced* o) : object(o) {}
-    Mutex mutex;
-    WeakReferenced* object;
+  class WeakData : public Referenced {
+  public:
+    WeakData(WeakReferenced* object) : mObject(object) {}
+    template<typename T>
+    void get(SharedPtr<T>& sharedPtr)
+    {
+      ScopeLock scopeLock(mMutex);
+      if (Referenced::count(mObject)) {
+        sharedPtr = static_cast<T*>(mObject);
+      } else {
+        sharedPtr = 0;
+      }
+    }
+    void clear()
+    {
+      ScopeLock scopeLock(mMutex);
+      mObject = 0;
+    }
   private:
     WeakData(void);
     WeakData(const WeakData&);
     WeakData& operator=(const WeakData&);
+
+    Mutex mMutex;
+    WeakReferenced* mObject;
   };
 
   SharedPtr<WeakData> mWeakDataPtr;
