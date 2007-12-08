@@ -35,12 +35,8 @@ public:
   virtual void update(double dt);
 
 private:
-  void tieObject(SGPropertyNode* base, Object* object);
-  void tieModelGroup(SGPropertyNode* base, ModelGroup* modelGroup);
   static void untieNamed(SGPropertyNode* base, const char* name);
   static void untieRecursive(SGPropertyNode* base);
-
-  static std::string toPropname(const std::string& name);
 
   FGOpenFDMData* mData;
   SGPropertyNode_ptr mAircraftRootNode;

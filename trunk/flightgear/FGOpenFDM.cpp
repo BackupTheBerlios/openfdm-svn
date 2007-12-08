@@ -225,36 +225,153 @@ public:
   InputConnectModelVisitor(const SGSharedPtr<SGPropertyNode>& acRootNode) :
     mAircraftRootNode(acRootNode)
   { }
-  virtual void apply(Model& model)
+  virtual void apply(Input& input)
   {
-    // Check for input models
-    // If so, we need to register a change notifier in flightgears properties
-    Input* inputModel = model.toInput();
-    if (!inputModel)
-      return;
-
     SG_LOG(SG_FLIGHT, SG_INFO,
-           "Registering input for \"" << inputModel->getName() << "\"");
-    std::string pName = inputModel->getInputName();
+           "Registering input for \"" << input.getName() << "\"");
+    std::string pName = input.getInputName();
     SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
-    inputModel->setCallback(new FGInputCallback(sgProp));
+    input.setCallback(new FGInputCallback(sgProp));
+
+    ModelVisitor::apply(input);
   }
   virtual void apply(ModelGroup& modelGroup)
-  { traverse(modelGroup); }
+  {
+    traverse(modelGroup);
+  }
 private:
   SGSharedPtr<SGPropertyNode> mAircraftRootNode;
 };
 
+class BindVisitor :
+    public ModelVisitor {
+public:
+  BindVisitor(SGPropertyNode* aircraftRootNode,
+                SGPropertyNode* vehicleRootNode) :
+    mAircraftRootNode(aircraftRootNode),
+    mCurrentNode(vehicleRootNode)
+  { }
 
+  virtual void apply(Node& node)
+  {
+    SGSharedPtr<SGPropertyNode> oldNode = mCurrentNode;
 
-void printVehicle(Vehicle* vehicle)
-{
-  cout << "T = " << vehicle->getTime()
-       << ", Pos: " << vehicle->getGeodPosition()
-//        << ", Or: " << vehicle->getGeodOrientation()
-       << endl;
-}
+    std::string pName = toPropname(node.getName());
+    mCurrentNode = oldNode->getNode(pName.c_str(), true);
 
+    tieObject(node);
+    
+    mCurrentNode = oldNode;
+
+    ModelVisitor::apply(node);
+  }
+
+  virtual void apply(Model& model)
+  {
+    SGPropertyNode* outputBase = mCurrentNode->getNode("outputs", true);
+    for (unsigned i = 0; i < model.getNumOutputPorts(); ++i) {
+      std::string name = model.getOutputPortName(i);
+      SGPropertyNode* sgProp = outputBase->getNode(name.c_str(), true);
+      sgProp->tie(FGRealPortReflector(model.getOutputPort(i)));
+    }
+
+    ModelVisitor::apply(model);
+  }
+
+  virtual void apply(Output& output)
+  {
+    std::string pName = output.getOutputName();
+    SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
+    if (sgProp->isTied())
+      sgProp->untie();
+    sgProp->tie(FGOutputReflector(&output));
+
+    ModelVisitor::apply(output);
+  }
+
+  virtual void apply(ModelGroup& modelGroup)
+  {
+    SGSharedPtr<SGPropertyNode> oldNode = mCurrentNode;
+
+    std::string pName = toPropname(modelGroup.getName());
+    mCurrentNode = oldNode->getNode(pName.c_str(), true);
+    
+    traverse(modelGroup);
+
+    tieObject(modelGroup);
+
+    mCurrentNode = oldNode;
+  }
+
+private:
+  void tieObject(Object& object)
+  {
+    // The usual, whole object reflection so that one can take a look into
+    // OpenFDM's internal modules ...
+    std::vector<PropertyInfo> props;
+    object.getPropertyInfoList(props);
+    std::vector<PropertyInfo>::iterator it = props.begin();
+    while (it != props.end()) {
+      // ... well, FIXME cleanup ...
+      std::string pName = toPropname(it->getName());
+      SGPropertyNode* sgProp = mCurrentNode->getChild(pName.c_str(), 0, true);
+      Variant value;
+      object.getPropertyValue(it->getName(), value);
+      
+      if (value.isString())
+        sgProp->tie(FGStringPropertyAdapter(&object, it->getName()));
+      else if (value.isReal())
+        sgProp->tie(FGRealPropertyAdapter(&object, it->getName()));
+      else if (value.isInteger())
+        sgProp->tie(FGIntegerPropertyAdapter(&object, it->getName()));
+      else if (value.isUnsigned())
+        sgProp->tie(FGIntegerPropertyAdapter(&object, it->getName()));
+      
+      else if (value.isMatrix()) {
+        Matrix m = value.toMatrix();
+        unsigned reshapeSize = rows(m) * cols(m);
+        
+        sgProp->tie(FGRealPropertyAdapter(&object, it->getName()));
+        for (unsigned i = 2; i <= reshapeSize; ++i) {
+          sgProp = mCurrentNode->getChild(pName.c_str(), i-1, true);
+          sgProp->tie(FGRealPropertyAdapter(&object, it->getName(), i));
+        }
+      }
+      else if (value.isValid()) {
+        SG_LOG(SG_FLIGHT, SG_WARN,
+               "Found unexpected property type with property named \""
+               << it->getName() << "\"");
+      }
+      ++it;
+    }
+  }
+
+  static std::string
+  toPropname(const std::string& name)
+  {
+    std::string pName = name;
+    std::string::size_type pos;
+    while ((pos = pName.find(' ')) != std::string::npos) {
+      pName.replace(pos, 1, 1, '_');
+    }
+    while ((pos = pName.find('<')) != std::string::npos) {
+      pName.replace(pos, 1, 1, '[');
+    }
+    while ((pos = pName.find('>')) != std::string::npos) {
+      pName.replace(pos, 1, 1, ']');
+    }
+    while ((pos = pName.find('(')) != std::string::npos) {
+      pName.replace(pos, 1, 1, '_');
+    }
+    while ((pos = pName.find(')')) != std::string::npos) {
+      pName.replace(pos, 1, 1, '_');
+    }
+    return pName;
+  }
+
+  SGSharedPtr<SGPropertyNode> mAircraftRootNode;
+  SGSharedPtr<SGPropertyNode> mCurrentNode;
+};
 
 // Our local storage covers the pointer to our vehicle.
 // A list of the property to expression adaptors.
@@ -384,7 +501,9 @@ void FGOpenFDM::bind()
   SGPropertyNode* sgProp = mAircraftRootNode->getChild("fdm", 0, true);
   sgProp = sgProp->getChild("vehicle", 0, true);
   sgProp = sgProp->getChild("system", 0, true);
-  tieModelGroup(sgProp, mData->vehicle->getSystem());
+
+  BindVisitor visitor(mAircraftRootNode, sgProp);
+  mData->vehicle->getSystem()->accept(visitor);
 }
 
 void FGOpenFDM::unbind()
@@ -505,89 +624,6 @@ FGOpenFDM::update(double dt)
     _set_Alpha( sgProp->getDoubleValue() );
 }
 
-
-void
-FGOpenFDM::tieObject(SGPropertyNode* base, Object* object)
-{
-  // Check for output models
-  // If so, we want to reflect that in flightgears property tree
-  Output* outputModel = dynamic_cast<Output*>(object);
-  if (outputModel) {
-    std::string pName = outputModel->getOutputName();
-    SGPropertyNode* sgProp = mAircraftRootNode->getNode(pName.c_str(), true);
-    if (sgProp->isTied())
-      sgProp->untie();
-    sgProp->tie(FGOutputReflector(outputModel));
-  }
-
-  // Reflect all output ports
-  Model* model = dynamic_cast<Model*>(object);
-  if (model && model->getNumOutputPorts()) {
-    SGPropertyNode* outputBase = base->getNode("outputs", true);
-    for (unsigned i = 0; i < model->getNumOutputPorts(); ++i) {
-      std::string name = model->getOutputPortName(i);
-      SGPropertyNode* sgProp = outputBase->getNode(name.c_str(), true);
-      sgProp->tie(FGRealPortReflector(model->getOutputPort(i)));
-    }
-  }
-
-  // The usual, whole object reflection so that one can take a look into
-  // OpenFDM's internal modules ...
-  std::vector<PropertyInfo> props;
-  object->getPropertyInfoList(props);
-  std::vector<PropertyInfo>::iterator it = props.begin();
-  while (it != props.end()) {
-    // ... well, FIXME cleanup ...
-    std::string pName = toPropname(it->getName());
-    SGPropertyNode* sgProp = base->getChild(pName.c_str(), 0, true);
-    Variant value;
-    object->getPropertyValue(it->getName(), value);
-
-    if (value.isString())
-      sgProp->tie(FGStringPropertyAdapter(object, it->getName()));
-    else if (value.isReal())
-      sgProp->tie(FGRealPropertyAdapter(object, it->getName()));
-    else if (value.isInteger())
-      sgProp->tie(FGIntegerPropertyAdapter(object, it->getName()));
-    else if (value.isUnsigned())
-      sgProp->tie(FGIntegerPropertyAdapter(object, it->getName()));
-
-    else if (value.isMatrix()) {
-      Matrix m = value.toMatrix();
-      unsigned reshapeSize = rows(m) * cols(m);
-
-      sgProp->tie(FGRealPropertyAdapter(object, it->getName()));
-      for (unsigned i = 2; i <= reshapeSize; ++i) {
-        sgProp = base->getChild(pName.c_str(), i-1, true);
-        sgProp->tie(FGRealPropertyAdapter(object, it->getName(), i));
-      }
-    }
-    else if (value.isValid()) {
-      SG_LOG(SG_FLIGHT, SG_WARN,
-             "Found unexpected property type with property named \""
-             << it->getName() << "\"");
-    }
-    ++it;
-  }
-}
-
-void
-FGOpenFDM::tieModelGroup(SGPropertyNode* base, ModelGroup* modelGroup)
-{
-  unsigned numModels = modelGroup->getNumModels();
-  for (unsigned i = 0; i < numModels; ++i) {
-    Node* model = modelGroup->getModel(i);
-    std::string pName = toPropname(model->getName());
-    SGPropertyNode* sgProp = base->getNode(pName.c_str(), true);
-    tieObject(sgProp, model);
-
-    ModelGroup* nestedGroup = model->toModelGroup();
-    if (nestedGroup) {
-      tieModelGroup(sgProp, nestedGroup);
-    }
-  }
-}
-
 void
 FGOpenFDM::untieRecursive(SGPropertyNode* base)
 {
@@ -616,29 +652,6 @@ FGOpenFDM::untieNamed(SGPropertyNode* base, const char* name)
     untieRecursive(tmpChild);
     tmpChild->clearValue();
   }
-}
-
-std::string
-FGOpenFDM::toPropname(const std::string& name)
-{
-  std::string pName = name;
-  std::string::size_type pos;
-  while ((pos = pName.find(' ')) != std::string::npos) {
-    pName.replace(pos, 1, 1, '_');
-  }
-  while ((pos = pName.find('<')) != std::string::npos) {
-    pName.replace(pos, 1, 1, '[');
-  }
-  while ((pos = pName.find('>')) != std::string::npos) {
-    pName.replace(pos, 1, 1, ']');
-  }
-  while ((pos = pName.find('(')) != std::string::npos) {
-    pName.replace(pos, 1, 1, '_');
-  }
-  while ((pos = pName.find(')')) != std::string::npos) {
-    pName.replace(pos, 1, 1, '_');
-  }
-  return pName;
 }
 
 } // namespace OpenFDM
