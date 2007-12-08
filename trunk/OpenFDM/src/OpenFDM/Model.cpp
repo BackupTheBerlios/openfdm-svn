@@ -80,21 +80,12 @@ class Node::PathListCollector :
 public:
   virtual void apply(Node& node)
   {
-    Log(Model, Error) << "apply node " << node.getName() << std::endl;
     // First go up and collect the path above.
     // When we are back here append this.
     if (0 < node.getNumParents())
       ascend(node);
-    else {
+    else
       pathList.push_back(getNodePath());
-
-      Log(Model, Error) << "push node path:" << std::endl;
-      for (Node::Path::const_iterator i = getNodePath().begin();
-           i != getNodePath().end(); ++i) {
-        Log(Model, Error) << "\"" << (*i)->getName() << "\" ";
-      }
-      Log(Model, Error) << std::endl;
-    }
   }
   Node::PathList pathList;
 };
@@ -103,18 +94,14 @@ Node::GroupPath
 Node::getPath()
 {
   PathList pathList = getParentPathList();
-  Log(Model, Error) << "getPath()" << std::endl;
   GroupPath path;
   if (!pathList.empty()) {
-    Log(Model, Error) << "return path for: " << getName() << std::endl;
     Path::iterator i;
     for (i = pathList.back().begin(); i != pathList.back().end(); ++i) {
-      Log(Model, Error) << "\"" << (*i)->getName() << "\" ";
       ModelGroup* modelGroup = (*i)->toModelGroup();
       OpenFDMAssert(modelGroup);
       path.push_back(modelGroup);
     }
-    Log(Model, Error) << std::endl;
   }
   return path;
 }
