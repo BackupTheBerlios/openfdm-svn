@@ -29,17 +29,6 @@ Node::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
-void
-Node::ascend(ModelVisitor& visitor)
-{
-  for (ParentList::iterator i = mParents.begin(); i != mParents.end(); ++i) {
-    SharedPtr<ModelGroup> group = i->lock();
-    if (!group)
-      continue;
-    group->accept(visitor);
-  }
-}
-
 const Model*
 Node::toModel(void) const
 {
@@ -64,6 +53,12 @@ Node::toModelGroup(void)
   return 0;
 }
 
+unsigned
+Node::getNumParents(void) const
+{
+  return mParents.size();
+}
+
 WeakPtr<const ModelGroup>
 Node::getParent(unsigned idx) const
 {
@@ -80,33 +75,56 @@ Node::getParent(unsigned idx)
   return mParents[idx];
 }
 
-class ModelPathCollector :
+class Node::PathListCollector :
     public ModelVisitor {
 public:
-  virtual void apply(Model& model)
-  { ascend(model); }
-  virtual void apply(ModelGroup& modelGroup)
+  virtual void apply(Node& node)
   {
+    Log(Model, Error) << "apply node " << node.getName() << std::endl;
     // First go up and collect the path above.
     // When we are back here append this.
-    ascend(modelGroup);
-    path.push_back(&modelGroup);
+    if (0 < node.getNumParents())
+      ascend(node);
+    else {
+      pathList.push_back(getNodePath());
+
+      Log(Model, Error) << "push node path:" << std::endl;
+      for (Node::Path::const_iterator i = getNodePath().begin();
+           i != getNodePath().end(); ++i) {
+        Log(Model, Error) << "\"" << (*i)->getName() << "\" ";
+      }
+      Log(Model, Error) << std::endl;
+    }
   }
-  Node::Path path;
+  Node::PathList pathList;
 };
 
-Node::Path
+Node::GroupPath
 Node::getPath()
 {
-  ModelPathCollector modelPathCollector;
-  ascend(modelPathCollector);
-  return modelPathCollector.path;
+  PathList pathList = getParentPathList();
+  Log(Model, Error) << "getPath()" << std::endl;
+  GroupPath path;
+  if (!pathList.empty()) {
+    Log(Model, Error) << "return path for: " << getName() << std::endl;
+    Path::iterator i;
+    for (i = pathList.back().begin(); i != pathList.back().end(); ++i) {
+      Log(Model, Error) << "\"" << (*i)->getName() << "\" ";
+      ModelGroup* modelGroup = (*i)->toModelGroup();
+      OpenFDMAssert(modelGroup);
+      path.push_back(modelGroup);
+    }
+    Log(Model, Error) << std::endl;
+  }
+  return path;
 }
 
-unsigned
-Node::getNumParents(void) const
+Node::PathList
+Node::getParentPathList()
 {
-  return mParents.size();
+  PathListCollector pathListCollector;
+  accept(pathListCollector);
+  return pathListCollector.pathList;
 }
 
 unsigned

@@ -1597,7 +1597,7 @@ std::list<PortProvider*>
 JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
                                  const std::string& name)
 {
-  Model::Path path = mVehicle->getMultiBodySystem()->getGroupPath();
+  Node::GroupPath path = mVehicle->getMultiBodySystem()->getGroupPath();
   std::list<PortProvider*> inputs;
   std::list<const XMLElement*> args = operationTag->getElements();
   std::list<const XMLElement*>::const_iterator ait;

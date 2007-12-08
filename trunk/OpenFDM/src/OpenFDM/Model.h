@@ -7,8 +7,10 @@
 
 #include <string>
 #include <vector>
+#include <list>
 #include <algorithm>
 
+#include "OpenFDMConfig.h"
 #include "Assert.h"
 #include "LogStream.h"
 #include "Object.h"
@@ -40,12 +42,15 @@ class MobileRootJoint;
 class ModelVisitor;
 class TaskInfo;
 
-
-
 class Node : public Object {
   OPENFDM_OBJECT(Node, Object);
 public:
-  typedef std::list<SharedPtr<ModelGroup> > Path;
+  // FIXME
+  typedef std::list<SharedPtr<ModelGroup> > GroupPath;
+
+  // FIXME vector??
+  typedef std::vector<SharedPtr<Node> > Path;
+  typedef std::vector<Path> PathList;
 
   Node(const std::string& name);
   virtual ~Node(void);
@@ -55,21 +60,19 @@ public:
   /// Double dispatch helper for the system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
 
-  /// Double dispatch helper for the system visitor
-  void ascend(ModelVisitor& visitor);
-  /// Double dispatch helper for the system visitor
-//   void ascend(ConstModelVisitor& visitor) const;
-
   virtual const Model* toModel(void) const;
   virtual Model* toModel(void);
 
   virtual const ModelGroup* toModelGroup(void) const;
   virtual ModelGroup* toModelGroup(void);
 
+  unsigned getNumParents(void) const;
   WeakPtr<const ModelGroup> getParent(unsigned idx) const;
   WeakPtr<ModelGroup> getParent(unsigned idx);
 
-  Path getPath() OpenFDM_DEPRECATED;
+  GroupPath getPath() OpenFDM_DEPRECATED;
+  /// Returns the list of paths leading to this Node.
+  PathList getParentPathList();
 
   /// Returns the number of input properties.
   unsigned getNumInputPorts(void) const
@@ -79,7 +82,6 @@ public:
 
 protected:
   // Sets the parent model.
-  unsigned getNumParents(void) const;
   // FIXME: remove virtual here ...
   virtual unsigned addParent(ModelGroup* model);
   virtual void removeParent(unsigned idx);
@@ -147,6 +149,8 @@ protected:
   friend class GroupOutput;
 
 private:
+  class PathListCollector;
+
   typedef std::vector<WeakPtr<ModelGroup> > ParentList;
   ParentList mParents;
 

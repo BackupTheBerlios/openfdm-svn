@@ -127,13 +127,13 @@ Connection::connect(Port* port0, Port* port1)
 Port::ConnectResult
 Connection::connectRoute(PortProvider* port0, PortAcceptor* port1)
 {
-  Model::Path path0;
+  Node::GroupPath path0;
   SharedPtr<Node> model = port0->getModel().lock();
   if (!model)
     return Port::IsolatedModel;
   path0 = model->getPath();
 
-  Model::Path path1;
+  Node::GroupPath path1;
   model = port1->getModel().lock();
   if (!model)
     return Port::IsolatedModel;
@@ -148,7 +148,7 @@ Connection::connectRoute(PortProvider* port0, PortAcceptor* port1)
   }
   
   // Ok, now the paths are clear
-  Model::Path::reverse_iterator i;
+  Node::GroupPath::reverse_iterator i;
   i = path0.rbegin();
   while (i != path0.rend()) {
     SharedPtr<GroupOutput> groupOutput = new GroupOutput(port0->getName());

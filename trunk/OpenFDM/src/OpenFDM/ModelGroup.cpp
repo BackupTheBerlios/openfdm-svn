@@ -33,13 +33,6 @@ ModelGroup::accept(ModelVisitor& visitor)
   visitor.apply(*this);
 }
 
-void
-ModelGroup::traverse(ModelVisitor& visitor)
-{
-  for (ModelList::iterator it = mModels.begin(); it != mModels.end(); ++it)
-    (*it)->accept(visitor);
-}
-
 const ModelGroup*
 ModelGroup::toModelGroup(void) const
 {
@@ -245,10 +238,10 @@ ModelGroup::getConnection(unsigned i) const
   return mConnections[i];
 }
 
-Model::Path
-ModelGroup::getGroupPath() /* FIXME const*/
+Model::GroupPath
+ModelGroup::getGroupPath()
 {
-  Path path = getPath();
+  GroupPath path = getPath();
   path.push_back(this);
   return path;
 }

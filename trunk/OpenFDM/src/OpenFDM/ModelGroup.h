@@ -25,8 +25,6 @@ public:
   virtual void accept(ModelVisitor& visitor);
   /// Double dispatch helper for the multibody system visitor
 //   virtual void accept(ConstModelVisitor& visitor) const;
-  /// Traverse this ModelGroup with the given visitor
-  void traverse(ModelVisitor& visitor);
 
   virtual const ModelGroup* toModelGroup(void) const;
   virtual ModelGroup* toModelGroup(void);
@@ -52,7 +50,7 @@ public:
 
   /// Returns the path of this ModelGroup. In contrast to getPath this returns
   /// the path including the current ModelGroup.
-  Path getGroupPath() /* FIXME const*/;
+  GroupPath getGroupPath() OpenFDM_DEPRECATED;
 
   bool addSampleTime(const SampleTime& sampleTime)
   { return mSampleTimeSet.addSampleTime(sampleTime); }

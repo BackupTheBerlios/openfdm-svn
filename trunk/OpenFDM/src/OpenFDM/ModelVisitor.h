@@ -13,8 +13,6 @@
 
 namespace OpenFDM {
 
-typedef std::list<SharedPtr<Node> > NodePath;
-
 class ModelVisitor {
 public:
   virtual ~ModelVisitor(void)
@@ -34,7 +32,7 @@ public:
   virtual void apply(MobileRootJoint& mobileRootJoint)
   { apply(static_cast<Joint&>(mobileRootJoint)); }
 
-  const NodePath& getNodePath() const
+  const Node::Path& getNodePath() const
   { return mNodePath; }
 
 protected:
@@ -42,21 +40,30 @@ protected:
   /// traverse downward
   inline void traverse(ModelGroup& modelGroup)
   {
-    mNodePath.push_back(&modelGroup);
-    modelGroup.traverse(*this);
-    mNodePath.pop_back();
+    for (unsigned i = 0; i < modelGroup.getNumModels(); ++i) {
+      SharedPtr<Node> node = modelGroup.getModel(i);
+      mNodePath.push_back(node);
+      node->accept(*this);
+      mNodePath.pop_back();
+    }
   }
   /// Call this in the apply(ModelGroup&) method if you want to
   /// traverse upward
   inline void ascend(Node& node)
   {
-    mNodePath.push_back(&node);
-    node.ascend(*this);
-    mNodePath.pop_back();
+    for (unsigned i = 0; i < node.getNumParents(); ++i) {
+      SharedPtr<ModelGroup> group = node.getParent(i).lock();
+      if (!group)
+        continue;
+      mNodePath.insert(mNodePath.begin(), group);
+      group->accept(*this);
+      mNodePath.erase(mNodePath.begin());
+    }
   }
+
 private:
   // The path that visitor has passed
-  NodePath mNodePath;
+  Node::Path mNodePath;
 };
 
 } // namespace OpenFDM

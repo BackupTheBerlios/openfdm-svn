@@ -24,7 +24,7 @@ BEGIN_OPENFDM_OBJECT_DEF(System, ModelGroup)
 
 struct ModelListEntry {
   SharedPtr<Model> model;
-  NodePath nodePath;
+  Node::Path nodePath;
   SampleTimeSet sampleTimeSet;  
 };
 
@@ -754,7 +754,7 @@ sortModels(ModelList2& mModels)
   ModelList2::const_iterator it;
   it = mModels.begin();
   while (it != mModels.end()) {
-    NodePath::const_iterator ni;
+    Node::Path::const_iterator ni;
     for (ni = it->nodePath.begin(); ni != it->nodePath.end(); ++ni)
       Log(Schedule,Info) << "/" << (*ni)->getName();
     Log(Schedule,Info) << "/" << it->model->getName() << " "

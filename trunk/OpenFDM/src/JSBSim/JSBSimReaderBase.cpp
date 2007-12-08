@@ -177,7 +177,7 @@ JSBSimReaderBase::normalizeComponentName(const std::string& name)
 
 PortProvider*
 JSBSimReaderBase::lookupJSBExpression(const std::string& name,
-                                      const Model::Path& path,
+                                      const Node::GroupPath& path,
                                       bool recheckAeroProp)
 {
   // Convert to something being able to look up
@@ -219,7 +219,7 @@ JSBSimReaderBase::connectJSBExpression(const std::string& name,
   SharedPtr<Node> model = pa->getModel().lock();
   if (!model)
     return false;
-  Model::Path path = model->getPath();
+  Node::GroupPath path = model->getPath();
   PortProvider* pp = lookupJSBExpression(name, path, recheckAeroProp);
   return Port::Success == Connection::connect(pp, pa);
 }
@@ -281,7 +281,7 @@ JSBSimReaderBase::registerJSBExpression(const std::string& name, PortProvider* p
 
 PortProvider*
 JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
-                                         const Model::Path& path)
+                                         const Node::GroupPath& path)
 {
   // This routine checks if the given propName is a special JSBSim
   // input property. If so, it schedules and registers a discrete input model.
@@ -480,7 +480,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
 
 PortProvider*
 JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
-                                            const Model::Path& path)
+                                            const Node::GroupPath& path)
 {
   // This routine checks if the given propName is a aerodynamic reference
   // point property. If so, it schedules and registers a discrete input model.
@@ -737,7 +737,7 @@ JSBSimReaderBase::addAbsModel(const std::string& name, PortProvider* in)
 
 PortProvider*
 JSBSimReaderBase::addConstModel(const std::string& name, real_type value,
-                                const Model::Path& path)
+                                const Node::GroupPath& path)
 {
   Matrix m(1, 1);
   m(0, 0) = 0;

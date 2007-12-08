@@ -38,7 +38,7 @@ class Product;
 
 class PortProviderSet {
   struct PathPort {
-    Model::Path modelPath;
+    Node::GroupPath modelPath;
     SharedPtr<PortProvider> portProvider;
   };
 public:
@@ -56,7 +56,7 @@ public:
     mPortProviderList.push_back(pathPort);
   }
 
-  PortProvider* routeTo(const Model::Path& path)
+  PortProvider* routeTo(const Node::GroupPath& path)
   {
     // could happen if the initialzer failed
     if (mPortProviderList.empty())
@@ -66,7 +66,7 @@ public:
     if (path.empty())
       return mPortProviderList.front().portProvider;
 
-    const Model::Path& originatingPath = mPortProviderList.front().modelPath;
+    const Node::GroupPath& originatingPath = mPortProviderList.front().modelPath;
     // fast return if the models are not connected to the same root system
     if (path.front() != originatingPath.front())
       return 0;
@@ -78,8 +78,8 @@ public:
 
     // Compute the iterators for seperating the common part of the model path
     // from the different part
-    Model::Path::const_iterator mi1 = path.begin();
-    Model::Path::const_iterator mi2 = originatingPath.begin();
+    Node::GroupPath::const_iterator mi1 = path.begin();
+    Node::GroupPath::const_iterator mi2 = originatingPath.begin();
     while (mi1 != path.end() && mi2 != originatingPath.end()) {
       if (*mi1 != *mi2)
         break;
@@ -89,7 +89,7 @@ public:
 
     if (mi1 != path.end()) {
       // that is: we must first go up that path and search again
-      Model::Path pathUp = path;
+      Node::GroupPath pathUp = path;
       pathUp.pop_back();
       portProvider = routeTo(pathUp);
       if (!portProvider)
@@ -109,7 +109,7 @@ public:
 
     } else if (mi2 != originatingPath.end()) {
       // that is: we need to step deeper towards the origin of that port
-      Model::Path pathDown = path;
+      Node::GroupPath pathDown = path;
       pathDown.push_back(*mi2);
       portProvider = routeTo(pathDown);
       if (!portProvider)
@@ -134,7 +134,7 @@ public:
     }
   }
 
-  PortProvider* findProvider(const Model::Path& path)
+  PortProvider* findProvider(const Node::GroupPath& path)
   {
     PortProviderList::iterator i = mPortProviderList.begin();
     while (i != mPortProviderList.end()) {
@@ -175,7 +175,7 @@ public:
   void clear()
   { mMap.clear(); }
 
-  PortProvider* routeTo(const std::string& name, const Model::Path& path)
+  PortProvider* routeTo(const std::string& name, const Node::GroupPath& path)
   {
     std::string simplifiedName = simplify(name);
     if (mMap.count(simplifiedName) <= 0)
@@ -231,7 +231,7 @@ protected:
 
   /// <FIXME> document and rethink
   PortProvider* lookupJSBExpression(const std::string& name,
-                                    const Model::Path& path = Model::Path(),
+                                    const Node::GroupPath& path = Node::GroupPath(),
                                     bool recheckAeroProp = true);
 
   bool connectJSBExpression(const std::string& name, PortAcceptor*,
@@ -241,9 +241,9 @@ protected:
   void registerJSBExpression(const std::string& name, PortProvider* expr);
 
   PortProvider* createAndScheduleAeroProp(const std::string& name,
-                                          const Model::Path& path);
+                                          const Node::GroupPath& path);
   PortProvider* createAndScheduleInput(const std::string& name,
-                                       const Model::Path& path);
+                                       const Node::GroupPath& path);
 
   PortProvider* addInputModel(const std::string& name, const std::string& propName,
                       real_type gain = 1);
@@ -253,7 +253,7 @@ protected:
   PortProvider* addInverterModel(const std::string& name, PortProvider* in);
   PortProvider* addAbsModel(const std::string& name, PortProvider* in);
   PortProvider* addConstModel(const std::string& name, real_type value,
-                              const Model::Path& path = Model::Path());
+                              const Node::GroupPath& path = Node::GroupPath());
   PortProvider* addToUnit(const std::string& name, Unit u, PortProvider* in);
   PortProvider* addFromUnit(const std::string& name, Unit u, PortProvider* in);
 
