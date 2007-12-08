@@ -3,6 +3,7 @@
  */
 
 #include "Output.h"
+#include "ModelVisitor.h"
 
 namespace OpenFDM {
 
@@ -25,6 +26,12 @@ Output::Output(const std::string& name) :
 
 Output::~Output(void)
 {
+}
+
+void
+Output::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
 }
 
 bool

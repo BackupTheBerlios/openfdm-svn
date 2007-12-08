@@ -15,6 +15,11 @@ public:
   Input(const std::string& name);
   virtual ~Input(void);
 
+  /// Double dispatch helper for the system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
+
   virtual const Input* toInput(void) const;
   virtual Input* toInput(void);
 

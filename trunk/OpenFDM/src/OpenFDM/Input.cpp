@@ -3,6 +3,7 @@
  */
 
 #include "Input.h"
+#include "ModelVisitor.h"
 
 namespace OpenFDM {
 
@@ -25,6 +26,12 @@ Input::Input(const std::string& name) :
 
 Input::~Input(void)
 {
+}
+
+void
+Input::accept(ModelVisitor& visitor)
+{
+  visitor.apply(*this);
 }
 
 const Input*

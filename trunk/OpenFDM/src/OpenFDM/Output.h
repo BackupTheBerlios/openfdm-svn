@@ -15,6 +15,11 @@ public:
   Output(const std::string& name);
   virtual ~Output(void);
   
+  /// Double dispatch helper for the system visitor
+  virtual void accept(ModelVisitor& visitor);
+  /// Double dispatch helper for the system visitor
+//   virtual void accept(ConstModelVisitor& visitor) const;
+
   virtual const Output* toOutput(void) const;
   virtual Output* toOutput(void);
 

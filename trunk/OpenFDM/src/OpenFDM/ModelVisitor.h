@@ -6,6 +6,8 @@
 #define OpenFDM_ModelVisitor_H
 
 #include "Model.h"
+#include "Output.h"
+#include "Input.h"
 #include "ModelGroup.h"
 #include "RigidBody.h"
 #include "MobileRootJoint.h"
@@ -17,20 +19,31 @@ class ModelVisitor {
 public:
   virtual ~ModelVisitor(void)
   { }
+
   virtual void apply(Node& node)
   { }
+
   virtual void apply(Model& model)
   { apply(static_cast<Node&>(model)); }
   virtual void apply(ModelGroup& modelGroup)
   { apply(static_cast<Node&>(modelGroup)); }
-  virtual void apply(System& system)
-  { apply(static_cast<ModelGroup&>(system)); }
+
+  virtual void apply(Output& output)
+  { apply(static_cast<Model&>(output)); }
+  virtual void apply(Input& input)
+  { apply(static_cast<Model&>(input)); }
   virtual void apply(Interact& interact)
   { apply(static_cast<Model&>(interact)); }
+
+  virtual void apply(System& system)
+  { apply(static_cast<ModelGroup&>(system)); }
+
   virtual void apply(Joint& joint)
   { apply(static_cast<Interact&>(joint)); }
+
   virtual void apply(MobileRootJoint& mobileRootJoint)
   { apply(static_cast<Joint&>(mobileRootJoint)); }
+
 
   const Node::Path& getNodePath() const
   { return mNodePath; }
