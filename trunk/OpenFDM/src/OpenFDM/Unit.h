@@ -437,15 +437,15 @@ inline
 std::basic_ostream<char_type, traits_type>&
 operator<<(std::basic_ostream<char_type, traits_type>& stream, const Unit& u)
 {
-  stream << stream.widen("Unit: Factor = ") << u.getFactor()
-         << stream.widen(", Offset = ") << u.getOffset()
+  stream << "Unit: Factor = " << u.getFactor()
+         << ", Offset = " << u.getOffset()
          << stream.widen(' ');
 
   // Distinguish between offset free and units with offset.
   PhysicalDimension physicalDimension = u.getPhysicalDimension();
   if (u.getOffset() == 0) {
     if (physicalDimension.getMass()) {
-      stream << stream.widen("kg");
+      stream << stream.widen('k') << stream.widen('g');
       if (physicalDimension.getMass() != 1)
         stream << int(physicalDimension.getMass());
       stream << stream.widen(' ');
@@ -475,18 +475,18 @@ operator<<(std::basic_ostream<char_type, traits_type>& stream, const Unit& u)
       stream << stream.widen(' ');
     }
     if (physicalDimension.getLumIntensity()) {
-      stream << stream.widen("cd");
+      stream << stream.widen('c') << stream.widen('d');
       if (physicalDimension.getLumIntensity() != 1)
         stream << int(physicalDimension.getLumIntensity());
       stream << stream.widen(' ');
     }
   } else {
-    stream << stream.widen(", Length = ") << int(physicalDimension.getLength())
-           << stream.widen(", Mass = ") << int(physicalDimension.getMass())
-           << stream.widen(", Time = ") << int(physicalDimension.getTime())
-           << stream.widen(", Temperature = ") << int(physicalDimension.getTemperature())
-           << stream.widen(", Current = ") << int(physicalDimension.getCurrent())
-           << stream.widen(", LumIntensity = ") << int(physicalDimension.getLumIntensity());
+    stream << ", Length = " << int(physicalDimension.getLength())
+           << ", Mass = " << int(physicalDimension.getMass())
+           << ", Time = " << int(physicalDimension.getTime())
+           << ", Temperature = " << int(physicalDimension.getTemperature())
+           << ", Current = " << int(physicalDimension.getCurrent())
+           << ", LumIntensity = " << int(physicalDimension.getLumIntensity());
   }
   return stream;
 }
