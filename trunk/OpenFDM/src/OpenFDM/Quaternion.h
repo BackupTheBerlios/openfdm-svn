@@ -78,10 +78,10 @@ public:
   OpenFDM_FORCE_INLINE
   bool isIdentity(void) const
   {
-    return fabs(fabs(w())-1) < Limits<T>::epsilon() &&
-      fabs(x()) < Limits<T>::epsilon() &&
-      fabs(y()) < Limits<T>::epsilon() &&
-      fabs(z()) < Limits<T>::epsilon();
+    return fabs(fabs(w())-1) <= Limits<T>::epsilon() &&
+      fabs(x()) <= Limits<T>::epsilon() &&
+      fabs(y()) <= Limits<T>::epsilon() &&
+      fabs(z()) <= Limits<T>::epsilon();
   }
 
   OpenFDM_FORCE_INLINE
@@ -96,7 +96,7 @@ public:
   {
     value_type nrm = norm(*this);
     // More or less emergency exit. Should not happen ...
-    if (nrm < Limits<value_type>::epsilon())
+    if (nrm <= Limits<value_type>::epsilon())
       return Vector3::zeros();
 
     Vector4<T> nq = (*this)/nrm;
@@ -132,34 +132,54 @@ public:
     value_type q2 = x();
     value_type q3 = y();
     value_type q4 = z();
-    value_type sqrQ1 = q1*q1;
-    value_type sqrQ2 = q2*q2;
-    value_type sqrQ3 = q3*q3;
-    value_type sqrQ4 = q4*q4;
 
-    value_type den = sqrQ1 - sqrQ2 - sqrQ3 + sqrQ4;
-    value_type num = 2*(q3*q4 + q1*q2);
-    if (fabs(den) < Limits<value_type>::min() &&
-        fabs(num) < Limits<value_type>::min())
-      angles(0) = 0;
-    else
-      angles(0) = atan2(num, den);
+    value_type r = 1/dot(*this, *this);
+    value_type rq1 = r*q1;
+    value_type rq2 = r*q2;
+    value_type rq3 = r*q3;
+    value_type rq4 = r*q4;
+
+    value_type q1q1 = rq1*q1;
+    value_type q2q2 = rq2*q2;
+    value_type q3q3 = rq3*q3;
+    value_type q4q4 = rq4*q4;
+    value_type q1q2 = rq1*q2;
+    value_type q1q3 = rq1*q3;
+    value_type q1q4 = rq1*q4;
+    value_type q2q3 = rq2*q3;
+    value_type q2q4 = rq2*q4;
+    value_type q3q4 = rq3*q4;
     
-    value_type tmp = 2*(q2*q4 - q1*q3);
-    if (tmp < -1)
-      angles(1) = pi05;
-    else if (1.0 < tmp)
+    value_type m11 = q1q1 + q2q2 - q3q3 - q4q4;
+    value_type m12 = 2*(q2q3 + q1q4);
+    value_type m13 = 2*(q2q4 - q1q3);
+    value_type m21 = 2*(q2q3 - q1q4);
+    value_type m22 = q1q1 - q2q2 + q3q3 - q4q4;
+    value_type m23 = 2*(q3q4 + q1q2);
+    // value_type m31 = 2*(q2q4 + q1q3);
+    // value_type m32 = 2*(q3q4 - q1q2);
+    value_type m33 = q1q1 - q2q2 - q3q3 + q4q4;
+
+    if (1 - 8*Limits<T>::epsilon() <= m13) {
+      // take one of them for the first angle
+      // angles(0) = atan2(-m32, -m31);
+      angles(0) = atan2(-m21, m22);
+      // angles(0) = atan2(- m32 - m21, - m31 + m22);
       angles(1) = -pi05;
-    else
-      angles(1) = -asin(tmp);
-    
-    den = sqrQ1 + sqrQ2 - sqrQ3 - sqrQ4;
-    num = 2*(q2*q3 + q1*q4);
-    if (fabs(den) < Limits<value_type>::min() &&
-        fabs(num) < Limits<value_type>::min())
+      // angles(1) = -acos(sqrt(m11*m11 + m12*m12));
       angles(2) = 0;
-    else {
-      value_type psi = atan2(num, den);
+    } else if (m13 <= 8*Limits<T>::epsilon() - 1) {
+      // take one of them for the first angle
+      // angles(0) = -atan2(m32, m31);
+      angles(0) = -atan2(-m21, m22);
+      // angles(0) = -atan2(m32 - m21, m31 + m22);
+      angles(1) = pi05;
+      // angles(1) = acos(sqrt(m11*m11 + m12*m12));
+      angles(2) = 0;
+    } else {
+      angles(0) = atan2(m23, m33);
+      angles(1) = -asin(m13);
+      value_type psi = atan2(m12, m11);
       if (psi < 0)
         psi += pi2;
       angles(2) = psi;
@@ -283,11 +303,12 @@ public:
     return q1*q2*q3;
   }
 
-  static Quaternion fromEuler(value_type z, value_type y, value_type x)
+  OpenFDM_FORCE_INLINE
+  static Quaternion fromEuler(const Vector3& euler)
   {
-    value_type zd2 = 0.5*z;
-    value_type yd2 = 0.5*y;
-    value_type xd2 = 0.5*x;
+    value_type zd2 = value_type(0.5)*euler(2);
+    value_type yd2 = value_type(0.5)*euler(1);
+    value_type xd2 = value_type(0.5)*euler(0);
     
     value_type Szd2 = sin(zd2);
     value_type Syd2 = sin(yd2);
@@ -307,6 +328,9 @@ public:
                        Cxd2Czd2*Syd2 + Sxd2Szd2*Cyd2,
                        Cxd2Szd2*Cyd2 - Sxd2Czd2*Syd2);
   }
+  OpenFDM_FORCE_INLINE
+  static Quaternion fromEuler(value_type z, value_type y, value_type x)
+  { return fromEuler(Vector3(x, y, z)); }
 
   OpenFDM_FORCE_INLINE
   static Quaternion fromYawPitchRoll(value_type y, value_type p, value_type r)
@@ -319,8 +343,8 @@ public:
   OpenFDM_FORCE_INLINE
   static Quaternion fromLonLat(value_type lon, value_type lat)
   {
-    value_type zd2 = 0.5*lon;
-    value_type yd2 = - pi025 - 0.5*lat;
+    value_type zd2 = value_type(0.5)*lon;
+    value_type yd2 = - pi025 - value_type(0.5)*lat;
     
     value_type Szd2 = sin(zd2);
     value_type Syd2 = sin(yd2);
@@ -334,7 +358,7 @@ public:
   OpenFDM_FORCE_INLINE
   static Quaternion fromAngleAxis(value_type angle, const Vector3& axis)
   {
-    value_type angle2 = 0.5*angle;
+    value_type angle2 = value_type(0.5)*angle;
     return Quaternion::fromRealImag(cos(angle2), sin(angle2)*axis);
   }
 
@@ -351,7 +375,7 @@ public:
   {
     value_type nfrom = norm(from);
     value_type nto = norm(to);
-    if (nfrom < Limits<T>::min() || nto < Limits<T>::min())
+    if (nfrom <= Limits<T>::min() || nto <= Limits<T>::min())
       return Quaternion::unit();
 
     return Quaternion::fromRotateToNorm((1/nfrom)*from, (1/nto)*to);
@@ -363,13 +387,13 @@ public:
   {
     value_type nrmv1 = norm(v1);
     value_type nrmv2 = norm(v2);
-    if (nrmv1 < Limits<T>::min() || nrmv2 < Limits<T>::min())
+    if (nrmv1 <= Limits<T>::min() || nrmv2 <= Limits<T>::min())
       return Quaternion::unit();
 
     Vector3 nv1 = (1/nrmv1)*v1;
     Vector3 nv2 = (1/nrmv2)*v2;
     value_type dv1v2 = dot(nv1, nv2);
-    if (fabs(fabs(dv1v2)-1) < Limits<value_type>::epsilon())
+    if (fabs(fabs(dv1v2)-1) <= Limits<value_type>::epsilon())
       return Quaternion::unit();
 
     // The target vector for the first rotation
@@ -449,7 +473,7 @@ private:
     // in the interval [-pi,pi]. That means that 0.5*angle is in the interval
     // [-pi/2,pi/2]. But in that range the cosine is allways >= 0.
     // So we do not need to care for egative roots in the following equation:
-    value_type cos05ang = sqrt(0.5+0.5*cosang);
+    value_type cos05ang = sqrt(value_type(0.5)+value_type(0.5)*cosang);
 
 
     // Now our assumption of angles <= 90 deg comes in play.
@@ -559,7 +583,7 @@ equal(const Quaternion<T>& q1, const Quaternion<T>& q2)
   T sqreps = eps*eps*16*16;
   Vector4<T> t1 = q1 - q2;
   Vector4<T> t2 = q1 + q2;
-  return dot(t1, t1) < sqreps || dot(t2, t2) < sqreps;
+  return dot(t1, t1) <= sqreps || dot(t2, t2) <= sqreps;
 }
 
 template<typename T>

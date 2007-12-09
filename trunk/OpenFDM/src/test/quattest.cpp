@@ -22,6 +22,42 @@ rnVec(void)
   return normalize(rVec());
 }
 
+/// Return normalized random vector
+Quaternion
+rnQuat(void)
+{
+  Quaternion q(drand48()-0.5, drand48()-0.5, drand48()-0.5, drand48()-0.5);
+  return Quaternion(normalize(q));
+}
+
+int
+eulerTest(const Quaternion& q, real_type testEps)
+{
+  Vector3 euler = q.getEuler();
+  Quaternion q2 = Quaternion::fromEuler(euler);
+  Vector3 euler2 = q2.getEuler();
+  
+  if (!equal(q, q2, testEps) && !equal(q, -q2, testEps)) {
+    std::cerr << "Failing on test Quaternion euler angles conversion:\n"
+              << "q = " << q << "\n"
+              << "q2 = " << q2
+              << std::endl;
+    return -1;
+  }
+
+  
+  if (!equal(euler, euler2, testEps)) {
+    std::cerr << "Failing on test Quaternion euler angles conversion:\n"
+              << "q = " << q << "\n"
+              << "q2 = " << q2
+              << std::endl;
+    return -1;
+  }
+
+
+  return 0;
+}
+
 int
 quattest(void)
 {
@@ -82,8 +118,55 @@ quattest(void)
                 << std::endl;
       return -1;
     }
-
   }
+
+  // Test euler angle to quaternion and back conversion.
+  // special fixed cases
+  int fail = 0;
+  fail += eulerTest(Quaternion::fromEuler(0, 0, 0), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, 0, 0), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, 0, pi05), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(0, 0, pi05), 100*eps);
+  // special fixed cases at the gimbal lock
+  fail += eulerTest(Quaternion::fromEuler(0, pi05, 0), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, pi05, 0), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, pi05, pi05), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(0, pi05, pi05), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(0, -pi05, 0), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, -pi05, 0), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, -pi05, pi05), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(0, -pi05, pi05), 100*eps);
+
+  real_type gimbalEps = 1e3*eps;
+  // special cases around the gimbal lock
+  for (unsigned i = 0; i < nTests; ++i) {
+    for (unsigned k = 1; k < 1024; k *= 2) {
+      Vector3 euler = rVec();
+      euler(1) = pi05;
+      fail += eulerTest(Quaternion::fromEuler(euler), gimbalEps);
+
+      euler(1) = pi05*(1 - k*Limits<real_type>::epsilon());
+      fail += eulerTest(Quaternion::fromEuler(euler), gimbalEps);
+
+      euler(1) = pi05*(1 + k*Limits<real_type>::epsilon());
+      fail += eulerTest(Quaternion::fromEuler(euler), gimbalEps);
+
+      euler(1) = -pi05;
+      fail += eulerTest(Quaternion::fromEuler(euler), gimbalEps);
+
+      euler(1) = -pi05*(1 - k*Limits<real_type>::epsilon());
+      fail += eulerTest(Quaternion::fromEuler(euler), gimbalEps);
+
+      euler(1) = -pi05*(1 + k*Limits<real_type>::epsilon());
+      fail += eulerTest(Quaternion::fromEuler(euler), gimbalEps);
+    }
+  }
+  // arbitrary cases
+  for (unsigned i = 0; i < nTests; ++i)
+    fail += eulerTest(rnQuat(), 100*eps);
+
+  if (fail)
+    return -1;
 
   return 0;
 }

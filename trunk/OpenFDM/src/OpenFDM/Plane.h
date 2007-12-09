@@ -24,17 +24,17 @@ public:
   {}
   Plane(const Vector3& normal, value_type dist)
     : mNormal(normal), mDist(dist)
-  { OpenFDMAssert((norm(mNormal)-1) < 8*Limits<value_type>::epsilon()); }
+  { OpenFDMAssert((norm(mNormal)-1) <= 8*Limits<value_type>::epsilon()); }
   Plane(const Vector3& normal, const Vector3& off)
     : mNormal(normal), mDist(-dot(normal, off))
-  { OpenFDMAssert((norm(mNormal)-1) < 8*Limits<value_type>::epsilon()); }
+  { OpenFDMAssert((norm(mNormal)-1) <= 8*Limits<value_type>::epsilon()); }
 
   const Vector3& getNormal(void) const
   { return mNormal; }
   void setNormal(const Vector3& normal)
   {
     mNormal = normal;
-    OpenFDMAssert((norm(mNormal)-1) < 8*Limits<value_type>::epsilon());
+    OpenFDMAssert((norm(mNormal)-1) <= 8*Limits<value_type>::epsilon());
   }
 
   value_type getDist(void) const
@@ -76,7 +76,7 @@ public:
     value_type tmp = dot(ndir, mNormal);
 
     // Check if the line is parallel to the plane.
-    if (fabs(tmp) < Limits<value_type>::epsilon())
+    if (fabs(tmp) <= Limits<value_type>::epsilon())
       return false;
 
     ip = base - (getDist(base)/tmp)*ndir;

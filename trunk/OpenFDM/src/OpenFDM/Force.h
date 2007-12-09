@@ -185,7 +185,7 @@ public:
     // if we have really reached the zero position, we must have the full
     // speed in exactly the relPos direction.
     real_type nrmRelPos = norm(relPos);
-    if (nrmRelPos < Limits<real_type>::min()) {
+    if (nrmRelPos <= Limits<real_type>::min()) {
       Vector6 relVel6 = mMountFrame[0]->getRelVel(mMountFrame[1]);
       dir = normalize(relVel6.getLinear());
     } else
@@ -212,7 +212,7 @@ public:
     // if we have really reached the zero position, we must have the full
     // speed in exactly the relPos direction.
     real_type nrmRelPos = norm(relPos);
-    if (nrmRelPos < Limits<real_type>::min())
+    if (nrmRelPos <= Limits<real_type>::min())
       mRelVel = norm(relVel6.getLinear());
     else
       mRelVel = dot(relPos, relVel6.getLinear())/nrmRelPos;

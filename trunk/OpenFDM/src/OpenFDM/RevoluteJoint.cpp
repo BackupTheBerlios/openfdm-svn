@@ -80,7 +80,7 @@ void
 RevoluteJoint::setJointAxis(const Vector3& axis)
 {
   real_type nrm = norm(axis);
-  if (nrm < Limits<real_type>::min()) {
+  if (nrm <= Limits<real_type>::min()) {
     Log(Initialization, Error) << "JointAxis is zero ..." << endl;
     return;
   }

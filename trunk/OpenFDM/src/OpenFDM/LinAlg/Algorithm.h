@@ -133,7 +133,7 @@ normalize(const MatrixRValue<Impl,n,1>& v)
 {
   typedef typename Impl::value_type value_type;
   value_type nrm = norm(v);
-  if (fabs(nrm) < Limits<real_type>::min())
+  if (fabs(nrm) <= Limits<real_type>::min())
     return Vector<value_type,n>(v);
   else
     return Vector<value_type,n>((1/nrm)*v);
@@ -301,7 +301,7 @@ equal(const MatrixRValue<Impl1,m1,1>& V1,
     nrmd += d*d;
   }
 
-  return nrmd < static_cast<value_type>(rows);
+  return nrmd <= static_cast<value_type>(rows);
 }
 
 /**  Scaled difference of vectors.
@@ -414,7 +414,7 @@ equal(const MatrixRValue<Impl1,m1,1>& V1,
     nrmd += d*d;
   }
 
-  return nrmd < static_cast<value_type>(rows)*tol*tol*max(nrmv1, nrmv2);
+  return nrmd <= static_cast<value_type>(rows)*tol*tol*max(nrmv1, nrmv2);
 }
 
 /** Comparison function.
@@ -611,7 +611,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
       value_type Aii = A(i,i);
       // If the matrix is exactly singular, compute the solution where the
       // righthandside is projected into the image of the matrix.
-      if (fabs(Aii) < Limits<value_type>::min()) {
+      if (fabs(Aii) <= Limits<value_type>::min()) {
         v(i) = static_cast<value_type>(0);
       } else {
         v(i) /= Aii;
@@ -638,7 +638,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
         value_type Aii = A(i,i);
         // If the matrix is exactly singular, compute the solution where the
         // righthandside is projected into the image of the matrix.
-        if (fabs(Aii) < Limits<value_type>::min()) {
+        if (fabs(Aii) <= Limits<value_type>::min()) {
           v(i,j) = static_cast<value_type>(0);
         } else {
           v(i,j) /= Aii;
@@ -751,7 +751,7 @@ lu_factorize(Matrix<T,dim1,dim2>& A)
   size_type n = A.cols();
   for (size_type j = 0; j < n; ++j) {
     // The matrix is exactly singular.
-    if (fabs(A(j,j)) < Limits<value_type>::min())
+    if (fabs(A(j,j)) <= Limits<value_type>::min())
       nonsingular = false;
     else {
       if (j < n-1) {
@@ -785,7 +785,7 @@ lu_factorize(Matrix<T,dim1,dim2>& A, Vector<size_type,dim1>& perm)
     perm(j) = jp;
 
     // The matrix is exactly singular.
-    if (fabs(A(jp,j)) < Limits<value_type>::min())
+    if (fabs(A(jp,j)) <= Limits<value_type>::min())
       nonsingular = false;
     else {
       if (jp != j) {
@@ -928,7 +928,7 @@ qr_factorize(Matrix<T,dim1,dim2>& A, Vector<T,dim2>& beta)
 
     // Check if that thing is singular.
     value_type Ajj = A(j, j);
-    if (fabs(Ajj) < Limits<value_type>::min())
+    if (fabs(Ajj) <= Limits<value_type>::min())
       nonsingular = false;
 
     A(j, j) = 1;

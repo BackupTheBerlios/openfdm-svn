@@ -91,7 +91,7 @@ smoothSaturate(const T& val, const T& saturation)
 {
   /// FIXME
 #define PI static_cast<T>(3.1415926535897932384626433832795029L)
-  if (saturation < Limits<T>::min())
+  if (saturation <= Limits<T>::min())
     return 0;
   else
     return atan(val*0.5*PI/saturation)*2*saturation/PI;
