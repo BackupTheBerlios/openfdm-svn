@@ -163,7 +163,8 @@ public:
     if (1 - 8*Limits<T>::epsilon() <= m13) {
       // take one of them for the first angle
       // angles(0) = atan2(-m32, -m31);
-      angles(0) = atan2(-m21, m22);
+      // angles(0) = atan2(-m21, m22);
+      angles(0) = 2*atan2(x(), w());
       // angles(0) = atan2(- m32 - m21, - m31 + m22);
       angles(1) = -pi05;
       // angles(1) = -acos(sqrt(m11*m11 + m12*m12));
@@ -171,7 +172,8 @@ public:
     } else if (m13 <= 8*Limits<T>::epsilon() - 1) {
       // take one of them for the first angle
       // angles(0) = -atan2(m32, m31);
-      angles(0) = -atan2(-m21, m22);
+      // angles(0) = -atan2(-m21, m22);
+      angles(0) = 2*atan2(x(), w());
       // angles(0) = -atan2(m32 - m21, m31 + m22);
       angles(1) = pi05;
       // angles(1) = acos(sqrt(m11*m11 + m12*m12));
