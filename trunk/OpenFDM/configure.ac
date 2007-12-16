@@ -126,8 +126,8 @@ AM_CONDITIONAL([ENABLE_BUILDER], [test "x$openfdm_builder_enabled" = "xyes"])
 
 dnl write makefiles and config.h
 AM_CONFIG_HEADER([src/OpenFDM/config.h])
+AC_CONFIG_FILES([src/OpenFDM/OpenFDMConfig.h])
 AC_OUTPUT([
-  src/OpenFDM/OpenFDMConfig.h
   Makefile
   src/Makefile
   src/OpenFDM/Makefile

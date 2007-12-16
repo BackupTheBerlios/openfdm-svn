@@ -5,6 +5,8 @@
 #ifndef OpenFDM_OpenFDMConfig_H
 #define OpenFDM_OpenFDMConfig_H
 
+#define OpenFDM_VERSION_STRING "@PACKAGE_VERSION@"
+
 #if defined(__GNUC__) && (4 <= __GNUC__) && (1 <= __GNUC_MINOR__)
 #define OpenFDM_DEPRECATED __attribute__ ((deprecated))
 #else
