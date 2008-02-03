@@ -133,7 +133,7 @@ normalize(const MatrixRValue<Impl,n,1>& v)
 {
   typedef typename Impl::value_type value_type;
   value_type nrm = norm(v);
-  if (fabs(nrm) <= Limits<real_type>::min())
+  if (fabs(nrm) <= Limits<real_type>::safe_min())
     return Vector<value_type,n>(v);
   else
     return Vector<value_type,n>((1/nrm)*v);
@@ -474,10 +474,13 @@ OpenFDM_FORCE_INLINE
 Vector<typename Impl1::value_type,3>
 cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,1>& v)
 {
+  const Impl1& ui = u.asImpl();
+  const Impl2& vi = v.asImpl();
+
   Vector<typename Impl1::value_type,3> ret;
-  ret(0,0) = u.asImpl()(1,0)*v.asImpl()(2,0) - u.asImpl()(2,0)*v.asImpl()(1,0);
-  ret(1,0) = u.asImpl()(2,0)*v.asImpl()(0,0) - u.asImpl()(0,0)*v.asImpl()(2,0);
-  ret(2,0) = u.asImpl()(0,0)*v.asImpl()(1,0) - u.asImpl()(1,0)*v.asImpl()(0,0);
+  ret(0,0) = ui(1,0)*vi(2,0) - ui(2,0)*vi(1,0);
+  ret(1,0) = ui(2,0)*vi(0,0) - ui(0,0)*vi(2,0);
+  ret(2,0) = ui(0,0)*vi(1,0) - ui(1,0)*vi(0,0);
   return ret;
 }
 
@@ -498,19 +501,22 @@ OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,3,3>
 cross(const MatrixRValue<Impl1,3,3>& u, const MatrixRValue<Impl2,3,1>& v)
 {
+  const Impl1& ui = u.asImpl();
+  const Impl2& vi = v.asImpl();
+
   Matrix<typename Impl1::value_type,3,3> ret;
 
-  ret(0,0) = v.asImpl()(2,0)*u.asImpl()(0,1) - v.asImpl()(1,0)*u.asImpl()(0,2);
-  ret(1,0) = v.asImpl()(2,0)*u.asImpl()(1,1) - v.asImpl()(1,0)*u.asImpl()(1,2);
-  ret(2,0) = v.asImpl()(2,0)*u.asImpl()(2,1) - v.asImpl()(1,0)*u.asImpl()(2,2);
+  ret(0,0) = vi(2,0)*ui(0,1) - vi(1,0)*ui(0,2);
+  ret(1,0) = vi(2,0)*ui(1,1) - vi(1,0)*ui(1,2);
+  ret(2,0) = vi(2,0)*ui(2,1) - vi(1,0)*ui(2,2);
 
-  ret(0,1) = v.asImpl()(0,0)*u.asImpl()(0,2) - v.asImpl()(2,0)*u.asImpl()(0,0);
-  ret(1,1) = v.asImpl()(0,0)*u.asImpl()(1,2) - v.asImpl()(2,0)*u.asImpl()(1,0);
-  ret(2,1) = v.asImpl()(0,0)*u.asImpl()(2,2) - v.asImpl()(2,0)*u.asImpl()(2,0);
+  ret(0,1) = vi(0,0)*ui(0,2) - vi(2,0)*ui(0,0);
+  ret(1,1) = vi(0,0)*ui(1,2) - vi(2,0)*ui(1,0);
+  ret(2,1) = vi(0,0)*ui(2,2) - vi(2,0)*ui(2,0);
 
-  ret(0,2) = v.asImpl()(1,0)*u.asImpl()(0,0) - v.asImpl()(0,0)*u.asImpl()(0,1);
-  ret(1,2) = v.asImpl()(1,0)*u.asImpl()(1,0) - v.asImpl()(0,0)*u.asImpl()(1,1);
-  ret(2,2) = v.asImpl()(1,0)*u.asImpl()(2,0) - v.asImpl()(0,0)*u.asImpl()(2,1);
+  ret(0,2) = vi(1,0)*ui(0,0) - vi(0,0)*ui(0,1);
+  ret(1,2) = vi(1,0)*ui(1,0) - vi(0,0)*ui(1,1);
+  ret(2,2) = vi(1,0)*ui(2,0) - vi(0,0)*ui(2,1);
 
   return ret;
 }
@@ -533,19 +539,22 @@ OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,3,3>
 cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,3>& v)
 {
+  const Impl1& ui = u.asImpl();
+  const Impl2& vi = v.asImpl();
+
   Matrix<typename Impl1::value_type,3,3> ret;
 
-  ret(0,0) = u.asImpl()(1,0)*v.asImpl()(2,0) - u.asImpl()(2,0)*v.asImpl()(1,0);
-  ret(1,0) = u.asImpl()(2,0)*v.asImpl()(0,0) - u.asImpl()(0,0)*v.asImpl()(2,0);
-  ret(2,0) = u.asImpl()(0,0)*v.asImpl()(1,0) - u.asImpl()(1,0)*v.asImpl()(0,0);
+  ret(0,0) = ui(1,0)*vi(2,0) - ui(2,0)*vi(1,0);
+  ret(1,0) = ui(2,0)*vi(0,0) - ui(0,0)*vi(2,0);
+  ret(2,0) = ui(0,0)*vi(1,0) - ui(1,0)*vi(0,0);
 
-  ret(0,1) = u.asImpl()(1,0)*v.asImpl()(2,1) - u.asImpl()(2,0)*v.asImpl()(1,1);
-  ret(1,1) = u.asImpl()(2,0)*v.asImpl()(0,1) - u.asImpl()(0,0)*v.asImpl()(2,1);
-  ret(2,1) = u.asImpl()(0,0)*v.asImpl()(1,1) - u.asImpl()(1,0)*v.asImpl()(0,1);
+  ret(0,1) = ui(1,0)*vi(2,1) - ui(2,0)*vi(1,1);
+  ret(1,1) = ui(2,0)*vi(0,1) - ui(0,0)*vi(2,1);
+  ret(2,1) = ui(0,0)*vi(1,1) - ui(1,0)*vi(0,1);
 
-  ret(0,2) = u.asImpl()(1,0)*v.asImpl()(2,2) - u.asImpl()(2,0)*v.asImpl()(1,2);
-  ret(1,2) = u.asImpl()(2,0)*v.asImpl()(0,2) - u.asImpl()(0,0)*v.asImpl()(2,2);
-  ret(2,2) = u.asImpl()(0,0)*v.asImpl()(1,2) - u.asImpl()(1,0)*v.asImpl()(0,2);
+  ret(0,2) = ui(1,0)*vi(2,2) - ui(2,0)*vi(1,2);
+  ret(1,2) = ui(2,0)*vi(0,2) - ui(0,0)*vi(2,2);
+  ret(2,2) = ui(0,0)*vi(1,2) - ui(1,0)*vi(0,2);
 
   return ret;
 }
@@ -557,10 +566,11 @@ OpenFDM_FORCE_INLINE
 Matrix<typename Impl1::value_type,3,3>
 cross(const MatrixRValue<Impl1,3,1>& u)
 {
+  const Impl1& ui = u.asImpl();
   Matrix<typename Impl1::value_type,3,3> ret;
-  ret(0,0) = 0;  ret(0,1) = -u.asImpl()(2,0);  ret(0,2) = u.asImpl()(1,0);
-  ret(1,0) = u.asImpl()(2,0);  ret(1,1) = 0;  ret(1,2) = -u.asImpl()(0,0);
-  ret(2,0) = -u.asImpl()(1,0);  ret(2,1) = u.asImpl()(0,0);  ret(2,2) = 0;
+  ret(0,0) =        0;  ret(0,1) = -ui(2,0);  ret(0,2) =  ui(1,0);
+  ret(1,0) =  ui(2,0);  ret(1,1) =        0;  ret(1,2) = -ui(0,0);
+  ret(2,0) = -ui(1,0);  ret(2,1) =  ui(0,0);  ret(2,2) =        0;
   return ret;
 }
 
@@ -611,7 +621,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
       value_type Aii = A(i,i);
       // If the matrix is exactly singular, compute the solution where the
       // righthandside is projected into the image of the matrix.
-      if (fabs(Aii) <= Limits<value_type>::min()) {
+      if (fabs(Aii) <= fabs(v(i))*Limits<value_type>::safe_min()) {
         v(i) = static_cast<value_type>(0);
       } else {
         v(i) /= Aii;
@@ -638,7 +648,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
         value_type Aii = A(i,i);
         // If the matrix is exactly singular, compute the solution where the
         // righthandside is projected into the image of the matrix.
-        if (fabs(Aii) <= Limits<value_type>::min()) {
+        if (fabs(Aii) <= fabs(v(i,j))*Limits<value_type>::safe_min()) {
           v(i,j) = static_cast<value_type>(0);
         } else {
           v(i,j) /= Aii;
@@ -751,7 +761,9 @@ lu_factorize(Matrix<T,dim1,dim2>& A)
   size_type n = A.cols();
   for (size_type j = 0; j < n; ++j) {
     // The matrix is exactly singular.
-    if (fabs(A(j,j)) <= Limits<value_type>::min())
+    // Hmm, should read like that??
+    // if (fabs(A(j,j)) <= normInf(A(Range(j+1, m-1), j))*Limits<value_type>::safe_min())
+    if (fabs(A(j,j)) <= Limits<value_type>::safe_min())
       nonsingular = false;
     else {
       if (j < n-1) {
@@ -785,7 +797,7 @@ lu_factorize(Matrix<T,dim1,dim2>& A, Vector<size_type,dim1>& perm)
     perm(j) = jp;
 
     // The matrix is exactly singular.
-    if (fabs(A(jp,j)) <= Limits<value_type>::min())
+    if (fabs(A(jp,j)) <= Limits<value_type>::safe_min())
       nonsingular = false;
     else {
       if (jp != j) {
@@ -870,9 +882,7 @@ qr_reflector(typename Impl::value_type& alpha, MatrixLValue<Impl,dim,1>& x_,
     if (0 <= alpha)
       beta = -beta;
 
-    value_type mn = Limits<value_type>::min();
-    value_type eps = Limits<value_type>::epsilon();
-    value_type safmin = mn/eps;
+    value_type safmin = Limits<value_type>::safe_min();
 
     if (fabs(beta) < safmin) {
       value_type rsafmn = 1/safmin;
@@ -928,7 +938,7 @@ qr_factorize(Matrix<T,dim1,dim2>& A, Vector<T,dim2>& beta)
 
     // Check if that thing is singular.
     value_type Ajj = A(j, j);
-    if (fabs(Ajj) <= Limits<value_type>::min())
+    if (fabs(Ajj) <= Limits<value_type>::safe_min())
       nonsingular = false;
 
     A(j, j) = 1;
