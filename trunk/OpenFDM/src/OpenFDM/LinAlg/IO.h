@@ -5,8 +5,7 @@
 #ifndef OpenFDM_Matrix_IO_H
 #define OpenFDM_Matrix_IO_H
 
-#include <iosfwd>
-#include <ios>
+#include <iostream>
 #include <iomanip>
 
 namespace OpenFDM {

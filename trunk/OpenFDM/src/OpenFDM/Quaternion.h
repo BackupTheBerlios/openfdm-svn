@@ -31,9 +31,9 @@ template<typename T>
 class Quaternion
   : public Vector4<T> {
 public:
-  typedef typename Vector4<T>::value_type value_type;
-  typedef Vector3<value_type> Vector3;
-  typedef Matrix33<value_type> Matrix33;
+  typedef typename OpenFDM::LinAlg::Vector4<T>::value_type value_type;
+  typedef OpenFDM::LinAlg::Vector3<value_type> Vector3;
+  typedef OpenFDM::LinAlg::Matrix33<value_type> Matrix33;
   
   OpenFDM_FORCE_INLINE
   Quaternion(void)

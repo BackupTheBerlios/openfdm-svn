@@ -4,6 +4,7 @@
 
 #include "ExpatXMLReader.h"
 #include <iostream>
+#include <cstring>
 #include <expat.h>
 #include "config.h"
 
