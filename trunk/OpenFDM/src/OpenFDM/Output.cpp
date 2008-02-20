@@ -17,7 +17,8 @@ Output::Callback::~Callback()
 }
 
 Output::Output(const std::string& name) :
-  Model(name)
+  Model(name),
+  mOutputGain(1)
 {
   setDirectFeedThrough(true);
   setNumInputPorts(1);
