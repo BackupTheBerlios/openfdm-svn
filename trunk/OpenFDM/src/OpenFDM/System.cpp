@@ -125,16 +125,6 @@ System::init(void)
  
   OpenFDM::sortModels(modelCollectVisitor.modelList);
 
-  // build up the lists of stateful models and
-  mit = modelCollectVisitor.modelList.begin();
-  while (mit != modelCollectVisitor.modelList.end()) {
-    if (mit->model->getNumContinousStates())
-      mContinousModelList.push_back(mit->model);
-    if (mit->model->getNumDiscreteStates())
-      mDiscreteModelList.push_back(mit->model);
-    ++mit;
-  }
-
   // Compute the basic time slice, that is the greatest time that hits all
   // discrete sample times boundaries we have in this system
   real_type gcd = 0;
@@ -223,15 +213,19 @@ System::init(void)
     ++mit;
   }
 
-  // count the number of states
+  // build up the lists of stateful models and count the number of states
   unsigned numContinousStates = 0;
   unsigned numDiscreteStates = 0;
   mit = modelCollectVisitor.modelList.begin();
   while (mit != modelCollectVisitor.modelList.end()) {
-    if (mit->model->getNumContinousStates())
+    if (mit->model->getNumContinousStates()) {
+      mContinousModelList.push_back(mit->model);
       numContinousStates += mit->model->getNumContinousStates();
-    if (mit->model->getNumDiscreteStates())
+    }
+    if (mit->model->getNumDiscreteStates()) {
+      mDiscreteModelList.push_back(mit->model);
       numDiscreteStates += mit->model->getNumDiscreteStates();
+    }
     ++mit;
   }
   setNumContinousStates(numContinousStates);
