@@ -99,6 +99,13 @@ private:
   { return -mRealPortHandle.getRealValue(); }
 };
 
+class SinUnaryFunctionModelImpl :
+    public UnaryFunctionModelImpl {
+private:
+  virtual real_type getValue(void)
+  { return sin(mRealPortHandle.getRealValue()); }
+};
+
 class SqrUnaryFunctionModelImpl :
     public UnaryFunctionModelImpl {
 private:
@@ -213,6 +220,9 @@ UnaryFunctionModel::setType(UnaryFunctionModel::Type type)
     break;
   case Minus:
     mImpl = new MinusUnaryFunctionModelImpl;
+    break;
+  case Sin:
+    mImpl = new SinUnaryFunctionModelImpl;
     break;
   case Sqr:
     mImpl = new SqrUnaryFunctionModelImpl;

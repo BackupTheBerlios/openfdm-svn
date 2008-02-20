@@ -31,6 +31,7 @@ public:
     Log,
     Log10,
     Minus,
+    Sin,
     Sqr,
     Sqrt,
     Tan
