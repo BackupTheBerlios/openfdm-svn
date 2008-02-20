@@ -108,6 +108,7 @@ nobase_OpenFDMinclude_HEADERS = \
   SharedPtr.h \
   SimpleContact.h \
   SimpleGear.h \
+  SimulationTime.h \
   StateStream.h \
   Summer.h \
   System.h \
@@ -199,6 +200,7 @@ libOpenFDM_la_SOURCES = \
   Saturation.cpp \
   SimpleContact.cpp \
   SimpleGear.cpp \
+  SimulationTime.cpp \
   Summer.cpp \
   System.cpp \
   Table.cpp \
