@@ -82,6 +82,7 @@ System::System(const std::string& name) :
 {
   setTimestepper(new ExplicitEuler);
   mEnvironment = new Environment;
+  addSampleTime(SampleTime::Continous);
 }
 
 System::~System(void)
@@ -123,6 +124,16 @@ System::init(void)
   }
  
   OpenFDM::sortModels(modelCollectVisitor.modelList);
+
+  // build up the lists of stateful models and
+  mit = modelCollectVisitor.modelList.begin();
+  while (mit != modelCollectVisitor.modelList.end()) {
+    if (mit->model->getNumContinousStates())
+      mContinousModelList.push_back(mit->model);
+    if (mit->model->getNumDiscreteStates())
+      mDiscreteModelList.push_back(mit->model);
+    ++mit;
+  }
 
   // Compute the basic time slice, that is the greatest time that hits all
   // discrete sample times boundaries we have in this system
@@ -212,19 +223,15 @@ System::init(void)
     ++mit;
   }
 
-  // build up the lists of stateful models and count the number of states
+  // count the number of states
   unsigned numContinousStates = 0;
   unsigned numDiscreteStates = 0;
   mit = modelCollectVisitor.modelList.begin();
   while (mit != modelCollectVisitor.modelList.end()) {
-    if (mit->model->getNumContinousStates()) {
-      mContinousModelList.push_back(mit->model);
+    if (mit->model->getNumContinousStates())
       numContinousStates += mit->model->getNumContinousStates();
-    }
-    if (mit->model->getNumDiscreteStates()) {
-      mDiscreteModelList.push_back(mit->model);
+    if (mit->model->getNumDiscreteStates())
       numDiscreteStates += mit->model->getNumDiscreteStates();
-    }
     ++mit;
   }
   setNumContinousStates(numContinousStates);
@@ -370,6 +377,11 @@ System::simulate(real_type tEnd)
 
     if (!continousStates) {
       mTime = loopTEnd;
+
+      Log(Schedule, Info) << "Preparing Models: continous output step" << endl;
+      mContinousTask.setTime(getTime());
+      output(mContinousTask);
+
     } else {
       // Do the pre integration output round
       Log(Schedule, Info) << "Preparing Models: pre integration step" << endl;
