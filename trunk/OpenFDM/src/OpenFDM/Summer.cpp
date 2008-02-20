@@ -109,4 +109,26 @@ Summer::setNumSummands(unsigned num)
     setInputPortName(oldnum, "+");
 }
 
+void
+Summer::setInputSign(unsigned num, Sign sign)
+{
+  if (getNumSummands() <= num)
+    return;
+  if (sign == Minus)
+    setInputPortName(num, "-");
+  else
+    setInputPortName(num, "+");
+}
+
+Summer::Sign
+Summer::getInputSign(unsigned num) const
+{
+  if (getNumSummands() <= num)
+    return Plus;
+  if (getInputPortName(num) == "-")
+    return Minus;
+  else
+    return Plus;
+}
+
 } // namespace OpenFDM
