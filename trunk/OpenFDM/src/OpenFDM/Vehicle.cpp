@@ -27,6 +27,7 @@ Vehicle::Vehicle(void)
 {
   mSystem = new System("Top Vehicle System");
 
+//   mSystem->setTimestepper(new ExplicitEuler);
 //   mSystem->setTimestepper(new ExplicitAdams);
   mSystem->setTimestepper(new DoPri5);
 //   mSystem->setTimestepper(new ImplicitEuler);
@@ -37,7 +38,6 @@ Vehicle::Vehicle(void)
 
   mMultiBodySystem = new ModelGroup("Multi Body System");
   mSystem->addModel(mMultiBodySystem);
-  mMultiBodySystem->addSampleTime(SampleTime::Continous);
 
   mTopBody = new RigidBody("Topmost rigid body");
   mMultiBodySystem->addModel(mTopBody);
