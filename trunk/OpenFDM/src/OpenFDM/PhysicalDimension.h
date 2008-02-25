@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2007 Mathias Froehlich
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2008 Mathias Froehlich
  *
  */
 
