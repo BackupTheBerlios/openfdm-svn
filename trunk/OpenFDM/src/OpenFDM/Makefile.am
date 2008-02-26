@@ -117,6 +117,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Tailhook.h \
   Tank.h \
   TaskInfo.h \
+  Time.h \
   TimeDerivative.h \
   TransferFunction.h \
   Transform.h \
@@ -207,6 +208,7 @@ libOpenFDM_la_SOURCES = \
   Tailhook.cpp \
   Tank.cpp \
   TaskInfo.cpp \
+  Time.cpp \
   TimeDerivative.cpp \
   TransferFunction.cpp \
   UnaryFunctionModel.cpp \
