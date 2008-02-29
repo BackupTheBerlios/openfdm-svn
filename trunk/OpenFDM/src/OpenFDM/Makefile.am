@@ -5,6 +5,7 @@ INCLUDES = -I$(srcdir)/..
 OpenFDMincludedir = $(includedir)/OpenFDM
 
 lib_LTLIBRARIES = libOpenFDM.la
+libOpenFDM_la_LIBADD = -lrt
 
 # Will need these at the moment ...
 nobase_OpenFDMinclude_HEADERS = \
