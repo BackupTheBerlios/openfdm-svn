@@ -4,8 +4,8 @@
 
 #include "Time.h"
 
-#include <errno.h>
 #include <time.h>
+#include <cerrno>
 #include <cmath>
 
 namespace OpenFDM {

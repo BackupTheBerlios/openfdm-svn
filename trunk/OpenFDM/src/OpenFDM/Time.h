@@ -5,8 +5,15 @@
 #ifndef OpenFDM_Time_H
 #define OpenFDM_Time_H
 
-#include <time.h>
+#include <ctime>
+#include <iosfwd>
+#include <iomanip>
+#include <sstream>
+// FIXME
+#include <iostream>
 #include "Math.h"
+
+// FIXME move into own tools library.
 
 namespace OpenFDM {
 
@@ -21,7 +28,7 @@ public:
     CPUTime
   };
 
-  typedef time_t sec_type;
+  typedef std::time_t sec_type;
   typedef long nsec_type;
 
   Time()
@@ -117,6 +124,18 @@ operator+(const Time& c1, const Time& c2)
 inline Time
 operator-(const Time& c1, const Time& c2)
 { Time c = c1; c -= c2; return c; }
+
+template<typename char_type, typename traits_type> 
+inline
+std::basic_ostream<char_type, traits_type>&
+operator<<(std::basic_ostream<char_type, traits_type>& os, const Time& t)
+{
+  std::basic_stringstream<char_type, traits_type> stream;
+  stream << t.getSeconds() << '.'
+         << std::setw(9) << std::right << std::setfill('0')
+         << t.getNanoSeconds();
+  return os << stream.str();
+}
 
 }
 
