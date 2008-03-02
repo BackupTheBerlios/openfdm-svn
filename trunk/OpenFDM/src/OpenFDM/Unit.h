@@ -161,19 +161,19 @@ public:
     mOffset(0)
   { }
   Unit(const PhysicalDimension& physDim) :
-    mPhysicalDimension(physDim),
     mFactor(1),
-    mOffset(0)
+    mOffset(0),
+    mPhysicalDimension(physDim)
   { }
   Unit(const PhysicalDimension& physDim, real_type factor) :
-    mPhysicalDimension(physDim),
     mFactor(factor),
-    mOffset(0)
+    mOffset(0),
+    mPhysicalDimension(physDim)
   { }
   Unit(const PhysicalDimension& physDim, real_type factor, real_type offset) :
-    mPhysicalDimension(physDim),
     mFactor(factor),
-    mOffset(offset)
+    mOffset(offset),
+    mPhysicalDimension(physDim)
   { }
 
   real_type getFactor(void) const
