@@ -77,13 +77,14 @@ retrieving revision 1.63
 diff -u -r1.63 Makefile.am
 --- src/Main/Makefile.am	20 Jan 2006 17:19:02 -0000	1.63
 +++ src/Main/Makefile.am	5 Feb 2006 12:39:43 -0000
-@@ -13,6 +13,13 @@
+@@ -13,6 +13,14 @@
  SP_FDM_LIBS = 
  endif
  
 +if ENABLE_OpenFDM_FDM
 +OpenFDM_LIBS = $(top_builddir)/src/FDM/OpenFDM/libFGOpenFDM.a \
-+               -lOpenFDMJSBReader -lOpenFDMeasyxmlXML -lOpenFDMXML -lOpenFDM
++               -lOpenFDMJSBReader -lOpenFDMeasyxmlXML -lOpenFDMXML -lOpenFDM \
++               -lrt
 +else
 +OpenFDM_LIBS = 
 +endif
