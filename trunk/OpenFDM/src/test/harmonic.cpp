@@ -22,7 +22,7 @@ main(int argc, char *argv[])
   real_type omega = 2;
 
   SharedPtr<System> system = new System("Harmonic Oszilator");
-  system->addSampleTime(real_type(0.01));
+  system->addSampleTime(real_type(1)/real_type(100));
   system->setTimestepper(new DoPri5);
   
   Integrator* integrator0 = new Integrator("Acceleration Integrator");
@@ -89,7 +89,7 @@ main(int argc, char *argv[])
   SharedPtr<ErrorCollectorCallback> posErrorCallback;
   posErrorCallback = new ErrorCollectorCallback;
   output->setCallback(posErrorCallback);
-  output->addSampleTime(real_type(0.1));
+  output->addSampleTime(real_type(1)/real_type(10));
   system->addModel(output);
   Connection::connect(output->getInputPort(0), summer0->getOutputPort(0));
 
@@ -108,7 +108,7 @@ main(int argc, char *argv[])
   SharedPtr<ErrorCollectorCallback> velErrorCallback;
   velErrorCallback = new ErrorCollectorCallback;
   output->setCallback(velErrorCallback);
-  output->addSampleTime(real_type(0.1));
+  output->addSampleTime(real_type(1)/real_type(10));
   system->addModel(output);
   Connection::connect(output->getInputPort(0), summer1->getOutputPort(0));
 
