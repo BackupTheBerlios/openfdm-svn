@@ -370,7 +370,7 @@ LevenbergMarquart(Function& f,
       converged = norm1(g) < atol;
       Log(NewtonMethod, Debug) << "||g||_1 = " << norm1(g) << endl;
 
-      mu = mu * max(1.0/3, 1-pow(2*rho-1, 3));
+      mu = mu * max(real_type(1)/3, 1-pow(2*rho-1, real_type(3)));
       nu = 2;
 
     } else {

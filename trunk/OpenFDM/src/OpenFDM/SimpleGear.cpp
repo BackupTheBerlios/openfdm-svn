@@ -189,7 +189,8 @@ SimpleGear::computeFrictionForce(real_type normForce, const Vector3& vel,
 //   Vector2 slip(wheelSlip, slipAngle);
 //   if (1 < norm(slip))
 //     slip = normalize(slip);
-  Vector2 slip(smoothSaturate(wheelSlip, 1.0), smoothSaturate(slipAngle, 1.0));
+  Vector2 slip(smoothSaturate(wheelSlip, real_type(1)),
+               smoothSaturate(slipAngle, real_type(1)));
   
   // The friction force for fast movement.
   Vector2 fricForce = (-friction*mFrictionCoef*normForce)*slip;

@@ -481,7 +481,7 @@ public:
     tcv.mStateStream.writeSubState(tmp);
     tmp = 1e6*(mGeodPos.latitude - tcv.mGeodPos.latitude);
     tcv.mStateStream.writeSubState(tmp);
-    tmp = smoothDeadBand(mGeodPos.altitude - tcv.mGeodPos.altitude, 10.0);
+    tmp = smoothDeadBand(mGeodPos.altitude - tcv.mGeodPos.altitude, real_type(10));
     tcv.mStateStream.writeSubState(tmp);
 
     // The orientation

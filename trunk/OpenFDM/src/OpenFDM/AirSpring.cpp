@@ -79,8 +79,8 @@ AirSpring::output(const TaskInfo& taskInfo)
   real_type pushDispRatio = pushDisp/maxDisp;
   
   
-  pullDispRatio = max(min(pullDispRatio, 0.95), 0.0);
-  pushDispRatio = max(min(pushDispRatio, 0.95), 0.0);
+  pullDispRatio = max(min(pullDispRatio, real_type(0.95)), real_type(0.0));
+  pushDispRatio = max(min(pushDispRatio, real_type(0.95)), real_type(0.0));
   
   real_type pullPressure = mPullPressure/(1-pow(pullDispRatio, mGamma));
   real_type pushPressure = mPushPressure/(1-pow(pushDispRatio, mGamma));

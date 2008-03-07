@@ -25,16 +25,18 @@ Planet::~Planet(void)
 Geocentric
 Planet::toGeoc(const Vector3& cart) const
 {
-  real_type lon = (cart(0) == 0 && cart(1) == 0) ? 0 : atan2(cart(1), cart(0));
+  real_type lon = (cart(0) == 0 && cart(1) == 0)
+    ? real_type(0) : atan2(cart(1), cart(0));
   real_type nxy = sqrt(cart(0)*cart(0)+cart(1)*cart(1));
-  real_type lat = (nxy == 0 && cart(2) == 0) ? 0 : atan2(cart(2), nxy);
+  real_type lat = (nxy == 0 && cart(2) == 0)
+    ? real_type(0) : atan2(cart(2), nxy);
   return Geocentric(lat, lon, norm(cart));
 }
 
 Vector3
 Planet::toCart(const Geocentric& geoc) const
 {
-  real_type slat = std::sin(geoc.latitude);
+  real_type slat = sin(geoc.latitude);
   real_type clat = cos(geoc.latitude);
   real_type slon = sin(geoc.longitude);
   real_type clon = cos(geoc.longitude);

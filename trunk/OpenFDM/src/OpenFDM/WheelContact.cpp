@@ -149,7 +149,8 @@ WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
 //   Vector2 slip(wheelSlip, slipAngle);
 //   if (1 < norm(slip))
 //     slip = normalize(slip);
-  Vector2 slip(smoothSaturate(wheelSlip, 1.0), smoothSaturate(slipAngle, 1.0));
+  Vector2 slip(smoothSaturate(wheelSlip, real_type(1)),
+               smoothSaturate(slipAngle, real_type(1)));
   
   // The friction force for fast movement.
   return (-friction*mFrictionCoeficient*normForce)*slip;
