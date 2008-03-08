@@ -636,14 +636,14 @@ AeroForce::computeCalEquAirspeed(void) const
   // Calibrated Airspeed
   real_type tube_press;
   if (mach(0) < 1) {   // Calculate total pressure assuming isentropic flow
-    tube_press = p*pow((1 + 0.2*mach(0)*mach(0)), 3.5);
+    tube_press = p*pow((1 + 0.2*mach(0)*mach(0)), real_type(3.5));
   } else {
     // Use Rayleigh pitot tube formula for normal shock in front of pitot tube
     real_type B = 5.76*mach(0)*mach(0)/(5.6*mach(0)*mach(0) - 0.8);
     real_type D = 0.4167*(2.8*mach(0)*mach(0) - 0.4);
-    tube_press = p*pow(B, 3.5)*D;
+    tube_press = p*pow(B, real_type(3.5))*D;
   }
-  real_type A = pow(((tube_press-p)/psl+1), 0.28571);
+  real_type A = pow(((tube_press-p)/psl+1), real_type(0.28571));
   if (mach(0) > 0) {
     mCalibratedAirSpeed = sqrt(7*psl/rhosl*(A-1));
     mEquivalentAirSpeed = sqrt(2*qbar/rhosl);

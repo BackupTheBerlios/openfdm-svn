@@ -71,7 +71,7 @@ DefaultPlanet::toGeod(const Vector3& cart) const
   real_type q = Z*Z*(1-e*e)*ra2;
   real_type r = 1.0/6.0*(p+q-e4);
   real_type s = e4*p*q/(4.0*r*r*r);
-  real_type t = pow(1.0+s+sqrt(s*(2.0+s)), 1.0/3.0);
+  real_type t = pow(1.0+s+sqrt(s*(2.0+s)), real_type(1)/3);
   real_type u = r*(1.0+t+1.0/t);
   real_type v = sqrt(u*u+e4*q);
   real_type w = e2*(u+v-q)/(2.0*v);
