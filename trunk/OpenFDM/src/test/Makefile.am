@@ -1,7 +1,7 @@
 INCLUDES = -I$(srcdir)/..
 
 # define some unit tests
-check_PROGRAMS = quattest unitstest simulationtime constintegral harmonic
+check_PROGRAMS = quattest unitstest simulationtime constintegral harmonic limit
 TESTS          = $(check_PROGRAMS)
 
 unitstest_SOURCES = unitstest.cpp
@@ -18,3 +18,6 @@ constintegral_LDADD = ../OpenFDM/libOpenFDM.la
 
 harmonic_SOURCES = harmonic.cpp
 harmonic_LDADD = ../OpenFDM/libOpenFDM.la
+
+limit_SOURCES = limit.cpp
+limit_LDADD = ../OpenFDM/libOpenFDM.la

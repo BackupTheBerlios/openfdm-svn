@@ -123,21 +123,23 @@ quattest(void)
   // Test euler angle to quaternion and back conversion.
   // special fixed cases
   int fail = 0;
-  fail += eulerTest(Quaternion::fromEuler(0, 0, 0), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(pi05, 0, 0), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(pi05, 0, pi05), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(0, 0, pi05), 100*eps);
+  // Ok, since this conversion has an instability, check with a special eps
+  real_type eulerEps = max(real_type(1e-10), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(0, 0, 0), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, 0, 0), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, 0, pi05), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(0, 0, pi05), eulerEps);
   // special fixed cases at the gimbal lock
-  fail += eulerTest(Quaternion::fromEuler(0, pi05, 0), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(pi05, pi05, 0), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(pi05, pi05, pi05), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(0, pi05, pi05), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(0, -pi05, 0), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(pi05, -pi05, 0), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(pi05, -pi05, pi05), 100*eps);
-  fail += eulerTest(Quaternion::fromEuler(0, -pi05, pi05), 100*eps);
+  fail += eulerTest(Quaternion::fromEuler(0, pi05, 0), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, pi05, 0), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, pi05, pi05), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(0, pi05, pi05), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(0, -pi05, 0), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, -pi05, 0), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(pi05, -pi05, pi05), eulerEps);
+  fail += eulerTest(Quaternion::fromEuler(0, -pi05, pi05), eulerEps);
 
-  real_type gimbalEps = 1e3*eps;
+  real_type gimbalEps = 1e3*eulerEps;
   // special cases around the gimbal lock
   for (unsigned i = 0; i < nTests; ++i) {
     for (unsigned k = 1; k < 1024; k *= 2) {
@@ -163,7 +165,7 @@ quattest(void)
   }
   // arbitrary cases
   for (unsigned i = 0; i < nTests; ++i)
-    fail += eulerTest(rnQuat(), 100*eps);
+    fail += eulerTest(rnQuat(), eulerEps);
 
   if (fail)
     return -1;

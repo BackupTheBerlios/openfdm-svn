@@ -19,10 +19,10 @@ using namespace OpenFDM;
 int
 main(int argc, char *argv[])
 {
-  real_type omega = 2;
+  real_type omega = 20;
 
   SharedPtr<System> system = new System("Harmonic Oszilator");
-  system->addSampleTime(real_type(1)/real_type(100));
+  system->addSampleTime(real_type(1)/real_type(100000));
   system->setTimestepper(new DoPri5);
   
   Integrator* integrator0 = new Integrator("Acceleration Integrator");
@@ -120,19 +120,19 @@ main(int argc, char *argv[])
   system->simulate(10);
 
   real_type posError = posErrorCallback->error();
-  if (1e-6 < posError) {
-    std::cerr << "Position error of " << posError << " is too big" << std::endl;
-    return EXIT_FAILURE;
-  }
-  std::cout << "Passed position error check with error = "
-            << posError << std::endl;
+  std::cout << "Position error check with error = " << posError << std::endl;
   real_type velError = velErrorCallback->error();
-  if (1e-6 < velError) {
-    std::cerr << "Velocity error of " << velError << " is too big" << std::endl;
+  std::cout << "Velocity error check with error = " << velError << std::endl;
+  if (1e-6 < posError) {
+    std::cerr << "Position error of is too big!" << std::endl;
     return EXIT_FAILURE;
   }
-  std::cout << "Passed velocity error check with error = "
-            << velError << std::endl;
+  std::cout << "Passed position error check." << std::endl;
+  if (1e-6 < velError) {
+    std::cerr << "Velocity error of is too big!" << std::endl;
+    return EXIT_FAILURE;
+  }
+  std::cout << "Passed velocity error check." << std::endl;
 
   return EXIT_SUCCESS;
 }
