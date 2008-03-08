@@ -67,6 +67,7 @@ nobase_OpenFDMinclude_HEADERS = \
   Math.h \
   Matrix.h \
   MaxModel.h \
+  Newton.h \
   MidpointRule.h \
   MinModel.h \
   MobileRootJoint.h \
@@ -75,7 +76,7 @@ nobase_OpenFDMinclude_HEADERS = \
   ModelGroup.h \
   ModelVisitor.h \
   Mutex.h \
-  Newton.h \
+  MPFRFloat.h \
   NumericPortAcceptor.h \
   NumericPortProvider.h \
   NumericPortProxy.h \
