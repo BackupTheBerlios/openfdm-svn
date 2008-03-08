@@ -58,7 +58,7 @@ DoPri5::integrate(real_type toTEnd)
     real_type rtol = 1e-14;
     real_type en = scaledErr(y7, err, atol, rtol);
 
-    if (1.0 < en)
+    if (1 < en)
       Log(TimeStep, Warning) << "DOPRI5: error too big: " << en << endl;
     else
       Log(TimeStep, Info) << "DOPRI5: local error: " << en << endl;
@@ -99,44 +99,44 @@ DoPri5::denseOutput(real_type t, Vector& out)
 }
 
 // The values of the Runge-Kutta tables
-const real_type DoPri5::a21 = 2.0/10.0;
-const real_type DoPri5::a31 = 3.0/40.0;
-const real_type DoPri5::a32 = 9.0/40.0;
-const real_type DoPri5::a41 = 44.0/45.0;
-const real_type DoPri5::a42 = -56.0/15.0;
-const real_type DoPri5::a43 = 32.0/9.0;
-const real_type DoPri5::a51 = 19372.0/6561.0;
-const real_type DoPri5::a52 = -25360.0/2187.0;
-const real_type DoPri5::a53 = 64448.0/6561.0;
-const real_type DoPri5::a54 = -212.0/729.0;
-const real_type DoPri5::a61 = 9017.0/3168.0;
-const real_type DoPri5::a62 = -355.0/33.0;
-const real_type DoPri5::a63 = 46732.0/5247.0;
-const real_type DoPri5::a64 = 49.0/176.0;
-const real_type DoPri5::a65 = -5103.0/18656.0;
-const real_type DoPri5::a71 = 35.0/384.0;
-const real_type DoPri5::a73 = 500.0/1113.0;
-const real_type DoPri5::a74 = 125.0/192.0;
-const real_type DoPri5::a75 = -2187.0/6784.0;
-const real_type DoPri5::a76 = 11.0/84.0;
+const real_type DoPri5::a21 = real_type(2.0)/real_type(10.0);
+const real_type DoPri5::a31 = real_type(3.0)/real_type(40.0);
+const real_type DoPri5::a32 = real_type(9.0)/real_type(40.0);
+const real_type DoPri5::a41 = real_type(44.0)/real_type(45.0);
+const real_type DoPri5::a42 = real_type(-56.0)/real_type(15.0);
+const real_type DoPri5::a43 = real_type(32.0)/real_type(9.0);
+const real_type DoPri5::a51 = real_type(19372.0)/real_type(6561.0);
+const real_type DoPri5::a52 = real_type(-25360.0)/real_type(2187.0);
+const real_type DoPri5::a53 = real_type(64448.0)/real_type(6561.0);
+const real_type DoPri5::a54 = real_type(-212.0)/real_type(729.0);
+const real_type DoPri5::a61 = real_type(9017.0)/real_type(3168.0);
+const real_type DoPri5::a62 = real_type(-355.0)/real_type(33.0);
+const real_type DoPri5::a63 = real_type(46732.0)/real_type(5247.0);
+const real_type DoPri5::a64 = real_type(49.0)/real_type(176.0);
+const real_type DoPri5::a65 = real_type(-5103.0)/real_type(18656.0);
+const real_type DoPri5::a71 = real_type(35.0)/real_type(384.0);
+const real_type DoPri5::a73 = real_type(500.0)/real_type(1113.0);
+const real_type DoPri5::a74 = real_type(125.0)/real_type(192.0);
+const real_type DoPri5::a75 = real_type(-2187.0)/real_type(6784.0);
+const real_type DoPri5::a76 = real_type(11.0)/real_type(84.0);
 
-const real_type DoPri5::c2 = 2.0/10.0;
-const real_type DoPri5::c3 = 3.0/10.0;
-const real_type DoPri5::c4 = 8.0/10.0;
-const real_type DoPri5::c5 = 8.0/9.0;
+const real_type DoPri5::c2 = real_type(2.0)/real_type(10.0);
+const real_type DoPri5::c3 = real_type(3.0)/real_type(10.0);
+const real_type DoPri5::c4 = real_type(8.0)/real_type(10.0);
+const real_type DoPri5::c5 = real_type(8.0)/real_type(9.0);
 
-const real_type DoPri5::d1 = -12715105075.0/11282082432.0;
-const real_type DoPri5::d3 = 87487479700.0/32700410799.0;
-const real_type DoPri5::d4 = -10690763975.0/1880347072.0;
-const real_type DoPri5::d5 = 701980252875.0/199316789632.0;
-const real_type DoPri5::d6 = -1453857185.0/822651844.0;
-const real_type DoPri5::d7 = 69997945.0/29380423.0;
+const real_type DoPri5::d1 = real_type(-12715105075.0)/real_type(11282082432.0);
+const real_type DoPri5::d3 = real_type(87487479700.0)/real_type(32700410799.0);
+const real_type DoPri5::d4 = real_type(-10690763975.0)/real_type(1880347072.0);
+const real_type DoPri5::d5 = real_type(701980252875.0)/real_type(199316789632.0);
+const real_type DoPri5::d6 = real_type(-1453857185.0)/real_type(822651844.0);
+const real_type DoPri5::d7 = real_type(69997945.0L)/real_type(29380423.0);
 
-const real_type DoPri5::e1 = 71.0/57600.0;
-const real_type DoPri5::e3 = -71.0/16695.0;
-const real_type DoPri5::e4 = 71.0/1920.0;
-const real_type DoPri5::e5 = -17253.0/339200.0;
-const real_type DoPri5::e6 = 22.0/525.0;
-const real_type DoPri5::e7 = -1.0/40.0;
+const real_type DoPri5::e1 = real_type(71.0)/real_type(57600.0);
+const real_type DoPri5::e3 = real_type(-71.0)/real_type(16695.0);
+const real_type DoPri5::e4 = real_type(71.0)/real_type(1920.0);
+const real_type DoPri5::e5 = real_type(-17253.0)/real_type(339200.0);
+const real_type DoPri5::e6 = real_type(22.0)/real_type(525.0);
+const real_type DoPri5::e7 = real_type(-1.0)/real_type(40.0);
 
 } // namespace OpenFDM

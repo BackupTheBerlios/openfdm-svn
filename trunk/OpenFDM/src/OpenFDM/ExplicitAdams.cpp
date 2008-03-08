@@ -12,19 +12,19 @@ namespace OpenFDM {
 ExplicitAdams::ExplicitAdams(void)
 {
   // Initialize the coeficients for the explicit adams methods
-  mCoefs[0][0] =  static_cast<real_type>(1);
+  mCoefs[0][0] =  real_type(1);
 
-  mCoefs[1][0] =  static_cast<real_type>(3)/static_cast<real_type>(2);
-  mCoefs[1][1] = -static_cast<real_type>(1)/static_cast<real_type>(2);
+  mCoefs[1][0] =  real_type(3)/real_type(2);
+  mCoefs[1][1] = -real_type(1)/real_type(2);
 
-  mCoefs[2][0] =  static_cast<real_type>(23)/static_cast<real_type>(12);
-  mCoefs[2][1] = -static_cast<real_type>(16)/static_cast<real_type>(12);
-  mCoefs[2][2] =  static_cast<real_type>(5)/static_cast<real_type>(12);
+  mCoefs[2][0] =  real_type(23)/real_type(12);
+  mCoefs[2][1] = -real_type(16)/real_type(12);
+  mCoefs[2][2] =  real_type(5)/real_type(12);
 
-  mCoefs[3][0] =  static_cast<real_type>(55)/static_cast<real_type>(24);
-  mCoefs[3][1] = -static_cast<real_type>(59)/static_cast<real_type>(24);
-  mCoefs[3][2] =  static_cast<real_type>(37)/static_cast<real_type>(24);
-  mCoefs[3][3] = -static_cast<real_type>(9)/static_cast<real_type>(24);
+  mCoefs[3][0] =  real_type(55)/real_type(24);
+  mCoefs[3][1] = -real_type(59)/real_type(24);
+  mCoefs[3][2] =  real_type(37)/real_type(24);
+  mCoefs[3][3] = -real_type(9)/real_type(24);
 
   mOrder = 1;
   mMaxOrder = MaxAvailOrder;

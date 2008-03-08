@@ -19,7 +19,7 @@ using namespace OpenFDM;
 int
 main(int argc, char *argv[])
 {
-  real_type omega = 20;
+  real_type omega = 2;
 
   SharedPtr<System> system = new System("Harmonic Oszilator");
   system->addSampleTime(real_type(1)/real_type(100));

@@ -5,6 +5,12 @@
 #ifndef OpenFDM_Types_H
 #define OpenFDM_Types_H
 
+#include "OpenFDMConfig.h"
+
+#if defined(OPENFDM_USE_MPFR)
+#include "MPFRFloat.h"
+#endif
+
 namespace OpenFDM {
 
 #if defined(__GNUC__) && (3 <= __GNUC__)
@@ -32,14 +38,12 @@ namespace OpenFDM {
 // Definition of real_type.
 // This one is used for *all* real numbers in OpenFDM.
 //
-#if defined(OPENFDM_USE_LONGDOUBLE)
+#if defined(OPENFDM_USE_MPFR)
+typedef MPFRFloat real_type;
+#elif defined(OPENFDM_USE_LONGDOUBLE)
 typedef long double real_type;
-#elif defined(OPENFDM_USE_DOUBLEDOUBLE)
-// I have not tested that, just as an idea ...
-# include <doubledouble.h>
-typedef doubledouble real_type;
 #else
-typedef double OpenFDM_Align_Double real_type;
+typedef double real_type;
 #endif
 
 } // namespace OpenFDM

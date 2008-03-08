@@ -53,6 +53,12 @@ using std::min;
 using std::max;
 
 template<typename T>
+struct Constants {
+  static T pi() { return T(3.1415926535897932384626433832795029L); }
+  static T e() { return T(2.7182818284590452353602874713526625L); }
+};
+
+template<typename T>
 inline int
 sign(const T& val)
 {
@@ -89,13 +95,10 @@ template<typename T>
 inline T
 smoothSaturate(const T& val, const T& saturation)
 {
-  /// FIXME
-#define PI static_cast<T>(3.1415926535897932384626433832795029L)
   if (saturation <= Limits<T>::min())
     return 0;
   else
-    return atan(val*0.5*PI/saturation)*2*saturation/PI;
-#undef PI
+    return atan(val*Constants<T>::pi()/(2*saturation))*2*saturation/Constants<T>::pi();
 }
 
 template<typename T>
