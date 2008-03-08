@@ -22,7 +22,7 @@ main(int argc, char *argv[])
   real_type omega = 20;
 
   SharedPtr<System> system = new System("Harmonic Oszilator");
-  system->addSampleTime(real_type(1)/real_type(100000));
+  system->addSampleTime(real_type(1)/real_type(100));
   system->setTimestepper(new DoPri5);
   
   Integrator* integrator0 = new Integrator("Acceleration Integrator");
