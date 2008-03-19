@@ -145,6 +145,7 @@ public:
   { scalarMultiplyMatrix(*this, scalar); return *this; }
 
 private:
+  using MatrixLValue<Matrix<T,rows_,cols_>,rows_,cols_>::assign;
   RectangularArray<T,rows_,cols_> data_;
 };
 
