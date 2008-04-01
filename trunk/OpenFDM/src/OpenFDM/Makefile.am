@@ -7,51 +7,24 @@ OpenFDMincludedir = $(includedir)/OpenFDM
 lib_LTLIBRARIES = libOpenFDM.la
 libOpenFDM_la_LIBADD = -lrt
 
-# Will need these at the moment ...
-nobase_OpenFDMinclude_HEADERS = \
-  AeroForce.h \
-  AirSpring.h \
+OpenFDMCoreHEADERS = \
   Assert.h \
-  Atmosphere.h \
-  AtmosphereSTD1976.h \
   Atomic.h \
-  Bias.h \
-  BinaryFunctionModel.h \
-  CartesianActuatorFrame.h \
-  CartesianJointFrame.h \
   Connection.h \
-  Contact.h \
-  ConstModel.h \
   ConstFrameVisitor.h \
   CowPtr.h \
-  DeadBand.h \
-  DefaultGravity.h \
-  DefaultGround.h \
-  DefaultPlanet.h \
-  DiscBrake.h \
-  DiscreteIntegrator.h \
   DoPri5.h \
   Environment.h \
   EnvironmentObject.h \
   ExplicitAdams.h \
   ExplicitEuler.h \
-  ExternalForceModel.h \
-  Force.h \
   Frame.h \
   FrameVisitor.h \
   Function.h \
-  Gain.h \
-  Gravity.h \
-  Ground.h \
   GroupInput.h \
   GroupOutput.h \
-  Input.h \
-  Integrator.h \
-  Interact.h \
   ImplicitEuler.h \
   Inertia.h \
-  Joint.h \
-  Launchbar.h \
   Limits.h \
   LinAlg/Algorithm.h \
   LinAlg/Array.h \
@@ -61,17 +34,12 @@ nobase_OpenFDMinclude_HEADERS = \
   LinAlg/IO.h \
   LinAlg/Misc.h \
   LinAlg/Proxy.h \
-  LinearSpringDamper.h \
   LogStream.h \
   Mass.h \
   Math.h \
   Matrix.h \
-  MaxModel.h \
   Newton.h \
   MidpointRule.h \
-  MinModel.h \
-  MobileRootJoint.h \
-  MobileRootJointFrame.h \
   Model.h \
   ModelGroup.h \
   ModelVisitor.h \
@@ -83,138 +51,174 @@ nobase_OpenFDMinclude_HEADERS = \
   Object.h \
   ODESolver.h \
   OpenFDMConfig.h \
-  Output.h \
   PhysicalDimension.h \
   Plane.h \
   Planet.h \
   Port.h \
   PortAcceptor.h \
   PortProvider.h \
-  Product.h \
-  PrismaticJoint.h \
-  PrismaticJointFrame.h \
   Quaternion.h \
   ReaderWriter.h \
   Referenced.h \
+  Rotation.h \
+  SampleTime.h \
+  ScopeLock.h \
+  SharedPtr.h \
+  SimulationTime.h \
+  StateStream.h \
+  System.h \
+  TableData.h \
+  TaskInfo.h \
+  Time.h \
+  Transform.h \
+  TypeInfo.h \
+  Types.h \
+  Unit.h \
+  Variant.h \
+  Vector.h \
+  WeakPtr.h \
+  WeakReferenced.h \
+  XMLDumpModelVisitor.h
+
+OpenFDMCoreSOURCES = \
+  Assert.cpp \
+  Atomic.cpp \
+  Connection.cpp \
+  DoPri5.cpp \
+  Environment.cpp \
+  EnvironmentObject.cpp \
+  ExplicitAdams.cpp \
+  ExplicitEuler.cpp \
+  Frame.cpp \
+  Function.cpp \
+  GroupInput.cpp \
+  GroupOutput.cpp \
+  ImplicitEuler.cpp \
+  Logger.cpp \
+  Mass.cpp \
+  Newton.cpp \
+  MidpointRule.cpp \
+  Model.cpp \
+  ModelGroup.cpp \
+  Object.cpp \
+  ODESolver.cpp \
+  Planet.cpp \
+  Port.cpp \
+  PortAcceptor.cpp \
+  PortProvider.cpp \
+  ReaderWriter.cpp \
+  SampleTime.cpp \
+  SimulationTime.cpp \
+  System.cpp \
+  TaskInfo.cpp \
+  Time.cpp \
+  Unit.cpp \
+  Variant.cpp
+
+OpenFDMModelsHEADERS = \
+  AeroForce.h \
+  AirSpring.h \
+  Atmosphere.h \
+  AtmosphereSTD1976.h \
+  Bias.h \
+  BinaryFunctionModel.h \
+  ConstModel.h \
+  Contact.h \
+  DeadBand.h \
+  DefaultGravity.h \
+  DefaultGround.h \
+  DefaultPlanet.h \
+  DiscBrake.h \
+  DiscreteIntegrator.h \
+  ExternalForceModel.h \
+  Force.h \
+  Gain.h \
+  Gravity.h \
+  Ground.h \
+  Input.h \
+  Integrator.h \
+  Interact.h \
+  Joint.h \
+  Launchbar.h \
+  LinearSpringDamper.h \
+  MaxModel.h \
+  MinModel.h \
+  MobileRootJoint.h \
+  MobileRootJointFrame.h \
+  Output.h \
+  Product.h \
+  PrismaticJoint.h \
+  PrismaticJointFrame.h \
   RevoluteActuator.h \
   RevoluteActuatorFrame.h \
   RevoluteJoint.h \
   RevoluteJointFrame.h \
   RigidBody.h \
-  Rotation.h \
   RootFrame.h \
-  SampleTime.h \
   Saturation.h \
-  ScopeLock.h \
   Sensor.h \
-  SharedPtr.h \
   SimpleContact.h \
   SimpleGear.h \
-  SimulationTime.h \
-  StateStream.h \
   Summer.h \
-  System.h \
   Table.h \
-  TableData.h \
   Tailhook.h \
   Tank.h \
-  TaskInfo.h \
-  Time.h \
   TimeDerivative.h \
   TransferFunction.h \
-  Transform.h \
   Turbulence.h \
-  TypeInfo.h \
-  Types.h \
   UnaryFunctionModel.h \
-  Unit.h \
-  Variant.h \
-  Vector.h \
   Vehicle.h \
-  WeakPtr.h \
-  WeakReferenced.h \
   WheelContact.h \
-  Wind.h \
-  XMLDumpModelVisitor.h
+  Wind.h
 
-libOpenFDM_la_SOURCES = \
+OpenFDMModelsSOURCES = \
   AeroForce.cpp \
   AirSpring.cpp \
-  Assert.cpp \
   Atmosphere.cpp \
   AtmosphereSTD1976.cpp \
-  Atomic.cpp \
   Bias.cpp \
   BinaryFunctionModel.cpp \
-  Connection.cpp \
-  Contact.cpp \
   ConstModel.cpp \
+  Contact.cpp \
   DeadBand.cpp \
   DefaultGravity.cpp \
   DefaultGround.cpp \
   DefaultPlanet.cpp \
   DiscBrake.cpp \
   DiscreteIntegrator.cpp \
-  DoPri5.cpp \
-  Environment.cpp \
-  EnvironmentObject.cpp \
-  ExplicitAdams.cpp \
-  ExplicitEuler.cpp \
   ExternalForceModel.cpp \
   Force.cpp \
-  Frame.cpp \
-  Function.cpp \
   Gain.cpp \
   Gravity.cpp \
   Ground.cpp \
-  GroupInput.cpp \
-  GroupOutput.cpp \
   Input.cpp \
   Integrator.cpp \
   Interact.cpp \
-  ImplicitEuler.cpp \
   Joint.cpp \
   Launchbar.cpp \
   LinearSpringDamper.cpp \
-  Logger.cpp \
-  Mass.cpp \
   MaxModel.cpp \
-  MidpointRule.cpp \
   MinModel.cpp \
   MobileRootJoint.cpp \
-  Model.cpp \
-  ModelGroup.cpp \
-  Newton.cpp \
-  Object.cpp \
-  ODESolver.cpp \
   Output.cpp \
-  Planet.cpp \
-  Port.cpp \
-  PortAcceptor.cpp \
-  PortProvider.cpp \
-  PrismaticJoint.cpp \
   Product.cpp \
-  ReaderWriter.cpp \
+  PrismaticJoint.cpp \
   RevoluteActuator.cpp \
   RevoluteJoint.cpp \
   RigidBody.cpp \
   RootFrame.cpp \
-  SampleTime.cpp \
   Saturation.cpp \
   SimpleContact.cpp \
   SimpleGear.cpp \
-  SimulationTime.cpp \
   Summer.cpp \
-  System.cpp \
   Table.cpp \
   Tailhook.cpp \
   Tank.cpp \
-  TaskInfo.cpp \
-  Time.cpp \
   TimeDerivative.cpp \
   TransferFunction.cpp \
   UnaryFunctionModel.cpp \
-  Unit.cpp \
-  Variant.cpp \
   Vehicle.cpp \
   WheelContact.cpp
+
+nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
+libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES)
