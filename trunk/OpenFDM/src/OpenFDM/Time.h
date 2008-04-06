@@ -6,11 +6,9 @@
 #define OpenFDM_Time_H
 
 #include <ctime>
-#include <iosfwd>
+#include <istream>
+#include <ostream>
 #include <iomanip>
-#include <sstream>
-// FIXME
-#include <iostream>
 #include "Math.h"
 
 // FIXME move into own tools library.
@@ -55,9 +53,15 @@ public:
   }
   void setTime(const sec_type& sec, const nsec_type& nsec)
   {
-    nsec_type carry = nsec/NanoSecondsPerSecond;
-    _nsec = nsec - NanoSecondsPerSecond*carry;
-    _sec = sec + carry;
+    if (nsec < 0) {
+      nsec_type carry = nsec/NanoSecondsPerSecond - 1;
+      _nsec = nsec - NanoSecondsPerSecond*carry;
+      _sec = sec + carry;
+    } else {
+      nsec_type carry = nsec/NanoSecondsPerSecond;
+      _nsec = nsec - NanoSecondsPerSecond*carry;
+      _sec = sec + carry;
+    }
   }
   const sec_type& getSeconds() const
   { return _sec; }
@@ -115,27 +119,97 @@ operator+(const Time& c1)
 
 inline Time
 operator-(const Time& c1)
-{ Time c(0, 0); c -= c1; return c; /*FIXME*/ }
+{ return Time(0, 0) -= c1; }
 
 inline Time
 operator+(const Time& c1, const Time& c2)
-{ Time c = c1; c += c2; return c; }
+{ return Time(c1) += c2; }
 
 inline Time
 operator-(const Time& c1, const Time& c2)
-{ Time c = c1; c -= c2; return c; }
+{ return Time(c1) -= c2; }
 
-template<typename char_type, typename traits_type> 
+template<typename char_type, typename traits_type>
 inline
 std::basic_ostream<char_type, traits_type>&
 operator<<(std::basic_ostream<char_type, traits_type>& os, const Time& t)
 {
-  std::basic_stringstream<char_type, traits_type> stream;
-  stream << t.getSeconds() << '.'
-         << std::setw(9) << std::right << std::setfill('0')
-         << t.getNanoSeconds();
-  return os << stream.str();
+  if (0 <= t.getSeconds()) {
+    std::basic_stringstream<char_type, traits_type> stream;
+    stream << t.getSeconds() << stream.widen('.')
+           << std::setw(9) << std::right << std::setfill('0')
+           << t.getNanoSeconds();
+    return os << stream.str();
+  } else {
+    return os << os.widen('-') << -t;
+  }
 }
+
+class TimeCounter {
+public:
+  TimeCounter(Time::Type type = Time::CPUTime) :
+    mType(type),
+    mTime(real_type(0)),
+    mRunCounter(0)
+  { }
+  
+  Time getTime() const
+  {
+    if (0 < mRunCounter)
+      return Time::now(mType) + mTime;
+    else
+      return mTime;
+  }
+  
+  void start()
+  {
+    if (1 != ++mRunCounter)
+      return;
+    mTime -= Time::now(mType);
+  }
+  
+  void stop()
+  {
+    if (--mRunCounter != 0)
+      return;
+    mTime += Time::now(mType);
+  }
+  
+private:
+  Time::Type mType;
+  Time mTime;
+  int mRunCounter;
+};
+
+class ScopeTimeCounter {
+public:
+  ScopeTimeCounter(TimeCounter& timer) : mTimeCounter(timer)
+  { mTimeCounter.start(); }
+  ~ScopeTimeCounter(void)
+  { mTimeCounter.stop(); }
+
+private:
+  ScopeTimeCounter(void);
+  ScopeTimeCounter(const ScopeTimeCounter&);
+  ScopeTimeCounter& operator=(const ScopeTimeCounter&);
+
+  TimeCounter& mTimeCounter;
+};
+
+class ScopeUnTimeCounter {
+public:
+  ScopeUnTimeCounter(TimeCounter& timer) : mTimeCounter(timer)
+  { mTimeCounter.stop(); }
+  ~ScopeUnTimeCounter(void)
+  { mTimeCounter.start(); }
+
+private:
+  ScopeUnTimeCounter(void);
+  ScopeUnTimeCounter(const ScopeUnTimeCounter&);
+  ScopeUnTimeCounter& operator=(const ScopeUnTimeCounter&);
+
+  TimeCounter& mTimeCounter;
+};
 
 }
 
