@@ -131,6 +131,8 @@ OpenFDMModelsHEADERS = \
   DiscBrake.h \
   DiscreteIntegrator.h \
   ExternalForceModel.h \
+  FixedRootJoint.h \
+  FixedRootJointFrame.h \
   Force.h \
   Gain.h \
   Gravity.h \
@@ -187,6 +189,7 @@ OpenFDMModelsSOURCES = \
   DiscBrake.cpp \
   DiscreteIntegrator.cpp \
   ExternalForceModel.cpp \
+  FixedRootJoint.cpp \
   Force.cpp \
   Gain.cpp \
   Gravity.cpp \

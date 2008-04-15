@@ -1,8 +1,14 @@
 INCLUDES = -I$(srcdir)/..
 
+# define some util programs
+bin_PROGRAMS = tiretestrig
+
 # define some unit tests
 check_PROGRAMS = quattest unitstest simulationtime constintegral harmonic limit
 TESTS          = $(check_PROGRAMS)
+
+tiretestrig_SOURCES = tiretestrig.cpp
+tiretestrig_LDADD = ../OpenFDM/libOpenFDM.la
 
 unitstest_SOURCES = unitstest.cpp
 unitstest_LDADD = ../OpenFDM/libOpenFDM.la
