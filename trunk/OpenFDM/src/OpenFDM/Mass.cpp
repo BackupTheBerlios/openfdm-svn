@@ -8,6 +8,7 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Mass, Interact)
   DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
+  DEF_OPENFDM_PROPERTY(SpatialInertia, Inertia, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Mass::Mass(const std::string& name, const SpatialInertia& inertia) :
