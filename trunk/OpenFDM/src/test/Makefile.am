@@ -8,7 +8,7 @@ check_PROGRAMS = quattest unitstest simulationtime constintegral harmonic limit
 TESTS          = $(check_PROGRAMS)
 
 tiretestrig_SOURCES = tiretestrig.cpp
-tiretestrig_LDADD = ../OpenFDM/libOpenFDM.la
+tiretestrig_LDADD = ../OpenFDM/libOpenFDM.la -lhdf5
 
 unitstest_SOURCES = unitstest.cpp
 unitstest_LDADD = ../OpenFDM/libOpenFDM.la

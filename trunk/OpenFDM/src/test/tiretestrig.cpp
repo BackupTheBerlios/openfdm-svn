@@ -2,9 +2,6 @@
  *
  */
 
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/DoPri5.h>
 #include <OpenFDM/FixedRootJoint.h>
@@ -27,45 +24,9 @@
 #include <OpenFDM/UnaryFunctionModel.h>
 #include <OpenFDM/WheelContact.h>
 
+#include "HDF5Writer.h"
+
 using namespace OpenFDM;
-
-class CSVWriter : public ModelVisitor {
-public:
-  CSVWriter(const std::string& filename) :
-    _csvFile(filename.c_str())
-  { }
-  virtual void apply(Model& model)
-  {
-    unsigned numOutputs = model.getNumOutputPorts();
-    for (unsigned i = 0; i < numOutputs; ++i) {
-      NumericPortProvider* numericPort = model.getOutputPort(i);
-      if (!numericPort)
-        continue;
-      PortInterface* portInterface = numericPort->getPortInterface();
-      if (!portInterface)
-        continue;
-      MatrixPortInterface* matrixPortInterface;
-      matrixPortInterface = portInterface->toMatrixPortInterface();
-      if (!matrixPortInterface)
-        continue;
-
-      const Matrix& m = matrixPortInterface->getMatrixValue();
-      for (unsigned i = 0; i < rows(m); ++i)
-        for (unsigned j = 0; j < cols(m); ++j)
-          _csvFile << ", " << m(i, j);
-    }
-  }
-  virtual void apply(ModelGroup& modelGroup)
-  { traverse(modelGroup); }
-  virtual void apply(System& system)
-  {
-    _csvFile << system.getTime();
-    ModelVisitor::apply(system);
-    _csvFile << std::endl;
-  }
-private:
-  std::ofstream _csvFile;
-};
 
 class MovingGround : public Ground {
 public:
@@ -111,12 +72,13 @@ main(int argc, char *argv[])
 
   Summer* normalForceSum = new Summer("Normal Force Sum");
   normalForceSum->setNumSummands(2);
+  normalForceSum->setInputSign(0, Summer::Minus);
   system->addModel(normalForceSum);
   Connection::connect(prismaticJoint->getInputPort(0),
                       normalForceSum->getOutputPort(0));
 
   ConstModel* normalForce = new ConstModel("Normal force");
-  normalForce->setScalarValue(5000);
+  normalForce->setScalarValue(2000);
   system->addModel(normalForce);
   Connection::connect(normalForceSum->getInputPort(0),
                       normalForce->getOutputPort(0));
@@ -177,11 +139,11 @@ main(int argc, char *argv[])
   hubStrut->setInboardJoint(sideActuator);
   hubStrut->addInteract(hubJoint);
 
-  RigidBody* rimAndTire = new RigidBody("Rim and Tire");
+  RigidBody* rimAndTire = new RigidBody("Rim And Tire");
   system->addModel(rimAndTire);
   rimAndTire->setInboardJoint(hubJoint);
 
-  Mass* tireAndRimMass = new Mass("Tire And Rim Mass");
+  Mass* tireAndRimMass = new Mass("Rim And Tire Mass");
   tireAndRimMass->setInertia(1, InertiaMatrix(1, 0, 0, 1, 0, 1));
   system->addModel(tireAndRimMass);
   rimAndTire->addInteract(tireAndRimMass);
@@ -198,11 +160,11 @@ main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  CSVWriter writer("out.csv");
-  system->accept(writer);
-  while (system->getTime() < 100) {
+  HDF5Writer hwriter("system.h5");
+  system->accept(hwriter);
+  while (system->getTime() < 10) {
     system->simulate(system->getTime() + 0.01);
-    system->accept(writer);
+    system->accept(hwriter);
   }
   
   return EXIT_SUCCESS;
