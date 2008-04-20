@@ -6,6 +6,7 @@
 #include <fstream>
 #include <OpenFDM/Types.h>
 #include <OpenFDM/Limits.h>
+#include <OpenFDM/Math.h>
 
 using namespace OpenFDM;
 
