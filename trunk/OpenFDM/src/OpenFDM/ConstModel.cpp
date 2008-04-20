@@ -37,7 +37,7 @@ void
 ConstModel::setScalarValue(real_type value)
 {
   mValue.resize(1, 1);
-  mValue(1, 1) = value;
+  mValue(0, 0) = value;
 }
 
 } // namespace OpenFDM
