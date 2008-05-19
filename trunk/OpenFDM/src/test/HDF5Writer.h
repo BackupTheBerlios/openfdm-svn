@@ -78,7 +78,11 @@ public:
 
   bool create(const HDF5Object& parent, const std::string& name)
   {
+#if (1 < H5_VERS_MAJOR || (1 == H5_VERS_MAJOR && 8 <= H5_VERS_MINOR))
+    _id = H5Gcreate(parent.getId(), name.c_str(),  H5P_DEFAULT,  H5P_DEFAULT,  H5P_DEFAULT);
+#else
     _id = H5Gcreate(parent.getId(), name.c_str(), 0);
+#endif
     if (_id < 0)
       return false;
     return true;
@@ -133,8 +137,13 @@ public:
 
       hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
       status = H5Pset_chunk(cparms, rank, chunk_dims);
+#if (1 < H5_VERS_MAJOR || (1 == H5_VERS_MAJOR && 8 <= H5_VERS_MINOR))
+      _id = H5Dcreate(_parent.getId(), _name.c_str(), H5T_NATIVE_DOUBLE,
+                      _dataspace.getId(), H5P_DEFAULT, cparms, H5P_DEFAULT);
+#else
       _id = H5Dcreate(_parent.getId(), _name.c_str(), H5T_NATIVE_DOUBLE,
                       _dataspace.getId(), cparms);
+#endif
       H5Pclose(cparms);
     } else {
       // increment size
