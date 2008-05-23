@@ -22,16 +22,17 @@ public:
 protected:
   bool getPropertyValue(Variant& value) const
   {
-    if (!mObject)
+    SharedPtr<Object> object = mObject.lock();
+    if (!object)
       return false;
-    return mObject->getPropertyValue(mPropertyName, value);
+    return object->getPropertyValue(mPropertyName, value);
   }
   bool setPropertyValue(const Variant& value)
   {
-    if (!mObject)
+    SharedPtr<Object> object = mObject.lock();
+    if (!object)
       return false;
-
-    return mObject->setPropertyValue(mPropertyName, value);
+    return object->setPropertyValue(mPropertyName, value);
   }
 
 private:
@@ -207,17 +208,16 @@ public:
   /// Implements the SimGear property interface.
   virtual double getValue(void) const
   {
-    if (!mPort)
+    SharedPtr<NumericPortProvider> port = mPort.lock();
+    if (!port)
       return 0;
     if (mIndex == 1) {
-      NumericPortProvider* port = mPort;
       RealPortHandle realPortHandle = port->getPortInterface()->toRealPortInterface();
       if (realPortHandle.isConnected())
         return realPortHandle.getRealValue();
       else
         return 0;
     } else {
-      NumericPortProvider* port = mPort;
       MatrixPortHandle matrixPortHandle = port->getPortInterface()->toMatrixPortInterface();
       if (matrixPortHandle.isConnected()) {
         Matrix m = matrixPortHandle.getMatrixValue();
