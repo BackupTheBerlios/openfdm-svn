@@ -68,6 +68,29 @@ public:
 #endif
  }
 
+  bool compareAndExchange(unsigned oldValue, unsigned newValue)
+  {
+#if defined(OpenFDM_USE_GCC4_BUILTINS)
+    return __sync_bool_compare_and_swap(&mValue, oldValue, newValue);
+#elif defined(OpenFDM_USE_MIPOSPRO_BUILTINS)
+    return __compare_and_swap(&mValue, oldValue, newValue);
+#elif defined(OpenFDM_USE_WIN32_INTERLOCKED)
+    long volatile* lvPtr = reinterpret_cast<long volatile*>(&mValue);
+    return oldValue == InterlockedCompareExchange(lvPtr, newValue, oldValue);
+#elif defined(OpenFDM_USE_MUTEX)
+    ScopeLock lock(mMutex);
+    if (mValue != oldValue)
+      return false;
+    mValue = newValue;
+    return true;
+#else
+    if (mValue != oldValue)
+      return false;
+    mValue = newValue;
+    return true;
+#endif
+  }
+
 private:
   Atomic(const Atomic&);
   Atomic& operator=(const Atomic&);
