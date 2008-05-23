@@ -22,14 +22,15 @@ public:
   WeakReferenced(void) : mWeakDataPtr(new WeakData(this))
   {}
   // Do not copy the weak backward references ...
-  WeakReferenced(const WeakReferenced&) : mWeakDataPtr(new WeakData(this))
+  WeakReferenced(const WeakReferenced& weakReferenced) :
+    Referenced(weakReferenced), mWeakDataPtr(new WeakData(this))
   {}
   ~WeakReferenced(void)
   { mWeakDataPtr->clear(); }
 
   /// Do not copy the weak backward references ...
   WeakReferenced& operator=(const WeakReferenced&)
-  { return *this; }
+  { Referenced::operator=(*this); return *this; }
 
 private:
   /// Support for weak references, not increasing the reference count
@@ -39,14 +40,14 @@ private:
   public:
     WeakData(WeakReferenced* object) : mObject(object) {}
     template<typename T>
-    void get(SharedPtr<T>& sharedPtr)
+    T* get()
     {
+      // This lock guarantees that the object is not deleted in between.
       ScopeLock scopeLock(mMutex);
-      if (Referenced::count(mObject)) {
-        sharedPtr = static_cast<T*>(mObject);
-      } else {
-        sharedPtr = 0;
-      }
+      if (WeakReferenced::getNonZero(mObject) == 0)
+        return 0;
+      else
+        return static_cast<T*>(mObject);
     }
     void clear()
     {
@@ -58,6 +59,9 @@ private:
     WeakData(const WeakData&);
     WeakData& operator=(const WeakData&);
 
+    // Mutex to protect the non atomic pointer assignment and that avoids
+    // access to an object that is not yet zeroed out but deletion is in
+    // progress.
     Mutex mMutex;
     WeakReferenced* mObject;
   };

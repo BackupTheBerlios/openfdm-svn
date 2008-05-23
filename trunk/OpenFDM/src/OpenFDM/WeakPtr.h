@@ -10,61 +10,48 @@
 
 namespace OpenFDM {
 
-/// FIXME: remove the direct accessors, only copy to a SharedPtr
-/// where you can access then, may be similar to the std::tr2::weak_ptr::lock()
-/// function. That is to avoid deletion of a currently used object
 template<typename T>
 class WeakPtr {
 public:
   WeakPtr(void)
   { }
-  WeakPtr(T* ptr) // OpenFDM_DEPRECATED
-  { assign(ptr); }
   WeakPtr(const WeakPtr& p) : mWeakDataPtr(p.mWeakDataPtr)
   { }
   template<typename U>
   WeakPtr(const SharedPtr<U>& p)
-  { assign(p.ptr()); }
+  { SharedPtr<T> sharedPtr = p; assign(sharedPtr.get()); }
   template<typename U>
   WeakPtr(const WeakPtr<U>& p)
-  { assign(p.ptr()); }
+  { SharedPtr<T> sharedPtr = p.lock(); assign(sharedPtr.get()); }
+  WeakPtr(T* ptr) // OpenFDM_DEPRECATED // Hmm, shall we??
+  { assign(ptr); }
   ~WeakPtr(void)
   { }
   
   template<typename U>
   WeakPtr& operator=(const SharedPtr<U>& p)
-  { assign(p.ptr()); return *this; }
+  { SharedPtr<T> sharedPtr = p; assign(sharedPtr.get()); return *this; }
   template<typename U>
   WeakPtr& operator=(const WeakPtr<U>& p)
-  { assign(p.ptr()); return *this; }
-  WeakPtr& operator=(T* p) // OpenFDM_DEPRECATED
-  { assign(p); return *this; }
+  { SharedPtr<T> sharedPtr = p.lock(); assign(sharedPtr.get()); return *this; }
   WeakPtr& operator=(const WeakPtr& p)
   { mWeakDataPtr = p.mWeakDataPtr; return *this; }
 
   SharedPtr<T> lock(void) const
   {
+    if (!mWeakDataPtr)
+      return SharedPtr<T>();
     SharedPtr<T> sharedPtr;
-    if (mWeakDataPtr)
-       mWeakDataPtr->get(sharedPtr);
+    sharedPtr.assignNonRef(mWeakDataPtr->get<T>());
     return sharedPtr;
   }
 
-  T* operator->(void) const // OpenFDM_DEPRECATED
-  { return ptr(); }
-
-  T& operator*(void) const // OpenFDM_DEPRECATED
-  { return *ptr(); }
-
-  operator T*(void) const // OpenFDM_DEPRECATED
-  { return ptr(); }
+  void clear()
+  { mWeakDataPtr = 0; }
+  void swap(WeakPtr& weakPtr)
+  { mWeakDataPtr.swap(weakPtr.mWeakDataPtr); }
 
 private:
-  T* ptr(void) const // OpenFDM_DEPRECATED
-  {
-    return lock().release();
-  }
-
   void assign(T* p)
   {
     if (p)
@@ -75,11 +62,6 @@ private:
   
   // The indirect reference itself.
   SharedPtr<WeakReferenced::WeakData> mWeakDataPtr;
-
-  template<typename U>
-  friend class SharedPtr;
-  template<typename U>
-  friend class WeakPtr;
 };
 
 } // namespace OpenFDM
