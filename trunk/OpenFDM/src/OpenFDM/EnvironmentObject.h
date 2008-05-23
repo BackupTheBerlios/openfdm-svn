@@ -17,10 +17,10 @@ public:
   EnvironmentObject(void);
   virtual ~EnvironmentObject(void);
 
-  Environment* getEnvironment(void)
-  { return mEnvironment; }
-  const Environment* getEnvironment(void) const
-  { return mEnvironment; }
+  SharedPtr<Environment> getEnvironment(void)
+  { return mEnvironment.lock(); }
+  SharedPtr<const Environment> getEnvironment(void) const
+  { return mEnvironment.lock(); }
 
 private:
   void attachToEnvironment(Environment* environment);
