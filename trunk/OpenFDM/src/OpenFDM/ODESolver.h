@@ -53,9 +53,15 @@ public:
   { return mStats; }
 
   void evalFunction(real_type t, const Vector& v, Vector& out)
-  { mSystem->evalFunction(t, v, out); }
+  {
+    SharedPtr<System> system = mSystem.lock();
+    system->evalFunction(t, v, out);
+  }
   void evalJacobian(real_type t, const Vector& v, Matrix& jac)
-  { mSystem->evalJacobian(t, v, jac); }
+  {
+    SharedPtr<System> system = mSystem.lock();
+    system->evalJacobian(t, v, jac);
+  }
 
   void setSystem(System* model)
   { mSystem = model; }
