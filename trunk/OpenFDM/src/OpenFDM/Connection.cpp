@@ -25,91 +25,93 @@ Connection::~Connection()
 Port::ConnectResult
 Connection::setPortProvider(PortProvider* portProvider)
 {
-  if (mPortProvider && portProvider)
+  if (mPortProvider.lock() && portProvider)
     return Port::AlreadyConnected;
 
   if (!portProvider) {
-    if (mPortAcceptor && mPortProvider) {
-      mPortAcceptor->disconnect(mPortProvider);
+    if (mPortAcceptor.lock() && mPortProvider.lock()) {
+      mPortAcceptor.lock()->disconnect(mPortProvider.lock());
     } else {
       // FIXME
 //       modelGroup->removeConnection(this);
     }
-    mPortProvider = 0;
+    mPortProvider.clear();
     return Port::Success;
   }
 
   SharedPtr<Node> providerModel = portProvider->getModel().lock();
   if (!providerModel)
     return Port::StalePort;
-  if (!providerModel->getParent(0))
+  if (!providerModel->getParent(0).lock())
     return Port::IsolatedModel;
 
   // if the other side is not yet connected, we are ok here
-  if (!mPortAcceptor) {
+  if (!mPortAcceptor.lock()) {
     mPortProvider = portProvider;
-    ModelGroup* modelGroup = providerModel->getParent(0);
+    SharedPtr<ModelGroup> modelGroup = providerModel->getParent(0).lock();
     modelGroup->addConnection(this);
     return Port::Success;
   }
 
-  SharedPtr<Node> acceptorModel = mPortAcceptor->getModel().lock();
-  if (acceptorModel->getParent(0) != providerModel->getParent(0)) {
-    mPortProvider = 0;
+  SharedPtr<Node> acceptorModel = mPortAcceptor.lock()->getModel().lock();
+  if (acceptorModel->getParent(0).lock() != providerModel->getParent(0).lock()) {
+    mPortProvider.clear();
     return Port::DifferentGroups;
   }
 
   mPortProvider = portProvider;
-  Port::ConnectResult result = mPortAcceptor->connect(mPortProvider);
+  Port::ConnectResult result = mPortAcceptor.lock()->connect(mPortProvider.lock());
   if (result == Port::Success)
     return result;
-  mPortProvider = 0;
+  mPortProvider.clear();
   return result;
 }
 
 Port::ConnectResult
 Connection::setPortAcceptor(PortAcceptor* portAcceptor)
 {
-  if (mPortAcceptor && portAcceptor)
+  if (mPortAcceptor.lock() && portAcceptor)
     return Port::AlreadyConnected;
 
   if (!portAcceptor) {
-    if (mPortAcceptor && mPortProvider) {
-      mPortAcceptor->disconnect(mPortProvider);
+    if (mPortAcceptor.lock() && mPortProvider.lock()) {
+      mPortAcceptor.lock()->disconnect(mPortProvider.lock());
     } else {
       // FIXME
 //       modelGroup->removeConnection(this);
     }
-    mPortAcceptor = 0;
+    mPortAcceptor.clear();
     return Port::Success;
   }
     
   SharedPtr<Node> acceptorModel = portAcceptor->getModel().lock();
   if (!acceptorModel)
     return Port::StalePort;
-  if (!acceptorModel->getParent(0))
+  SharedPtr<Node> acceptorParent = acceptorModel->getParent(0).lock(); 
+  if (!acceptorParent)
     return Port::IsolatedModel;
 
   // if the other side is not yet connected, we are ok here
-  if (!mPortProvider) {
+  if (!mPortProvider.lock()) {
     mPortAcceptor = portAcceptor;
-    ModelGroup* modelGroup = acceptorModel->getParent(0);
+    SharedPtr<ModelGroup> modelGroup = acceptorModel->getParent(0).lock();
     modelGroup->addConnection(this);
 
     return Port::Success;
   }
 
-  SharedPtr<Node> providerModel = mPortProvider->getModel().lock();
-  if (acceptorModel->getParent(0) != providerModel->getParent(0)) {
-    mPortAcceptor = 0;
+  SharedPtr<Node> providerModel = mPortProvider.lock()->getModel().lock();
+  SharedPtr<Node> providerParent = providerModel->getParent(0).lock(); 
+  if (acceptorParent != providerParent) {
+    mPortAcceptor.clear();
     return Port::DifferentGroups;
   }
 
   mPortAcceptor = portAcceptor;
-  Port::ConnectResult result = mPortAcceptor->connect(mPortProvider);
+  Port::ConnectResult result = portAcceptor->connect(mPortProvider.lock());
   if (result == Port::Success)
     return result;
-  mPortAcceptor = 0;
+  mPortAcceptor.clear();
   return result;
 }
 
@@ -181,8 +183,8 @@ Connection::disconnect()
   SharedPtr<PortAcceptor> portAcceptor = mPortAcceptor.lock();
   if (portProvider && portAcceptor)
     portAcceptor->disconnect(portProvider);
-  mPortProvider = 0;
-  mPortAcceptor = 0;
+  mPortProvider.clear();
+  mPortAcceptor.clear();
 }
 
 } // namespace OpenFDM
