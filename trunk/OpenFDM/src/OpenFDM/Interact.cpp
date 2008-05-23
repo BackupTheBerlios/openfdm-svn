@@ -74,7 +74,7 @@ Interact::isChildOf(const RigidBody* const rigidBody) const
     return false;
   ParentList::const_iterator it = mParents.begin();
   while (it != mParents.end()) {
-    if ((*it) == rigidBody)
+    if ((*it).lock() == rigidBody)
       return true;
     ++it;
   }
@@ -90,7 +90,7 @@ Interact::attachTo(RigidBody* rigidBody, bool upstream)
   }
   ParentList::iterator it;
   for (it = mParents.begin(); it != mParents.end(); ++it) {
-    if ((*it) == 0) {
+    if ((*it).lock() == 0) {
       (*it) = rigidBody;
       if (upstream && it != mParents.begin())
         swapParents();
@@ -115,8 +115,8 @@ Interact::detachFrom(RigidBody* rigidBody)
   }
   ParentList::iterator it;
   for (it = mParents.begin(); it != mParents.end(); ++it) {
-    if ((*it) == rigidBody) {
-      (*it) = 0;
+    if ((*it).lock() == rigidBody) {
+      (*it).clear();
       recheckTopology();
       return true;
     }
