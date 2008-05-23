@@ -57,7 +57,7 @@ public:
     mSourceModel(sourceModel), mGetter(getter)
   { }
   virtual void evaluate(void)
-  { mValue(0, 0) = (mSourceModel->*mGetter)(); }
+  { mValue(0, 0) = (mSourceModel.lock()->*mGetter)(); }
 private:
   WeakPtr<M> mSourceModel;
   Getter mGetter;
@@ -70,7 +70,7 @@ public:
     mSourceModel(sourceModel), mGetter(getter)
   { }
   virtual void evaluate(void)
-  { mValue = (mSourceModel->*mGetter)(); }
+  { mValue = (mSourceModel.lock()->*mGetter)(); }
 private:
   WeakPtr<M> mSourceModel;
   Getter mGetter;
