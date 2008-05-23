@@ -40,15 +40,15 @@ public:
 
   virtual bool dependsDirectOn(Model* model);
 
-  const RigidBody* getParentRigidBody(unsigned id = 0) const
+  SharedPtr<const RigidBody> getParentRigidBody(unsigned id = 0) const
   {
     OpenFDMAssert(id < mParents.size());
-    return mParents[id];
+    return mParents[id].lock();
   }
-  RigidBody* getParentRigidBody(unsigned id = 0)
+  SharedPtr<RigidBody> getParentRigidBody(unsigned id = 0)
   {
     OpenFDMAssert(id < mParents.size());
-    return mParents[id];
+    return mParents[id].lock();
   }
   bool isChildOf(const RigidBody* const rigidBody) const;
 
@@ -65,9 +65,7 @@ private:
   void swapParents(void)
   {
     OpenFDMAssert(2 == mParents.size());
-    RigidBody* rigidBody = mParents[0];
-    mParents[0] = mParents[1];
-    mParents[1] = rigidBody;
+    mParents[0].swap(mParents[1]);
   }
 
 private:
