@@ -29,9 +29,9 @@ private:
     IEFunction(ImplicitEuler* i) : ie(i) {}
 
     virtual size_type inSize(void) const
-    { return ie->mSystem->getNumContinousStates(); }
+    { return ie->mSystem.lock()->getNumContinousStates(); }
     virtual size_type outSize(void) const
-    { return ie->mSystem->getNumContinousStates(); }
+    { return ie->mSystem.lock()->getNumContinousStates(); }
     virtual void eval(real_type t, const invector_type& v,
                       outvector_type& out)
     {
@@ -43,7 +43,7 @@ private:
     {
       real_type h = ie->mCurrentStepsize;
       ie->evalJacobian(ie->getTime() + h, ie->getState() + v, jac);
-      size_type dim = ie->mSystem->getNumContinousStates();
+      size_type dim = ie->mSystem.lock()->getNumContinousStates();
       jac -= (1/h)*LinAlg::Eye<real_type,0,0>(dim, dim);
     }
   private:
