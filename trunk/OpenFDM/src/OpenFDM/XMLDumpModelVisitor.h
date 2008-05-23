@@ -72,7 +72,8 @@ private:
         indent() << "<connect name=\"" << connection->getName() << "\">\n";
       ++mIndent;
       dumpProperties(*connection);
-      const PortProvider* portProvider = connection->getPortProvider();
+      SharedPtr<const PortProvider> portProvider;
+      portProvider = connection->getPortProvider().lock();
       if (portProvider) {
         SharedPtr<Node> node = portProvider->getModel().lock();
         if (node) {
@@ -81,7 +82,8 @@ private:
                    << "\"/>\n";
         }
       }
-      const PortAcceptor* portAcceptor = connection->getPortAcceptor();
+      SharedPtr<const PortAcceptor> portAcceptor;
+      portAcceptor = connection->getPortAcceptor().lock();
       if (portAcceptor) {
         SharedPtr<Node> node = portAcceptor->getModel().lock();
         if (node) {
