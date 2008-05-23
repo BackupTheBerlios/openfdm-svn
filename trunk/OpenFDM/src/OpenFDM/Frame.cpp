@@ -86,14 +86,15 @@ bool
 Frame::isParentFrameOf(const Frame* const frame) const
 {
   return isDirectParentFrameOf(frame) ||
-    (frame && isParentFrameOf(frame->mParentFrame));
+    (frame && isParentFrameOf(frame->mParentFrame.lock()));
 }
 
 bool
 Frame::isChildFrameOf(const Frame* const frame) const
 {
+  SharedPtr<Frame> parent = mParentFrame.lock();
   return isDirectChildFrameOf(frame) ||
-    (mParentFrame && mParentFrame->isChildFrameOf(frame));
+    (parent && parent->isChildFrameOf(frame));
 }
 
 bool

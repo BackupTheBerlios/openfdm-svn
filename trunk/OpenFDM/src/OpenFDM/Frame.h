@@ -67,10 +67,10 @@ public:
 
   /// Return the parent frame.
   Frame* getParentFrame(void)
-  { return mParentFrame; }
+  { return mParentFrame.lock(); }
   /// Return the parent frame.
   const Frame* getParentFrame(void) const
-  { return mParentFrame; }
+  { return mParentFrame.lock(); }
   /// True if the current frame has a parent frame.
   bool hasParent(void) const
   { return getParentFrame(); }
@@ -80,7 +80,7 @@ public:
   /// That means it reads:
   ///  this->isDirectParentFrameOf(frame)
   bool isDirectParentFrameOf(const Frame* const frame) const
-  { return frame && this == frame->mParentFrame; }
+  { return frame && this == frame->mParentFrame.lock(); }
   /// Return true if this Frame is a parent Frame of the Frame given
   /// in the argument frame. It does not need to be the direct parent.
   /// That means it reads:
@@ -92,7 +92,7 @@ public:
   /// That means it reads:
   ///  this->isDirectChildFrameOf(frame)
   bool isDirectChildFrameOf(const Frame* const frame) const
-  { return frame && frame == mParentFrame; }
+  { return frame && frame == mParentFrame.lock(); }
   /// Return true if this Frame is a child Frame of the Frame given
   /// in the argument frame. It does not need to be a direct child.
   /// That means it reads:
