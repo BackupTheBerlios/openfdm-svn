@@ -396,7 +396,8 @@ FGOpenFDM::FGOpenFDM(SGPropertyNode* fdmRootNode) :
 FGOpenFDM::~FGOpenFDM(void)
 {
   SG_LOG(SG_FLIGHT, SG_INFO, "FGOpenFDM::~FGOpenFDM()");
-  mData->ground->setInterface(0);
+  if (mData->ground)
+    mData->ground->setInterface(0);
   delete mData;
 }
 
