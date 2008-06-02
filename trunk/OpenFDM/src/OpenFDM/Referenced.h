@@ -29,18 +29,6 @@ public:
   { if (ref) return ref->_refcount; else return 0u; }
   static bool shared(const Referenced* ref)
   { if (ref) return 1u < ref->_refcount; else return false; }
-  static unsigned getNonZero(const Referenced* ref)
-  {
-    if (!ref)
-      return 0u;
-    unsigned count;
-    do {
-      count = ref->_refcount;
-      if (count == 0)
-        return 0u;
-    } while (!ref->_refcount.compareAndExchange(count, count+1));
-    return count + 1;
-  }
 
   template<typename T>
   static void destroy(T* ref)

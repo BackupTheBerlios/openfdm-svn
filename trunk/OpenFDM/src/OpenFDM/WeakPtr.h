@@ -15,7 +15,7 @@ class WeakPtr {
 public:
   WeakPtr(void)
   { }
-  WeakPtr(const WeakPtr& p) : mWeakDataPtr(p.mWeakDataPtr)
+  WeakPtr(const WeakPtr& p) : mWeakData(p.mWeakData)
   { }
   template<typename U>
   WeakPtr(const SharedPtr<U>& p)
@@ -35,33 +35,33 @@ public:
   WeakPtr& operator=(const WeakPtr<U>& p)
   { SharedPtr<T> sharedPtr = p.lock(); assign(sharedPtr.get()); return *this; }
   WeakPtr& operator=(const WeakPtr& p)
-  { mWeakDataPtr = p.mWeakDataPtr; return *this; }
+  { mWeakData = p.mWeakData; return *this; }
 
   SharedPtr<T> lock(void) const
   {
-    if (!mWeakDataPtr)
+    if (!mWeakData)
       return SharedPtr<T>();
     SharedPtr<T> sharedPtr;
-    sharedPtr.assignNonRef(mWeakDataPtr->get<T>());
+    sharedPtr.assignNonRef(mWeakData->getPointer<T>());
     return sharedPtr;
   }
 
   void clear()
-  { mWeakDataPtr = 0; }
+  { mWeakData = 0; }
   void swap(WeakPtr& weakPtr)
-  { mWeakDataPtr.swap(weakPtr.mWeakDataPtr); }
+  { mWeakData.swap(weakPtr.mWeakData); }
 
 private:
   void assign(T* p)
   {
     if (p)
-      mWeakDataPtr = p->mWeakDataPtr;
+      mWeakData = p->mWeakData;
     else
-      mWeakDataPtr = 0;
+      mWeakData = 0;
   }
   
   // The indirect reference itself.
-  SharedPtr<WeakReferenced::WeakData> mWeakDataPtr;
+  SharedPtr<WeakReferenced::WeakData> mWeakData;
 };
 
 } // namespace OpenFDM
