@@ -19,12 +19,12 @@ public:
   SharedPtr(void) : _ptr(0)
   {}
   SharedPtr(T* ptr) : _ptr(ptr)
-  { Referenced::get(_ptr); }
+  { T::get(_ptr); }
   SharedPtr(const SharedPtr& p) : _ptr(p.get())
-  { Referenced::get(_ptr); }
+  { T::get(_ptr); }
   template<typename U>
   SharedPtr(const SharedPtr<U>& p) : _ptr(p.get())
-  { Referenced::get(_ptr); }
+  { T::get(_ptr); }
   ~SharedPtr(void)
   { put(); }
   
@@ -49,12 +49,12 @@ public:
   T* get() const
   { return _ptr; }
   T* release()
-  { T* tmp = _ptr; _ptr = 0; Referenced::put(tmp); return tmp; }
+  { T* tmp = _ptr; _ptr = 0; T::put(tmp); return tmp; }
 
   bool isShared(void) const
-  { return Referenced::shared(_ptr); }
+  { return T::shared(_ptr); }
   unsigned getNumRefs(void) const
-  { return Referenced::count(_ptr); }
+  { return T::count(_ptr); }
 
   void clear()
   { put(); }
@@ -63,12 +63,12 @@ public:
 
 private:
   void assign(T* p)
-  { Referenced::get(p); put(); _ptr = p; }
+  { T::get(p); put(); _ptr = p; }
   void assignNonRef(T* p)
   { put(); _ptr = p; }
 
   void put(void)
-  { if (!Referenced::put(_ptr)) T::destroy(_ptr); _ptr = 0; }
+  { if (!T::put(_ptr)) T::destroy(_ptr); _ptr = 0; }
   
   // The reference itself.
   T* _ptr;
@@ -76,6 +76,11 @@ private:
   template<typename U>
   friend class WeakPtr;
 };
+
+template<typename T>
+inline bool
+operator<(const SharedPtr<T>& sharedPtr0, const SharedPtr<T>& sharedPtr1)
+{ return sharedPtr0.get() < sharedPtr1.get(); }
 
 } // namespace OpenFDM
 
