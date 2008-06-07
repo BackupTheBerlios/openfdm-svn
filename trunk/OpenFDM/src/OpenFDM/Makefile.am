@@ -73,6 +73,7 @@ OpenFDMCoreHEADERS = \
   Transform.h \
   TypeInfo.h \
   Types.h \
+  TypeTraits.h \
   Unit.h \
   Variant.h \
   Vector.h \
