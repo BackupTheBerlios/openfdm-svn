@@ -77,10 +77,20 @@ private:
   friend class WeakPtr;
 };
 
-template<typename T>
-inline bool
-operator<(const SharedPtr<T>& sharedPtr0, const SharedPtr<T>& sharedPtr1)
-{ return sharedPtr0.get() < sharedPtr1.get(); }
+// Hmmm, what if we get an automatic cast to a shared pointer of a fresh
+// allocated object pointer?
+// This will be gone after destruction of the temporary object ...
+// The same applies to the < operator below ...
+
+// template<typename T>
+// inline bool
+// operator==(const SharedPtr<T>& sharedPtr0, const SharedPtr<T>& sharedPtr1)
+// { return sharedPtr0.get() == sharedPtr1.get(); }
+
+// template<typename T>
+// inline bool
+// operator<(const SharedPtr<T>& sharedPtr0, const SharedPtr<T>& sharedPtr1)
+// { return sharedPtr0.get() < sharedPtr1.get(); }
 
 } // namespace OpenFDM
 

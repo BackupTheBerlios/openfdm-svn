@@ -11,6 +11,11 @@
 namespace OpenFDM {
 
 template<typename T>
+inline bool operator==(const WeakPtr<T>& p1, const WeakPtr<T>& p2);
+template<typename T>
+inline bool operator<(const WeakPtr<T>& p1, const WeakPtr<T>& p2);
+
+template<typename T>
 class WeakPtr {
 public:
   WeakPtr(void)
@@ -62,7 +67,42 @@ private:
   
   // The indirect reference itself.
   SharedPtr<WeakReferenced::WeakData> mWeakData;
+
+  template<typename S>
+  friend bool operator==(const WeakPtr<S>& p1, const WeakPtr<S>& p2);
+  template<typename S>
+  friend bool operator<(const WeakPtr<S>& p1, const WeakPtr<S>& p2);
 };
+
+template<typename T>
+inline bool
+operator==(const WeakPtr<T>& p1, const WeakPtr<T>& p2)
+{ return p1.mWeakData == p2.mWeakData; }
+
+template<typename T>
+inline bool
+operator!=(const WeakPtr<T>& p1, const WeakPtr<T>& p2)
+{ return !(p1 == p2); }
+
+template<typename T>
+inline bool
+operator<(const WeakPtr<T>& p1, const WeakPtr<T>& p2)
+{ return p1.mWeakData < p2.mWeakData; }
+
+template<typename T>
+inline bool
+operator>(const WeakPtr<T>& p1, const WeakPtr<T>& p2)
+{ return p2 < p1; }
+
+template<typename T>
+inline bool
+operator<=(const WeakPtr<T>& p1, const WeakPtr<T>& p2)
+{ return !(p1 > p2); }
+
+template<typename T>
+inline bool
+operator>=(const WeakPtr<T>& p1, const WeakPtr<T>& p2)
+{ return !(p1 < p2); }
 
 } // namespace OpenFDM
 
