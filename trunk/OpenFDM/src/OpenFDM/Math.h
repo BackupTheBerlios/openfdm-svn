@@ -91,14 +91,39 @@ deadBand(const T& val, const T& saturation)
   return T(0);
 }
 
+// Saturate value between -1 and 1.
 template<typename T>
 inline T
-smoothSaturate(const T& val, const T& saturation)
+smoothSaturate(const T& val)
+{
+  return atan(val*Constants<T>::pi()/2)*2/Constants<T>::pi();
+}
+
+// Saturate value between -saturate and saturate.
+// template<typename T>
+// inline T
+// smoothSaturate(const T& val, const T& saturation)
+// {
+//   if (saturation <= Limits<T>::min())
+//     return 0;
+//   return saturation*smoothSaturate(val/saturation);
+// }
+
+// Saturate value between -saturate and saturate.
+// The higher the p value the sharper the edge.
+template<typename T>
+inline T
+smoothSaturate(const T& val, const T& saturation, const T& p = T(10))
 {
   if (saturation <= Limits<T>::min())
     return 0;
-  else
-    return atan(val*Constants<T>::pi()/(2*saturation))*2*saturation/Constants<T>::pi();
+
+  T sEpsP = pow(Limits<T>::epsilon(), T(1)/(T(2)*p));
+  T absVal = fabs(val/saturation);
+  if (absVal <= sEpsP)
+    return val;
+  T limitedVal = min(T(1), pow(smoothSaturate(pow(absVal, p)), T(1)/p));
+  return saturation*sign(val)*limitedVal;
 }
 
 template<typename T>
