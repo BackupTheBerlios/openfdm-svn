@@ -98,9 +98,6 @@ private:
 #if defined(OpenFDM_USE_MUTEX)
   mutable Mutex mMutex;
 #endif
-#if defined(OpenFDM_USE_WIN32_INTERLOCKED)
-  __declspec(align(32))
-#endif
   unsigned mValue;
 };
 
