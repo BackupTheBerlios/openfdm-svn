@@ -23,25 +23,34 @@ operator/(const PhysicalDimension& d1, const PhysicalDimension& d2);
 class PhysicalDimension {
 public:
   PhysicalDimension(signed char length = 0, signed char mass = 0,
-                    signed char time = 0, signed char temperature = 0,
-                    signed char current = 0, signed char amountSubstance = 0,
-                    signed char lumIntensity = 0) :
+                    signed char time = 0,
+                    signed char thermodynamicTemperature = 0,
+                    signed char electricCurrent = 0,
+                    signed char amountOfSubstance = 0,
+                    signed char luminousIntensity = 0) :
     mLength(length),
     mMass(mass),
     mTime(time),
-    mTemperature(temperature),
-    mCurrent(current),
-    mAmountSubstance(amountSubstance),
-    mLumIntensity(lumIntensity)
+    mThermodynamicTemperature(thermodynamicTemperature),
+    mElectricCurrent(electricCurrent),
+    mAmountOfSubstance(amountOfSubstance),
+    mLuminousIntensity(luminousIntensity)
   { }
 
-  signed char getLength(void) const { return mLength; }
-  signed char getMass(void) const { return mMass; }
-  signed char getTime(void) const { return mTime; }
-  signed char getTemperature(void) const { return mTemperature; }
-  signed char getCurrent(void) const { return mCurrent; }
-  signed char getAmountSubstance(void) const { return mAmountSubstance; }
-  signed char getLumIntensity(void) const { return mLumIntensity; }
+  signed char getLength(void) const
+  { return mLength; }
+  signed char getMass(void) const
+  { return mMass; }
+  signed char getTime(void) const
+  { return mTime; }
+  signed char getThermodynamicTemperature(void) const
+  { return mThermodynamicTemperature; }
+  signed char getElectricCurrent(void) const
+  { return mElectricCurrent; }
+  signed char getAmountOfSubstance(void) const
+  { return mAmountOfSubstance; }
+  signed char getLuminousIntensity(void) const
+  { return mLuminousIntensity; }
 
   static PhysicalDimension length(void)
   { return PhysicalDimension(1, 0, 0, 0, 0, 0, 0); }
@@ -49,14 +58,23 @@ public:
   { return PhysicalDimension(0, 1, 0, 0, 0, 0, 0); }
   static PhysicalDimension time(void)
   { return PhysicalDimension(0, 0, 1, 0, 0, 0, 0); }
-  static PhysicalDimension temperature(void)
+  static PhysicalDimension thermodynamicTemperature(void)
   { return PhysicalDimension(0, 0, 0, 1, 0, 0, 0); }
-  static PhysicalDimension current(void)
+  static PhysicalDimension electricCurrent(void)
   { return PhysicalDimension(0, 0, 0, 0, 1, 0, 0); }
-  static PhysicalDimension amountSubstance(void)
+  static PhysicalDimension amountOfSubstance(void)
   { return PhysicalDimension(0, 0, 0, 0, 0, 1, 0); }
-  static PhysicalDimension lumIntensity(void)
+  static PhysicalDimension luminousIntensity(void)
   { return PhysicalDimension(0, 0, 0, 0, 0, 0, 1); }
+
+  static PhysicalDimension planeAngle(void)
+  { return length()/length(); }
+  static PhysicalDimension solidAngle(void)
+  { return area()/area(); }
+
+  static PhysicalDimension frequency(void)
+  { return PhysicalDimension()/time(); }
+
   static PhysicalDimension area(void)
   { return PhysicalDimension(2, 0, 0, 0, 0, 0, 0); }
   static PhysicalDimension volume(void)
@@ -80,6 +98,9 @@ public:
   static PhysicalDimension inertia(void)
   { return mass()*area(); }
 
+  static PhysicalDimension electricCharge(void)
+  { return electricCurrent()*time(); }
+
   PhysicalDimension& operator*=(const PhysicalDimension& physicalDimension)
   { *this = *this * physicalDimension; return *this; }
   PhysicalDimension& operator/=(const PhysicalDimension& physicalDimension)
@@ -89,10 +110,10 @@ private:
   signed char mLength;
   signed char mMass;
   signed char mTime;
-  signed char mTemperature;
-  signed char mCurrent;
-  signed char mAmountSubstance;
-  signed char mLumIntensity;
+  signed char mThermodynamicTemperature;
+  signed char mElectricCurrent;
+  signed char mAmountOfSubstance;
+  signed char mLuminousIntensity;
 };
 
 inline
@@ -102,10 +123,11 @@ operator*(const PhysicalDimension& d1, const PhysicalDimension& d2)
   return PhysicalDimension(d1.getLength()+d2.getLength(),
                            d1.getMass()+d2.getMass(),
                            d1.getTime()+d2.getTime(),
-                           d1.getTemperature()+d2.getTemperature(),
-                           d1.getCurrent()+d2.getCurrent(),
-                           d1.getAmountSubstance()+d2.getAmountSubstance(),
-                           d1.getLumIntensity()+d2.getLumIntensity());
+                           d1.getThermodynamicTemperature()
+                           +d2.getThermodynamicTemperature(),
+                           d1.getElectricCurrent()+d2.getElectricCurrent(),
+                           d1.getAmountOfSubstance()+d2.getAmountOfSubstance(),
+                           d1.getLuminousIntensity()+d2.getLuminousIntensity());
 }
 
 inline
@@ -115,10 +137,11 @@ operator/(const PhysicalDimension& d1, const PhysicalDimension& d2)
   return PhysicalDimension(d1.getLength()-d2.getLength(),
                            d1.getMass()-d2.getMass(),
                            d1.getTime()-d2.getTime(),
-                           d1.getTemperature()-d2.getTemperature(),
-                           d1.getCurrent()-d2.getCurrent(),
-                           d1.getAmountSubstance()-d2.getAmountSubstance(),
-                           d1.getLumIntensity()-d2.getLumIntensity());
+                           d1.getThermodynamicTemperature()
+                           -d2.getThermodynamicTemperature(),
+                           d1.getElectricCurrent()-d2.getElectricCurrent(),
+                           d1.getAmountOfSubstance()-d2.getAmountOfSubstance(),
+                           d1.getLuminousIntensity()-d2.getLuminousIntensity());
 }
 
 inline
@@ -128,10 +151,10 @@ operator==(const PhysicalDimension& d1, const PhysicalDimension& d2)
   return d1.getLength() == d2.getLength() &&
     d1.getMass() == d2.getMass() &&
     d1.getTime() == d2.getTime() &&
-    d1.getTemperature() == d2.getTemperature() &&
-    d1.getCurrent() == d2.getCurrent() &&
-    d1.getAmountSubstance() == d2.getAmountSubstance() &&
-    d1.getLumIntensity() == d2.getLumIntensity();
+    d1.getThermodynamicTemperature() == d2.getThermodynamicTemperature() &&
+    d1.getElectricCurrent() == d2.getElectricCurrent() &&
+    d1.getAmountOfSubstance() == d2.getAmountOfSubstance() &&
+    d1.getLuminousIntensity() == d2.getLuminousIntensity();
 }
 
 inline
@@ -141,24 +164,24 @@ operator!=(const PhysicalDimension& d1, const PhysicalDimension& d2)
   return d1.getLength() != d2.getLength() ||
     d1.getMass() != d2.getMass() ||
     d1.getTime() != d2.getTime() ||
-    d1.getTemperature() != d2.getTemperature() ||
-    d1.getCurrent() != d2.getCurrent() ||
-    d1.getAmountSubstance() != d2.getAmountSubstance() ||
-    d1.getLumIntensity() != d2.getLumIntensity();
+    d1.getThermodynamicTemperature() != d2.getThermodynamicTemperature() ||
+    d1.getElectricCurrent() != d2.getElectricCurrent() ||
+    d1.getAmountOfSubstance() != d2.getAmountOfSubstance() ||
+    d1.getLuminousIntensity() != d2.getLuminousIntensity();
 }
 
 inline
 PhysicalDimension
-exp(const PhysicalDimension& d, signed char exponent)
+pow(const PhysicalDimension& d, signed char exponent)
 {
   if (exponent == 0)
     return PhysicalDimension();
   else if (exponent == 1)
     return d;
   else if (1 < exponent)
-    return d*exp(d, exponent-1);
+    return d*pow(d, exponent-1);
   else if (exponent < 0)
-    return PhysicalDimension()/exp(d, -exponent);
+    return PhysicalDimension()/pow(d, -exponent);
 }
 
 } // namespace OpenFDM

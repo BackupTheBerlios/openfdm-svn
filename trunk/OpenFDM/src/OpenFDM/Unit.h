@@ -148,7 +148,7 @@ class Unit;
 
 inline Unit operator*(const Unit& u1, const Unit& u2);
 inline Unit operator/(const Unit& u1, const Unit& u2);
-inline Unit exp(const Unit& u, signed char exponent);
+inline Unit pow(const Unit& u, signed char exponent);
 
 class Unit {
 public:
@@ -187,9 +187,14 @@ public:
   { return Unit(); }
 
   static Unit radian()
-  { return Unit(); }
+  { return length()/length(); }
   static Unit degree()
   { return Unit(deg2rad); }
+  static Unit steradian()
+  { return area()/area(); }
+
+  static Unit hertz(void)
+  { return Unit()/time(); }
 
   static Unit second()
   { return time(); }
@@ -227,19 +232,19 @@ public:
   { return nauticalMile()/hour(); }
 
   static Unit meterPerSecond2()
-  { return meter()/exp(second(), 2); }
+  { return meter()/pow(second(), 2); }
   static Unit footPerSecond2()
-  { return foot()/exp(second(), 2); }
+  { return foot()/pow(second(), 2); }
 
   static Unit squareMeter()
-  { return exp(meter(), 2); }
+  { return pow(meter(), 2); }
   static Unit squareFoot()
-  { return exp(foot(), 2); }
+  { return pow(foot(), 2); }
 
   static Unit qubicMeter()
-  { return exp(meter(), 3); }
+  { return pow(meter(), 3); }
   static Unit qubicFoot()
-  { return exp(foot(), 3); }
+  { return pow(foot(), 3); }
 
   static Unit kilogramm()
   { return mass(); }
@@ -279,16 +284,26 @@ public:
   { return lbf()/squareFoot(); }
 
   static Unit kelvin()
-  { return temperature(); }
+  { return thermodynamicTemperature(); }
   static Unit degreeCelsius()
-  { return temperature(1, real_type(273.15)); }
+  { return thermodynamicTemperature(1, real_type(273.15)); }
   static Unit rankine()
-  { return temperature(real_type(5)/real_type(9)); }
+  { return thermodynamicTemperature(real_type(5)/real_type(9)); }
   static Unit degreeFarenheit()
   {
-    return temperature(real_type(5)/real_type(9),
-                       real_type(273.15) - real_type(32*5)/real_type(9));
+    return thermodynamicTemperature(real_type(5)/real_type(9),
+                                    real_type(273.15)
+                                    - real_type(32*5)/real_type(9));
   }
+
+  static Unit ampere()
+  { return electricCurrent(); }
+
+  static Unit mol()
+  { return amountOfSubstance(); }
+
+  static Unit candela()
+  { return luminousIntensity(); }
 
   static Unit length(real_type factor = 1)
   { return Unit(PhysicalDimension::length(), factor); }
@@ -296,14 +311,26 @@ public:
   { return Unit(PhysicalDimension::mass(), factor); }
   static Unit time(real_type factor = 1)
   { return Unit(PhysicalDimension::time(), factor); }
-  static Unit temperature(real_type factor = 1, real_type offset = 0)
-  { return Unit(PhysicalDimension::temperature(), factor, offset); }
-  static Unit current(real_type factor = 1)
-  { return Unit(PhysicalDimension::current(), factor); }
-  static Unit amountSubstance(real_type factor = 1)
-  { return Unit(PhysicalDimension::amountSubstance(), factor); }
-  static Unit lumIntensity(real_type factor = 1)
-  { return Unit(PhysicalDimension::lumIntensity(), factor); }
+  static Unit thermodynamicTemperature(real_type factor = 1,
+                                       real_type offset = 0)
+  { return Unit(PhysicalDimension::thermodynamicTemperature(),
+                factor, offset); }
+  static Unit electricCurrent(real_type factor = 1)
+  { return Unit(PhysicalDimension::electricCurrent(), factor); }
+  static Unit amountOfSubstance(real_type factor = 1)
+  { return Unit(PhysicalDimension::amountOfSubstance(), factor); }
+  static Unit luminousIntensity(real_type factor = 1)
+  { return Unit(PhysicalDimension::luminousIntensity(), factor); }
+
+  static Unit planeAngle(void)
+  { return length()/length(); }
+  static Unit solidAngle(void)
+  { return area()/area(); }
+
+  static Unit frequency(void)
+  { return Unit()/time(); }
+
+
   static Unit area(real_type factor = 1)
   { return Unit(PhysicalDimension::area(), factor); }
   static Unit volume(real_type factor = 1)
@@ -326,6 +353,9 @@ public:
   { return energy(factor)/time(); }
   static Unit inertia(real_type factor = 1)
   { return mass(factor)*area(); }
+
+  static Unit electricCharge(real_type factor = 1)
+  { return electricCurrent(factor)*time(); }
 
   // Convert from native units to the unit given in the unit argument.
   real_type convertTo(const real_type& value) const
@@ -395,16 +425,16 @@ operator/(const Unit& u1, const Unit& u2)
 
 inline
 Unit
-exp(const Unit& u, signed char exponent)
+pow(const Unit& u, signed char exponent)
 {
   if (exponent == 0)
     return Unit();
   else if (exponent == 1)
     return u;
   else if (1 < exponent)
-    return u*exp(u, exponent-1);
+    return u*pow(u, exponent-1);
   else if (exponent < 0)
-    return Unit()/exp(u, -exponent);
+    return Unit()/pow(u, -exponent);
 }
 
 inline
@@ -462,31 +492,34 @@ operator<<(std::basic_ostream<char_type, traits_type>& stream, const Unit& u)
         stream << int(physicalDimension.getTime()) << stream.widen(' ');
       stream << stream.widen(' ');
     }
-    if (physicalDimension.getTemperature()) {
+    if (physicalDimension.getThermodynamicTemperature()) {
       stream << stream.widen('K');
-      if (physicalDimension.getTemperature() != 1)
-        stream << int(physicalDimension.getTemperature());
+      if (physicalDimension.getThermodynamicTemperature() != 1)
+        stream << int(physicalDimension.getThermodynamicTemperature());
       stream << stream.widen(' ');
     }
-    if (physicalDimension.getCurrent()) {
+    if (physicalDimension.getElectricCurrent()) {
       stream << stream.widen('A');
-      if (physicalDimension.getCurrent() != 1)
-        stream << int(physicalDimension.getCurrent());
+      if (physicalDimension.getElectricCurrent() != 1)
+        stream << int(physicalDimension.getElectricCurrent());
       stream << stream.widen(' ');
     }
-    if (physicalDimension.getLumIntensity()) {
+    if (physicalDimension.getLuminousIntensity()) {
       stream << stream.widen('c') << stream.widen('d');
-      if (physicalDimension.getLumIntensity() != 1)
-        stream << int(physicalDimension.getLumIntensity());
+      if (physicalDimension.getLuminousIntensity() != 1)
+        stream << int(physicalDimension.getLuminousIntensity());
       stream << stream.widen(' ');
     }
   } else {
     stream << ", Length = " << int(physicalDimension.getLength())
            << ", Mass = " << int(physicalDimension.getMass())
            << ", Time = " << int(physicalDimension.getTime())
-           << ", Temperature = " << int(physicalDimension.getTemperature())
-           << ", Current = " << int(physicalDimension.getCurrent())
-           << ", LumIntensity = " << int(physicalDimension.getLumIntensity());
+           << ", ThermodynamicTemperature = "
+           << int(physicalDimension.getThermodynamicTemperature())
+           << ", ElectricCurrent = "
+           << int(physicalDimension.getElectricCurrent())
+           << ", LuminousIntensity = "
+           << int(physicalDimension.getLuminousIntensity());
   }
   return stream;
 }
