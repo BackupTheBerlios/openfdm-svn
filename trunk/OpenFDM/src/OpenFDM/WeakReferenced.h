@@ -5,7 +5,6 @@
 #ifndef OpenFDM_WeakReferenced_H
 #define OpenFDM_WeakReferenced_H
 
-#include "Mutex.h"
 #include "Referenced.h"
 #include "ScopeLock.h"
 #include "SharedPtr.h"
