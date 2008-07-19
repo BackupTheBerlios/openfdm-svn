@@ -224,5 +224,7 @@ OpenFDMModelsSOURCES = \
   Vehicle.cpp \
   WheelContact.cpp
 
-nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
-libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES)
+# nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
+nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS)
+# libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES)
+libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES)
