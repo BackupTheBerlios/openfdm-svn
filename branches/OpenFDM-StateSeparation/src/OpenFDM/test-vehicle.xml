@@ -1,0 +1,227 @@
+<?xml version="1.0"?>
+<OpenFDM version="1">
+  <ControlSystem>
+     <model type="Integrator" name="Integrator0">
+       <initialValue>
+         <matrix>0</matrix>
+       </initialValue>
+     </model>
+     <connect>
+       <src name="Integrator0">0</src>
+       <dst name="Integrator1">0</dst>
+     </connect>
+     <model type="Integrator" name="Integrator1">
+       <initialValue>
+         <matrix>5</matrix>
+       </initialValue>
+     </model>
+<!--      <model type="Const" name="Const0"> -->
+<!--        <value> -->
+<!--          <matrix rows="1" columns="1">-2</matrix> -->
+<!--        </value> -->
+<!--      </model> -->
+<!--      <connect> -->
+<!--        <src name="Const0">0</src> -->
+<!--        <dst name="Product0">1</dst> -->
+<!--      </connect> -->
+     <connect>
+       <src name="Integrator1">0</src>
+       <dst name="Product0">0</dst>
+     </connect>
+     <model type="Gain" name="Product0">
+       <gain>
+         <matrix>-1</matrix>
+       </gain>
+     </model>
+<!--      <model type="Product" name="Product0"> -->
+<!--        <sign> -->
+<!--          <string>**</string> -->
+<!--        </sign> -->
+<!--      </model> -->
+     <connect>
+       <src name="Product0">0</src>
+       <dst name="Integrator0">0</dst>
+     </connect>
+  </ControlSystem>
+
+
+
+  <MechanicalSystem>
+
+    <Frame Name="structural"/>
+
+    <RigidBody Name="top">
+      <Mass>
+        <Position>
+          <Vector Unit="m">1 1 1</Vector>
+        </Position>
+        <Orientation Reference="structural">
+          <Heading Unit="deg">0</Heading>
+          <Attitude Unit="deg">0</Attitude>
+          <Roll Unit="deg">0</Roll>
+        </Orientation>
+        <Mass Unit="kg">17</Mass>
+        <Inertia Unit="kg*m*m">
+          <Ixx>17</Ixx>
+          <Iyy>17</Iyy>
+          <Izz>17</Izz>
+        </Inertia>
+      </Mass>
+    </RigidBody>
+
+    <Joint Type="Revolute" Name="noseStrutRetractJoint">
+      <Mount Name="top">
+        <!-- The position of the joint in this body's coordinates. -->
+        <Position>
+          <Vector Unit="m">1 1 1</Vector>
+        </Position>
+        <!-- The orientation of the joint in this body's coordinates. -->
+        <Orientation Reference="structural">
+          <quaternion>1 0 0 0</quaternion>
+        </Orientation>
+      </Mount>
+      <Mount Name="noseStrutBody">
+        <!-- The position of the joint in this body's coordinates. -->
+        <Position>
+          <Vector Unit="m">1 1 1</Vector>
+        </Position>
+        <!-- The orientation of the joint in this body's coordinates. -->
+        <Orientation Reference="structural">
+          <quaternion>1 0 0 0</quaternion>
+        </Orientation>
+      </Mount>
+<!--       <Actuator></Actuator> -->
+    </Joint>
+    <RigidBody Name="noseStrutBody">
+    </RigidBody>
+    <Joint Type="Revolute" Name="noseStrutSteeringJoint">
+      <Mount Name="noseStrutBody">
+      </Mount>
+      <Mount Name="noseStrutSteerBody">
+      </Mount>
+    </Joint>
+    <RigidBody Name="noseStrutSteerBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Prismatic" Name="noseCompressionJoint">
+      <Mount Name="noseStrutSteerBody">
+      </Mount>
+      <Mount Name="noseStrutCompressBody">
+      </Mount>
+    </Joint>
+    <RigidBody Name="noseStrutCompressBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="noseWheelHub">
+      <Mount Name="noseStrutCompressBody">
+      </Mount>
+      <Mount Name="noseWheel">
+      </Mount>
+    </Joint>
+    <RigidBody Name="noseWheel">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+      <Inertia Unit="kg*m*m">
+        <Iyy>17</Iyy>
+      </Inertia>
+    </RigidBody>
+
+
+    <Joint Type="Revolute" Name="rightStrutRestractJoint">
+      <Mount Name="top">
+      </Mount>
+      <Mount Name="rightStrutBody">
+      </Mount>
+    </Joint>
+    <RigidBody Name="rightStrutBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="rightStrutCompressJoint">
+      <Mount Name="rightStrutBody">
+      </Mount>
+      <Mount Name="rightStrutCompressBody">
+      </Mount>
+    </Joint>
+    <RigidBody Name="rightStrutCompressBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="rightWheelHub">
+      <Mount Name="rightStrutCompressBody">
+      </Mount>
+      <Mount Name="rightWheel">
+      </Mount>
+    </Joint>
+    <RigidBody Name="rightWheel">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+      <Inertia Unit="kg*m*m">
+        <Iyy>17</Iyy>
+      </Inertia>
+    </RigidBody>
+
+    <Joint Type="Revolute" Name="leftStrut">
+      <Mount Name="top">
+      </Mount>
+      <Mount Name="leftStrutBody">
+      </Mount>
+    </Joint>
+    <RigidBody Name="leftStrutBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="leftStrutCompressJoint">
+      <Mount Name="leftStrutBody">
+      </Mount>
+      <Mount Name="leftStrutCompressBody">
+      </Mount>
+    </Joint>
+    <RigidBody Type="Revolute" Name="leftStrutCompressBody">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+    </RigidBody>
+    <Joint Type="Revolute" Name="leftWheelHub">
+      <Mount Name="leftStrutCompressBody">
+      </Mount>
+      <Mount Name="leftWheel">
+      </Mount>
+    </Joint>
+    <RigidBody Name="leftWheel">
+      <Mass>
+        <Mass Unit="kg">17</Mass>
+      </Mass>
+      <Inertia Unit="kg*m*m">
+        <Iyy>17</Iyy>
+      </Inertia>
+    </RigidBody>
+
+
+    <AeroForce Name="aeroFroce">
+      <Mount Name="top">
+        <Position>
+          <Vector Unit="m">1 1 1</Vector>
+        </Position>
+      </Mount>
+    </AeroForce>
+
+    <SimpleContact Name="contact1">
+    </SimpleContact>
+    <SimpleContact Name="contact2">
+    </SimpleContact>
+    <SimpleContact Name="contact3">
+    </SimpleContact>
+    <SimpleContact Name="contact4">
+    </SimpleContact>
+  </MechanicalSystem>
+</OpenFDM>

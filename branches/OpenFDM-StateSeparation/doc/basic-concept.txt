@@ -1,0 +1,72 @@
+
+OpenFDM
+-------
+
+OpenFDM is at the first a framework suitable for physical modelling.
+It features the computation of aerodynamic forces as well as an open
+loop multibody system. It includes state of the art friction/tire
+models and timestepping methods.
+
+Basic Concept
+-------------
+
+Since in physical modelling most effects are computed in its special
+coordinate frame, this is one of the core components of OpenFDM. There
+is a class called OpenFDM::Frame which represents such a coordinate
+frame. A frame can be attached to exactly one parent frame and can
+have multiple frames attached to itself. So frames form a tree like
+structure where our vehicle will live in. Frames can move and
+accelerate with respect to its parent. All information (FIXME: except
+the position for now) is stored and can be accessed in the frames own
+coordinates.
+
+Frames provide functions to transform several kind of physical
+information from one frame to its parent and back to the current
+frame. The inertial velocity and acceleration as well as relative
+positionsand velocities are accessible through a frame.
+
+Not all frames have 6 degrees of freedom. There is a class
+OpenFDM::FreeFrame where the setters for all degrees of freedom are
+public. Such a frame can be and is used to provide coriolis effects to
+the vehicle. The Earth centered frame is such a free frame which
+rotates around its z axis once a day and has the vehicle attached to
+it. As said before the frames functions could be used to take care of
+the ghost accelerations caused by the earths rotation.
+
+Mass points are for example frames which can be positioned with
+respect to its parent frame. They cannot be rotated nor have a
+velocity (and thus no relative acceleration).
+
+Joints are some special frames which have some restricted degree of
+freedom. They can move or rotate along one or more cartesian axis in
+the velocity space. The degrees of freedom could be set, past that the
+relative accelerations can be computed using the articulated body
+algorythm. More on that later.
+
+Expressions
+-----------
+
+OpenFDM contains a set of real valued expressions. They can be used to
+dynamically compute forces for the components of OpenFDM.
+
+Scheduled components (DiscreteObject)
+-------------------------------------
+
+A vehicle often contains some components, like the flight control
+system for example, which are executed at a given rate. Such
+components include dynamical systems expressed by transfer functions,
+time derivatives of some expression values and control surface
+movements limited to a given rate for example. Other components like
+engines or tanks whos influence to the vehicles behavour should be
+updated once a timestep fit in the category too. Such components are
+of the base type OpenFDM::DiscreteObject and could be attached to a
+vehicle too.
+
+
+Spatial algebra
+---------------
+
+For the mechanical parts we use the so called spatial vectors. That
+are 6-vectors containing the longitudinal and rotational parts
+together in one vector. That is is fact very handy and is the base for
+the articulated body algorythm.
