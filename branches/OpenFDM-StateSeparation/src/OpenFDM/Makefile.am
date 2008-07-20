@@ -8,9 +8,9 @@ lib_LTLIBRARIES = libOpenFDM.la
 libOpenFDM_la_LIBADD = -lrt
 
 OpenFDMCoreHEADERS = \
+  AcceptorPortInfo.h \
   Assert.h \
   Atomic.h \
-  Connection.h \
   ConstFrameVisitor.h \
   CowPtr.h \
   DoPri5.h \
@@ -35,36 +35,42 @@ OpenFDMCoreHEADERS = \
   LinAlg/Misc.h \
   LinAlg/Proxy.h \
   LogStream.h \
-  Mass.h \
   Math.h \
   Matrix.h \
-  Newton.h \
+  MatrixInputPort.h \
+  MatrixOutputPort.h \
   MidpointRule.h \
   Model.h \
   ModelGroup.h \
   ModelVisitor.h \
   Mutex.h \
   MPFRFloat.h \
-  NumericPortAcceptor.h \
-  NumericPortProvider.h \
-  NumericPortProxy.h \
+  Newton.h \
+  Node.h \
+  NodeVisitor.h \
+  NumericPortValue.h \
+  NumericAcceptorPortInfo.h \
+  NumericProviderPortInfo.h \
   Object.h \
   ODESolver.h \
   OpenFDMConfig.h \
   PhysicalDimension.h \
   Plane.h \
   Planet.h \
-  Port.h \
-  PortAcceptor.h \
-  PortProvider.h \
+  PortId.h \
+  PortInfo.h \
+  PortValue.h \
+  PortValueList.h \
+  ProviderPortInfo.h \
   Quaternion.h \
   ReaderWriter.h \
+  RealInputPort.h \
+  RealOutputPort.h \
   Referenced.h \
   Rotation.h \
   SampleTime.h \
   ScopeLock.h \
   SharedPtr.h \
-  SimulationTime.h \
   StateStream.h \
   System.h \
   TableData.h \
@@ -84,37 +90,39 @@ OpenFDMCoreHEADERS = \
 OpenFDMCoreSOURCES = \
   Assert.cpp \
   Atomic.cpp \
-  Connection.cpp \
-  DoPri5.cpp \
-  Environment.cpp \
-  EnvironmentObject.cpp \
-  ExplicitAdams.cpp \
-  ExplicitEuler.cpp \
   Frame.cpp \
-  Function.cpp \
-  GroupInput.cpp \
-  GroupOutput.cpp \
-  ImplicitEuler.cpp \
   Logger.cpp \
-  Mass.cpp \
-  Newton.cpp \
-  MidpointRule.cpp \
-  Model.cpp \
-  ModelGroup.cpp \
+  Node.cpp \
+  NodeVisitor.cpp \
+  NumericPortValue.cpp \
   Object.cpp \
-  ODESolver.cpp \
   Planet.cpp \
-  Port.cpp \
-  PortAcceptor.cpp \
-  PortProvider.cpp \
-  ReaderWriter.cpp \
+  PortInfo.cpp \
+  PortValue.cpp \
   SampleTime.cpp \
-  SimulationTime.cpp \
-  System.cpp \
-  TaskInfo.cpp \
   Time.cpp \
   Unit.cpp \
   Variant.cpp
+
+#   DoPri5.cpp \
+#   Environment.cpp \
+#   EnvironmentObject.cpp \
+#   ExplicitAdams.cpp \
+#   ExplicitEuler.cpp \
+#   Function.cpp \
+#   GroupInput.cpp \
+#   GroupOutput.cpp \
+#   ImplicitEuler.cpp \
+#   Newton.cpp \
+#   MidpointRule.cpp \
+#   Model.cpp \
+#   ModelGroup.cpp \
+#   ReaderWriter.cpp \
+#   ODESolver.cpp \
+#   System.cpp \
+#   TaskInfo.cpp \
+#
+
 
 OpenFDMModelsHEADERS = \
   AeroForce.h \
@@ -144,6 +152,7 @@ OpenFDMModelsHEADERS = \
   Joint.h \
   Launchbar.h \
   LinearSpringDamper.h \
+  Mass.h \
   MaxModel.h \
   MinModel.h \
   MobileRootJoint.h \
@@ -162,6 +171,7 @@ OpenFDMModelsHEADERS = \
   Sensor.h \
   SimpleContact.h \
   SimpleGear.h \
+  SimulationTime.h \
   Summer.h \
   Table.h \
   Tailhook.h \
@@ -201,6 +211,7 @@ OpenFDMModelsSOURCES = \
   Joint.cpp \
   Launchbar.cpp \
   LinearSpringDamper.cpp \
+  Mass.cpp \
   MaxModel.cpp \
   MinModel.cpp \
   MobileRootJoint.cpp \
@@ -214,6 +225,7 @@ OpenFDMModelsSOURCES = \
   Saturation.cpp \
   SimpleContact.cpp \
   SimpleGear.cpp \
+  SimulationTime.cpp \
   Summer.cpp \
   Table.cpp \
   Tailhook.cpp \
