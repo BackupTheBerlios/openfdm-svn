@@ -72,6 +72,7 @@ OpenFDMCoreHEADERS = \
   ScopeLock.h \
   SharedPtr.h \
   StateStream.h \
+  StateValue.h \
   System.h \
   TableData.h \
   TaskInfo.h \
@@ -100,6 +101,7 @@ OpenFDMCoreSOURCES = \
   PortInfo.cpp \
   PortValue.cpp \
   SampleTime.cpp \
+  StateValue.cpp \
   Time.cpp \
   Unit.cpp \
   Variant.cpp

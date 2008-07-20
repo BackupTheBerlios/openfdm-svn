@@ -13,10 +13,15 @@ namespace OpenFDM {
 
 class PortValue : public Referenced {
 public:
-  virtual ~PortValue();
   //virtual NumericPortValue* toNumericPortValue() { return 0; }
   //virtual MechanicPortValue* toMechanicPortValue() { return 0; }
   //virtual FluidPortValue* toFluidPortValue() { return 0; }
+
+  static void destroy(PortValue* portValue)
+  { delete portValue; }
+
+protected:
+  virtual ~PortValue();
 };
 
 // FIXME Do I need a class for that???
