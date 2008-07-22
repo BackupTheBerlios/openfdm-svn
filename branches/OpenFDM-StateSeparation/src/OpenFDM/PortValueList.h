@@ -25,6 +25,9 @@ class PortValueList {
 public:
 
   // Accessors for real valued ports
+  bool isConnected(const RealOutputPort& port) const
+  { return port.getPortValue(mPortValueVector); }
+
   const real_type& getValue(const RealInputPort& port) const
   { return port.getPortValue(mPortValueVector)->getValue()(0, 0); }
   void setValue(const RealOutputPort& port, const real_type& value)
@@ -36,29 +39,38 @@ public:
   { return port.getPortValue(mPortValueVector)->getValue()(0, 0); }
 
   // Accessors for matrix valued ports
+  bool isConnected(const MatrixOutputPort& port) const
+  { return port.getPortValue(mPortValueVector); }
+
   const Matrix& getValue(const MatrixInputPort& port) const
   { return port.getPortValue(mPortValueVector)->getValue(); }
   void setValue(const MatrixOutputPort& port, const Matrix& matrix)
   { port.getPortValue(mPortValueVector)->setValue(matrix); }
-  // FIXME, will have them, but cannot ensure currently that the size does not change.
+
   const Matrix& operator[](const MatrixInputPort& port) const
   { return port.getPortValue(mPortValueVector)->getValue(); }
-//   Matrix& operator[](const MatrixOutputPort& port)
-//   { return port.getPortValue(mPortValueVector)->getValue(); }
+  // FIXME, make sure that the size cannot change.
+  // May be we have some kind of base class of Matrix that has no resize call
+  // and no resizing assignment/copy???
+  Matrix& operator[](const MatrixOutputPort& port)
+  { return port.getPortValue(mPortValueVector)->getValue(); }
 
-  bool isConnected(const RealOutputPort& port) const
-  { return port.getPortValue(mPortValueVector); }
-  bool isConnected(const MatrixOutputPort& port) const
-  { return port.getPortValue(mPortValueVector); }
 
-  void setPortValue(unsigned idx, PortValue* portValue) // FIXME
+  // FIXME, avoid this method here. With this method the output stage of a model
+  // can change the port values, this should not be available in a model.
+  // may be this must be a derived class that provides some more access??
+  void setPortValue(unsigned idx, PortValue* portValue)
   {
     if (mPortValueVector.size() <= idx)
       mPortValueVector.resize(idx+1);
     mPortValueVector[idx] = portValue;
   }
+  void setPortSize(const MatrixOutputPort& port, const Size& size)
+  {
+    setPortValue(port.getPortIndex(), new NumericPortValue(size));
+  }
 
-private:
+protected:
   PortValueVector mPortValueVector;
 };
 
