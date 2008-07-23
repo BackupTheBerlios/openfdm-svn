@@ -12,6 +12,7 @@ OpenFDMCoreHEADERS = \
   Assert.h \
   Atomic.h \
   ConstFrameVisitor.h \
+  ContinousStateValue.h \
   CowPtr.h \
   DoPri5.h \
   Environment.h \
@@ -39,6 +40,7 @@ OpenFDMCoreHEADERS = \
   Matrix.h \
   MatrixInputPort.h \
   MatrixOutputPort.h \
+  MatrixStateValue.h \
   MidpointRule.h \
   Model.h \
   ModelGroup.h \
@@ -91,8 +93,10 @@ OpenFDMCoreHEADERS = \
 OpenFDMCoreSOURCES = \
   Assert.cpp \
   Atomic.cpp \
+  ContinousStateValue.cpp \
   Frame.cpp \
   Logger.cpp \
+  MatrixStateValue.cpp \
   Node.cpp \
   NodeVisitor.cpp \
   NumericPortValue.cpp \
