@@ -19,14 +19,12 @@ class NodeVisitor {
 public:
   virtual ~NodeVisitor();
 
-  virtual void apply(Node& node)
-  { }
+  virtual void apply(Node& node);
   virtual void apply(GroupAcceptorNode& node)
   { apply((Node&)node); }
   virtual void apply(GroupProviderNode& node)
   { apply((Node&)node); }
-  virtual void apply(LeafNode& node)
-  { apply((Node&)node); }
+  virtual void apply(LeafNode& node);
   virtual void apply(Model& node)
   { apply((LeafNode&)node); }
   virtual void apply(Body& node)

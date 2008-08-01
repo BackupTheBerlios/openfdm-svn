@@ -31,6 +31,7 @@ OpenFDMCoreHEADERS = \
   GroupOutput.h \
   ImplicitEuler.h \
   Inertia.h \
+  LeafNode.h \
   Limits.h \
   LinAlg/Algorithm.h \
   LinAlg/Array.h \
@@ -109,6 +110,7 @@ OpenFDMCoreSOURCES = \
   Atomic.cpp \
   ContinousStateValue.cpp \
   Frame.cpp \
+  LeafNode.cpp \
   Logger.cpp \
   MatrixStateValue.cpp \
   Node.cpp \

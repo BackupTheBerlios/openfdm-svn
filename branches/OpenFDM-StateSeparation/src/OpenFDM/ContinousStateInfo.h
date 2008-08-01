@@ -5,6 +5,7 @@
 #ifndef OpenFDM_ContinousStateInfo_H
 #define OpenFDM_ContinousStateInfo_H
 
+#include "ContinousStateValue.h"
 #include "StateInfo.h"
 
 namespace OpenFDM {
