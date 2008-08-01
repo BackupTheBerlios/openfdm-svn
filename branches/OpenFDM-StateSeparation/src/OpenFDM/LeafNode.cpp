@@ -7,6 +7,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(LeafNode, Node)
+  END_OPENFDM_OBJECT_DEF
+
 LeafNode::LeafNode(const std::string& name) :
   Node(name)
 {

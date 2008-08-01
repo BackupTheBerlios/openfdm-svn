@@ -18,6 +18,7 @@ class ContinousStateValueVector;
 class DiscreteStateValueVector;
 
 class LeafNode : public Node {
+  OPENFDM_OBJECT(LeafNode, Node);
 public:
   LeafNode(const std::string& name);
 
