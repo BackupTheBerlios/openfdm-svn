@@ -17,6 +17,7 @@ namespace OpenFDM {
 class NodeVisitor;
 
 class Node : public Object {
+  OPENFDM_OBJECT(Node, Object);
 public:
   Node(const std::string& name = std::string());
   virtual ~Node();

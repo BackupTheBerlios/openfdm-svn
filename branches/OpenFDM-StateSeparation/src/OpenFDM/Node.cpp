@@ -7,6 +7,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Node, Object)
+  END_OPENFDM_OBJECT_DEF
+
 Node::Node(const std::string& name) :
   Object(name)
 {
