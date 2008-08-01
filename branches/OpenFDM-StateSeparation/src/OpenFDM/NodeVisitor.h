@@ -10,7 +10,7 @@ namespace OpenFDM {
 class Node;
 class GroupAcceptorNode;
 class GroupProviderNode;
-class Leaf;
+class LeafNode;
 class Model;
 class Body;
 class Group;
@@ -25,12 +25,12 @@ public:
   { apply((Node&)node); }
   virtual void apply(GroupProviderNode& node)
   { apply((Node&)node); }
-  virtual void apply(Leaf& node)
+  virtual void apply(LeafNode& node)
   { apply((Node&)node); }
   virtual void apply(Model& node)
-  { apply((Leaf&)node); }
+  { apply((LeafNode&)node); }
   virtual void apply(Body& node)
-  { apply((Leaf&)node); }
+  { apply((LeafNode&)node); }
   virtual void apply(Group& node)
   { apply((Node&)node); }
 };
