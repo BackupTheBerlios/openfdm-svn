@@ -11,9 +11,14 @@ OpenFDMCoreHEADERS = \
   AcceptorPortInfo.h \
   Assert.h \
   Atomic.h \
+  BoolStateInfo.h \
   ConstFrameVisitor.h \
+  ContinousStateInfo.h \
+  ContinousStateInfoVector.h \
   ContinousStateValue.h \
+  ContinousStateValueVector.h \
   CowPtr.h \
+  DiscreteStateValueVector.h \
   DoPri5.h \
   Environment.h \
   EnvironmentObject.h \
@@ -41,6 +46,7 @@ OpenFDMCoreHEADERS = \
   MatrixInputPort.h \
   MatrixOutputPort.h \
   MatrixStateValue.h \
+  MatrixStateInfo.h \
   MidpointRule.h \
   Model.h \
   ModelGroup.h \
@@ -68,16 +74,24 @@ OpenFDMCoreHEADERS = \
   ReaderWriter.h \
   RealInputPort.h \
   RealOutputPort.h \
+  RealStateInfo.h \
   Referenced.h \
   Rotation.h \
   SampleTime.h \
   ScopeLock.h \
   SharedPtr.h \
   StateStream.h \
+  StateInfo.h \
+  StateInfoVector.h \
   StateValue.h \
   System.h \
   TableData.h \
   TaskInfo.h \
+  TemplateContinousStateInfo.h \
+  TemplateDiscreteStateInfo.h \
+  TemplateInfoVector.h \
+  TemplateStateInfo.h \
+  TemplateValueVector.h \
   Time.h \
   Transform.h \
   TypeInfo.h \
