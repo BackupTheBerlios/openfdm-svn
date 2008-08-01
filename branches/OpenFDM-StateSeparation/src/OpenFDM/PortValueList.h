@@ -25,13 +25,10 @@ class PortValueList {
 public:
 
   // Accessors for real valued ports
+  bool isConnected(const RealInputPort& port) const
+  { return port.getPortValue(mPortValueVector); }
   bool isConnected(const RealOutputPort& port) const
   { return port.getPortValue(mPortValueVector); }
-
-  const real_type& getValue(const RealInputPort& port) const
-  { return port.getPortValue(mPortValueVector)->getValue()(0, 0); }
-  void setValue(const RealOutputPort& port, const real_type& value)
-  { port.getPortValue(mPortValueVector)->getValue()(0, 0) = value; }
 
   const real_type& operator[](const RealInputPort& port) const
   { return port.getPortValue(mPortValueVector)->getValue()(0, 0); }
@@ -39,13 +36,10 @@ public:
   { return port.getPortValue(mPortValueVector)->getValue()(0, 0); }
 
   // Accessors for matrix valued ports
+  bool isConnected(const MatrixInputPort& port) const
+  { return port.getPortValue(mPortValueVector); }
   bool isConnected(const MatrixOutputPort& port) const
   { return port.getPortValue(mPortValueVector); }
-
-  const Matrix& getValue(const MatrixInputPort& port) const
-  { return port.getPortValue(mPortValueVector)->getValue(); }
-  void setValue(const MatrixOutputPort& port, const Matrix& matrix)
-  { port.getPortValue(mPortValueVector)->setValue(matrix); }
 
   const Matrix& operator[](const MatrixInputPort& port) const
   { return port.getPortValue(mPortValueVector)->getValue(); }
