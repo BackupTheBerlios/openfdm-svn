@@ -51,7 +51,6 @@ OpenFDMCoreHEADERS = \
   MidpointRule.h \
   Model.h \
   ModelGroup.h \
-  ModelVisitor.h \
   Mutex.h \
   MPFRFloat.h \
   Newton.h \
