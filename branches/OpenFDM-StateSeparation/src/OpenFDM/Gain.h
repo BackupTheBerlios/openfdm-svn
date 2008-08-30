@@ -6,11 +6,7 @@
 #define OpenFDM_Gain_H
 
 #include <string>
-#include <vector>
 
-#include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
 #include "Model.h"
 
 namespace OpenFDM {
@@ -20,19 +16,20 @@ class Gain : public Model {
 public:
   Gain(const std::string& name);
   virtual ~Gain(void);
-  
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+
+  virtual bool alloc(LeafContext& leafContext) const;
+  virtual void output(const DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
+  virtual bool dependsOn(const PortId& in, const PortId& out) const;
 
   const real_type& getGain(void) const;
   void setGain(const real_type& gain);
 
-  const Matrix& getOutput(void) const;
-
 private:
+  MatrixInputPort mInputPort;
+  MatrixOutputPort mOutputPort;
   real_type mGain;
-  Matrix mOutput;
-  MatrixPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

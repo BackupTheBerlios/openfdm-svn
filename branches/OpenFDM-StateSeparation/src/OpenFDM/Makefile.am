@@ -31,6 +31,7 @@ OpenFDMCoreHEADERS = \
   GroupOutput.h \
   ImplicitEuler.h \
   Inertia.h \
+  LeafContext.h \
   LeafNode.h \
   Limits.h \
   LinAlg/Algorithm.h \
@@ -206,58 +207,57 @@ OpenFDMModelsHEADERS = \
   Wind.h
 
 OpenFDMModelsSOURCES = \
-  AeroForce.cpp \
-  AirSpring.cpp \
-  Atmosphere.cpp \
-  AtmosphereSTD1976.cpp \
-  Bias.cpp \
-  BinaryFunctionModel.cpp \
-  ConstModel.cpp \
-  Contact.cpp \
-  DeadBand.cpp \
-  DefaultGravity.cpp \
-  DefaultGround.cpp \
-  DefaultPlanet.cpp \
-  DiscBrake.cpp \
-  DiscreteIntegrator.cpp \
-  ExternalForceModel.cpp \
-  FixedRootJoint.cpp \
-  Force.cpp \
-  Gain.cpp \
-  Gravity.cpp \
-  Ground.cpp \
-  Input.cpp \
-  Integrator.cpp \
-  Interact.cpp \
-  Joint.cpp \
-  Launchbar.cpp \
-  LinearSpringDamper.cpp \
-  Mass.cpp \
-  MaxModel.cpp \
-  MinModel.cpp \
-  MobileRootJoint.cpp \
-  Output.cpp \
-  Product.cpp \
-  PrismaticJoint.cpp \
-  RevoluteActuator.cpp \
-  RevoluteJoint.cpp \
-  RigidBody.cpp \
-  RootFrame.cpp \
-  Saturation.cpp \
-  SimpleContact.cpp \
-  SimpleGear.cpp \
-  SimulationTime.cpp \
-  Summer.cpp \
-  Table.cpp \
-  Tailhook.cpp \
-  Tank.cpp \
-  TimeDerivative.cpp \
-  TransferFunction.cpp \
-  UnaryFunctionModel.cpp \
-  Vehicle.cpp \
-  WheelContact.cpp
+  Gain.cpp
 
-# nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
-nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS)
-# libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES)
-libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES)
+#   AeroForce.cpp \
+#   AirSpring.cpp \
+#   Atmosphere.cpp \
+#   AtmosphereSTD1976.cpp \
+#   Bias.cpp \
+#   BinaryFunctionModel.cpp \
+#   ConstModel.cpp \
+#   Contact.cpp \
+#   DeadBand.cpp \
+#   DefaultGravity.cpp \
+#   DefaultGround.cpp \
+#   DefaultPlanet.cpp \
+#   DiscBrake.cpp \
+#   DiscreteIntegrator.cpp \
+#   ExternalForceModel.cpp \
+#   FixedRootJoint.cpp \
+#   Force.cpp \
+#   Gravity.cpp \
+#   Ground.cpp \
+#   Input.cpp \
+#   Integrator.cpp \
+#   Interact.cpp \
+#   Joint.cpp \
+#   Launchbar.cpp \
+#   LinearSpringDamper.cpp \
+#   Mass.cpp \
+#   MaxModel.cpp \
+#   MinModel.cpp \
+#   MobileRootJoint.cpp \
+#   Output.cpp \
+#   Product.cpp \
+#   PrismaticJoint.cpp \
+#   RevoluteActuator.cpp \
+#   RevoluteJoint.cpp \
+#   RigidBody.cpp \
+#   RootFrame.cpp \
+#   Saturation.cpp \
+#   SimpleContact.cpp \
+#   SimpleGear.cpp \
+#   SimulationTime.cpp \
+#   Summer.cpp \
+#   Table.cpp \
+#   Tailhook.cpp \
+#   Tank.cpp \
+#   TimeDerivative.cpp \
+#   TransferFunction.cpp \
+#   UnaryFunctionModel.cpp \
+#   Vehicle.cpp \
+#   WheelContact.cpp
+
+nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
+libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES)

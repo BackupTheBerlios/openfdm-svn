@@ -9,8 +9,9 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "Vector.h"
+#include "LeafContext.h"
 #include "Model.h"
+#include "Vector.h"
 
 namespace OpenFDM {
 
@@ -20,41 +21,39 @@ BEGIN_OPENFDM_OBJECT_DEF(Gain, Model)
 
 Gain::Gain(const std::string& name) :
   Model(name),
+  mInputPort(newMatrixInputPort("input")),
+  mOutputPort(newMatrixOutputPort("output")),
   mGain(1)
 {
-  setDirectFeedThrough(true);
-  
-  setNumInputPorts(1);
-  setInputPortName(0, "input");
-  
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &Gain::getOutput);
 }
 
 Gain::~Gain(void)
 {
 }
-  
-bool
-Gain::init(void)
-{
-  mInputPort = getInputPort(0)->toMatrixPortHandle();
-  if (!mInputPort.isConnected()) {
-    Log(Model, Error) << "Initialization of Gain model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-  mOutput.resize(mInputPort.getMatrixValue());
 
-  return Model::init();
+bool
+Gain::alloc(LeafContext& leafContext) const
+{
+  Size sz = size(leafContext.mPortValueList[mInputPort]);
+  leafContext.mPortValueList.setPortSize(mOutputPort, sz);
+  return true;
 }
 
-void Gain::output(const TaskInfo&)
+void
+Gain::output(const DiscreteStateValueVector&, const ContinousStateValueVector&,
+             PortValueList& portValues) const
 {
-  OpenFDMAssert(mInputPort.isConnected());
-  mOutput = mInputPort.getMatrixValue();
-  mOutput *= mGain;
+  portValues[mOutputPort] = mGain*portValues[mInputPort];
+}
+
+bool
+Gain::dependsOn(const PortId& in, const PortId& out) const
+{
+  if (in != getPortId(mInputPort.getPortIndex()))
+    return false;
+  if (out != getPortId(mOutputPort.getPortIndex()))
+    return false;
+  return true;
 }
 
 const real_type&
@@ -67,12 +66,6 @@ void
 Gain::setGain(const real_type& gain)
 {
   mGain = gain;
-}
-
-const Matrix&
-Gain::getOutput(void) const
-{
-  return mOutput;
 }
 
 } // namespace OpenFDM
