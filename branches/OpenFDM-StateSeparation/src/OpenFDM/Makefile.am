@@ -112,6 +112,7 @@ OpenFDMCoreSOURCES = \
   LeafNode.cpp \
   Logger.cpp \
   MatrixStateValue.cpp \
+  Model.cpp \
   Node.cpp \
   NodeVisitor.cpp \
   NumericPortValue.cpp \
@@ -136,7 +137,6 @@ OpenFDMCoreSOURCES = \
 #   ImplicitEuler.cpp \
 #   Newton.cpp \
 #   MidpointRule.cpp \
-#   Model.cpp \
 #   ModelGroup.cpp \
 #   ReaderWriter.cpp \
 #   ODESolver.cpp \
