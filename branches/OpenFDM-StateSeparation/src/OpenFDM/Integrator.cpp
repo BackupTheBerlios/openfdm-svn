@@ -5,6 +5,7 @@
 #include "Integrator.h"
 
 #include "Assert.h"
+#include "LeafContext.h"
 
 namespace OpenFDM {
 
@@ -12,16 +13,14 @@ BEGIN_OPENFDM_OBJECT_DEF(Integrator, Model)
   DEF_OPENFDM_PROPERTY(Matrix, InitialValue, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-Integrator::Integrator(const std::string& name) :
-  Model(name)
+Integrator::Integrator(const std::string& name = std::string()) :
+  Model(name),
+  mInputPort(newMatrixInputPort("input")),
+  mOutputPort(newMatrixOutputPort("output")),
+  mInitialValuePort(newMatrixInputPort("initialValue"))
 {
-  addSampleTime(SampleTime::Continous);
-
-  setNumInputPorts(1);
-  setInputPortName(0, "derivatirve");
-
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &Integrator::getIntegralOutput);
+  mMatrixStateInfo = new MatrixStateInfo;
+  addContinousStateInfo(mMatrixStateInfo);
 }
 
 Integrator::~Integrator(void)
@@ -29,69 +28,64 @@ Integrator::~Integrator(void)
 }
 
 bool
-Integrator::init(void)
+Integrator::alloc(LeafContext& leafContext) const
 {
-  mDerivativeHandle = getInputPort(0)->toMatrixPortHandle();
-  if (!mDerivativeHandle.isConnected())
-    return false;
-
-  // The initial value defaults to zero
-  if (rows(mInitialValue) == 0 || cols(mInitialValue) == 0) {
-    mInitialValue.resize(mDerivativeHandle.getMatrixValue());
-    mInitialValue.clear();
-  }
-
-  setNumContinousStates(rows(mInitialValue)*cols(mInitialValue));
-
-  mIntegralState = mInitialValue;
-  mIntegralOutput = mIntegralState;
-  return Model::init();
+  Size sz = size(leafContext.mPortValueList[mInputPort]);
+  leafContext.mPortValueList.setPortSize(mOutputPort, sz);
+  leafContext.mContinousState.setValue(*mMatrixStateInfo, leafContext);
+  return true;
 }
 
 void
-Integrator::output(const TaskInfo&)
+Integrator::init(DiscreteStateValueVector& discreteState,
+                 ContinousStateValueVector& continousState) const
 {
-  mIntegralOutput = mIntegralState;
+  // Needs to be done here. Need port values???
+  // FIXME, can I ensure that at least the direct dependent ones are
+  // available and the other ones are inaccessible at compile time?
+//     if (portValues.isConnected(mInitialValuePort)) {
+//       // external initial condition
+//       continousState[*mMatrixStateInfo] = portValues[mInitialValuePort];
+//     } else {
+    // internal initial condition
+    continousState[*mMatrixStateInfo].clear(); // FIXME
+//     }
 }
 
 void
-Integrator::setState(const StateStream& state)
+Integrator::output(const DiscreteStateValueVector&,
+                   const ContinousStateValueVector& continousState,
+                   PortValueList& portValues) const
 {
-  state.readSubState(mIntegralState);
+  portValues[mOutputPort] = continousState[*mMatrixStateInfo];
 }
 
 void
-Integrator::getState(StateStream& state) const
+Integrator::derivative(const DiscreteStateValueVector&,
+                       const ContinousStateValueVector& state,
+                       const PortValueList& portValues,
+                       ContinousStateValueVector& deriv) const
 {
-  state.writeSubState(mIntegralState);
+  deriv[*mMatrixStateInfo] = portValues[mInputPort];
+}
+
+bool
+Integrator::dependsOn(const PortId&, const PortId&) const
+{
+  // FIXME, make the initial value port depend here ...
+  return false;
 }
 
 void
-Integrator::getStateDeriv(StateStream& stateDeriv)
+Integrator::setInitialValue(const Matrix& initialValue)
 {
-  // Just return the derivative
-  OpenFDMAssert(mDerivativeHandle.isConnected());
-  const Matrix& input = mDerivativeHandle.getMatrixValue();
-  OpenFDMAssert(size(input) == size(mIntegralState));
-  stateDeriv.writeSubState(input);
+  mInitialValue = initialValue;
 }
 
 const Matrix&
-Integrator::getInitialValue(void) const
+Integrator::getInitialValue() const
 {
   return mInitialValue;
-}
-
-void
-Integrator::setInitialValue(const Matrix& value)
-{
-  mInitialValue = value;
-}
-
-const Matrix&
-Integrator::getIntegralOutput(void) const
-{
-  return mIntegralOutput;
 }
 
 } // namespace OpenFDM

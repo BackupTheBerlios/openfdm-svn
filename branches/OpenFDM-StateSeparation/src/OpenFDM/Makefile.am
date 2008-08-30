@@ -207,7 +207,8 @@ OpenFDMModelsHEADERS = \
   Wind.h
 
 OpenFDMModelsSOURCES = \
-  Gain.cpp
+  Gain.cpp \
+  Integrator.cpp
 
 #   AeroForce.cpp \
 #   AirSpring.cpp \
@@ -229,7 +230,6 @@ OpenFDMModelsSOURCES = \
 #   Gravity.cpp \
 #   Ground.cpp \
 #   Input.cpp \
-#   Integrator.cpp \
 #   Interact.cpp \
 #   Joint.cpp \
 #   Launchbar.cpp \

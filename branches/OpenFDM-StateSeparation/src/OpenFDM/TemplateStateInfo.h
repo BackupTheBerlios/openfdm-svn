@@ -5,6 +5,8 @@
 #ifndef OpenFDM_TemplateStateInfo_H
 #define OpenFDM_TemplateStateInfo_H
 
+#include "TemplateValueVector.h"
+
 namespace OpenFDM {
 
 template<typename T, typename I, typename V>

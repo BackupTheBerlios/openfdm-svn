@@ -7,6 +7,7 @@
 
 #include "Types.h"
 #include "Model.h"
+#include "MatrixStateInfo.h"
 
 namespace OpenFDM {
 
@@ -16,27 +17,26 @@ public:
   Integrator(const std::string& name);
   virtual ~Integrator(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  virtual bool alloc(LeafContext& leafContext) const;
+  virtual void init(DiscreteStateValueVector& discreteState,
+                    ContinousStateValueVector& continousState) const;
 
-  virtual void setState(const StateStream& state);
-  virtual void getState(StateStream& state) const;
-  virtual void getStateDeriv(StateStream& stateDeriv);
+  virtual void output(const DiscreteStateValueVector&, const ContinousStateValueVector& continousState, PortValueList& portValues) const;
+  virtual void derivative(const DiscreteStateValueVector&, const ContinousStateValueVector& state, const PortValueList& portValues, ContinousStateValueVector& deriv) const;
 
-  const Matrix& getInitialValue(void) const;
-  void setInitialValue(const Matrix& value);
+  virtual bool dependsOn(const PortId&, const PortId&) const;
 
-  const Matrix& getIntegralOutput(void) const;
+  void setInitialValue(const Matrix& initialValue);
+  const Matrix& getInitialValue() const;
 
 private:
-  /// The handle to the input port
-  MatrixPortHandle mDerivativeHandle;
-  /// Holds the current output.
-  Matrix mIntegralOutput;
-  /// Holds the current integral state.
-  Matrix mIntegralState;
-  /// Holds the current integral initial state.
+  MatrixInputPort mInputPort;
+  MatrixOutputPort mOutputPort;
+  MatrixInputPort mInitialValuePort;
   Matrix mInitialValue;
+
+  // FIXME
+  SharedPtr<MatrixStateInfo> mMatrixStateInfo;
 };
 
 } // namespace OpenFDM
