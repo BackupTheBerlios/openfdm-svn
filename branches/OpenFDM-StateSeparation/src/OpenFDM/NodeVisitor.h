@@ -12,7 +12,6 @@ class GroupAcceptorNode;
 class GroupProviderNode;
 class LeafNode;
 class Model;
-class Body;
 class Group;
 
 class NodeVisitor {
@@ -20,13 +19,11 @@ public:
   virtual ~NodeVisitor();
 
   virtual void apply(Node&);
-  virtual void apply(Group& node);
-  virtual void apply(GroupAcceptorNode& node);
-  virtual void apply(GroupProviderNode& node);
+  virtual void apply(Group&);
+  virtual void apply(GroupAcceptorNode&);
+  virtual void apply(GroupProviderNode&);
   virtual void apply(LeafNode&);
   virtual void apply(Model&);
-  virtual void apply(Body& node)
-  { apply((LeafNode&)node); }
 };
 
 } // namespace OpenFDM
