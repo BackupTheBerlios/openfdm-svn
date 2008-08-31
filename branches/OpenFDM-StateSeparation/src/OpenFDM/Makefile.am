@@ -27,8 +27,7 @@ OpenFDMCoreHEADERS = \
   Frame.h \
   FrameVisitor.h \
   Function.h \
-  GroupInput.h \
-  GroupOutput.h \
+  Group.h \
   ImplicitEuler.h \
   Inertia.h \
   LeafContext.h \
@@ -51,7 +50,6 @@ OpenFDMCoreHEADERS = \
   MatrixStateInfo.h \
   MidpointRule.h \
   Model.h \
-  ModelGroup.h \
   Mutex.h \
   MPFRFloat.h \
   Newton.h \
@@ -110,6 +108,7 @@ OpenFDMCoreSOURCES = \
   Atomic.cpp \
   ContinousStateValue.cpp \
   Frame.cpp \
+  Group.cpp \
   LeafNode.cpp \
   Logger.cpp \
   MatrixStateValue.cpp \
@@ -133,12 +132,9 @@ OpenFDMCoreSOURCES = \
 #   ExplicitAdams.cpp \
 #   ExplicitEuler.cpp \
 #   Function.cpp \
-#   GroupInput.cpp \
-#   GroupOutput.cpp \
 #   ImplicitEuler.cpp \
 #   Newton.cpp \
 #   MidpointRule.cpp \
-#   ModelGroup.cpp \
 #   ReaderWriter.cpp \
 #   ODESolver.cpp \
 #   System.cpp \

@@ -6,6 +6,7 @@
 
 #include "LeafNode.h"
 #include "Model.h"
+#include "Group.h"
 
 namespace OpenFDM {
 
@@ -28,6 +29,24 @@ void
 NodeVisitor::apply(Model& node)
 {
   apply(static_cast<LeafNode&>(node));
+}
+
+void
+NodeVisitor::apply(Group& node)
+{
+  apply(static_cast<Node&>(node));
+}
+
+void
+NodeVisitor::apply(GroupAcceptorNode& node)
+{
+  apply(static_cast<Node&>(node));
+}
+
+void
+NodeVisitor::apply(GroupProviderNode& node)
+{
+  apply(static_cast<Node&>(node));
 }
 
 } // namespace OpenFDM

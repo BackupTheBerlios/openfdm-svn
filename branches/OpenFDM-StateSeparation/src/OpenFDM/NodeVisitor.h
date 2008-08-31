@@ -20,16 +20,13 @@ public:
   virtual ~NodeVisitor();
 
   virtual void apply(Node&);
-  virtual void apply(GroupAcceptorNode& node)
-  { apply((Node&)node); }
-  virtual void apply(GroupProviderNode& node)
-  { apply((Node&)node); }
+  virtual void apply(GroupAcceptorNode& node);
+  virtual void apply(GroupProviderNode& node);
   virtual void apply(LeafNode&);
   virtual void apply(Model&);
   virtual void apply(Body& node)
   { apply((LeafNode&)node); }
-  virtual void apply(Group& node)
-  { apply((Node&)node); }
+  virtual void apply(Group& node);
 };
 
 } // namespace OpenFDM
