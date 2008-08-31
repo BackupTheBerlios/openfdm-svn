@@ -305,7 +305,7 @@ operator>>(std::basic_istream<char_type, traits_type>& stream, Unit& u)
   } else if (first == stream.widen('K')) {
     // K elvin
     stream.get();
-    u = Unit::temperature();
+    u = Unit::thermodynamicTemperature();
     return stream;
   } else if (first == stream.widen('M')) {
     // M must be mega = 1e6
