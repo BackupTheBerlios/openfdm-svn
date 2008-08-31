@@ -6,6 +6,7 @@
 
 #include <time.h>
 #include <cerrno>
+#include <cstdio>
 #include <cmath>
 
 namespace OpenFDM {
