@@ -159,6 +159,7 @@ OpenFDMModelsHEADERS = \
   DefaultGravity.h \
   DefaultGround.h \
   DefaultPlanet.h \
+  Delay.h \
   DiscBrake.h \
   DiscreteIntegrator.h \
   ExternalForceModel.h \
@@ -207,6 +208,7 @@ OpenFDMModelsHEADERS = \
   Wind.h
 
 OpenFDMModelsSOURCES = \
+  Delay.cpp \
   Gain.cpp \
   Integrator.cpp
 
