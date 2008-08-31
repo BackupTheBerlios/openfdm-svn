@@ -20,18 +20,6 @@ NodeVisitor::apply(Node&)
 }
 
 void
-NodeVisitor::apply(LeafNode& leafNode)
-{
-  apply(static_cast<Node&>(leafNode));
-}
-
-void
-NodeVisitor::apply(Model& node)
-{
-  apply(static_cast<LeafNode&>(node));
-}
-
-void
 NodeVisitor::apply(Group& node)
 {
   apply(static_cast<Node&>(node));
@@ -47,6 +35,18 @@ void
 NodeVisitor::apply(GroupProviderNode& node)
 {
   apply(static_cast<Node&>(node));
+}
+
+void
+NodeVisitor::apply(LeafNode& leafNode)
+{
+  apply(static_cast<Node&>(leafNode));
+}
+
+void
+NodeVisitor::apply(Model& node)
+{
+  apply(static_cast<LeafNode&>(node));
 }
 
 } // namespace OpenFDM
