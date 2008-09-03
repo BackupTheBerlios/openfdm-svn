@@ -86,7 +86,9 @@ public:
     Model(name),
     mInputPort(newRealInputPort("input"))
   { }
-  virtual void output(const DiscreteStateValueVector&, const ContinousStateValueVector&, PortValueList& portValues) const
+  virtual void output(const DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const
   { std::cout << portValues[mInputPort] << std::endl; }
   virtual bool dependsOn(const PortId&, const PortId&) const
   { return false; }

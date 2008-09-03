@@ -70,75 +70,21 @@ public:
 class Group : public Node {
   OPENFDM_OBJECT(Group, Node);
 public:
-  Group(const std::string& name) : Node(name) {}
-  virtual ~Group() {}
-
-  virtual void accept(NodeVisitor& visitor)
-  { visitor.apply(*this); }
-
   class NodeId;
 
-  NodeId addChild(const SharedPtr<Node>& node)
-  {
-    std::string identifier = getUniqueIdentifier(node->getName());
-    _childList.push_back(new Child(this, node, identifier));
-    return NodeId(_childList.back());
-  }
-  unsigned getNumChildren() const
-  { return _childList.size(); }
-  NodeId getNodeId(unsigned i) const
-  {
-    if (_childList.size() <= i)
-      return NodeId();
-    return NodeId(_childList[i]);
-  }
-  unsigned getChildNumber(const NodeId& nodeId) const
-  {
-    SharedPtr<Child> child = nodeId._child.lock();
-    if (!child)
-      return ~0u;
-    if (child->group.lock() != this)
-      return ~0u;
-    ChildList::const_iterator i;
-    i = std::find(_childList.begin(), _childList.end(), child);
-    if (i == _childList.end())
-      return ~0u;
-    return std::distance(_childList.begin(), i);
-  }
+  Group(const std::string& name);
+  virtual ~Group();
 
-  SharedPtr<Node> getChild(unsigned i)
-  {
-    if (_childList.size() <= i)
-      return 0;
-    return _childList[i]->node;
-  }
-  SharedPtr<const Node> getChild(unsigned i) const
-  {
-    if (_childList.size() <= i)
-      return 0;
-    return _childList[i]->node;
-  }
-  SharedPtr<Node> getChild(const NodeId& nodeId)
-  {
-    SharedPtr<Child> child = nodeId._child.lock();
-    if (!child)
-      return 0;
-    /// Check if it belongs to this current group
-    if (child->group.lock() != this)
-      return 0;
-    return child->node;
-  }
-  SharedPtr<const Node> getChild(const NodeId& nodeId) const
-  {
-    SharedPtr<Child> child = nodeId._child.lock();
-    if (!child)
-      return 0;
-    /// Check if it belongs to this current group
-    SharedPtr<Group> group = child->group.lock();
-    if (group != this)
-      return 0;
-    return child->node;
-  }
+  virtual void accept(NodeVisitor& visitor);
+
+  NodeId addChild(const SharedPtr<Node>& node);
+  unsigned getNumChildren() const;
+  NodeId getNodeId(unsigned i) const;
+  unsigned getChildNumber(const NodeId& nodeId) const;
+  SharedPtr<Node> getChild(unsigned i);
+  SharedPtr<const Node> getChild(unsigned i) const;
+  SharedPtr<Node> getChild(const NodeId& nodeId);
+  SharedPtr<const Node> getChild(const NodeId& nodeId) const;
 
   NodeId getGroupAcceptorNode(const PortId& portId) const
   {
