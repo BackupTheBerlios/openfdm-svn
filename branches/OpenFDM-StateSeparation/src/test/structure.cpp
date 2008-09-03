@@ -147,27 +147,6 @@ public:
   typedef std::vector<SharedPtr<ProviderPortData> > ProviderPortDataList;
   ProviderPortDataList _providerPortData;
 
-  AcceptorPortData* getAcceptorPortData(const AcceptorPortInfo* acceptorPort)
-  {
-    AcceptorPortDataList::const_iterator i;
-    for (i = _acceptorPortData.begin(); i != _acceptorPortData.end(); ++i) {
-      for (unsigned j = 0; j < (*i)->_acceptorPortList.size(); ++j) {
-        if ((*i)->_acceptorPortList[j] == acceptorPort)
-          return *i;
-      }
-    }
-    return 0;
-  }
-  ProviderPortData* getProviderPortData(const ProviderPortInfo* providerPort)
-  {
-    ProviderPortDataList::const_iterator i;
-    for (i = _providerPortData.begin(); i != _providerPortData.end(); ++i) {
-      if ((*i)->_providerPort == providerPort)
-        return *i;
-    }
-    return 0;
-  }
-
   AcceptorPortData* getAcceptorPortData(const PortId& portId)
   {
     AcceptorPortDataList::const_iterator i;
