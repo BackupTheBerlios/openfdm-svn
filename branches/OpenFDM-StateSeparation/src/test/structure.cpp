@@ -101,72 +101,92 @@ public:
   struct AcceptorPortData;
   struct ProviderPortData;
 
+  class PortData : public WeakReferenced {
+  public:
+    PortData(LeafInstance* leafInstance, const PortInfo* portInfo) :
+      mLeafInstance(leafInstance),
+      mPortInfo(portInfo)
+    { }
+    virtual ~PortData() {}
+
+    virtual AcceptorPortData* toAcceptorPortData()
+    { return 0; }
+    virtual ProviderPortData* toProviderPortData()
+    { return 0; }
+    
+    /// Return the LeafInstance this PortData belongs to.
+    SharedPtr<LeafInstance> getLeafInstance() const
+    { return mLeafInstance.lock(); }
+
+  private:
+    WeakPtr<LeafInstance> mLeafInstance;
+    SharedPtr<const PortInfo> mPortInfo;
+  };
+
+  struct ProviderPortData : public PortData {
+    ProviderPortData(LeafInstance* leafInstance,
+                     const ProviderPortInfo* providerPort) :
+      PortData(leafInstance, providerPort),
+      _providerPort(providerPort)
+    { }
+    virtual ProviderPortData* toProviderPortData()
+    { return this; }
+    SharedPtr<const ProviderPortInfo> _providerPort;
+    std::vector<WeakPtr<const AcceptorPortData> > _acceptorPortDataList;
+  };
+  struct AcceptorPortData : public PortData {
+    AcceptorPortData(LeafInstance* leafInstance,
+                     const AcceptorPortInfo* acceptorPort) :
+      PortData(leafInstance, acceptorPort)
+    { _acceptorPortList.push_back(acceptorPort); }
+    virtual AcceptorPortData* toAcceptorPortData()
+    { return this; }
+    std::vector<SharedPtr<const AcceptorPortInfo> > _acceptorPortList;
+    WeakPtr<const ProviderPortData> _providerPortData;
+  };
+
+
+
   LeafInstance(const LeafNode* leaf) :
-    _leaf(leaf)
+    mLeafNode(leaf)
   { allocPorts(leaf); }
 
+  PortData* getPortData(const PortId& portId)
+  {
+    OpenFDMAssert(getLeafNode());
+    unsigned index = getLeafNode()->getPortIndex(portId);
+    // FIXME, is an error condition, not an assert???
+    OpenFDMAssert(index < mPortData.size());
+    return mPortData[index];
+  }
+  AcceptorPortData* getAcceptorPortData(const PortId& portId)
+  { return getPortData(portId)->toAcceptorPortData(); }
+  ProviderPortData* getProviderPortData(const PortId& portId)
+  { return getPortData(portId)->toProviderPortData(); }
+
+  const SharedPtr<const LeafNode>& getLeafNode() const
+  { return mLeafNode; }
+
+private:
   void allocPorts(const Node* node)
   {
     for (unsigned i = 0; i < node->getNumPorts(); ++i) {
       SharedPtr<const PortInfo> port = node->getPort(i);
       const ProviderPortInfo* providerPort = port->toProviderPortInfo();
-      if (providerPort) {
-        _providerPortData.push_back(new ProviderPortData(this, providerPort));
-      }
+      if (providerPort)
+        mPortData.push_back(new ProviderPortData(this, providerPort));
       const AcceptorPortInfo* acceptorPort = port->toAcceptorPortInfo();
-      if (acceptorPort) {
-        _acceptorPortData.push_back(new AcceptorPortData(this, acceptorPort));
-      }
+      if (acceptorPort)
+        mPortData.push_back(new AcceptorPortData(this, acceptorPort));
     }
   }
 
   // The subsystem leaf node
-  SharedPtr<const LeafNode> _leaf;
+  SharedPtr<const LeafNode> mLeafNode;
 
-  struct ProviderPortData : public WeakReferenced {
-    ProviderPortData(LeafInstance* leafInstance,
-                     const ProviderPortInfo* providerPort) :
-      _leafInstance(leafInstance),
-      _providerPort(providerPort)
-    {}
-    WeakPtr<LeafInstance> _leafInstance;
-    SharedPtr<const ProviderPortInfo> _providerPort;
-    std::vector<WeakPtr<const AcceptorPortData> > _acceptorPortDataList;
-  };
-  struct AcceptorPortData : public WeakReferenced {
-    AcceptorPortData(LeafInstance* leafInstance,
-                     const AcceptorPortInfo* acceptorPort) :
-      _leafInstance(leafInstance)
-    { _acceptorPortList.push_back(acceptorPort); }
-    WeakPtr<LeafInstance> _leafInstance;
-    std::vector<SharedPtr<const AcceptorPortInfo> > _acceptorPortList;
-    WeakPtr<const ProviderPortData> _providerPortData;
-  };
-  typedef std::vector<SharedPtr<AcceptorPortData> > AcceptorPortDataList;
-  AcceptorPortDataList _acceptorPortData;
-  typedef std::vector<SharedPtr<ProviderPortData> > ProviderPortDataList;
-  ProviderPortDataList _providerPortData;
-
-  AcceptorPortData* getAcceptorPortData(const PortId& portId)
-  {
-    AcceptorPortDataList::const_iterator i;
-    for (i = _acceptorPortData.begin(); i != _acceptorPortData.end(); ++i) {
-      for (unsigned j = 0; j < (*i)->_acceptorPortList.size(); ++j) {
-        if (PortId(SharedPtr<const PortInfo>((*i)->_acceptorPortList[j])) == portId)
-          return *i;
-      }
-    }
-    return 0;
-  }
-  ProviderPortData* getProviderPortData(const PortId& portId)
-  {
-    ProviderPortDataList::const_iterator i;
-    for (i = _providerPortData.begin(); i != _providerPortData.end(); ++i) {
-      if (PortId(SharedPtr<const PortInfo>((*i)->_providerPort)) == portId)
-        return *i;
-    }
-    return 0;
-  }
+  // List of port dependent info used to build up the connect info and
+  // the sorted list of leafs.
+  std::vector<SharedPtr<PortData> > mPortData;
 };
 
 class LeafInstanceCollector : public NodeVisitor {
@@ -419,7 +439,7 @@ int main()
   for (i = nodeInstanceCollector._leafInstanceList.begin();
        i != nodeInstanceCollector._leafInstanceList.end();
        ++i) {
-    std::cout << "Node: " << (*i)->_leaf->getName() << std::endl;
+    std::cout << "Node: " << (*i)->getLeafNode()->getName() << std::endl;
   }
 
   return 0;
