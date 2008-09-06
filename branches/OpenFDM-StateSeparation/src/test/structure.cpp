@@ -161,7 +161,14 @@ public:
       SharedPtr<const LeafInstance::ProviderPortData> providerPortData;
       providerPortData = acceptorPortData->_providerPortData.lock();
       OpenFDMAssert(providerPortData);
+
+      // FIXME: think about that. Not yet completely functional
+
       _providerPort = providerPortData->_providerPort;
+      // Merge must happen before the group this PortData belongs to is
+      // connected
+      OpenFDMAssert(_acceptorPortDataList.empty());
+      _acceptorPortDataList = providerPortData->_acceptorPortDataList;
     }
 
     virtual void print()
@@ -221,7 +228,14 @@ public:
       if (!providerPortData)
         return false;
 
-      for (unsigned i = 0; i < providerPortData->_acceptorPortDataList.size(); ++i) {
+      // FIXME: think about that. Not yet completely functional
+
+      // Merge must happen before the group this PortData belongs to is
+      // connected
+      OpenFDMAssert(!_providerPortData.lock());
+
+      unsigned i = 0;
+      for (i = 0; i < providerPortData->_acceptorPortDataList.size(); ++i) {
         SharedPtr<const LeafInstance::AcceptorPortData> acceptorPortData;
         acceptorPortData = providerPortData->_acceptorPortDataList[i].lock();
         OpenFDMAssert(acceptorPortData);
@@ -314,8 +328,8 @@ public:
   {
     OpenFDMAssert(leaf.getPort(0));
     PortId portId = leaf.getPortId(0);
-    LeafInstance::ProviderPortData* pd
-      = new LeafInstance::ProviderPortData(0, leaf._groupInternalPort);
+    LeafInstance::ProviderPortData* pd;
+    pd = new LeafInstance::ProviderPortData(0, leaf._groupInternalPort);
     _leafPortDataMap[getCurrentNodeId()][portId] = pd;
   }
   // Aussen provider, innen acceptor
@@ -323,8 +337,8 @@ public:
   {
     OpenFDMAssert(leaf.getPort(0));
     PortId portId = leaf.getPortId(0);
-    LeafInstance::AcceptorPortData* ad
-      = new LeafInstance::AcceptorPortData(0, leaf._groupInternalPort);
+    LeafInstance::AcceptorPortData* ad;
+    ad = new LeafInstance::AcceptorPortData(0, leaf._groupInternalPort);
     _leafPortDataMap[getCurrentNodeId()][portId] = ad;
   }
   virtual void apply(LeafNode& leaf)
