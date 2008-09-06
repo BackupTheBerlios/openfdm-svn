@@ -118,6 +118,8 @@ public:
     SharedPtr<LeafInstance> getLeafInstance() const
     { return mLeafInstance.lock(); }
 
+    virtual bool connect(PortData*) = 0;
+
   private:
     WeakPtr<LeafInstance> mLeafInstance;
     SharedPtr<const PortInfo> mPortInfo;
@@ -131,6 +133,18 @@ public:
     { }
     virtual ProviderPortData* toProviderPortData()
     { return this; }
+
+    virtual bool connect(PortData* portData)
+    {
+      if (!portData)
+        return false;
+      AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
+      if (!acceptorPortData)
+        return false;
+      return acceptorPortData->connectToProvider(this);
+    }
+
+  public:
     SharedPtr<const ProviderPortInfo> _providerPort;
     std::vector<WeakPtr<const AcceptorPortData> > _acceptorPortDataList;
   };
@@ -141,6 +155,29 @@ public:
     { _acceptorPortList.push_back(acceptorPort); }
     virtual AcceptorPortData* toAcceptorPortData()
     { return this; }
+
+    virtual bool connect(PortData* portData)
+    {
+      if (!portData)
+        return false;
+      ProviderPortData* providerPortData = portData->toProviderPortData();
+      if (!providerPortData)
+        return false;
+      return connectToProvider(providerPortData);
+    }
+
+    bool connectToProvider(ProviderPortData* providerPortData)
+    {
+      // The current one must not be connected already ...
+      OpenFDMAssert(!_providerPortData.lock());
+      if (!providerPortData)
+        return false;
+      providerPortData->_acceptorPortDataList.push_back(this);
+      _providerPortData = providerPortData;
+      return true;
+    }
+  public:
+
     std::vector<SharedPtr<const AcceptorPortInfo> > _acceptorPortList;
     WeakPtr<const ProviderPortData> _providerPortData;
   };
@@ -296,11 +333,8 @@ public:
         continue;
       }
 
-      // FIXME Error message ??? and abort visiting???
-      if (acceptorPortData->_providerPortData.lock())
-        std::cerr << "??? already have a provider port????" << std::endl;
-      acceptorPortData->_providerPortData = providerPortData;
-      providerPortData->_acceptorPortDataList.push_back(acceptorPortData);
+      if (!acceptorPortData->connect(providerPortData))
+        std::cerr << "Cannot connect????" << std::endl;
     }
 
     // Add a proxy LeafInstance that holds this groups ports, will be removed
