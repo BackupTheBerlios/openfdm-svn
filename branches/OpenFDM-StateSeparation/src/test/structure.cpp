@@ -316,7 +316,7 @@ public:
     PortId portId = leaf.getPortId(0);
     LeafInstance::ProviderPortData* pd
       = new LeafInstance::ProviderPortData(0, leaf._groupInternalPort);
-    _leafPortDataMap[getCurrentNodeId()][portId].setPortData(pd);
+    _leafPortDataMap[getCurrentNodeId()][portId] = pd;
   }
   // Aussen provider, innen acceptor
   virtual void apply(GroupProviderNode& leaf)
@@ -325,7 +325,7 @@ public:
     PortId portId = leaf.getPortId(0);
     LeafInstance::AcceptorPortData* ad
       = new LeafInstance::AcceptorPortData(0, leaf._groupInternalPort);
-    _leafPortDataMap[getCurrentNodeId()][portId].setPortData(ad);
+    _leafPortDataMap[getCurrentNodeId()][portId] = ad;
   }
   virtual void apply(LeafNode& leaf)
   {
@@ -337,7 +337,7 @@ public:
     for (unsigned i = 0; i < leaf.getNumPorts(); ++i) {
       PortId portId = leaf.getPortId(i);
       LeafInstance::PortData* portData = leafInstance->getPortData(portId);
-      _leafPortDataMap[getCurrentNodeId()][portId].setPortData(portData);
+      _leafPortDataMap[getCurrentNodeId()][portId] = portData;
     }
   }
   virtual void apply(Group& group)
@@ -390,7 +390,7 @@ public:
         continue;
       }
 
-      if (!_leafPortDataMap[acceptorNodeId][acceptorPortId].
+      if (!_leafPortDataMap[acceptorNodeId][acceptorPortId]->
           connect(_leafPortDataMap[providerNodeId][providerPortId]))
         std::cerr << "Cannot connect????" << std::endl;
     }
@@ -407,12 +407,12 @@ public:
       if (group.getPort(i)->toAcceptorPortInfo()) {
         LeafInstance::AcceptorPortData* ad;
         ad = new LeafInstance::AcceptorPortData(0, group.getPort(i)->toAcceptorPortInfo());
-        parentLeafPortDataMap[getCurrentNodeId()][portId].setPortData(ad);
+        parentLeafPortDataMap[getCurrentNodeId()][portId] = ad;
       }
       if (group.getPort(i)->toProviderPortInfo()) {
         LeafInstance::ProviderPortData* pd;
         pd = new LeafInstance::ProviderPortData(0, group.getPort(i)->toProviderPortInfo());
-        parentLeafPortDataMap[getCurrentNodeId()][portId].setPortData(pd);
+        parentLeafPortDataMap[getCurrentNodeId()][portId] = pd;
       }
 
       if (_leafPortDataMap[nodeId].empty()) {
@@ -422,7 +422,7 @@ public:
         continue;
       }
 
-      if (!parentLeafPortDataMap[getCurrentNodeId()][portId].
+      if (!parentLeafPortDataMap[getCurrentNodeId()][portId]->
           merge(_leafPortDataMap[nodeId].begin()->second))
         std::cerr << "Hmm, cannot merge port data" << std::endl;
     }
@@ -437,22 +437,7 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
-  struct PortDataRef {
-    void setPortData(LeafInstance::PortData* portData)
-    {
-      _portData = portData;
-    }
-    bool connect(PortDataRef& other)
-    { return _portData->connect(other._portData); }
-
-    // Merge the argument from the child group into the current groups data
-    bool merge(const PortDataRef& portData)
-    { return _portData->merge(portData._portData); }
-  private:
-    SharedPtr<LeafInstance::PortData> _portData;
-  };
-  typedef std::map<PortId, PortDataRef> NodePortDataMap;
-//   typedef std::map<PortId, SharedPtr<LeafInstance::PortData> > NodePortDataMap;
+  typedef std::map<PortId, SharedPtr<LeafInstance::PortData> > NodePortDataMap;
   typedef std::map<Group::NodeId, NodePortDataMap> LeafPortDataMap;
   LeafPortDataMap _leafPortDataMap;
 
