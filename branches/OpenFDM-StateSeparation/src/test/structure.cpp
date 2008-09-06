@@ -118,7 +118,14 @@ public:
     SharedPtr<LeafInstance> getLeafInstance() const
     { return mLeafInstance.lock(); }
 
+    const SharedPtr<const PortInfo>& getPortInfo() const
+    { return mPortInfo; }
+
     virtual bool connect(PortData*) = 0;
+    virtual bool merge(PortData*) = 0;
+
+    virtual void print()
+    { }
 
   private:
     WeakPtr<LeafInstance> mLeafInstance;
@@ -144,7 +151,36 @@ public:
       return acceptorPortData->connectToProvider(this);
     }
 
-  public:
+    virtual bool merge(PortData* portData)
+    {
+      if (!portData)
+        return false;
+      AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
+      if (!acceptorPortData)
+        return false;
+      SharedPtr<const LeafInstance::ProviderPortData> providerPortData;
+      providerPortData = acceptorPortData->_providerPortData.lock();
+      OpenFDMAssert(providerPortData);
+      _providerPort = providerPortData->_providerPort;
+    }
+
+    virtual void print()
+    {
+      std::cout << "  Provider Port \"" << getPortInfo()->getName()
+                << "\" connected to:" << std::endl;
+      for (unsigned i = 0; i < _acceptorPortDataList.size(); ++i) {
+        SharedPtr<const AcceptorPortData> acceptorPortData;
+        acceptorPortData = _acceptorPortDataList[i].lock();
+        if (!acceptorPortData)
+          continue;
+        SharedPtr<LeafInstance> leafInstance;
+        leafInstance = acceptorPortData->getLeafInstance();
+        std::cout << "    Node \"" << leafInstance->getLeafNode()->getName()
+                  << "\" Port \"" << acceptorPortData->getPortInfo()->getName()
+                  << "\"" << std::endl;
+      }
+    }
+
     SharedPtr<const ProviderPortInfo> _providerPort;
     std::vector<WeakPtr<const AcceptorPortData> > _acceptorPortDataList;
   };
@@ -176,7 +212,42 @@ public:
       _providerPortData = providerPortData;
       return true;
     }
-  public:
+
+    virtual bool merge(PortData* portData)
+    {
+      if (!portData)
+        return false;
+      ProviderPortData* providerPortData = portData->toProviderPortData();
+      if (!providerPortData)
+        return false;
+
+      for (unsigned i = 0; i < providerPortData->_acceptorPortDataList.size(); ++i) {
+        SharedPtr<const LeafInstance::AcceptorPortData> acceptorPortData;
+        acceptorPortData = providerPortData->_acceptorPortDataList[i].lock();
+        OpenFDMAssert(acceptorPortData);
+        for (unsigned j = 0; j < _acceptorPortList.size(); ++j) {
+          _acceptorPortList.push_back(acceptorPortData->_acceptorPortList[j]);
+        }
+      }
+    }
+
+    virtual void print()
+    {
+      // FIXME: seems to be a list???
+      std::cout << "  Acceptor Port \"" << getPortInfo()->getName()
+                << "\" connected from:" << std::endl;
+
+      SharedPtr<const ProviderPortData> providerPortData;
+      providerPortData = _providerPortData.lock();
+      if (!providerPortData)
+        return;
+ 
+      SharedPtr<LeafInstance> leafInstance;
+      leafInstance = providerPortData->getLeafInstance();
+      std::cout << "    Node \"" << leafInstance->getLeafNode()->getName()
+                << "\" Port \"" << providerPortData->getPortInfo()->getName()
+                << "\"" << std::endl;
+    }
 
     std::vector<SharedPtr<const AcceptorPortInfo> > _acceptorPortList;
     WeakPtr<const ProviderPortData> _providerPortData;
@@ -196,13 +267,17 @@ public:
     OpenFDMAssert(index < mPortData.size());
     return mPortData[index];
   }
-  AcceptorPortData* getAcceptorPortData(const PortId& portId)
-  { return getPortData(portId)->toAcceptorPortData(); }
-  ProviderPortData* getProviderPortData(const PortId& portId)
-  { return getPortData(portId)->toProviderPortData(); }
 
   const SharedPtr<const LeafNode>& getLeafNode() const
   { return mLeafNode; }
+
+  void print()
+  {
+    std::cout << "Leaf \"" << mLeafNode->getName() << "\"" << std::endl;
+    for (unsigned i = 0; i < mPortData.size(); ++i) {
+      mPortData[i]->print();
+    }
+  }
 
 private:
   void allocPorts(const Node* node)
@@ -239,10 +314,9 @@ public:
   {
     OpenFDMAssert(leaf.getPort(0));
     PortId portId = leaf.getPortId(0);
-    _leafPortDataMap[getCurrentNodeId()][portId]._acceptorPortData = 0;
     LeafInstance::ProviderPortData* pd
       = new LeafInstance::ProviderPortData(0, leaf._groupInternalPort);
-    _leafPortDataMap[getCurrentNodeId()][portId]._providerPortData = pd;
+    _leafPortDataMap[getCurrentNodeId()][portId].setPortData(pd);
   }
   // Aussen provider, innen acceptor
   virtual void apply(GroupProviderNode& leaf)
@@ -251,8 +325,7 @@ public:
     PortId portId = leaf.getPortId(0);
     LeafInstance::AcceptorPortData* ad
       = new LeafInstance::AcceptorPortData(0, leaf._groupInternalPort);
-    _leafPortDataMap[getCurrentNodeId()][portId]._acceptorPortData = ad;
-    _leafPortDataMap[getCurrentNodeId()][portId]._providerPortData = 0;
+    _leafPortDataMap[getCurrentNodeId()][portId].setPortData(ad);
   }
   virtual void apply(LeafNode& leaf)
   {
@@ -263,10 +336,8 @@ public:
 
     for (unsigned i = 0; i < leaf.getNumPorts(); ++i) {
       PortId portId = leaf.getPortId(i);
-      _leafPortDataMap[getCurrentNodeId()][portId]._acceptorPortData
-        = leafInstance->getAcceptorPortData(portId);
-      _leafPortDataMap[getCurrentNodeId()][portId]._providerPortData
-        = leafInstance->getProviderPortData(portId);
+      LeafInstance::PortData* portData = leafInstance->getPortData(portId);
+      _leafPortDataMap[getCurrentNodeId()][portId].setPortData(portData);
     }
   }
   virtual void apply(Group& group)
@@ -319,21 +390,8 @@ public:
         continue;
       }
 
-      LeafInstance::AcceptorPortData* acceptorPortData =
-        _leafPortDataMap[acceptorNodeId][acceptorPortId]._acceptorPortData;
-      LeafInstance::ProviderPortData* providerPortData =
-        _leafPortDataMap[providerNodeId][providerPortId]._providerPortData;
-
-      if (!acceptorPortData) {
-        std::cout << "Cannot find acceptor Port data" << std::endl;
-        continue;
-      }
-      if (!providerPortData) {
-        std::cout << "Cannot find provider Port data" << std::endl;
-        continue;
-      }
-
-      if (!acceptorPortData->connect(providerPortData))
+      if (!_leafPortDataMap[acceptorNodeId][acceptorPortId].
+          connect(_leafPortDataMap[providerNodeId][providerPortId]))
         std::cerr << "Cannot connect????" << std::endl;
     }
 
@@ -346,12 +404,16 @@ public:
     for (unsigned i = 0; i < group.getNumPorts(); ++i) {
       PortId portId = group.getPortId(i);
       Group::NodeId nodeId = group.getGroupPortNode(portId);
-      if (group.getPort(i)->toAcceptorPortInfo())
-        parentLeafPortDataMap[getCurrentNodeId()][portId]._acceptorPortData
-          = new LeafInstance::AcceptorPortData(0, group.getPort(i)->toAcceptorPortInfo());
-      if (group.getPort(i)->toProviderPortInfo())
-        parentLeafPortDataMap[getCurrentNodeId()][portId]._providerPortData
-          = new LeafInstance::ProviderPortData(0, group.getPort(i)->toProviderPortInfo());
+      if (group.getPort(i)->toAcceptorPortInfo()) {
+        LeafInstance::AcceptorPortData* ad;
+        ad = new LeafInstance::AcceptorPortData(0, group.getPort(i)->toAcceptorPortInfo());
+        parentLeafPortDataMap[getCurrentNodeId()][portId].setPortData(ad);
+      }
+      if (group.getPort(i)->toProviderPortInfo()) {
+        LeafInstance::ProviderPortData* pd;
+        pd = new LeafInstance::ProviderPortData(0, group.getPort(i)->toProviderPortInfo());
+        parentLeafPortDataMap[getCurrentNodeId()][portId].setPortData(pd);
+      }
 
       if (_leafPortDataMap[nodeId].empty()) {
         // FIXME, is this an internal error ???
@@ -359,8 +421,10 @@ public:
                   << i << std::endl;
         continue;
       }
-      parentLeafPortDataMap[getCurrentNodeId()][portId].
-        merge(_leafPortDataMap[nodeId].begin()->second);
+
+      if (!parentLeafPortDataMap[getCurrentNodeId()][portId].
+          merge(_leafPortDataMap[nodeId].begin()->second))
+        std::cerr << "Hmm, cannot merge port data" << std::endl;
     }
 
     parentLeafPortDataMap.swap(_leafPortDataMap);
@@ -373,43 +437,24 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
-  struct PortData {
-    SharedPtr<LeafInstance::ProviderPortData> _providerPortData;
-    SharedPtr<LeafInstance::AcceptorPortData> _acceptorPortData;
+  struct PortDataRef {
+    void setPortData(LeafInstance::PortData* portData)
+    {
+      _portData = portData;
+    }
+    bool connect(PortDataRef& other)
+    { return _portData->connect(other._portData); }
 
     // Merge the argument from the child group into the current groups data
-    void merge(const PortData& portData)
-    {
-      if (_providerPortData) {
-        OpenFDMAssert(portData._acceptorPortData);
-        SharedPtr<const LeafInstance::ProviderPortData> providerPortData =
-          portData._acceptorPortData->_providerPortData.lock();
-        OpenFDMAssert(providerPortData);
-        _providerPortData->_providerPort = providerPortData->_providerPort;
-      }
-
-      if (_acceptorPortData) {
-        OpenFDMAssert(portData._providerPortData);
-        for (unsigned i = 0;
-             i < portData._providerPortData->_acceptorPortDataList.size();
-             ++i) {
-          SharedPtr<const LeafInstance::AcceptorPortData> acceptorPortData =
-            portData._providerPortData->_acceptorPortDataList[i].lock();
-          
-          OpenFDMAssert(acceptorPortData);
-          for (unsigned j = 0;
-               j < acceptorPortData->_acceptorPortList.size(); ++j) {
-            _acceptorPortData->_acceptorPortList.
-              push_back(acceptorPortData->_acceptorPortList[j]);
-          }
-        }
-      }
-    }
+    bool merge(const PortDataRef& portData)
+    { return _portData->merge(portData._portData); }
+  private:
+    SharedPtr<LeafInstance::PortData> _portData;
   };
-  typedef std::map<PortId, PortData> NodePortDataMap;
+  typedef std::map<PortId, PortDataRef> NodePortDataMap;
+//   typedef std::map<PortId, SharedPtr<LeafInstance::PortData> > NodePortDataMap;
   typedef std::map<Group::NodeId, NodePortDataMap> LeafPortDataMap;
   LeafPortDataMap _leafPortDataMap;
-
 
   void pushNodeId(const Group::NodeId& nodeId)
   { _nodeIdStack.push_back(nodeId); }
@@ -473,7 +518,7 @@ int main()
   for (i = nodeInstanceCollector._leafInstanceList.begin();
        i != nodeInstanceCollector._leafInstanceList.end();
        ++i) {
-    std::cout << "Node: " << (*i)->getLeafNode()->getName() << std::endl;
+    (*i)->print();
   }
 
   return 0;
