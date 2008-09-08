@@ -125,6 +125,8 @@ public:
     { return mPortInfo; }
 
     virtual bool connect(PortData*) = 0;
+    virtual bool isConnected(PortData*)
+    { return false; }
 
     virtual void print()
     { }
@@ -154,6 +156,16 @@ public:
       if (!acceptorPortData)
         return false;
       return acceptorPortData->connectToProvider(this);
+    }
+
+    virtual bool isConnected(PortData* portData)
+    {
+      if (!portData)
+        return false;
+      AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
+      if (!acceptorPortData)
+        return false;
+      return acceptorPortData->isConnectedToProvider(this);
     }
 
     virtual void print()
@@ -207,6 +219,23 @@ public:
       providerPortData->_acceptorPortDataList.push_back(this);
       _providerPortData = providerPortData;
       return true;
+    }
+
+    virtual bool isConnected(PortData* portData)
+    {
+      if (!portData)
+        return false;
+      ProviderPortData* providerPortData = portData->toProviderPortData();
+      if (!providerPortData)
+        return false;
+      return isConnectedToProvider(providerPortData);
+    }
+
+    bool isConnectedToProvider(ProviderPortData* providerPortData)
+    {
+      if (!providerPortData)
+        return false;
+      return providerPortData == _providerPortData.lock();
     }
 
     virtual void print()
@@ -265,6 +294,11 @@ public:
       }
       return true;
     }
+    // FIXME, make class hierarchy so that this cannot happen anyway ...
+    // Make the leaf instance have a pointer to a leaf port data and just use
+    // the proxy stuff to build the leaf list ...
+    virtual bool isConnected(PortData* portData)
+    { OpenFDMAssert(false); return false; }
     std::vector<SharedPtr<PortData> > mPortDataList;
   };
 
@@ -283,6 +317,27 @@ public:
 
   const SharedPtr<const LeafNode>& getLeafNode() const
   { return mLeafNode; }
+
+  // Return true if this leaf directly depends on one of leafInstance outputs
+  bool dependsOn(LeafInstance* leafInstance)
+  {
+    for (unsigned i = 0; i < mPortData.size(); ++i) {
+      for (unsigned j = 0; j < leafInstance->mPortData.size(); ++j) {
+        if (!mPortData[i]->isConnected(leafInstance->mPortData[j]))
+          continue;
+        PortId inPortId = mLeafNode->getPortId(i);
+
+        // FIXME, may be other concept:
+        // make Model return a list of 'direct feedthrough ports'?
+        for (unsigned k = 0; k < mPortData.size(); ++k) {
+          PortId outPortId = mLeafNode->getPortId(k);
+          if (mLeafNode->dependsOn(inPortId, outPortId))
+            return true;
+        }
+      }
+    }
+    return false;
+  }
 
   void print()
   {
@@ -442,6 +497,31 @@ public:
   typedef std::map<Group::NodeId, NodePortDataMap> LeafPortDataMap;
   LeafPortDataMap _leafPortDataMap;
 
+
+  // method to sort the leafs according to their dependency
+  bool sortLeafList()
+  {
+    LeafInstanceList sortedLeafInstanceList;
+    while (!_leafInstanceList.empty()) {
+      SharedPtr<LeafInstance> leafInstance = _leafInstanceList.front();
+      _leafInstanceList.pop_front();
+
+      LeafInstanceList::iterator i;
+      for (i = sortedLeafInstanceList.begin();
+           i != sortedLeafInstanceList.end();
+           ++i) {
+        if (!(*i)->dependsOn(leafInstance))
+          continue;
+        sortedLeafInstanceList.insert(i, leafInstance);
+        break;
+      }
+      if (i == sortedLeafInstanceList.end())
+        sortedLeafInstanceList.push_back(leafInstance);
+    }
+    _leafInstanceList.swap(sortedLeafInstanceList);
+  }
+
+  
   void pushNodeId(const Group::NodeId& nodeId)
   { _nodeIdStack.push_back(nodeId); }
   void popNodeId()
@@ -498,6 +578,8 @@ int main()
   LeafInstanceCollector nodeInstanceCollector;
   topGroup->accept(nodeInstanceCollector);
   
+  nodeInstanceCollector.sortLeafList();
+
   std::cout << nodeInstanceCollector._leafInstanceList.size() << std::endl;
 
   LeafInstanceCollector::LeafInstanceList::const_iterator i;
