@@ -49,6 +49,7 @@ OpenFDMCoreHEADERS = \
   MatrixStateValue.h \
   MatrixStateInfo.h \
   MidpointRule.h \
+  MechanicPortValue.h \
   Model.h \
   Mutex.h \
   MPFRFloat.h \
@@ -112,6 +113,7 @@ OpenFDMCoreSOURCES = \
   LeafNode.cpp \
   Logger.cpp \
   MatrixStateValue.cpp \
+  MechanicPortValue.cpp \
   Model.cpp \
   Node.cpp \
   NodeVisitor.cpp \
