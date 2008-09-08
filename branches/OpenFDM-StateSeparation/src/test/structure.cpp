@@ -98,34 +98,44 @@ private:
 
 class LeafInstance : public WeakReferenced {
 public:
+  struct LeafPortData;
   struct AcceptorPortData;
   struct ProviderPortData;
   struct ProxyPortData;
 
   class PortData : public WeakReferenced {
   public:
-    PortData(LeafInstance* leafInstance, const PortInfo* portInfo) :
-      mLeafInstance(leafInstance),
-      mPortInfo(portInfo)
-    { }
     virtual ~PortData() {}
-
+    virtual LeafPortData* toLeafPortData()
+    { return 0; }
+    virtual ProxyPortData* toProxyPortData()
+    { return 0; }
     virtual AcceptorPortData* toAcceptorPortData()
     { return 0; }
     virtual ProviderPortData* toProviderPortData()
     { return 0; }
-    virtual ProxyPortData* toProxyPortData()
-    { return 0; }
+    virtual bool connect(PortData*) = 0;
+  };
+
+  class LeafPortData : public PortData {
+  public:
+    LeafPortData(LeafInstance* leafInstance, const PortInfo* portInfo) :
+      mLeafInstance(leafInstance),
+      mPortInfo(portInfo)
+    { }
+    virtual ~LeafPortData() {}
+
+    virtual LeafPortData* toLeafPortData()
+    { return this; }
     
-    /// Return the LeafInstance this PortData belongs to.
+    /// Return the LeafInstance this LeafPortData belongs to.
     SharedPtr<LeafInstance> getLeafInstance() const
     { return mLeafInstance.lock(); }
 
     const SharedPtr<const PortInfo>& getPortInfo() const
     { return mPortInfo; }
 
-    virtual bool connect(PortData*) = 0;
-    virtual bool isConnected(PortData*)
+    virtual bool isConnected(LeafPortData*)
     { return false; }
 
     virtual void print()
@@ -136,10 +146,10 @@ public:
     SharedPtr<const PortInfo> mPortInfo;
   };
 
-  struct ProviderPortData : public PortData {
+  struct ProviderPortData : public LeafPortData {
     ProviderPortData(LeafInstance* leafInstance,
                      const ProviderPortInfo* providerPort) :
-      PortData(leafInstance, providerPort),
+      LeafPortData(leafInstance, providerPort),
       _providerPort(providerPort)
     { }
     virtual ProviderPortData* toProviderPortData()
@@ -158,7 +168,7 @@ public:
       return acceptorPortData->connectToProvider(this);
     }
 
-    virtual bool isConnected(PortData* portData)
+    virtual bool isConnected(LeafPortData* portData)
     {
       if (!portData)
         return false;
@@ -188,10 +198,10 @@ public:
     SharedPtr<const ProviderPortInfo> _providerPort;
     std::vector<WeakPtr<AcceptorPortData> > _acceptorPortDataList;
   };
-  struct AcceptorPortData : public PortData {
+  struct AcceptorPortData : public LeafPortData {
     AcceptorPortData(LeafInstance* leafInstance,
                      const AcceptorPortInfo* acceptorPort) :
-      PortData(leafInstance, acceptorPort),
+      LeafPortData(leafInstance, acceptorPort),
       _acceptorPort(acceptorPort)
     { }
     virtual AcceptorPortData* toAcceptorPortData()
@@ -221,7 +231,7 @@ public:
       return true;
     }
 
-    virtual bool isConnected(PortData* portData)
+    virtual bool isConnected(LeafPortData* portData)
     {
       if (!portData)
         return false;
@@ -267,8 +277,7 @@ public:
 
   class ProxyPortData : public PortData {
   public:
-    ProxyPortData(PortData* portData) :
-      PortData(0, 0)
+    ProxyPortData(PortData* portData)
     {
       if (!portData)
         return;
@@ -294,11 +303,6 @@ public:
       }
       return true;
     }
-    // FIXME, make class hierarchy so that this cannot happen anyway ...
-    // Make the leaf instance have a pointer to a leaf port data and just use
-    // the proxy stuff to build the leaf list ...
-    virtual bool isConnected(PortData* portData)
-    { OpenFDMAssert(false); return false; }
     std::vector<SharedPtr<PortData> > mPortDataList;
   };
 
@@ -306,7 +310,7 @@ public:
     mLeafNode(leaf)
   { allocPorts(leaf); }
 
-  PortData* getPortData(const PortId& portId)
+  LeafPortData* getPortData(const PortId& portId)
   {
     OpenFDMAssert(getLeafNode());
     unsigned index = getLeafNode()->getPortIndex(portId);
@@ -366,7 +370,7 @@ private:
 
   // List of port dependent info used to build up the connect info and
   // the sorted list of leafs.
-  std::vector<SharedPtr<PortData> > mPortData;
+  std::vector<SharedPtr<LeafPortData> > mPortData;
 };
 
 class LeafInstanceCollector : public NodeVisitor {
@@ -404,7 +408,7 @@ public:
 
     for (unsigned i = 0; i < leaf.getNumPorts(); ++i) {
       PortId portId = leaf.getPortId(i);
-      LeafInstance::PortData* portData = leafInstance->getPortData(portId);
+      LeafInstance::LeafPortData* portData = leafInstance->getPortData(portId);
       _leafPortDataMap[getCurrentNodeId()][portId] = portData;
     }
   }
