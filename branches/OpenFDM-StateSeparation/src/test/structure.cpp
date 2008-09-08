@@ -96,6 +96,56 @@ private:
   RealInputPort mInputPort;
 };
 
+class MechanicNode : public Node {
+public:
+  virtual void accept(NodeVisitor& visitor)
+  { visitor.apply(*this); }
+
+  virtual void velocity(const ContinousStateValueVector&,
+                        PortValueList&) const
+  { }
+  virtual void articulation(const ContinousStateValueVector&,
+                            PortValueList&) const
+  { }
+  virtual void derivative(const ContinousStateValueVector&,
+                          const PortValueList&,
+                          ContinousStateValueVector&) const
+  { }
+};
+
+class Body : public MechanicNode {
+public:
+  virtual void accept(NodeVisitor& visitor)
+  { visitor.apply(*this); }
+
+  // FIXME: is unclear: normal output port may depend on the velocities
+  // or depend harder on the accelerations. The interface cannot ask for this
+  // how about that??
+//   enum OutputStage { Velocity, Articulation, Acceleration };
+//   virtual bool dependsOn(OutputStage outputStage,
+//                          const PortId& in, const PortId& out) const = 0;
+};
+
+class Interact : public MechanicNode {
+public:
+  virtual void accept(NodeVisitor& visitor)
+  { visitor.apply(*this); }
+
+  // FIXME: is unclear: normal output port may depend on the velocities
+  // or depend harder on the accelerations. The interface cannot ask for this
+  // how about that??
+//   enum OutputStage { Velocity, Articulation, Acceleration };
+//   virtual bool dependsOn(OutputStage outputStage,
+//                          const PortId& in, const PortId& out) const = 0;
+};
+
+
+
+
+
+
+
+
 class LeafInstance : public WeakReferenced {
 public:
   struct LeafPortData;
@@ -595,3 +645,58 @@ int main()
 
   return 0;
 }
+
+// class CompositeNode : public Object /*??*/ {
+//   // Might be something that behaves like a model, but depending on the input
+//   // and output port types issues different final leafs scheduler ...
+
+//   // FIXME: is it possible to make 'Library models' from that one?
+//   // would be good, would simplify groups enormous
+// };
+
+// class LibraryNode;
+
+// class LibraryModel : public Object {
+// public:
+//   LibraryModel(const std::string& name, Node* node = 0) :
+//     Object(name),
+//     mNode(node)
+//   { }
+
+//   unsigned getNumParents() const
+//   { return mParents.size(); }
+  
+//   WeakPtr<LibraryNode> getParent(unsigned i)
+//   { if (mParents.size() <= i) return 0; return mParents[i]; }
+//   WeakPtr<const LibraryNode> getParent(unsigned i) const
+//   { if (mParents.size() <= i) return 0; return mParents[i]; }
+
+//   SharedPtr<Node> getNode()
+//   { return mNode; }
+//   SharedPtr<const Node> getNode() const
+//   { return mNode; }
+
+// private:
+//   SharedPtr<Node> mNode;
+//   std::vector<WeakPtr<LibraryNode> > mParents;
+// };
+
+// class LibraryNode : public Node {
+// public:
+//   LibraryNode(const std::string& name, LibraryModel* libraryModel = 0) :
+//     Node(name),
+//     mLibraryModel(libraryModel)
+//   { }
+
+//   // Hmm, how do we map ports??
+//   // May be the Node just gets virtuals for ports???
+//   // May be changing ports means informing the parent about that???
+
+//   SharedPtr<LibraryModel> getLibraryModel()
+//   { return mLibraryModel; }
+//   SharedPtr<const LibraryModel> getLibraryModel() const
+//   { return mLibraryModel; }
+
+// private:
+//   SharedPtr<LibraryModel> mLibraryModel;
+// };
