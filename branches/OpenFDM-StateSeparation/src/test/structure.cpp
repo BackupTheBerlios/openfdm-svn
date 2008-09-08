@@ -100,6 +100,7 @@ class LeafInstance : public WeakReferenced {
 public:
   struct AcceptorPortData;
   struct ProviderPortData;
+  struct ProxyPortData;
 
   class PortData : public WeakReferenced {
   public:
@@ -113,6 +114,8 @@ public:
     { return 0; }
     virtual ProviderPortData* toProviderPortData()
     { return 0; }
+    virtual ProxyPortData* toProxyPortData()
+    { return 0; }
     
     /// Return the LeafInstance this PortData belongs to.
     SharedPtr<LeafInstance> getLeafInstance() const
@@ -122,7 +125,6 @@ public:
     { return mPortInfo; }
 
     virtual bool connect(PortData*) = 0;
-    virtual bool merge(PortData*) = 0;
 
     virtual void print()
     { }
@@ -145,30 +147,13 @@ public:
     {
       if (!portData)
         return false;
+      ProxyPortData* proxyPortData = portData->toProxyPortData();
+      if (proxyPortData)
+        return proxyPortData->connect(this);
       AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
       if (!acceptorPortData)
         return false;
       return acceptorPortData->connectToProvider(this);
-    }
-
-    virtual bool merge(PortData* portData)
-    {
-      if (!portData)
-        return false;
-      AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
-      if (!acceptorPortData)
-        return false;
-      SharedPtr<const LeafInstance::ProviderPortData> providerPortData;
-      providerPortData = acceptorPortData->_providerPortData.lock();
-      OpenFDMAssert(providerPortData);
-
-      // FIXME: think about that. Not yet completely functional
-
-      _providerPort = providerPortData->_providerPort;
-      // Merge must happen before the group this PortData belongs to is
-      // connected
-      OpenFDMAssert(_acceptorPortDataList.empty());
-      _acceptorPortDataList = providerPortData->_acceptorPortDataList;
     }
 
     virtual void print()
@@ -176,7 +161,7 @@ public:
       std::cout << "  Provider Port \"" << getPortInfo()->getName()
                 << "\" connected to:" << std::endl;
       for (unsigned i = 0; i < _acceptorPortDataList.size(); ++i) {
-        SharedPtr<const AcceptorPortData> acceptorPortData;
+        SharedPtr<AcceptorPortData> acceptorPortData;
         acceptorPortData = _acceptorPortDataList[i].lock();
         if (!acceptorPortData)
           continue;
@@ -189,13 +174,14 @@ public:
     }
 
     SharedPtr<const ProviderPortInfo> _providerPort;
-    std::vector<WeakPtr<const AcceptorPortData> > _acceptorPortDataList;
+    std::vector<WeakPtr<AcceptorPortData> > _acceptorPortDataList;
   };
   struct AcceptorPortData : public PortData {
     AcceptorPortData(LeafInstance* leafInstance,
                      const AcceptorPortInfo* acceptorPort) :
-      PortData(leafInstance, acceptorPort)
-    { _acceptorPortList.push_back(acceptorPort); }
+      PortData(leafInstance, acceptorPort),
+      _acceptorPort(acceptorPort)
+    { }
     virtual AcceptorPortData* toAcceptorPortData()
     { return this; }
 
@@ -203,6 +189,9 @@ public:
     {
       if (!portData)
         return false;
+      ProxyPortData* proxyPortData = portData->toProxyPortData();
+      if (proxyPortData)
+        return proxyPortData->connect(this);
       ProviderPortData* providerPortData = portData->toProviderPortData();
       if (!providerPortData)
         return false;
@@ -220,38 +209,12 @@ public:
       return true;
     }
 
-    virtual bool merge(PortData* portData)
-    {
-      if (!portData)
-        return false;
-      ProviderPortData* providerPortData = portData->toProviderPortData();
-      if (!providerPortData)
-        return false;
-
-      // FIXME: think about that. Not yet completely functional
-
-      // Merge must happen before the group this PortData belongs to is
-      // connected
-      OpenFDMAssert(!_providerPortData.lock());
-
-      unsigned i = 0;
-      for (i = 0; i < providerPortData->_acceptorPortDataList.size(); ++i) {
-        SharedPtr<const LeafInstance::AcceptorPortData> acceptorPortData;
-        acceptorPortData = providerPortData->_acceptorPortDataList[i].lock();
-        OpenFDMAssert(acceptorPortData);
-        for (unsigned j = 0; j < _acceptorPortList.size(); ++j) {
-          _acceptorPortList.push_back(acceptorPortData->_acceptorPortList[j]);
-        }
-      }
-    }
-
     virtual void print()
     {
-      // FIXME: seems to be a list???
       std::cout << "  Acceptor Port \"" << getPortInfo()->getName()
                 << "\" connected from:" << std::endl;
 
-      SharedPtr<const ProviderPortData> providerPortData;
+      SharedPtr<ProviderPortData> providerPortData;
       providerPortData = _providerPortData.lock();
       if (!providerPortData)
         return;
@@ -263,11 +226,47 @@ public:
                 << "\"" << std::endl;
     }
 
-    std::vector<SharedPtr<const AcceptorPortInfo> > _acceptorPortList;
-    WeakPtr<const ProviderPortData> _providerPortData;
+    SharedPtr<const AcceptorPortInfo> _acceptorPort;
+    WeakPtr<ProviderPortData> _providerPortData;
   };
 
+  // Hmm, an other idea. How about treating the group input/output block
+  // as a regular block with inputs and outputs?
+  // Then in the output routine do nothing and just connect the PortValues of
+  // the inputs directly to the PortValues of the outputs??
+  // That would at least make the Proxy stuff simpler??
 
+  class ProxyPortData : public PortData {
+  public:
+    ProxyPortData(PortData* portData) :
+      PortData(0, 0)
+    {
+      if (!portData)
+        return;
+      AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
+      if (acceptorPortData) {
+        mPortDataList.push_back(acceptorPortData->_providerPortData.lock());
+      }
+      ProviderPortData* providerPortData = portData->toProviderPortData();
+      if (providerPortData) {
+        unsigned i;
+        for (i = 0; i < providerPortData->_acceptorPortDataList.size(); ++i) {
+          mPortDataList.push_back(providerPortData->_acceptorPortDataList[i].lock());
+        }
+      }
+    }
+    virtual ProxyPortData* toProxyPortData()
+    { return this; }
+    virtual bool connect(PortData* portData)
+    {
+      for (unsigned i = 0; i < mPortDataList.size(); ++i) {
+        if (!mPortDataList[i]->connect(portData))
+          return false;
+      }
+      return true;
+    }
+    std::vector<SharedPtr<PortData> > mPortDataList;
+  };
 
   LeafInstance(const LeafNode* leaf) :
     mLeafNode(leaf)
@@ -418,17 +417,6 @@ public:
     for (unsigned i = 0; i < group.getNumPorts(); ++i) {
       PortId portId = group.getPortId(i);
       Group::NodeId nodeId = group.getGroupPortNode(portId);
-      if (group.getPort(i)->toAcceptorPortInfo()) {
-        LeafInstance::AcceptorPortData* ad;
-        ad = new LeafInstance::AcceptorPortData(0, group.getPort(i)->toAcceptorPortInfo());
-        parentLeafPortDataMap[getCurrentNodeId()][portId] = ad;
-      }
-      if (group.getPort(i)->toProviderPortInfo()) {
-        LeafInstance::ProviderPortData* pd;
-        pd = new LeafInstance::ProviderPortData(0, group.getPort(i)->toProviderPortInfo());
-        parentLeafPortDataMap[getCurrentNodeId()][portId] = pd;
-      }
-
       if (_leafPortDataMap[nodeId].empty()) {
         // FIXME, is this an internal error ???
         std::cerr << "Hmm, cannot find GroupPortNode for external port "
@@ -436,9 +424,8 @@ public:
         continue;
       }
 
-      if (!parentLeafPortDataMap[getCurrentNodeId()][portId]->
-          merge(_leafPortDataMap[nodeId].begin()->second))
-        std::cerr << "Hmm, cannot merge port data" << std::endl;
+      parentLeafPortDataMap[getCurrentNodeId()][portId] = 
+          new LeafInstance::ProxyPortData(_leafPortDataMap[nodeId].begin()->second);
     }
 
     parentLeafPortDataMap.swap(_leafPortDataMap);
