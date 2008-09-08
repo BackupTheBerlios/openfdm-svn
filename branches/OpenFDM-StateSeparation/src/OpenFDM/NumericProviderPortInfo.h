@@ -6,6 +6,7 @@
 #define OpenFDM_NumericProviderPortInfo_H
 
 #include <string>
+#include "NumericPortValue.h"
 #include "ProviderPortInfo.h"
 
 namespace OpenFDM {
