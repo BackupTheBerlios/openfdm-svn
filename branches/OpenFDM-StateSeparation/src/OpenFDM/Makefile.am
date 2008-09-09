@@ -49,6 +49,8 @@ OpenFDMCoreHEADERS = \
   MatrixStateValue.h \
   MatrixStateInfo.h \
   MidpointRule.h \
+  MechanicBodyPort.h \
+  MechanicInteractPort.h \
   MechanicPortValue.h \
   MechanicAcceptorPortInfo.h \
   MechanicProviderPortInfo.h \

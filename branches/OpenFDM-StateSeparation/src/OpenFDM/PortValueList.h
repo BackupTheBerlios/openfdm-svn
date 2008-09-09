@@ -8,6 +8,8 @@
 #include "PortValue.h"
 #include "MatrixInputPort.h"
 #include "MatrixOutputPort.h"
+#include "MechanicBodyPort.h"
+#include "MechanicInteractPort.h"
 #include "RealInputPort.h"
 #include "RealOutputPort.h"
 
@@ -48,6 +50,21 @@ public:
   // and no resizing assignment/copy???
   Matrix& operator[](const MatrixOutputPort& port)
   { return port.getPortValue(mPortValueVector)->getValue(); }
+
+
+  // Accessors for matrix valued ports
+  bool isConnected(const MechanicBodyPort& port) const
+  { return port.getPortValue(mPortValueVector); }
+  bool isConnected(const MechanicInteractPort& port) const
+  { return port.getPortValue(mPortValueVector); }
+
+  // FIXME Implement access control for the port value
+  MechanicPortValue& operator[](const MechanicBodyPort& port) const
+  { return *port.getPortValue(mPortValueVector); }
+  MechanicPortValue& operator[](const MechanicInteractPort& port)
+  { return *port.getPortValue(mPortValueVector); }
+
+
 
 
   // FIXME, avoid this method here. With this method the output stage of a model
