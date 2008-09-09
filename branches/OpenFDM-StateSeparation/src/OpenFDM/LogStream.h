@@ -57,11 +57,11 @@ public:
   LogProxy operator<<(const T& value)
   { if (mStream) (*mStream) << value; return *this; }
   LogProxy operator<<(ios_base_type& (*mptr)(ios_base_type&))
-  { if (mStream) (*mStream) << mptr; return *this; }
+  { if (mStream) mptr(*mStream); return *this; }
   LogProxy operator<<(basic_ios_type& (*mptr)(basic_ios_type&))
-  { if (mStream) (*mStream) << mptr; return *this; }
+  { if (mStream) mptr(*mStream); return *this; }
   LogProxy operator<<(basic_ostream_type& (*mptr)(basic_ostream_type&))
-  { if (mStream) (*mStream) << mptr; return *this; }
+  { if (mStream) mptr(*mStream); return *this; }
 
 private:
   template<Category category, Priority priority>
