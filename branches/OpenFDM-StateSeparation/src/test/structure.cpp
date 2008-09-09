@@ -33,7 +33,8 @@
 
 #include <OpenFDM/LeafContext.h>
 
-#include <OpenFDM/MechanicNode.h>
+#include <OpenFDM/RigidBody.h>
+#include <OpenFDM/Interact.h>
 
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/Integrator.h>
@@ -89,49 +90,6 @@ public:
 private:
   RealInputPort mInputPort;
 };
-
-class Body : public MechanicNode {
-public:
-  virtual void accept(NodeVisitor& visitor)
-  { visitor.apply(*this); }
-
-  // FIXME: is unclear: normal output port may depend on the velocities
-  // or depend harder on the accelerations. The interface cannot ask for this
-  // how about that??
-//   enum OutputStage { Velocity, Articulation, Acceleration };
-//   virtual bool dependsOn(OutputStage outputStage,
-//                          const PortId& in, const PortId& out) const = 0;
-
-protected:
-  MechanicBodyPort
-  newMechanicBodyPort(const std::string& name)
-  { return MechanicBodyPort(this, name); }
-};
-
-class Interact : public MechanicNode {
-public:
-  virtual void accept(NodeVisitor& visitor)
-  { visitor.apply(*this); }
-
-  // FIXME: is unclear: normal output port may depend on the velocities
-  // or depend harder on the accelerations. The interface cannot ask for this
-  // how about that??
-//   enum OutputStage { Velocity, Articulation, Acceleration };
-//   virtual bool dependsOn(OutputStage outputStage,
-//                          const PortId& in, const PortId& out) const = 0;
-
-protected:
-  MechanicInteractPort
-  newMechanicInteractPort(const std::string& name)
-  { return MechanicInteractPort(this, name); }
-};
-
-
-
-
-
-
-
 
 class LeafInstance : public WeakReferenced {
 public:

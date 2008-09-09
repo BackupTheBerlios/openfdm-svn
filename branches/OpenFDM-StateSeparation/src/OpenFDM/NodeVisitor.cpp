@@ -4,10 +4,12 @@
 
 #include "NodeVisitor.h"
 
+#include "Group.h"
+#include "Interact.h"
 #include "LeafNode.h"
 #include "MechanicNode.h"
 #include "Model.h"
-#include "Group.h"
+#include "RigidBody.h"
 
 namespace OpenFDM {
 
@@ -54,6 +56,18 @@ void
 NodeVisitor::apply(MechanicNode& node)
 {
   apply(static_cast<LeafNode&>(node));
+}
+
+void
+NodeVisitor::apply(RigidBody& node)
+{
+  apply(static_cast<MechanicNode&>(node));
+}
+
+void
+NodeVisitor::apply(Interact& node)
+{
+  apply(static_cast<MechanicNode&>(node));
 }
 
 } // namespace OpenFDM

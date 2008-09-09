@@ -30,6 +30,7 @@ OpenFDMCoreHEADERS = \
   Group.h \
   ImplicitEuler.h \
   Inertia.h \
+  Interact.h \
   LeafContext.h \
   LeafNode.h \
   Limits.h \
@@ -81,6 +82,7 @@ OpenFDMCoreHEADERS = \
   RealOutputPort.h \
   RealStateInfo.h \
   Referenced.h \
+  RigidBody.h \
   Rotation.h \
   SampleTime.h \
   ScopeLock.h \
@@ -115,6 +117,7 @@ OpenFDMCoreSOURCES = \
   ContinousStateValue.cpp \
   Frame.cpp \
   Group.cpp \
+  Interact.cpp \
   LeafNode.cpp \
   Logger.cpp \
   MatrixStateValue.cpp \
@@ -128,6 +131,7 @@ OpenFDMCoreSOURCES = \
   Planet.cpp \
   PortInfo.cpp \
   PortValue.cpp \
+  RigidBody.cpp \
   SampleTime.cpp \
   StateValue.cpp \
   Time.cpp \
@@ -175,7 +179,6 @@ OpenFDMModelsHEADERS = \
   Ground.h \
   Input.h \
   Integrator.h \
-  Interact.h \
   Joint.h \
   Launchbar.h \
   LinearSpringDamper.h \
@@ -192,7 +195,6 @@ OpenFDMModelsHEADERS = \
   RevoluteActuatorFrame.h \
   RevoluteJoint.h \
   RevoluteJointFrame.h \
-  RigidBody.h \
   RootFrame.h \
   Saturation.h \
   Sensor.h \
@@ -236,7 +238,6 @@ OpenFDMModelsSOURCES = \
 #   Gravity.cpp \
 #   Ground.cpp \
 #   Input.cpp \
-#   Interact.cpp \
 #   Joint.cpp \
 #   Launchbar.cpp \
 #   LinearSpringDamper.cpp \
