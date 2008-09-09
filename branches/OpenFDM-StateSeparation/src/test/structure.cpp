@@ -7,18 +7,14 @@
 #include <OpenFDM/PortValue.h>
 #include <OpenFDM/PortValueList.h>
 #include <OpenFDM/PortId.h>
-#include <OpenFDM/PortInfo.h>
-#include <OpenFDM/AcceptorPortInfo.h>
-#include <OpenFDM/ProviderPortInfo.h>
-#include <OpenFDM/NumericPortValue.h>
 #include <OpenFDM/Node.h>
 #include <OpenFDM/NodeVisitor.h>
-#include <OpenFDM/NumericAcceptorPortInfo.h>
-#include <OpenFDM/NumericProviderPortInfo.h>
 #include <OpenFDM/MatrixInputPort.h>
 #include <OpenFDM/MatrixOutputPort.h>
 #include <OpenFDM/RealInputPort.h>
 #include <OpenFDM/RealOutputPort.h>
+#include <OpenFDM/MechanicBodyPort.h>
+#include <OpenFDM/MechanicInteractPort.h>
 
 #include <OpenFDM/StateInfo.h>
 #include <OpenFDM/StateValue.h>
@@ -42,10 +38,6 @@
 #include <OpenFDM/Delay.h>
 
 #include <OpenFDM/Group.h>
-
-#include <iterator>
-#include <algorithm>
-#include <sstream>
 
 namespace OpenFDM {
 
@@ -124,6 +116,10 @@ public:
 //   enum OutputStage { Velocity, Articulation, Acceleration };
 //   virtual bool dependsOn(OutputStage outputStage,
 //                          const PortId& in, const PortId& out) const = 0;
+
+  MechanicBodyPort
+  newMechanicBodyPort(const std::string& name)
+  { return MechanicBodyPort(this, name); }
 };
 
 class Interact : public MechanicNode {
@@ -137,6 +133,10 @@ public:
 //   enum OutputStage { Velocity, Articulation, Acceleration };
 //   virtual bool dependsOn(OutputStage outputStage,
 //                          const PortId& in, const PortId& out) const = 0;
+
+  MechanicInteractPort
+  newMechanicInteractPort(const std::string& name)
+  { return MechanicInteractPort(this, name); }
 };
 
 
