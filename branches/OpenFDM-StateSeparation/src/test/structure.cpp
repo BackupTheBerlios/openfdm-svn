@@ -33,6 +33,8 @@
 
 #include <OpenFDM/LeafContext.h>
 
+#include <OpenFDM/MechanicNode.h>
+
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/Integrator.h>
 #include <OpenFDM/Delay.h>
@@ -74,7 +76,7 @@ namespace OpenFDM {
 
 class Print : public Model {
 public:
-  Print(const std::string& name = std::string()) :
+  Print(const std::string& name) :
     Model(name),
     mInputPort(newRealInputPort("input"))
   { }
@@ -86,23 +88,6 @@ public:
   { return false; }
 private:
   RealInputPort mInputPort;
-};
-
-class MechanicNode : public Node {
-public:
-  virtual void accept(NodeVisitor& visitor)
-  { visitor.apply(*this); }
-
-  virtual void velocity(const ContinousStateValueVector&,
-                        PortValueList&) const
-  { }
-  virtual void articulation(const ContinousStateValueVector&,
-                            PortValueList&) const
-  { }
-  virtual void derivative(const ContinousStateValueVector&,
-                          const PortValueList&,
-                          ContinousStateValueVector&) const
-  { }
 };
 
 class Body : public MechanicNode {
@@ -117,6 +102,7 @@ public:
 //   virtual bool dependsOn(OutputStage outputStage,
 //                          const PortId& in, const PortId& out) const = 0;
 
+protected:
   MechanicBodyPort
   newMechanicBodyPort(const std::string& name)
   { return MechanicBodyPort(this, name); }
@@ -134,6 +120,7 @@ public:
 //   virtual bool dependsOn(OutputStage outputStage,
 //                          const PortId& in, const PortId& out) const = 0;
 
+protected:
   MechanicInteractPort
   newMechanicInteractPort(const std::string& name)
   { return MechanicInteractPort(this, name); }

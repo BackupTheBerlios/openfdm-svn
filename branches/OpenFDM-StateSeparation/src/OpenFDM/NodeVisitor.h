@@ -8,11 +8,12 @@
 namespace OpenFDM {
 
 class Node;
+class Group;
 class GroupAcceptorNode;
 class GroupProviderNode;
 class LeafNode;
 class Model;
-class Group;
+class MechanicNode;
 
 class NodeVisitor {
 public:
@@ -24,6 +25,7 @@ public:
   virtual void apply(GroupProviderNode&);
   virtual void apply(LeafNode&);
   virtual void apply(Model&);
+  virtual void apply(MechanicNode&);
 };
 
 } // namespace OpenFDM

@@ -5,6 +5,7 @@
 #include "NodeVisitor.h"
 
 #include "LeafNode.h"
+#include "MechanicNode.h"
 #include "Model.h"
 #include "Group.h"
 
@@ -45,6 +46,12 @@ NodeVisitor::apply(LeafNode& leafNode)
 
 void
 NodeVisitor::apply(Model& node)
+{
+  apply(static_cast<LeafNode&>(node));
+}
+
+void
+NodeVisitor::apply(MechanicNode& node)
 {
   apply(static_cast<LeafNode&>(node));
 }

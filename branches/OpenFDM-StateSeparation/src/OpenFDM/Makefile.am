@@ -51,6 +51,7 @@ OpenFDMCoreHEADERS = \
   MidpointRule.h \
   MechanicBodyPort.h \
   MechanicInteractPort.h \
+  MechanicNode.h \
   MechanicPortValue.h \
   MechanicAcceptorPortInfo.h \
   MechanicProviderPortInfo.h \
@@ -117,6 +118,7 @@ OpenFDMCoreSOURCES = \
   LeafNode.cpp \
   Logger.cpp \
   MatrixStateValue.cpp \
+  MechanicNode.cpp \
   MechanicPortValue.cpp \
   Model.cpp \
   Node.cpp \
