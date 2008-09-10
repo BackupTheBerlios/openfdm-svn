@@ -301,8 +301,7 @@ public:
     std::vector<SharedPtr<PortData> > mPortDataList;
   };
 
-  LeafInstance(const LeafNode* leaf) :
-    mLeafNode(leaf)
+  LeafInstance(const LeafNode* leaf)
   { allocPorts(leaf); }
 
   LeafPortData* getPortData(const PortId& portId)
@@ -314,8 +313,7 @@ public:
     return mPortData[index];
   }
 
-  const SharedPtr<const LeafNode>& getLeafNode() const
-  { return mLeafNode; }
+  virtual const LeafNode* getLeafNode() const = 0;
 
   // Return true if this leaf directly depends on one of leafInstance outputs
   bool dependsOn(LeafInstance* leafInstance)
@@ -324,13 +322,13 @@ public:
       for (unsigned j = 0; j < leafInstance->mPortData.size(); ++j) {
         if (!mPortData[i]->isConnected(leafInstance->mPortData[j]))
           continue;
-        PortId inPortId = mLeafNode->getPortId(i);
+        PortId inPortId = getLeafNode()->getPortId(i);
 
         // FIXME, may be other concept:
         // make Model return a list of 'direct feedthrough ports'?
         for (unsigned k = 0; k < mPortData.size(); ++k) {
-          PortId outPortId = mLeafNode->getPortId(k);
-          if (mLeafNode->dependsOn(inPortId, outPortId))
+          PortId outPortId = getLeafNode()->getPortId(k);
+          if (getLeafNode()->dependsOn(inPortId, outPortId))
             return true;
         }
       }
@@ -340,7 +338,7 @@ public:
 
   void print()
   {
-    std::cout << "Leaf \"" << mLeafNode->getName() << "\"" << std::endl;
+    std::cout << "Leaf \"" << getLeafNode()->getName() << "\"" << std::endl;
     for (unsigned i = 0; i < mPortData.size(); ++i) {
       mPortData[i]->print();
     }
@@ -360,21 +358,45 @@ private:
     }
   }
 
-  // The subsystem leaf node
-  SharedPtr<const LeafNode> mLeafNode;
-
   // List of port dependent info used to build up the connect info and
   // the sorted list of leafs.
   std::vector<SharedPtr<LeafPortData> > mPortData;
 };
 
+class ModelInstance : public LeafInstance {
+public:
+  ModelInstance(const Model* model) :
+    LeafInstance(model),
+    mModel(model)
+  { }
+
+  virtual const Model* getLeafNode() const
+  { return mModel; }
+
+  SharedPtr<const Model> mModel;
+};
+
+class MechanicInstance : public LeafInstance {
+public:
+  MechanicInstance(const MechanicNode* mechanicNode) :
+    LeafInstance(mechanicNode),
+    mMechanicNode(mechanicNode)
+  { }
+
+  virtual const MechanicNode* getLeafNode() const
+  { return mMechanicNode; }
+
+  SharedPtr<const MechanicNode> mMechanicNode;
+};
+
+
 class LeafInstanceCollector : public NodeVisitor {
 public:
 
   virtual void apply(Node& node)
-  {
-    std::cerr << __PRETTY_FUNCTION__ << std::endl;
-  }
+  { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
+  virtual void apply(LeafNode& leaf)
+  { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
 
   // Aussen acceptor, innen provider
   virtual void apply(GroupAcceptorNode& leaf)
@@ -394,13 +416,10 @@ public:
     ad = new LeafInstance::AcceptorPortData(0, leaf._groupInternalPort);
     _leafPortDataMap[getCurrentNodeId()][portId] = ad;
   }
-  virtual void apply(LeafNode& leaf)
+
+  void allocPortData(LeafInstance* leafInstance, LeafNode& leaf)
   {
-    // FIXME: assert that the current node id is something valid ...
-
-    LeafInstance* leafInstance = new LeafInstance(&leaf);
-    _leafInstanceList.push_back(leafInstance);
-
+    // FIXME: move to LeafInstance??
     for (unsigned i = 0; i < leaf.getNumPorts(); ++i) {
       PortId portId = leaf.getPortId(i);
       LeafInstance::LeafPortData* portData = leafInstance->getPortData(portId);
@@ -410,11 +429,17 @@ public:
 
   virtual void apply(MechanicNode& node)
   {
-    apply(static_cast<LeafNode&>(node));
+    MechanicInstance* mechanicInstance = new MechanicInstance(&node);
+    _leafInstanceList.push_back(mechanicInstance);
+    _mechanicInstanceList.push_back(mechanicInstance);
+    allocPortData(mechanicInstance, node);
   }
   virtual void apply(Model& node)
   {
-    apply(static_cast<LeafNode&>(node));
+    ModelInstance* modelInstance = new ModelInstance(&node);
+    _leafInstanceList.push_back(modelInstance);
+    _modelInstanceList.push_back(modelInstance);
+    allocPortData(modelInstance, node);
   }
 
   virtual void apply(Group& group)
@@ -500,6 +525,11 @@ public:
   typedef std::list<SharedPtr<LeafInstance> > LeafInstanceList;
   LeafInstanceList _leafInstanceList;
 
+  typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
+  ModelInstanceList _modelInstanceList;
+  typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
+  MechanicInstanceList _mechanicInstanceList;
+
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
   typedef std::map<PortId, SharedPtr<LeafInstance::PortData> > NodePortDataMap;
@@ -508,26 +538,26 @@ public:
 
 
   // method to sort the leafs according to their dependency
-  bool sortLeafList()
+  bool sortModelList()
   {
-    LeafInstanceList sortedLeafInstanceList;
-    while (!_leafInstanceList.empty()) {
-      SharedPtr<LeafInstance> leafInstance = _leafInstanceList.front();
-      _leafInstanceList.pop_front();
+    ModelInstanceList sortedModelInstanceList;
+    while (!_modelInstanceList.empty()) {
+      SharedPtr<ModelInstance> modelInstance = _modelInstanceList.front();
+      _modelInstanceList.pop_front();
 
-      LeafInstanceList::iterator i;
-      for (i = sortedLeafInstanceList.begin();
-           i != sortedLeafInstanceList.end();
+      ModelInstanceList::iterator i;
+      for (i = sortedModelInstanceList.begin();
+           i != sortedModelInstanceList.end();
            ++i) {
-        if (!(*i)->dependsOn(leafInstance))
+        if (!(*i)->dependsOn(modelInstance))
           continue;
-        sortedLeafInstanceList.insert(i, leafInstance);
+        sortedModelInstanceList.insert(i, modelInstance);
         break;
       }
-      if (i == sortedLeafInstanceList.end())
-        sortedLeafInstanceList.push_back(leafInstance);
+      if (i == sortedModelInstanceList.end())
+        sortedModelInstanceList.push_back(modelInstance);
     }
-    _leafInstanceList.swap(sortedLeafInstanceList);
+    _modelInstanceList.swap(sortedModelInstanceList);
   }
 
   
@@ -587,13 +617,11 @@ int main()
   LeafInstanceCollector nodeInstanceCollector;
   topGroup->accept(nodeInstanceCollector);
   
-  nodeInstanceCollector.sortLeafList();
+  nodeInstanceCollector.sortModelList();
 
-  std::cout << nodeInstanceCollector._leafInstanceList.size() << std::endl;
-
-  LeafInstanceCollector::LeafInstanceList::const_iterator i;
-  for (i = nodeInstanceCollector._leafInstanceList.begin();
-       i != nodeInstanceCollector._leafInstanceList.end();
+  LeafInstanceCollector::ModelInstanceList::const_iterator i;
+  for (i = nodeInstanceCollector._modelInstanceList.begin();
+       i != nodeInstanceCollector._modelInstanceList.end();
        ++i) {
     (*i)->print();
   }
