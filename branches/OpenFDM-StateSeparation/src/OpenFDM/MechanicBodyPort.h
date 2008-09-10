@@ -5,7 +5,7 @@
 #ifndef OpenFDM_MechanicBodyPort_H
 #define OpenFDM_MechanicBodyPort_H
 
-#include "MechanicProviderPortInfo.h"
+#include "MechanicAcceptorPortInfo.h"
 #include "MechanicPortValue.h"
 #include "SharedPtr.h"
 
@@ -14,7 +14,7 @@ namespace OpenFDM {
 class MechanicBodyPort {
 public:
   MechanicBodyPort(Node* node, const std::string& name) :
-    mPort(new MechanicProviderPortInfo(node, name))
+    mPort(new MechanicAcceptorPortInfo(node, name))
   {}
   MechanicPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -26,7 +26,7 @@ public:
   unsigned getPortIndex() const
   { return mPort->getIndex(); }
 private:
-  SharedPtr<MechanicProviderPortInfo> mPort;
+  SharedPtr<MechanicAcceptorPortInfo> mPort;
 };
 
 } // namespace OpenFDM

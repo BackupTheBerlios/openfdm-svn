@@ -17,6 +17,13 @@ public:
   virtual ~MechanicPortValue();
 
 // protected:
+  // FIXME:
+  // Since the interact side is the provider port, an interact might provide
+  // different typed ports, the Rigid body can test for at init time and
+  // avoid inertia computations for ports not contributing that ...
+  // May be build a class hierarchy that accounts for different inputs
+  // and outputs a rigid body can have.
+  // Example: force port, force and inertia, frame port, velocity port
   Vector3 mPosition;
   Rotation mOrientation;
   Vector6 mSpatialVelocity;
