@@ -407,6 +407,16 @@ public:
       _leafPortDataMap[getCurrentNodeId()][portId] = portData;
     }
   }
+
+  virtual void apply(MechanicNode& node)
+  {
+    apply(static_cast<LeafNode&>(node));
+  }
+  virtual void apply(Model& node)
+  {
+    apply(static_cast<LeafNode&>(node));
+  }
+
   virtual void apply(Group& group)
   {
     // Prepare a new leaf map for the child group
