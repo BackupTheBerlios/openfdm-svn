@@ -601,6 +601,10 @@ int main()
   return 0;
 }
 
+
+// Kabelbaum <-> PortBundle ??? Original Kabelbaum == Cabel Bundle
+// Oder Cable Set <-> Port Set???
+
 // class CompositeNode : public Object /*??*/ {
 //   // Might be something that behaves like a model, but depending on the input
 //   // and output port types issues different final leafs scheduler ...
