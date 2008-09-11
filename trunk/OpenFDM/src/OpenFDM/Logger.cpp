@@ -12,8 +12,6 @@
 
 namespace OpenFDM {
 
-namespace Log {
-
 static unsigned
 atou(const char* s)
 {
@@ -29,23 +27,8 @@ atou(const char* s)
   return value;
 }
 
-Logger::Logger(std::basic_ostream<char>* stream) :
-  mStream(stream),
-  mCategory(~0u),
-  mPriority(Log::Error)
-{
-  // Set some defaults from the environment
-  unsigned value = atou(std::getenv("OPENFDM_DEBUG_PRIORITY"));
-  if (value)
-    mPriority = value;
-      
-  value = atou(std::getenv("OPENFDM_DEBUG_CATEGORY"));
-  if (value)
-    mCategory = value;
-}
-
 void
-Logger::setCategoryEnable(Log::Category category, bool enable)
+Logger::setCategoryEnable(Logger::Category category, bool enable)
 {
   Logger* logger = Instance();
   if (enable) {
@@ -56,16 +39,28 @@ Logger::setCategoryEnable(Log::Category category, bool enable)
 }
 
 void
-Logger::setCategoryDisable(Log::Category category)
+Logger::setCategoryDisable(Logger::Category category)
 {
   setCategoryEnable(category, false);
 }
 
 void
-Logger::setPriority(Log::Priority priority)
+Logger::setPriority(Logger::Priority priority)
 {
   Logger* logger = Instance();
   logger->mPriority = priority;
+}
+
+std::ostream&
+Logger::getStream(Logger::Priority priority)
+{
+  Logger* logger = Instance();
+  if (logger->mStream)
+    return *logger->mStream;
+  else if (Info <= priority)
+    return std::cout;
+  else
+    return std::cerr;
 }
 
 Logger*
@@ -83,6 +78,29 @@ Logger::Instance(void)
   return ptr;
 }
 
-} // namespace Log
+bool
+Logger::getEnabled(Logger::Category category, Logger::Priority priority)
+{
+  if (priority == Error)
+    return true;
+  if (!(category & mCategory))
+    return false;
+  return priority <= mPriority;
+}
+
+Logger::Logger(std::ostream* stream) :
+  mStream(stream),
+  mCategory(~0u),
+  mPriority(Error)
+{
+  // Set some defaults from the environment
+  unsigned value = atou(std::getenv("OPENFDM_DEBUG_PRIORITY"));
+  if (value)
+    mPriority = value;
+      
+  value = atou(std::getenv("OPENFDM_DEBUG_CATEGORY"));
+  if (value)
+    mCategory = value;
+}
 
 } // namespace OpenFDM
