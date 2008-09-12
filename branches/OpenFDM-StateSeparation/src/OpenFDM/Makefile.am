@@ -33,6 +33,8 @@ OpenFDMCoreHEADERS = \
   Interact.h \
   LeafContext.h \
   LeafNode.h \
+  LibraryModel.h \
+  LibraryNode.h \
   Limits.h \
   LinAlg/Algorithm.h \
   LinAlg/Array.h \
@@ -119,6 +121,8 @@ OpenFDMCoreSOURCES = \
   Group.cpp \
   Interact.cpp \
   LeafNode.cpp \
+  LibraryModel.cpp \
+  LibraryNode.cpp \
   Logger.cpp \
   MatrixStateValue.cpp \
   MechanicNode.cpp \

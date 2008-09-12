@@ -438,6 +438,8 @@ public:
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
   virtual void apply(LeafNode& leaf)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
+  virtual void apply(LibraryNode& libraryNode)
+  { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
 
   // Aussen acceptor, innen provider
   virtual void apply(GroupAcceptorNode& leaf)
@@ -708,64 +710,3 @@ int main()
 // Kabelbaum <-> PortBundle ??? Original Kabelbaum == Cabel Bundle
 // Oder Cable Set <-> Port Set???
 
-// class CompositeNode : public Node {
-//   // Might be something that behaves like a model, but depending on the input
-//   // and output port types issues different final leafs scheduler ...
-
-//   // FIXME: is it possible to make 'Library models' from that one?
-//   // would be good, would simplify groups enormous
-// };
-
-// class Group : public CompositeNode {
-// };
-
-// class LibraryNode;
-
-// class LibraryModel : public Object {
-// public:
-//   LibraryModel(const std::string& name, Node* node = 0) :
-//     Object(name),
-//     mNode(node)
-//   { }
-
-//   unsigned getNumParentNodes() const
-//   { return mParentNodes.size(); }
-  
-//   WeakPtr<LibraryNode> getParent(unsigned i)
-//   { if (mParentNodes.size() <= i) return 0; return mParentNodes[i]; }
-//   WeakPtr<const LibraryNode> getParent(unsigned i) const
-//   { if (mParentNodes.size() <= i) return 0; return mParentNodes[i]; }
-
-//   SharedPtr<Node> getNode()
-//   { return mNode; }
-//   SharedPtr<const Node> getNode() const
-//   { return mNode; }
-//   void setNode(Node* node)
-//   { mNode = node; }
-
-// private:
-//   SharedPtr<Node> mNode;
-//   std::vector<WeakPtr<LibraryNode> > mParentNodes;
-// };
-
-// class LibraryNode : public CompositeNode {
-// public:
-//   LibraryNode(const std::string& name, LibraryModel* libraryModel = 0) :
-//     Node(name),
-//     mLibraryModel(libraryModel)
-//   { }
-
-//   // Hmm, how do we map ports??
-//   // May be the Node just gets virtuals for ports???
-//   // May be changing ports means informing the parent about that???
-
-//   SharedPtr<LibraryModel> getLibraryModel()
-//   { return mLibraryModel; }
-//   SharedPtr<const LibraryModel> getLibraryModel() const
-//   { return mLibraryModel; }
-//   void setLibraryModel(LibraryModel* libraryModel)
-//   { mLibraryModel = libraryModel; }
-
-// private:
-//   SharedPtr<LibraryModel> mLibraryModel;
-// };

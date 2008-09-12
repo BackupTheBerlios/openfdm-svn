@@ -11,6 +11,7 @@ class Node;
 class Group;
 class GroupAcceptorNode;
 class GroupProviderNode;
+class LibraryNode;
 class LeafNode;
 class Model;
 class MechanicNode;
@@ -22,11 +23,16 @@ public:
   virtual ~NodeVisitor();
 
   virtual void apply(Node&);
+
   virtual void apply(Group&);
   virtual void apply(GroupAcceptorNode&);
   virtual void apply(GroupProviderNode&);
+
+  virtual void apply(LibraryNode&);
+
   virtual void apply(LeafNode&);
   virtual void apply(Model&);
+
   virtual void apply(MechanicNode&);
   virtual void apply(RigidBody&);
   virtual void apply(Interact&);

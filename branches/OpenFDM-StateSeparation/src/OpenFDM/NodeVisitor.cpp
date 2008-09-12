@@ -6,6 +6,7 @@
 
 #include "Group.h"
 #include "Interact.h"
+#include "LibraryNode.h"
 #include "LeafNode.h"
 #include "MechanicNode.h"
 #include "Model.h"
@@ -38,6 +39,12 @@ void
 NodeVisitor::apply(GroupProviderNode& node)
 {
   apply(static_cast<Node&>(node));
+}
+
+void
+NodeVisitor::apply(LibraryNode& libraryNode)
+{
+  apply(static_cast<Node&>(libraryNode));
 }
 
 void
