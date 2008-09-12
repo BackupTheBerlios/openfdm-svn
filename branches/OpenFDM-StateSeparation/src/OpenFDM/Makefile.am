@@ -13,6 +13,7 @@ OpenFDMCoreHEADERS = \
   Atomic.h \
   BoolStateInfo.h \
   ConstFrameVisitor.h \
+  ConstNodeVisitor.h \
   ContinousStateInfo.h \
   ContinousStateInfoVector.h \
   ContinousStateValue.h \
@@ -116,6 +117,7 @@ OpenFDMCoreHEADERS = \
 OpenFDMCoreSOURCES = \
   Assert.cpp \
   Atomic.cpp \
+  ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
   Frame.cpp \
   Group.cpp \

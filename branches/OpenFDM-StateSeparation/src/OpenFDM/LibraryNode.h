@@ -19,6 +19,7 @@ public:
   virtual ~LibraryNode();
 
   virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   // FIXME: Hmm, how do we map ports??
   // May be the Node just gets virtuals for ports???

@@ -3,6 +3,7 @@
  */
 
 #include "Group.h"
+#include "ConstNodeVisitor.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {
@@ -31,6 +32,12 @@ Group::~Group()
 
 void
 Group::accept(NodeVisitor& visitor)
+{
+  visitor.apply(*this);
+}
+
+void
+Group::accept(ConstNodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }

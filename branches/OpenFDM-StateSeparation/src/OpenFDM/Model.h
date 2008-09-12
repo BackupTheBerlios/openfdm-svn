@@ -29,6 +29,7 @@ public:
   virtual ~Model();
 
   virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   // FIXME: May be we want to collapse all state values in one
   // argument? May be it is sufficient to have a const and non const version??

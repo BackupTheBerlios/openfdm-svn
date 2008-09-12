@@ -15,6 +15,7 @@
 namespace OpenFDM {
 
 class NodeVisitor;
+class ConstNodeVisitor;
 
 class Node : public Object {
   OPENFDM_OBJECT(Node, Object);
@@ -23,6 +24,7 @@ public:
   virtual ~Node();
 
   virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   SharedPtr<const PortInfo> getPort(const PortId& portId) const;
   SharedPtr<const PortInfo> getPort(unsigned index) const;

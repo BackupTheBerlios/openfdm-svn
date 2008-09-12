@@ -3,6 +3,8 @@
  */
 
 #include "Node.h"
+
+#include "ConstNodeVisitor.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {
@@ -21,6 +23,12 @@ Node::~Node()
 
 void
 Node::accept(NodeVisitor& visitor)
+{
+  visitor.apply(*this);
+}
+
+void
+Node::accept(ConstNodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }

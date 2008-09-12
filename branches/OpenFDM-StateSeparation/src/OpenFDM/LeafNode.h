@@ -23,6 +23,7 @@ public:
   LeafNode(const std::string& name);
 
   virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   // Is done once before a model starts to live
   // Should have connect information here, can setup memory allocations and

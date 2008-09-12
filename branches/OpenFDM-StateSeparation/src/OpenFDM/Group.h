@@ -9,6 +9,7 @@
 #include <vector>
 #include <sstream>
 #include "AcceptorPortInfo.h"
+#include "ConstNodeVisitor.h"
 #include "Node.h"
 #include "NodeVisitor.h"
 #include "Object.h"
@@ -27,6 +28,8 @@ public:
   GroupAcceptorNode();
   virtual void accept(NodeVisitor& visitor)
   { visitor.apply(*this); }
+  virtual void accept(ConstNodeVisitor& visitor) const
+  { visitor.apply(*this); }
 // private:
   SharedPtr<ProxyProviderPortInfo> _groupInternalPort;
 //   WeakPtr<ProxyAcceptorPortInfo> _groupExternalPort;
@@ -36,6 +39,8 @@ class GroupProviderNode : public Node {
 public:
   GroupProviderNode();
   virtual void accept(NodeVisitor& visitor)
+  { visitor.apply(*this); }
+  virtual void accept(ConstNodeVisitor& visitor) const
   { visitor.apply(*this); }
 // private:
   SharedPtr<ProxyAcceptorPortInfo> _groupInternalPort;
@@ -76,6 +81,7 @@ public:
   virtual ~Group();
 
   virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   NodeId addChild(const SharedPtr<Node>& node);
   unsigned getNumChildren() const;

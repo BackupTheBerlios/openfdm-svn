@@ -3,6 +3,8 @@
  */
 
 #include "RigidBody.h"
+
+#include "ConstNodeVisitor.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {
@@ -25,5 +27,10 @@ RigidBody::accept(NodeVisitor& visitor)
   visitor.apply(*this);
 }
 
+void
+RigidBody::accept(ConstNodeVisitor& visitor) const
+{
+  visitor.apply(*this);
+}
 
 } // namespace OpenFDM

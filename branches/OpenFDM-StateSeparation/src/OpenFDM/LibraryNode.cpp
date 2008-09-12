@@ -4,6 +4,7 @@
 
 #include "LibraryNode.h"
 
+#include "ConstNodeVisitor.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {
@@ -23,6 +24,12 @@ LibraryNode::~LibraryNode()
 
 void
 LibraryNode::accept(NodeVisitor& visitor)
+{
+  visitor.apply(*this);
+}
+
+void
+LibraryNode::accept(ConstNodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }

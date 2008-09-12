@@ -19,6 +19,7 @@ public:
   virtual ~MechanicNode();
 
   virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   virtual void velocity(const ContinousStateValueVector&,
                         PortValueList&) const

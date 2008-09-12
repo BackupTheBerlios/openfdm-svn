@@ -18,6 +18,7 @@ public:
   virtual ~Interact();
 
   virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
 protected:
   MechanicInteractPort newMechanicInteractPort(const std::string& name)

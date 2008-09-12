@@ -4,6 +4,7 @@
 
 #include "Model.h"
 
+#include "ConstNodeVisitor.h"
 #include "LogStream.h"
 #include "NodeVisitor.h"
 
@@ -23,6 +24,12 @@ Model::~Model()
 
 void
 Model::accept(NodeVisitor& visitor)
+{
+  visitor.apply(*this);
+}
+
+void
+Model::accept(ConstNodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }
