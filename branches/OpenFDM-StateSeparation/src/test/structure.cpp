@@ -351,30 +351,29 @@ public:
     for (unsigned i = 0; i < getLeafNode()->getNumPorts(); ++i) {
       const ProviderPortInfo* providerPortInfo;
       providerPortInfo = getLeafNode()->getPort(i)->toProviderPortInfo();
-      if (providerPortInfo) {
-        PortValue* portValue = providerPortInfo->newValue();
-        mLeafContext.mPortValueList.setPortValue(i, portValue);
+      if (!providerPortInfo)
+        continue;
 
-        // Also set the port value to all connected ports
-        ProviderPortData* providerPortData = mPortData[i]->toProviderPortData();
-        OpenFDMAssert(providerPortData);
-
-        for (unsigned j = 0; j < providerPortData->_acceptorPortDataList.size();
-             ++j) {
-          SharedPtr<AcceptorPortData> acceptorPortData;
-          acceptorPortData = providerPortData->_acceptorPortDataList[j].lock();
-          // Ok, happens for proxy ports, these still show up here
-          if (acceptorPortData) {
-            SharedPtr<LeafInstance> leafInstance;
-            leafInstance = acceptorPortData->getLeafInstance();
-            OpenFDMAssert(leafInstance);
-            
-            OpenFDMAssert(acceptorPortData->getPortInfo());
-            unsigned index = acceptorPortData->getPortInfo()->getIndex();
-            leafInstance->
-              mLeafContext.mPortValueList.setPortValue(index, portValue);
-          }
-        }
+      PortValue* portValue = providerPortInfo->newValue();
+      mLeafContext.mPortValueList.setPortValue(i, portValue);
+      
+      // Also set the port value to all connected ports
+      ProviderPortData* providerPortData = mPortData[i]->toProviderPortData();
+      OpenFDMAssert(providerPortData);
+      
+      for (unsigned j = 0; j < providerPortData->_acceptorPortDataList.size(); ++j) {
+        SharedPtr<AcceptorPortData> acceptorPortData;
+        acceptorPortData = providerPortData->_acceptorPortDataList[j].lock();
+        // Ok, happens for proxy ports, these still show up here
+        if (!acceptorPortData)
+          continue;
+        SharedPtr<LeafInstance> leafInstance;
+        leafInstance = acceptorPortData->getLeafInstance();
+        OpenFDMAssert(leafInstance);
+        
+        OpenFDMAssert(acceptorPortData->getPortInfo());
+        unsigned index = acceptorPortData->getPortInfo()->getIndex();
+        leafInstance->mLeafContext.mPortValueList.setPortValue(index, portValue);
       }
     }
   }
