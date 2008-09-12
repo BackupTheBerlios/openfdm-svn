@@ -728,13 +728,13 @@ int main()
 //     mNode(node)
 //   { }
 
-//   unsigned getNumParents() const
-//   { return mParents.size(); }
+//   unsigned getNumParentNodes() const
+//   { return mParentNodes.size(); }
   
 //   WeakPtr<LibraryNode> getParent(unsigned i)
-//   { if (mParents.size() <= i) return 0; return mParents[i]; }
+//   { if (mParentNodes.size() <= i) return 0; return mParentNodes[i]; }
 //   WeakPtr<const LibraryNode> getParent(unsigned i) const
-//   { if (mParents.size() <= i) return 0; return mParents[i]; }
+//   { if (mParentNodes.size() <= i) return 0; return mParentNodes[i]; }
 
 //   SharedPtr<Node> getNode()
 //   { return mNode; }
@@ -745,7 +745,7 @@ int main()
 
 // private:
 //   SharedPtr<Node> mNode;
-//   std::vector<WeakPtr<LibraryNode> > mParents;
+//   std::vector<WeakPtr<LibraryNode> > mParentNodes;
 // };
 
 // class LibraryNode : public CompositeNode {
@@ -763,6 +763,8 @@ int main()
 //   { return mLibraryModel; }
 //   SharedPtr<const LibraryModel> getLibraryModel() const
 //   { return mLibraryModel; }
+//   void setLibraryModel(LibraryModel* libraryModel)
+//   { mLibraryModel = libraryModel; }
 
 // private:
 //   SharedPtr<LibraryModel> mLibraryModel;
