@@ -431,25 +431,25 @@ public:
 };
 
 
-class LeafInstanceCollector : public NodeVisitor {
+class LeafInstanceCollector : public ConstNodeVisitor {
 public:
 
-  virtual void apply(Node& node)
+  virtual void apply(const Node& node)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
-  virtual void apply(LeafNode& leaf)
+  virtual void apply(const LeafNode& leaf)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
-  virtual void apply(LibraryNode& libraryNode)
+  virtual void apply(const LibraryNode& libraryNode)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
 
-  virtual void apply(RootJoint& node)
+  virtual void apply(const RootJoint& node)
   {
     // Need to stor the root nodes to build up the spanning tree for the
     // mechanical system here.
-    apply(static_cast<Interact&>(node));
+    apply(static_cast<const Interact&>(node));
   }
 
   // Aussen acceptor, innen provider
-  virtual void apply(GroupAcceptorNode& leaf)
+  virtual void apply(const GroupAcceptorNode& leaf)
   {
     OpenFDMAssert(leaf.getPort(0));
     PortId portId = leaf.getPortId(0);
@@ -458,7 +458,7 @@ public:
     _leafPortDataMap[getCurrentNodeId()][portId] = pd;
   }
   // Aussen provider, innen acceptor
-  virtual void apply(GroupProviderNode& leaf)
+  virtual void apply(const GroupProviderNode& leaf)
   {
     OpenFDMAssert(leaf.getPort(0));
     PortId portId = leaf.getPortId(0);
@@ -467,7 +467,7 @@ public:
     _leafPortDataMap[getCurrentNodeId()][portId] = ad;
   }
 
-  void allocPortData(LeafInstance* leafInstance, LeafNode& leaf)
+  void allocPortData(LeafInstance* leafInstance, const LeafNode& leaf)
   {
     // FIXME: move to LeafInstance??
     for (unsigned i = 0; i < leaf.getNumPorts(); ++i) {
@@ -477,14 +477,14 @@ public:
     }
   }
 
-  virtual void apply(MechanicNode& node)
+  virtual void apply(const MechanicNode& node)
   {
     MechanicInstance* mechanicInstance = new MechanicInstance(&node);
     _leafInstanceList.push_back(mechanicInstance);
     _mechanicInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
   }
-  virtual void apply(Model& node)
+  virtual void apply(const Model& node)
   {
     ModelInstance* modelInstance = new ModelInstance(&node);
     _leafInstanceList.push_back(modelInstance);
@@ -492,7 +492,7 @@ public:
     allocPortData(modelInstance, node);
   }
 
-  virtual void apply(Group& group)
+  virtual void apply(const Group& group)
   {
     // Prepare a new leaf map for the child group
     LeafPortDataMap parentLeafPortDataMap;
@@ -712,7 +712,6 @@ int main()
 
   return 0;
 }
-
 
 // Kabelbaum <-> PortBundle ??? Original Kabelbaum == Cabel Bundle
 // Oder Cable Set <-> Port Set???
