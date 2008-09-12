@@ -303,6 +303,8 @@ public:
 
   LeafInstance(const LeafNode* leaf)
   { allocPorts(leaf); }
+  virtual ~LeafInstance()
+  { }
 
   LeafPortData* getPortData(const PortId& portId)
   {
