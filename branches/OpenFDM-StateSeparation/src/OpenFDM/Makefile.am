@@ -86,6 +86,7 @@ OpenFDMCoreHEADERS = \
   RealStateInfo.h \
   Referenced.h \
   RigidBody.h \
+  RootJoint.h \
   Rotation.h \
   SampleTime.h \
   ScopeLock.h \
@@ -138,6 +139,7 @@ OpenFDMCoreSOURCES = \
   PortInfo.cpp \
   PortValue.cpp \
   RigidBody.cpp \
+  RootJoint.cpp \
   SampleTime.cpp \
   StateValue.cpp \
   Time.cpp \

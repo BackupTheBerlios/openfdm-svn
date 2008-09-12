@@ -11,6 +11,8 @@
 #include "MechanicNode.h"
 #include "Model.h"
 #include "RigidBody.h"
+#include "RootJoint.h"
+#include "Interact.h"
 
 namespace OpenFDM {
 
@@ -75,6 +77,12 @@ void
 NodeVisitor::apply(Interact& node)
 {
   apply(static_cast<MechanicNode&>(node));
+}
+
+void
+NodeVisitor::apply(RootJoint& node)
+{
+  apply(static_cast<Interact&>(node));
 }
 
 } // namespace OpenFDM

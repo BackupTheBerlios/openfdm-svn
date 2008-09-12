@@ -15,6 +15,7 @@
 #include <OpenFDM/RealOutputPort.h>
 #include <OpenFDM/MechanicBodyPort.h>
 #include <OpenFDM/MechanicInteractPort.h>
+#include <OpenFDM/RootJoint.h>
 
 #include <OpenFDM/StateInfo.h>
 #include <OpenFDM/StateValue.h>
@@ -439,6 +440,13 @@ public:
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
   virtual void apply(LibraryNode& libraryNode)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
+
+  virtual void apply(RootJoint& node)
+  {
+    // Need to stor the root nodes to build up the spanning tree for the
+    // mechanical system here.
+    apply(static_cast<Interact&>(node));
+  }
 
   // Aussen acceptor, innen provider
   virtual void apply(GroupAcceptorNode& leaf)

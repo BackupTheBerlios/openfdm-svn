@@ -16,6 +16,7 @@ class LeafNode;
 class Model;
 class MechanicNode;
 class RigidBody;
+class RootJoint;
 class Interact;
 
 class NodeVisitor {
@@ -34,8 +35,11 @@ public:
   virtual void apply(Model&);
 
   virtual void apply(MechanicNode&);
+
   virtual void apply(RigidBody&);
+
   virtual void apply(Interact&);
+  virtual void apply(RootJoint&);
 };
 
 } // namespace OpenFDM
