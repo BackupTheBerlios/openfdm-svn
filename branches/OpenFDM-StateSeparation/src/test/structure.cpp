@@ -708,12 +708,15 @@ int main()
 // Kabelbaum <-> PortBundle ??? Original Kabelbaum == Cabel Bundle
 // Oder Cable Set <-> Port Set???
 
-// class CompositeNode : public Object /*??*/ {
+// class CompositeNode : public Node {
 //   // Might be something that behaves like a model, but depending on the input
 //   // and output port types issues different final leafs scheduler ...
 
 //   // FIXME: is it possible to make 'Library models' from that one?
 //   // would be good, would simplify groups enormous
+// };
+
+// class Group : public CompositeNode {
 // };
 
 // class LibraryNode;
@@ -737,13 +740,15 @@ int main()
 //   { return mNode; }
 //   SharedPtr<const Node> getNode() const
 //   { return mNode; }
+//   void setNode(Node* node)
+//   { mNode = node; }
 
 // private:
 //   SharedPtr<Node> mNode;
 //   std::vector<WeakPtr<LibraryNode> > mParents;
 // };
 
-// class LibraryNode : public Node {
+// class LibraryNode : public CompositeNode {
 // public:
 //   LibraryNode(const std::string& name, LibraryModel* libraryModel = 0) :
 //     Node(name),
