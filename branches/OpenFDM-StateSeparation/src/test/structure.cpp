@@ -346,6 +346,45 @@ public:
     }
   }
 
+  bool allocAndConnectProviderPortValues()
+  {
+    for (unsigned i = 0; i < getLeafNode()->getNumPorts(); ++i) {
+      const ProviderPortInfo* providerPortInfo;
+      providerPortInfo = getLeafNode()->getPort(i)->toProviderPortInfo();
+      if (providerPortInfo) {
+        PortValue* portValue = providerPortInfo->newValue();
+        mLeafContext.mPortValueList.setPortValue(i, portValue);
+
+        // Also set the port value to all connected ports
+        ProviderPortData* providerPortData = mPortData[i]->toProviderPortData();
+        OpenFDMAssert(providerPortData);
+
+        for (unsigned j = 0; j < providerPortData->_acceptorPortDataList.size();
+             ++j) {
+          SharedPtr<AcceptorPortData> acceptorPortData;
+          acceptorPortData = providerPortData->_acceptorPortDataList[j].lock();
+          // Ok, happens for proxy ports, these still show up here
+          if (acceptorPortData) {
+            SharedPtr<LeafInstance> leafInstance;
+            leafInstance = acceptorPortData->getLeafInstance();
+            OpenFDMAssert(leafInstance);
+            
+            OpenFDMAssert(acceptorPortData->getPortInfo());
+            unsigned index = acceptorPortData->getPortInfo()->getIndex();
+            leafInstance->
+              mLeafContext.mPortValueList.setPortValue(index, portValue);
+          }
+        }
+      }
+    }
+  }
+  bool alloc()
+  {
+    return getLeafNode()->alloc(mLeafContext);
+  }
+
+  LeafContext mLeafContext;
+
 private:
   void allocPorts(const Node* node)
   {
@@ -562,7 +601,38 @@ public:
     _modelInstanceList.swap(sortedModelInstanceList);
   }
 
-  
+  typedef std::vector<SharedPtr<ModelInstance> > ModelContextList;
+
+  bool
+  getModelContextList(ModelContextList& modelContexts)
+  {
+    modelContexts.resize(0);
+
+    ModelContextList modelContextList;
+    modelContextList.reserve(_modelInstanceList.size());
+    ModelInstanceList::const_iterator i;
+    for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i)
+      modelContextList.push_back((*i));
+
+    ModelContextList::const_iterator j;
+    for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
+      if (!(*j)->allocAndConnectProviderPortValues()) {
+        Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
+        return false;
+      }
+    }
+
+    for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
+      if (!(*j)->alloc()) {
+        Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
+        return false;
+      }
+    }
+
+    modelContexts.swap(modelContextList);
+    return true;
+  }
+
   void pushNodeId(const Group::NodeId& nodeId)
   { _nodeIdStack.push_back(nodeId); }
   void popNodeId()
@@ -627,6 +697,9 @@ int main()
        ++i) {
     (*i)->print();
   }
+
+  LeafInstanceCollector::ModelContextList modelContextList;
+  nodeInstanceCollector.getModelContextList(modelContextList);
 
   return 0;
 }
