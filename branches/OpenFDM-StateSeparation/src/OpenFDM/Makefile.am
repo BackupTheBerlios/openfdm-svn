@@ -224,7 +224,8 @@ OpenFDMModelsHEADERS = \
 OpenFDMModelsSOURCES = \
   Delay.cpp \
   Gain.cpp \
-  Integrator.cpp
+  Integrator.cpp \
+  Output.cpp
 
 #   AeroForce.cpp \
 #   AirSpring.cpp \

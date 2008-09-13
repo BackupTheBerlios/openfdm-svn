@@ -14,6 +14,7 @@ class GroupProviderNode;
 class LibraryNode;
 class LeafNode;
 class Model;
+class Output;
 class MechanicNode;
 class RigidBody;
 class RootJoint;
@@ -33,6 +34,7 @@ public:
 
   virtual void apply(LeafNode&);
   virtual void apply(Model&);
+  virtual void apply(Output&);
 
   virtual void apply(MechanicNode&);
 

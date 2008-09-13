@@ -16,15 +16,16 @@ public:
   virtual ~Output(void);
   
   /// Double dispatch helper for the system visitor
-  virtual void accept(ModelVisitor& visitor);
-  /// Double dispatch helper for the system visitor
-//   virtual void accept(ConstModelVisitor& visitor) const;
+  virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual const Output* toOutput(void) const;
-  virtual Output* toOutput(void);
-
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  virtual void output(const DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
+  // FIXME: dependsOn semantic is broken. May be some kind of
+  // needPortInOutput in the port info???
+  virtual bool dependsOn(const PortId&, const PortId&) const
+  { return true; }
 
   class Callback : public WeakReferenced {
   public:
@@ -42,7 +43,7 @@ public:
   void setOutputName(const std::string& outputName);
 
 private:
-  RealPortHandle mInputPort;
+  RealInputPort mInputPort;
   SharedPtr<Callback> mCallback;
   real_type mOutputGain;
   std::string mOutputName;

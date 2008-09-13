@@ -3,7 +3,9 @@
  */
 
 #include "Output.h"
-#include "ModelVisitor.h"
+#include "ConstNodeVisitor.h"
+#include "LeafContext.h"
+#include "NodeVisitor.h"
 
 namespace OpenFDM {
 
@@ -18,11 +20,9 @@ Output::Callback::~Callback()
 
 Output::Output(const std::string& name) :
   Model(name),
+  mInputPort(newRealInputPort("input")),
   mOutputGain(1)
 {
-  setDirectFeedThrough(true);
-  setNumInputPorts(1);
-  setInputPortName(0, "input");
 }
 
 Output::~Output(void)
@@ -30,48 +30,25 @@ Output::~Output(void)
 }
 
 void
-Output::accept(ModelVisitor& visitor)
+Output::accept(NodeVisitor& visitor)
 {
   visitor.apply(*this);
 }
 
-bool
-Output::init(void)
+void
+Output::accept(ConstNodeVisitor& visitor) const
 {
-  mInputPort = getInputPort(0)->toRealPortHandle();
-  if (!mInputPort.isConnected()) {
-    Log(Model, Error) << "Initialization of Output model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-//   if (!mCallback) {
-//     Log(Model, Error) << "Initialization of Output model \"" << getName()
-//                       << "\" failed: Output Callback not set!" << endl;
-//     return false;
-//   }
-
-  return Model::init();
-}
-
-const Output*
-Output::toOutput(void) const
-{
-  return this;
-}
-
-Output*
-Output::toOutput(void)
-{
-  return this;
+  visitor.apply(*this);
 }
 
 void
-Output::output(const TaskInfo&)
+Output::output(const DiscreteStateValueVector&,
+               const ContinousStateValueVector&,
+               PortValueList& portValues) const
 {
   if (!mCallback)
     return;
-  mCallback->setValue(mOutputGain*mInputPort.getRealValue());
+  mCallback->setValue(mOutputGain*portValues[mInputPort]);
 }
 
 Output::Callback*
