@@ -77,6 +77,62 @@ namespace OpenFDM {
 /// FIXME: IMO THIS MUST WORK THIS WAY
 ///
 
+
+
+///
+/// ----------------
+/// | LeafInstance |
+/// ----------------
+///             | |     ------------
+///             | ----->| PortData |
+///             |       ------------
+///             |       --------------------------------
+///             ------->| ModelContext/MechanicContext |
+///                     --------------------------------
+///
+/// The LeafInstanceCollector walks the graph of models and collects
+/// the leaf nodes in the system. For each leaf node there is a
+/// LeafInstance class. Each LeafInstance has a list of PortData pointers
+/// that is used to connect the Ports of leafs. Also there is a LeafContext
+/// in each instance that is later needed to run the model.
+///
+
+class ModelContext : public Referenced {
+public:
+  ModelContext(const Model* model) :
+    mModel(model)
+  { }
+
+  bool alloc()
+  { return mModel->alloc(mLeafContext); }
+
+  SharedPtr<const Model> mModel;
+  LeafContext mLeafContext;
+
+private:
+  ModelContext();
+  ModelContext(const ModelContext&);
+  ModelContext& operator=(const ModelContext&);
+};
+
+class MechanicContext : public Referenced {
+public:
+  MechanicContext(const MechanicNode* mechanicNode) :
+    mMechanicNode(mechanicNode)
+  { }
+
+  bool alloc()
+  { return mMechanicNode->alloc(mLeafContext); }
+
+  SharedPtr<const MechanicNode> mMechanicNode;
+  LeafContext mLeafContext;
+
+private:
+  MechanicContext();
+  MechanicContext(const MechanicContext&);
+  MechanicContext& operator=(const MechanicContext&);
+};
+
 class LeafInstance : public WeakReferenced {
 public:
   struct LeafPortData;
@@ -302,6 +358,7 @@ public:
   }
 
   virtual const LeafNode* getLeafNode() const = 0;
+  virtual void setPortValue(unsigned, PortValue*) const = 0;
 
   // Return true if this leaf directly depends on one of leafInstance outputs
   bool dependsOn(LeafInstance* leafInstance)
@@ -341,7 +398,7 @@ public:
         continue;
 
       PortValue* portValue = providerPortInfo->newValue();
-      mLeafContext.mPortValueList.setPortValue(i, portValue);
+      setPortValue(i, portValue);
       
       // Also set the port value to all connected ports
       ProviderPortData* providerPortData = mPortData[i]->toProviderPortData();
@@ -359,16 +416,10 @@ public:
         
         OpenFDMAssert(acceptorPortData->getPortInfo());
         unsigned index = acceptorPortData->getPortInfo()->getIndex();
-        leafInstance->mLeafContext.mPortValueList.setPortValue(index, portValue);
+        leafInstance->setPortValue(index, portValue);
       }
     }
   }
-  bool alloc()
-  {
-    return getLeafNode()->alloc(mLeafContext);
-  }
-
-  LeafContext mLeafContext;
 
 private:
   void allocPorts(const Node* node)
@@ -393,26 +444,38 @@ class ModelInstance : public LeafInstance {
 public:
   ModelInstance(const Model* model) :
     LeafInstance(model),
-    mModel(model)
+    mModelContext(new ModelContext(model))
   { }
 
   virtual const Model* getLeafNode() const
-  { return mModel; }
+  { return mModelContext->mModel; }
 
-  SharedPtr<const Model> mModel;
+  virtual void setPortValue(unsigned i, PortValue* portValue) const
+  { mModelContext->mLeafContext.mPortValueList.setPortValue(i, portValue); }
+
+  bool alloc()
+  { return mModelContext->alloc(); }
+
+  SharedPtr<ModelContext> mModelContext;
 };
 
 class MechanicInstance : public LeafInstance {
 public:
   MechanicInstance(const MechanicNode* mechanicNode) :
     LeafInstance(mechanicNode),
-    mMechanicNode(mechanicNode)
+    mMechanicContext(new MechanicContext(mechanicNode))
   { }
 
   virtual const MechanicNode* getLeafNode() const
-  { return mMechanicNode; }
+  { return mMechanicContext->mMechanicNode; }
 
-  SharedPtr<const MechanicNode> mMechanicNode;
+  virtual void setPortValue(unsigned i, PortValue* portValue) const
+  { mMechanicContext->mLeafContext.mPortValueList.setPortValue(i, portValue); }
+
+  bool alloc()
+  { return mMechanicContext->alloc(); }
+
+  SharedPtr<MechanicContext> mMechanicContext;
 };
 
 
