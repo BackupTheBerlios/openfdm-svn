@@ -18,9 +18,10 @@ Output::Callback::~Callback()
 {
 }
 
-Output::Output(const std::string& name) :
+Output::Output(const std::string& name, Output::Callback* callback) :
   Model(name),
   mInputPort(newRealInputPort("input")),
+  mCallback(callback),
   mOutputGain(1)
 {
 }

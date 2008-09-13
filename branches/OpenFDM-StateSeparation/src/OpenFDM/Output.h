@@ -12,7 +12,13 @@ namespace OpenFDM {
 class Output : public Model {
   OPENFDM_OBJECT(Output, Model);
 public:
-  Output(const std::string& name);
+  class Callback : public WeakReferenced {
+  public:
+    virtual ~Callback();
+    virtual void setValue(real_type value) = 0;
+  };
+
+  Output(const std::string& name, Callback* callback = 0);
   virtual ~Output(void);
   
   /// Double dispatch helper for the system visitor
@@ -26,12 +32,6 @@ public:
   // needPortInOutput in the port info???
   virtual bool dependsOn(const PortId&, const PortId&) const
   { return true; }
-
-  class Callback : public WeakReferenced {
-  public:
-    virtual ~Callback();
-    virtual void setValue(real_type value) = 0;
-  };
 
   Callback* getCallback(void) const;
   void setCallback(Callback* callback);

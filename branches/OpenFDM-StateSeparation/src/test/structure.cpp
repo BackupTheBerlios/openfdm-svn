@@ -40,6 +40,7 @@
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/Integrator.h>
 #include <OpenFDM/Delay.h>
+#include <OpenFDM/Output.h>
 
 #include <OpenFDM/Group.h>
 
@@ -75,22 +76,6 @@ namespace OpenFDM {
 /// In the best case this time matches the alread present output time.
 /// FIXME: IMO THIS MUST WORK THIS WAY
 ///
-
-class Print : public Model {
-public:
-  Print(const std::string& name) :
-    Model(name),
-    mInputPort(newRealInputPort("input"))
-  { }
-  virtual void output(const DiscreteStateValueVector&,
-                      const ContinousStateValueVector&,
-                      PortValueList& portValues) const
-  { std::cout << portValues[mInputPort] << std::endl; }
-  virtual bool dependsOn(const PortId&, const PortId&) const
-  { return false; }
-private:
-  RealInputPort mInputPort;
-};
 
 class LeafInstance : public WeakReferenced {
 public:
@@ -668,22 +653,28 @@ private:
 
 using namespace OpenFDM;
 
+class PrintOutput : public Output::Callback {
+public:
+  virtual void setValue(real_type value)
+  { std::cout << value << std::endl; }
+};
+
 int main()
 {
   SharedPtr<Group> group = new Group("G0");
   Group::NodeId gain = group->addChild(new Gain("gain"));
   Group::NodeId integrator1 = group->addChild(new Integrator("I1"));
   Group::NodeId integrator2 = group->addChild(new Integrator("I2"));
-  Group::NodeId print = group->addChild(new Print("P"));
+  Group::NodeId output = group->addChild(new Output("O", new PrintOutput));
   Group::NodeId delay = group->addChild(new Delay("D"));
-  Group::NodeId printDelay = group->addChild(new Print("PD"));
+  Group::NodeId outputDelay = group->addChild(new Output("OD", new PrintOutput));
 
   group->connect(integrator1, "output", integrator2, "input");
   group->connect(integrator2, "output", gain, "input");
   group->connect(gain, "output", integrator1, "input");
-  group->connect(integrator2, "output", print, "input");
+  group->connect(integrator2, "output", output, "input");
   group->connect(gain, "output", delay, "input");
-  group->connect(delay, "output", printDelay, "input");
+  group->connect(delay, "output", outputDelay, "input");
 
   //FIXME: broken naming
 //   Group::NodeId groupOutputNode = group->addAcceptorPort();
@@ -694,10 +685,10 @@ int main()
   Group::NodeId child0 = topGroup->addChild(group);
   Group::NodeId child1 = topGroup->addChild(group);
 
-  Group::NodeId print0 = topGroup->addChild(new Print("P2"));
-  topGroup->connect(child0, 0, print0, 0);
-  Group::NodeId print1 = topGroup->addChild(new Print("P3"));
-  topGroup->connect(child1, 0, print1, 0);
+  Group::NodeId output0 = topGroup->addChild(new Output("O2", new PrintOutput));
+  topGroup->connect(child0, 0, output0, 0);
+  Group::NodeId output1 = topGroup->addChild(new Output("O3", new PrintOutput));
+  topGroup->connect(child1, 0, output1, 0);
 
   /////////////////////////////////////////////////
 
