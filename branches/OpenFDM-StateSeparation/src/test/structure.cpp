@@ -105,6 +105,20 @@ public:
 
   bool alloc()
   { return mModel->alloc(mLeafContext); }
+  void init()
+  { mModel->init(mLeafContext.mDiscreteState, mLeafContext.mContinousState); }
+  void output()
+  { mModel->output(mLeafContext.mDiscreteState, mLeafContext.mContinousState,
+                   mLeafContext.mPortValueList); }
+  void update()
+  { mModel->update(mLeafContext.mDiscreteState, mLeafContext.mContinousState,
+                   mLeafContext.mPortValueList); }
+
+//   void derivative()
+//   { mModel->derivative(mLeafContext.mDiscreteState,
+//                        mLeafContext.mContinousState,
+//                        mLeafContext.mPortValueList,
+//                        mLeafContext.mContinousStateDerivative); }
 
   SharedPtr<const Model> mModel;
   LeafContext mLeafContext;
@@ -455,6 +469,12 @@ public:
 
   bool alloc()
   { return mModelContext->alloc(); }
+  void init()
+  { mModelContext->init(); }
+  void output()
+  { mModelContext->output(); }
+  void update()
+  { mModelContext->update(); }
 
   SharedPtr<ModelContext> mModelContext;
 };
@@ -690,6 +710,12 @@ public:
         Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
         return false;
       }
+    }
+
+    // FIXME is here just for curiousity :)
+    for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
+      (*j)->init();
+      (*j)->output();
     }
 
     modelContexts.swap(modelContextList);
