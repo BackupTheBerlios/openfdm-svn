@@ -64,6 +64,7 @@ OpenFDMCoreHEADERS = \
   MPFRFloat.h \
   Newton.h \
   Node.h \
+  NodeContext.h \
   NodeVisitor.h \
   NumericPortValue.h \
   NumericAcceptorPortInfo.h \

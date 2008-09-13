@@ -7,16 +7,12 @@
 
 #include "ContinousStateValueVector.h"
 #include "DiscreteStateValueVector.h"
-#include "PortValueList.h"
+#include "NodeContext.h"
 
 namespace OpenFDM {
 
-class LeafContext {
+class LeafContext : public NodeContext {
 public:
-  // PortValues
-  PortValueList mPortValueList;
-  // Hmm, port connect information?? How to store??
-  
   // Continous States
   ContinousStateValueVector mContinousState;
   // Discrete States
@@ -24,11 +20,8 @@ public:
 
   // Task id's ???
 
-  // Output Watch, used to monitor outputs during simulation
-
-  // May be complete path in the system?
-
   // functors to the operations to do??
+
 };
 
 } // namespace OpenFDM

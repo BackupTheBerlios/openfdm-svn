@@ -28,6 +28,8 @@
 #include <OpenFDM/ContinousStateValueVector.h>
 #include <OpenFDM/DiscreteStateValueVector.h>
 
+#include <OpenFDM/SampleTime.h>
+
 #include <OpenFDM/BoolStateInfo.h>
 #include <OpenFDM/RealStateInfo.h>
 #include <OpenFDM/MatrixStateInfo.h>
@@ -81,47 +83,119 @@ namespace OpenFDM {
 
 ///
 /// ----------------
-/// | LeafInstance |
+/// | NodeInstance |
 /// ----------------
-///             | |     ------------
-///             | ----->| PortData |
-///             |       ------------
-///             |       --------------------------------
-///             ------->| ModelContext/MechanicContext |
-///                     --------------------------------
+///             | |     --------
+///             | ----->| Node |
+///             |       --------
+///             |       ---------------
+///             ------->| NodeContext |
+///                     ---------------
 ///
-/// The LeafInstanceCollector walks the graph of models and collects
-/// the leaf nodes in the system. For each leaf node there is a
-/// LeafInstance class. Each LeafInstance has a list of PortData pointers
-/// that is used to connect the Ports of leafs. Also there is a LeafContext
-/// in each instance that is later needed to run the model.
+/// The NodeInstance is used to present the user a handle to the simulation
+/// models runtime data. Each instance has an execution context and a pointer
+/// to the actual node.
 ///
+/// For model execution we have a list of ModelContexs and a list of
+/// MechanicContexts. Both of them are derived from the NodeContext from above.
+///
+/// To connect the ports and propagate the port values over the NodeContexts
+/// there must be a PortData like structure that is only built during simulation
+/// model initialization.
 
-class ModelContext : public Referenced {
+/// A NodeInstance represents an effictive model node in a ready to run
+/// System. You can access the Nodes Ports values for example.
+/// This class is meant to show up in the user interface of this simulation.
+class NodeInstance : public WeakReferenced {
+public:
+  virtual ~NodeInstance() {}
+
+  /// The actual Node this NodeInstance stems from
+  const Node& getNode() const
+  { return getNodeContext().getNode(); }
+
+  /// FIXME: put this to some global place
+//   typedef std::vector<SharedPtr<const Node> > NodePath;
+//   const NodePath& getNodePath() const { return mNodePath; }
+//   NodePath mNodePath;
+
+//   /// Set the sample times this node will run on
+//   void setSampleTimeSet(const SampleTimeSet& sampleTimeSet)
+//   { mSampleTimeSet = sampleTimeSet; }
+//   /// Get the sample times this node will run on
+//   const SampleTimeSet& getSampleTimeSet() const
+//   { return mSampleTimeSet; }
+
+protected:
+  NodeInstance() {}
+
+  /// The node context that belongs to this instance.
+  virtual NodeContext& getNodeContext() = 0;
+  virtual const NodeContext& getNodeContext() const = 0;
+
+private:
+  NodeInstance(const NodeInstance&);
+  NodeInstance& operator=(const NodeInstance&);
+
+//   /// The sample times this node will run on
+//   SampleTimeSet mSampleTimeSet;
+};
+
+// typedef std::vector<SharedPtr<NodeInstance> > NodeInstanceList;
+// typedef std::vector<SharedPtr<const NodeInstance> > ConstNodeInstanceList;
+
+
+
+
+////////////////////////////////////////////////////////////////////////////
+
+/// This one will not show up in any execution list, but will be used
+/// to fill NodeContext's for Node's that have nothing to execute,
+/// should be reflected to the user of the simulation system. Group's
+/// inputs ad outputs and their input and output models are such examples.
+class GenericNodeContext : public NodeContext {
+public:
+  GenericNodeContext(const Node* node) :
+    mNode(node)
+  { }
+
+  virtual const Node& getNode() const
+  { return *mNode; }
+
+private:
+  GenericNodeContext();
+  GenericNodeContext(const GenericNodeContext&);
+  GenericNodeContext& operator=(const GenericNodeContext&);
+
+  SharedPtr<const Node> mNode;
+};
+
+//// This one is used to execute the simulation system
+class ModelContext : public LeafContext {
 public:
   ModelContext(const Model* model) :
     mModel(model)
   { }
 
+  virtual const Node& getNode() const
+  { return *mModel; }
+
   bool alloc()
-  { return mModel->alloc(mLeafContext); }
+  { return mModel->alloc(*this); }
   void init()
-  { mModel->init(mLeafContext.mDiscreteState, mLeafContext.mContinousState); }
+  { mModel->init(mDiscreteState, mContinousState); }
   void output()
-  { mModel->output(mLeafContext.mDiscreteState, mLeafContext.mContinousState,
-                   mLeafContext.mPortValueList); }
+  { mModel->output(mDiscreteState, mContinousState, mPortValueList); }
   void update()
-  { mModel->update(mLeafContext.mDiscreteState, mLeafContext.mContinousState,
-                   mLeafContext.mPortValueList); }
+  { mModel->update(mDiscreteState, mContinousState, mPortValueList); }
 
 //   void derivative()
-//   { mModel->derivative(mLeafContext.mDiscreteState,
-//                        mLeafContext.mContinousState,
-//                        mLeafContext.mPortValueList,
-//                        mLeafContext.mContinousStateDerivative); }
+//   { mModel->derivative(mDiscreteState,
+//                        mContinousState,
+//                        mPortValueList,
+//                        mContinousStateDerivative); }
 
   SharedPtr<const Model> mModel;
-  LeafContext mLeafContext;
 
 private:
   ModelContext();
@@ -129,17 +203,21 @@ private:
   ModelContext& operator=(const ModelContext&);
 };
 
-class MechanicContext : public Referenced {
+class MechanicContext : public LeafContext {
 public:
   MechanicContext(const MechanicNode* mechanicNode) :
     mMechanicNode(mechanicNode)
   { }
 
+  virtual const Node& getNode() const
+  { return *mMechanicNode; }
+
   bool alloc()
-  { return mMechanicNode->alloc(mLeafContext); }
+  { return mMechanicNode->alloc(*this); }
+  void init()
+  { mMechanicNode->init(mDiscreteState, mContinousState); }
 
   SharedPtr<const MechanicNode> mMechanicNode;
-  LeafContext mLeafContext;
 
 private:
   MechanicContext();
@@ -147,7 +225,10 @@ private:
   MechanicContext& operator=(const MechanicContext&);
 };
 
-class LeafInstance : public WeakReferenced {
+
+
+
+class LeafInstance : public NodeInstance {
 public:
   struct LeafPortData;
   struct AcceptorPortData;
@@ -372,7 +453,9 @@ public:
   }
 
   virtual const LeafNode* getLeafNode() const = 0;
-  virtual void setPortValue(unsigned, PortValue*) const = 0;
+
+  void setPortValue(unsigned i, PortValue* portValue)
+  { getNodeContext().getPortValueList().setPortValue(i, portValue); }
 
   // Return true if this leaf directly depends on one of leafInstance outputs
   bool dependsOn(LeafInstance* leafInstance)
@@ -461,20 +544,13 @@ public:
     mModelContext(new ModelContext(model))
   { }
 
+  virtual ModelContext& getNodeContext()
+  { return *mModelContext; }
+  virtual const ModelContext& getNodeContext() const
+  { return *mModelContext; }
+
   virtual const Model* getLeafNode() const
   { return mModelContext->mModel; }
-
-  virtual void setPortValue(unsigned i, PortValue* portValue) const
-  { mModelContext->mLeafContext.mPortValueList.setPortValue(i, portValue); }
-
-  bool alloc()
-  { return mModelContext->alloc(); }
-  void init()
-  { mModelContext->init(); }
-  void output()
-  { mModelContext->output(); }
-  void update()
-  { mModelContext->update(); }
 
   SharedPtr<ModelContext> mModelContext;
 };
@@ -486,14 +562,13 @@ public:
     mMechanicContext(new MechanicContext(mechanicNode))
   { }
 
+  virtual MechanicContext& getNodeContext()
+  { return *mMechanicContext; }
+  virtual const MechanicContext& getNodeContext() const
+  { return *mMechanicContext; }
+
   virtual const MechanicNode* getLeafNode() const
   { return mMechanicContext->mMechanicNode; }
-
-  virtual void setPortValue(unsigned i, PortValue* portValue) const
-  { mMechanicContext->mLeafContext.mPortValueList.setPortValue(i, portValue); }
-
-  bool alloc()
-  { return mMechanicContext->alloc(); }
 
   SharedPtr<MechanicContext> mMechanicContext;
 };
@@ -706,7 +781,7 @@ public:
     }
 
     for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
-      if (!(*j)->alloc()) {
+      if (!(*j)->getNodeContext().alloc()) {
         Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
         return false;
       }
@@ -714,8 +789,8 @@ public:
 
     // FIXME is here just for curiousity :)
     for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
-      (*j)->init();
-      (*j)->output();
+      (*j)->getNodeContext().init();
+      (*j)->getNodeContext().output();
     }
 
     modelContexts.swap(modelContextList);
