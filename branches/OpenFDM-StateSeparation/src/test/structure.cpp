@@ -441,13 +441,6 @@ public:
   virtual void apply(const LibraryNode& libraryNode)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
 
-  virtual void apply(const RootJoint& node)
-  {
-    // Need to stor the root nodes to build up the spanning tree for the
-    // mechanical system here.
-    apply(static_cast<const Interact&>(node));
-  }
-
   // Aussen acceptor, innen provider
   virtual void apply(const GroupAcceptorNode& leaf)
   {
@@ -477,6 +470,16 @@ public:
     }
   }
 
+  virtual void apply(const RootJoint& node)
+  {
+    // Need to stor the root nodes to build up the spanning tree for the
+    // mechanical system here.
+    MechanicInstance* mechanicInstance = new MechanicInstance(&node);
+    _leafInstanceList.push_back(mechanicInstance);
+//     _mechanicInstanceList.push_back(mechanicInstance);
+    _rootJointInstanceList.push_back(mechanicInstance);
+    allocPortData(mechanicInstance, node);
+  }
   virtual void apply(const MechanicNode& node)
   {
     MechanicInstance* mechanicInstance = new MechanicInstance(&node);
@@ -579,6 +582,9 @@ public:
   ModelInstanceList _modelInstanceList;
   typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
   MechanicInstanceList _mechanicInstanceList;
+//   typedef std::list<SharedPtr<RootJointInstance> > RootJointInstanceList;
+  typedef std::list<SharedPtr<MechanicInstance> > RootJointInstanceList;
+  RootJointInstanceList _rootJointInstanceList;
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
