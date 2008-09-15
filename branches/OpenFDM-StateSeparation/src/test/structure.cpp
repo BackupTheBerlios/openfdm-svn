@@ -126,10 +126,15 @@ public:
 //   const SampleTimeSet& getSampleTimeSet() const
 //   { return mSampleTimeSet; }
 
+  PortValueList& getPortValueList()
+  { return getNodeContext().getPortValueList(); }
+  const PortValueList& getPortValueList() const
+  { return getNodeContext().getPortValueList(); }
+
+
 protected:
   NodeInstance() {}
 
-public: // FIXME????
   /// The node context that belongs to this instance.
   virtual NodeContext& getNodeContext() = 0;
   virtual const NodeContext& getNodeContext() const = 0;
@@ -177,12 +182,14 @@ public:
     mNodeContext(nodeContext)
   { }
 
+protected:
   /// The node context that belongs to this instance.
   virtual NodeContext& getNodeContext()
   { return *mNodeContext; }
   virtual const NodeContext& getNodeContext() const
   { return *mNodeContext; }
 
+private:
   SharedPtr<NodeContext> mNodeContext;
 };
 
@@ -213,12 +220,12 @@ public:
 //                        mPortValueList,
 //                        mContinousStateDerivative); }
 
-  SharedPtr<const Model> mModel;
-
 private:
   ModelContext();
   ModelContext(const ModelContext&);
   ModelContext& operator=(const ModelContext&);
+
+  SharedPtr<const Model> mModel;
 };
 
 class ModelInstance : public NodeInstance {
@@ -227,11 +234,13 @@ public:
     mModelContext(new ModelContext(model))
   { }
 
+// protected: // FIXME
   virtual ModelContext& getNodeContext()
   { return *mModelContext; }
   virtual const ModelContext& getNodeContext() const
   { return *mModelContext; }
 
+private:
   SharedPtr<ModelContext> mModelContext;
 };
 
@@ -266,11 +275,13 @@ public:
     mMechanicContext(new MechanicContext(mechanicNode))
   { }
 
+protected:
   virtual MechanicContext& getNodeContext()
   { return *mMechanicContext; }
   virtual const MechanicContext& getNodeContext() const
   { return *mMechanicContext; }
 
+private:
   SharedPtr<MechanicContext> mMechanicContext;
 };
 
@@ -583,7 +594,7 @@ struct PortDataHelper {
       return true;
     }
     void setPortValue(unsigned i, PortValue* portValue)
-    { mNodeInstance->getNodeContext().getPortValueList().setPortValue(i, portValue); }
+    { mNodeInstance->getPortValueList().setPortValue(i, portValue); }
 
     // Return true if this leaf directly depends on one of leafInstance outputs
     bool dependsOn(PortDataList* portDataList)
