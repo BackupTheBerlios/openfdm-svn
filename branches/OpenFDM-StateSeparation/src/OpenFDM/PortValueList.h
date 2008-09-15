@@ -80,6 +80,12 @@ public:
   {
     setPortValue(port.getPortIndex(), new NumericPortValue(size));
   }
+  const PortValue* getPortValue(unsigned idx) const
+  {
+    if (mPortValueVector.size() <= idx)
+      return 0;
+    return mPortValueVector[idx];
+  }
 
 protected:
   PortValueVector mPortValueVector;

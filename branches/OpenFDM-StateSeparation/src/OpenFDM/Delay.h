@@ -28,8 +28,6 @@ public:
                       ContinousStateValueVector&,
                       const PortValueList& portValues) const;
 
-  virtual bool dependsOn(const PortId& in, const PortId& out) const;
-
   /// The delay number of timeslices
   unsigned getDelay(void) const;
   void setDelay(unsigned delay);

@@ -15,9 +15,9 @@ BEGIN_OPENFDM_OBJECT_DEF(Integrator, Model)
 
 Integrator::Integrator(const std::string& name = std::string()) :
   Model(name),
-  mInputPort(newMatrixInputPort("input")),
+  mInputPort(newMatrixInputPort("input", false)),
   mOutputPort(newMatrixOutputPort("output")),
-  mInitialValuePort(newMatrixInputPort("initialValue"))
+  mInitialValuePort(newMatrixInputPort("initialValue", true))
 {
   mMatrixStateInfo = new MatrixStateInfo;
   addContinousStateInfo(mMatrixStateInfo);
@@ -67,13 +67,6 @@ Integrator::derivative(const DiscreteStateValueVector&,
                        ContinousStateValueVector& deriv) const
 {
   deriv[*mMatrixStateInfo] = portValues[mInputPort];
-}
-
-bool
-Integrator::dependsOn(const PortId&, const PortId&) const
-{
-  // FIXME, make the initial value port depend here ...
-  return false;
 }
 
 void

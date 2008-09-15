@@ -21,7 +21,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Delay, Model)
 
 Delay::Delay(const std::string& name) :
   Model(name),
-  mInputPort(newMatrixInputPort("input")),
+  mInputPort(newMatrixInputPort("input", true)),
   mOutputPort(newMatrixOutputPort("output")),
   mDelay(0)
 {
@@ -67,15 +67,6 @@ Delay::update(DiscreteStateValueVector& discreteState,
   discreteState[*mMatrixStateInfo].rotate(portValues[mInputPort]);
 }
 
-bool
-Delay::dependsOn(const PortId& in, const PortId& out) const
-{
-  if (mDelay != 0)
-    return false;
-  return in == getPortId(mInputPort.getPortIndex())
-    && out == getPortId(mOutputPort.getPortIndex());
-}
-
 unsigned
 Delay::getDelay(void) const
 {
@@ -86,6 +77,7 @@ void
 Delay::setDelay(unsigned delay)
 {
   mDelay = delay;
+  mInputPort.setDirectInput(mDelay == 0);
 }
 
 const Matrix&

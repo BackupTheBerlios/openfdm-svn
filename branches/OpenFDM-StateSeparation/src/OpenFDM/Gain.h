@@ -21,7 +21,6 @@ public:
   virtual void output(const DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       PortValueList& portValues) const;
-  virtual bool dependsOn(const PortId& in, const PortId& out) const;
 
   const real_type& getGain(void) const;
   void setGain(const real_type& gain);

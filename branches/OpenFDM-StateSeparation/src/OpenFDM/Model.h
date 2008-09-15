@@ -50,14 +50,15 @@ protected:
   newMatrixOutputPort(const std::string& name, const Size& size = Size(0, 0))
   { return MatrixOutputPort(this, name, size); }
   MatrixInputPort
-  newMatrixInputPort(const std::string& name, const Size& size = Size(0, 0))
-  { return MatrixInputPort(this, name, size); }
+  newMatrixInputPort(const std::string& name, bool directInput,
+                     const Size& size = Size(0, 0))
+  { return MatrixInputPort(this, name, size, directInput); }
   RealOutputPort
   newRealOutputPort(const std::string& name)
   { return RealOutputPort(this, name); }
   RealInputPort
-  newRealInputPort(const std::string& name)
-  { return RealInputPort(this, name); }
+  newRealInputPort(const std::string& name, bool directInput)
+  { return RealInputPort(this, name, directInput); }
 };
 
 } // namespace OpenFDM

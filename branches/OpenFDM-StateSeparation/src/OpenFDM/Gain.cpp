@@ -21,7 +21,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Gain, Model)
 
 Gain::Gain(const std::string& name) :
   Model(name),
-  mInputPort(newMatrixInputPort("input")),
+  mInputPort(newMatrixInputPort("input", true)),
   mOutputPort(newMatrixOutputPort("output")),
   mGain(1)
 {
@@ -44,16 +44,6 @@ Gain::output(const DiscreteStateValueVector&, const ContinousStateValueVector&,
              PortValueList& portValues) const
 {
   portValues[mOutputPort] = mGain*portValues[mInputPort];
-}
-
-bool
-Gain::dependsOn(const PortId& in, const PortId& out) const
-{
-  if (in != getPortId(mInputPort.getPortIndex()))
-    return false;
-  if (out != getPortId(mOutputPort.getPortIndex()))
-    return false;
-  return true;
 }
 
 const real_type&

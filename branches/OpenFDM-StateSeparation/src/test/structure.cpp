@@ -220,6 +220,36 @@ public:
 //                        mPortValueList,
 //                        mContinousStateDerivative); }
 
+  // Return true if this leaf directly depends on one of leafInstance outputs
+  bool dependsOn(const ModelContext* modelContext) const
+  {
+    unsigned numPorts = mModel->getNumPorts();
+    for (unsigned i = 0; i < numPorts; ++i) {
+      const AcceptorPortInfo* acceptorPortInfo;
+      acceptorPortInfo = mModel->getPort(i)->toAcceptorPortInfo();
+      if (!acceptorPortInfo)
+        continue;
+      if (!acceptorPortInfo->getDirectInput())
+        continue;
+      const PortValue* portValue = getPortValueList().getPortValue(i);
+      if (!portValue)
+        continue;
+      unsigned otherNumPorts = modelContext->mModel->getNumPorts();
+      for (unsigned j = 0; j < otherNumPorts; ++j) {
+        if (!modelContext->mModel->getPort(j)->toProviderPortInfo())
+          continue;
+
+        const PortValue* otherPortValue;
+        otherPortValue = modelContext->getPortValueList().getPortValue(j);
+        if (portValue != otherPortValue)
+          continue;
+
+        return true;
+      }
+    }
+    return false;
+  }
+
 private:
   ModelContext();
   ModelContext(const ModelContext&);
@@ -233,6 +263,10 @@ public:
   ModelInstance(const Model* model) :
     mModelContext(new ModelContext(model))
   { }
+
+  // Return true if this leaf directly depends on one of leafInstance outputs
+  bool dependsOn(const ModelInstance* modelInstance) const
+  { return mModelContext->dependsOn(modelInstance->mModelContext); }
 
 // protected: // FIXME
   virtual ModelContext& getNodeContext()
@@ -302,10 +336,11 @@ struct PortDataHelper {
 
   class PortData : public WeakReferenced {
   public:
-    PortData(PortDataList* portDataList) : mParentPortDataList(portDataList) { }
-    virtual ~PortData() {}
-    virtual LeafPortData* toLeafPortData()
-    { return 0; }
+    PortData(PortDataList* portDataList) :
+      mParentPortDataList(portDataList)
+    { }
+    virtual ~PortData()
+    { }
     virtual ProxyPortData* toProxyPortData()
     { return 0; }
     virtual AcceptorPortData* toAcceptorPortData()
@@ -313,6 +348,9 @@ struct PortDataHelper {
     virtual ProviderPortData* toProviderPortData()
     { return 0; }
     virtual bool connect(PortData*) = 0;
+
+    virtual void print()
+    { }
 
     SharedPtr<PortDataList> getParentPortDataList() const
     { return mParentPortDataList.lock(); }
@@ -339,17 +377,8 @@ struct PortDataHelper {
     { }
     virtual ~LeafPortData() {}
 
-    virtual LeafPortData* toLeafPortData()
-    { return this; }
-    
     const SharedPtr<const PortInfo>& getPortInfo() const
     { return mPortInfo; }
-
-    virtual bool isConnected(LeafPortData*)
-    { return false; }
-
-    virtual void print()
-    { }
 
   private:
     SharedPtr<const PortInfo> mPortInfo;
@@ -375,16 +404,6 @@ struct PortDataHelper {
       if (!acceptorPortData)
         return false;
       return acceptorPortData->connectToProvider(this);
-    }
-
-    virtual bool isConnected(LeafPortData* portData)
-    {
-      if (!portData)
-        return false;
-      AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
-      if (!acceptorPortData)
-        return false;
-      return acceptorPortData->isConnectedToProvider(this);
     }
 
     virtual void print()
@@ -438,23 +457,6 @@ struct PortDataHelper {
       providerPortData->_acceptorPortDataList.push_back(this);
       _providerPortData = providerPortData;
       return true;
-    }
-
-    virtual bool isConnected(LeafPortData* portData)
-    {
-      if (!portData)
-        return false;
-      ProviderPortData* providerPortData = portData->toProviderPortData();
-      if (!providerPortData)
-        return false;
-      return isConnectedToProvider(providerPortData);
-    }
-
-    bool isConnectedToProvider(ProviderPortData* providerPortData)
-    {
-      if (!providerPortData)
-        return false;
-      return providerPortData == _providerPortData.lock();
     }
 
     virtual void print()
@@ -540,8 +542,7 @@ struct PortDataHelper {
     {
       ProxyPortData* proxyPortData;
       proxyPortData = new ProxyPortData(this, portData);
-      // FIXME
-//       mPortDataVector.push_back(proxyPortData);
+      mPortDataVector.push_back(proxyPortData);
       return proxyPortData;
     }
     
@@ -557,6 +558,7 @@ struct PortDataHelper {
     
     bool allocAndConnectProviderPortValues()
     {
+      // FIXME: move that into the PortData stuff
       for (unsigned i = 0; i < getNode().getNumPorts(); ++i) {
         const ProviderPortInfo* providerPortInfo;
         providerPortInfo = getNode().getPort(i)->toProviderPortInfo();
@@ -596,32 +598,8 @@ struct PortDataHelper {
     void setPortValue(unsigned i, PortValue* portValue)
     { mNodeInstance->getPortValueList().setPortValue(i, portValue); }
 
-    // Return true if this leaf directly depends on one of leafInstance outputs
-    bool dependsOn(PortDataList* portDataList)
-    {
-      for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
-        for (unsigned j = 0; j < portDataList->mPortDataVector.size(); ++j) {
-          if (!mPortDataVector[i]->isConnected(portDataList->mPortDataVector[j]))
-            continue;
-          PortId inPortId = getNode().getPortId(i);
-          
-          // FIXME, may be other concept:
-          // make Model return a list of 'direct feedthrough ports'?
-          for (unsigned k = 0; k < mPortDataVector.size(); ++k) {
-            PortId outPortId = getNode().getPortId(k);
-            // FIXME ugly
-            const Node* node = &(mNodeInstance->getNode());
-            const LeafNode* leafNode = dynamic_cast<const LeafNode*>(node);
-            if (leafNode && leafNode->dependsOn(inPortId, outPortId))
-              return true;
-          }
-        }
-      }
-      return false;
-    }
-
     /// The vector of per port connect information
-    typedef std::vector<SharedPtr<LeafPortData> > PortDataVector;
+    typedef std::vector<SharedPtr<PortData> > PortDataVector;
     PortDataVector mPortDataVector;
     
     /// The NodeInstance having some way to reference the
@@ -816,9 +794,11 @@ public:
   // The Models list, worthwhile for sorting
   typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
   ModelInstanceList _modelInstanceList;
+  // The mechanical system list, also for sorting
   typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
   MechanicInstanceList _mechanicInstanceList;
-//   typedef std::list<SharedPtr<RootJointInstance> > RootJointInstanceList;
+  // The list of root nodes in the mechanicla system. Will be a starting point
+  // for sorting the tree of mechanical models downwards
   typedef std::list<SharedPtr<MechanicInstance> > RootJointInstanceList;
   RootJointInstanceList _rootJointInstanceList;
 
@@ -847,11 +827,7 @@ public:
            i != sortedModelInstanceList.end();
            ++i) {
 
-        PortDataHelper::PortDataList* portDataListMI
-          = _portDataListMap[modelInstance];
-        PortDataHelper::PortDataList* portDataListI = _portDataListMap[*i];
-
-        if (!portDataListI->dependsOn(portDataListMI))
+        if (!(*i)->dependsOn(modelInstance))
           continue;
         sortedModelInstanceList.insert(i, modelInstance);
         break;
@@ -865,6 +841,21 @@ public:
   typedef std::vector<SharedPtr<ModelInstance> > ModelContextList;
 
   bool
+  allocPortData()
+  {
+    PortDataListMap::const_iterator i;
+    for (i = _portDataListMap.begin(); i != _portDataListMap.end(); ++i) {
+      PortDataHelper::PortDataList* portDataList = i->second;
+      if (!portDataList)
+        continue;
+      if (!portDataList->allocAndConnectProviderPortValues()) {
+        Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
+        return false;
+      }
+    }
+  }
+
+  bool
   getModelContextList(ModelContextList& modelContexts)
   {
     modelContexts.resize(0);
@@ -876,16 +867,6 @@ public:
       modelContextList.push_back((*i));
 
     ModelContextList::const_iterator j;
-    for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
-      PortDataHelper::PortDataList* portDataList = _portDataListMap[*j];
-      if (!portDataList)
-        continue;
-      if (!portDataList->allocAndConnectProviderPortValues()) {
-        Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
-        return false;
-      }
-    }
-
     for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
       if (!(*j)->getNodeContext().alloc()) {
         Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
@@ -977,6 +958,8 @@ int main()
   LeafInstanceCollector nodeInstanceCollector;
   topGroup->accept(nodeInstanceCollector);
   
+  nodeInstanceCollector.allocPortData();
+
   nodeInstanceCollector.sortModelList();
 
   nodeInstanceCollector.print();

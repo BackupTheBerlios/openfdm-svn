@@ -35,9 +35,6 @@ public:
   virtual void init(DiscreteStateValueVector&, ContinousStateValueVector&) const // = 0;
   { }
 
-  // for dependency analysis
-  virtual bool dependsOn(const PortId& in, const PortId& out) const = 0;
-
   unsigned getNumContinousStateValues() const
   { return mContinousStateInfoVector.size(); }
   const ContinousStateInfo* getContinousStateInfo(unsigned index) const

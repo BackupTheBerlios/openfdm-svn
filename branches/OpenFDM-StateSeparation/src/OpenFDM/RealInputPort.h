@@ -13,8 +13,8 @@ namespace OpenFDM {
 
 class RealInputPort {
 public:
-  RealInputPort(Node* node, const std::string& name) :
-    mPort(new NumericAcceptorPortInfo(node, name, Size(1, 1)))
+  RealInputPort(Node* node, const std::string& name, bool directInput) :
+    mPort(new NumericAcceptorPortInfo(node, name, Size(1, 1), directInput))
   {}
   NumericPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -25,6 +25,10 @@ public:
   }
   unsigned getPortIndex() const
   { return mPort->getIndex(); }
+  bool getDirectInput() const
+  { return mPort->getDirectInput(); }
+  void setDirectInput(bool directInput) const
+  { mPort->setDirectInput(directInput); }
 private:
   SharedPtr<NumericAcceptorPortInfo> mPort;
 };

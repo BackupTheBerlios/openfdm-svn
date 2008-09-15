@@ -13,12 +13,17 @@ namespace OpenFDM {
 class AcceptorPortInfo : public PortInfo {
 public:
   AcceptorPortInfo(Node* node, const std::string& name) :
-    PortInfo(node, name) {}
+    PortInfo(node, name)
+  { }
+  virtual ~AcceptorPortInfo() {}
 
   virtual AcceptorPortInfo* toAcceptorPortInfo()
   { return this; }
   virtual const AcceptorPortInfo* toAcceptorPortInfo() const
   { return this; }
+
+  virtual bool getDirectInput() const
+  { return false; }
 };
 
 } // namespace OpenFDM

@@ -28,10 +28,6 @@ public:
   virtual void output(const DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       PortValueList& portValues) const;
-  // FIXME: dependsOn semantic is broken. May be some kind of
-  // needPortInOutput in the port info???
-  virtual bool dependsOn(const PortId&, const PortId&) const
-  { return true; }
 
   Callback* getCallback(void) const;
   void setCallback(Callback* callback);
