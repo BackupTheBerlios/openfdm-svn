@@ -853,6 +853,7 @@ public:
         return false;
       }
     }
+    return true;
   }
 
   bool
@@ -912,6 +913,80 @@ private:
   NodeIdStack _nodeIdStack;
 };
 
+class System : public Object {
+public:
+  System(const std::string& name, Node* node = 0) :
+    Object(name),
+    mNode(node)
+  { }
+
+  SharedPtr<Node> getNode()
+  { return mNode; }
+  SharedPtr<const Node> getNode() const
+  { return mNode; }
+  void setNode(Node* node)
+  {
+    clear();
+    mNode = node;
+  }
+
+  bool init()
+  {
+    if (!mNode)
+      return true;
+
+    // Build up the lists required to run the model.
+    LeafInstanceCollector nodeInstanceCollector;
+    mNode->accept(nodeInstanceCollector);
+    
+    // Allocates and distributes the PortValues, is required for the sort
+    // steps below
+    if (!nodeInstanceCollector.allocPortData())
+      return false;
+    // The model instances are sorted to match the direct input property
+    if (!nodeInstanceCollector.sortModelList())
+      return false;
+
+    // Just to play :)
+    nodeInstanceCollector.print();
+    
+    LeafInstanceCollector::ModelContextList modelContextList;
+    nodeInstanceCollector.getModelContextList(modelContextList);
+    // ...
+
+    // Ok, all successful so far, get the lists from the visitor
+    mNodeInstanceList.swap(nodeInstanceCollector._nodeInstanceList);
+
+    return true;
+  }
+
+  void clear()
+  {
+  }
+
+  /// Simulate the system until the time tEnd
+  bool simulate(real_type tEnd)
+  {
+    return false;
+  }
+
+  /// Bring the system in an equilibrum state near the current state ...
+  bool trim(void)
+  {
+    return false;
+  }
+
+  /// Return the current simulation time, convenience function
+//   const real_type& getTime(void) const
+//   { return mTime; }
+
+private:
+  SharedPtr<Node> mNode;
+
+  typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
+  NodeInstanceList mNodeInstanceList;
+};
+
 } // namespace OpenFDM
 
 using namespace OpenFDM;
@@ -955,17 +1030,10 @@ int main()
 
   /////////////////////////////////////////////////
 
-  LeafInstanceCollector nodeInstanceCollector;
-  topGroup->accept(nodeInstanceCollector);
-  
-  nodeInstanceCollector.allocPortData();
+  SharedPtr<System> system = new System("System", topGroup);
 
-  nodeInstanceCollector.sortModelList();
-
-  nodeInstanceCollector.print();
-
-  LeafInstanceCollector::ModelContextList modelContextList;
-  nodeInstanceCollector.getModelContextList(modelContextList);
+  if (!system->init())
+    return 1;
 
   return 0;
 }
