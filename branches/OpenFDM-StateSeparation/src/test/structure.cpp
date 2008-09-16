@@ -103,7 +103,7 @@ namespace OpenFDM {
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
 
-/// A NodeInstance represents an effictive model node in a ready to run
+/// A NodeInstance represents an effective model node in a ready to run
 /// System. You can access the Nodes Ports values for example.
 /// This class is meant to show up in the user interface of this simulation.
 class NodeInstance : public WeakReferenced {
@@ -135,7 +135,6 @@ public:
   const PortValueList& getPortValueList() const
   { return getNodeContext().getPortValueList(); }
 
-
 protected:
   NodeInstance() {}
 
@@ -151,10 +150,7 @@ private:
 //   SampleTimeSet mSampleTimeSet;
 };
 
-// typedef std::vector<SharedPtr<NodeInstance> > NodeInstanceList;
-// typedef std::vector<SharedPtr<const NodeInstance> > ConstNodeInstanceList;
-
-
+typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -262,6 +258,8 @@ private:
   SharedPtr<const Model> mModel;
 };
 
+typedef std::list<SharedPtr<ModelContext> > ModelContextList;
+
 class ModelInstance : public NodeInstance {
 public:
   ModelInstance(const Model* model) :
@@ -282,6 +280,7 @@ private:
   SharedPtr<ModelContext> mModelContext;
 };
 
+typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
 
 
 
@@ -307,6 +306,8 @@ private:
   MechanicContext& operator=(const MechanicContext&);
 };
 
+typedef std::list<SharedPtr<MechanicContext> > MechanicContextList;
+
 class MechanicInstance : public NodeInstance {
 public:
   MechanicInstance(const MechanicNode* mechanicNode) :
@@ -323,6 +324,7 @@ private:
   SharedPtr<MechanicContext> mMechanicContext;
 };
 
+typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
 
 
 
@@ -791,19 +793,16 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   // The final list of Nodes we have in the simulation system
-  typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
   NodeInstanceList _nodeInstanceList;
 
 
   // The Models list, worthwhile for sorting
-  typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
   ModelInstanceList _modelInstanceList;
   // The mechanical system list, also for sorting
-  typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
   MechanicInstanceList _mechanicInstanceList;
-  // The list of root nodes in the mechanicla system. Will be a starting point
+  // The list of root nodes in the mechanical system. Will be a starting point
   // for sorting the tree of mechanical models downwards
-  typedef std::list<SharedPtr<MechanicInstance> > RootJointInstanceList;
+  typedef MechanicInstanceList RootJointInstanceList;
   RootJointInstanceList _rootJointInstanceList;
 
   ////////////////////////////////////////////////////////////////////////////
@@ -866,8 +865,6 @@ public:
     return true;
   }
 
-  typedef std::vector<SharedPtr<ModelInstance> > ModelContextList;
-
   bool
   allocPortData()
   {
@@ -885,17 +882,16 @@ public:
   }
 
   bool
-  getModelContextList(ModelContextList& modelContexts)
+  getModelContextList(ModelInstanceList& modelContexts)
   {
     modelContexts.resize(0);
 
-    ModelContextList modelContextList;
-    modelContextList.reserve(_modelInstanceList.size());
+    ModelInstanceList modelContextList;
     ModelInstanceList::const_iterator i;
     for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i)
       modelContextList.push_back((*i));
 
-    ModelContextList::const_iterator j;
+    ModelInstanceList::const_iterator j;
     for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
       if (!(*j)->getNodeContext().alloc()) {
         Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
@@ -978,7 +974,7 @@ public:
     // Just to play :)
     nodeInstanceCollector.print();
     
-    LeafInstanceCollector::ModelContextList modelContextList;
+    ModelInstanceList modelContextList;
     nodeInstanceCollector.getModelContextList(modelContextList);
     // ...
 
@@ -1012,7 +1008,6 @@ public:
 private:
   SharedPtr<Node> mNode;
 
-  typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
   NodeInstanceList mNodeInstanceList;
 };
 
