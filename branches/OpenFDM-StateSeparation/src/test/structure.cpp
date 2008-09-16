@@ -962,6 +962,7 @@ public:
 
   void clear()
   {
+    mNodeInstanceList.clear();
   }
 
   /// Simulate the system until the time tEnd
