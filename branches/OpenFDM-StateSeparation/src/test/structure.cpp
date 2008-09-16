@@ -114,6 +114,10 @@ public:
   const Node& getNode() const
   { return getNodeContext().getNode(); }
 
+  /// FIXME: is te wrong value, but sufficient for now to debug ...
+  const std::string& getPathString() const
+  { return getNodeContext().getNode().getName(); }
+
   /// FIXME: put this to some global place
 //   typedef std::vector<SharedPtr<const Node> > NodePath;
 //   const NodePath& getNodePath() const { return mNodePath; }
@@ -363,7 +367,7 @@ struct PortDataHelper {
       SharedPtr<NodeInstance> nodeInstance = portDataList->mNodeInstance;
       if (!nodeInstance)
         return std::string();
-      return nodeInstance->getNode().getName();
+      return nodeInstance->getPathString();
     }
 
     WeakPtr<PortDataList> mParentPortDataList;
@@ -813,7 +817,6 @@ public:
   typedef std::map<SharedPtr<NodeInstance>,SharedPtr<PortDataHelper::PortDataList> > PortDataListMap;
   PortDataListMap _portDataListMap;
 
-
   // method to sort the leafs according to their dependency
   bool sortModelList()
   {
@@ -826,16 +829,41 @@ public:
       for (i = sortedModelInstanceList.begin();
            i != sortedModelInstanceList.end();
            ++i) {
-
         if (!(*i)->dependsOn(modelInstance))
           continue;
-        sortedModelInstanceList.insert(i, modelInstance);
+
+        // Something already sorted in depends on modelInstance,
+        // so schedule that new thing just before.
+        Log(Schedule, Info)
+          << "Inserting Model \"" << modelInstance->getPathString()
+          << "\" before Model \"" << (*i)->getPathString() << "\"" << std::endl;
+        i = sortedModelInstanceList.insert(i, modelInstance);
         break;
       }
-      if (i == sortedModelInstanceList.end())
+      if (i == sortedModelInstanceList.end()) {
+        // nothing found so far that depends on model instance.
+        // So put it at the end.
+        Log(Schedule, Info)
+          << "Appending Model \"" << modelInstance->getPathString()
+          << "\"" << std::endl;
+
         sortedModelInstanceList.push_back(modelInstance);
+      } else {
+        // If it cannot be put at the end, check if modelInstance depends
+        // on any model that is already scheduled behind to detect cyclic loops.
+        for (; i != sortedModelInstanceList.end(); ++i) {
+          if (!modelInstance->dependsOn(*i))
+            continue;
+          Log(Schedule,Error)
+            << "Detected cyclic loop: Model \""
+            << modelInstance->getPathString() << "\" depends on Model \""
+            << (*i)->getPathString() << "\"" << std::endl;
+          return false;
+        }
+      }
     }
     _modelInstanceList.swap(sortedModelInstanceList);
+    return true;
   }
 
   typedef std::vector<SharedPtr<ModelInstance> > ModelContextList;
@@ -889,7 +917,7 @@ public:
   {
     ModelInstanceList::iterator i;
     for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
-      std::cout << "Model \"" << (*i)->getNode().getName() << "\"" << std::endl;
+      std::cout << "Model \"" << (*i)->getPathString() << "\"" << std::endl;
       PortDataHelper::PortDataList* portDataList = _portDataListMap[*i];
       if (!portDataList)
         continue;
