@@ -193,7 +193,9 @@ private:
   SharedPtr<NodeContext> mNodeContext;
 };
 
-
+class Task;
+class DiscreteTask;
+class ContinousTask;
 
 //// This one is used to execute the simulation system
 class ModelContext : public LeafContext {
@@ -209,9 +211,9 @@ public:
   { return mModel->alloc(*this); }
   void init()
   { mModel->init(mDiscreteState, mContinousState); }
-  void output()
+  void output(const Task&)
   { mModel->output(mDiscreteState, mContinousState, mPortValueList); }
-  void update()
+  void update(const DiscreteTask&)
   { mModel->update(mDiscreteState, mContinousState, mPortValueList); }
 
 //   void derivative()
@@ -258,7 +260,33 @@ private:
   SharedPtr<const Model> mModel;
 };
 
-typedef std::list<SharedPtr<ModelContext> > ModelContextList;
+class ModelContextList : public std::list<SharedPtr<ModelContext> > {
+public:
+  typedef std::list<SharedPtr<ModelContext> > list_type;
+
+  bool alloc() const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      if (!(*i)->alloc())
+        return false;
+    return true;
+  }
+  void init() const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->init();
+  }
+  void output(const Task& task) const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->output(task);
+  }
+  void update(const DiscreteTask& task) const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->update(task);
+  }
+};
 
 class ModelInstance : public NodeInstance {
 public:
@@ -298,6 +326,26 @@ public:
   void init()
   { mMechanicNode->init(mDiscreteState, mContinousState); }
 
+  void velocities(const ContinousTask&)
+  { mMechanicNode->velocity(mContinousState, mPortValueList); }
+  void articulation(const ContinousTask&)
+  { mMechanicNode->articulation(mContinousState, mPortValueList); }
+  void accelerations(const ContinousTask&)
+  { }
+
+
+//   virtual void derivative(const ContinousStateValueVector&,
+//                           const PortValueList&,
+//                           ContinousStateValueVector&) const
+ 
+//   void outputVelocities()
+//   { }
+//   void outputAcceperation()
+//   { }
+
+//   void update()
+//   { }
+
   SharedPtr<const MechanicNode> mMechanicNode;
 
 private:
@@ -306,7 +354,39 @@ private:
   MechanicContext& operator=(const MechanicContext&);
 };
 
-typedef std::list<SharedPtr<MechanicContext> > MechanicContextList;
+class MechanicContextList : public std::list<SharedPtr<MechanicContext> > {
+public:
+  typedef std::list<SharedPtr<MechanicContext> > list_type;
+
+  bool alloc() const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      if (!(*i)->alloc())
+        return false;
+    return true;
+  }
+  void init() const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->init();
+  }
+  void velocities(const ContinousTask& task) const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->velocities(task);
+  }
+  void articulation(const ContinousTask& task) const
+  {
+    // Note that this list is traversed from the mechanic leafs to the root
+    for (list_type::const_reverse_iterator i = rbegin(); i != rend(); ++i)
+      (*i)->articulation(task);
+  }
+  void accelerations(const ContinousTask& task) const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->accelerations(task);
+  }
+};
 
 class MechanicInstance : public NodeInstance {
 public:
@@ -902,7 +982,7 @@ public:
     // FIXME is here just for curiousity :)
     for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
       (*j)->getNodeContext().init();
-      (*j)->getNodeContext().output();
+      (*j)->getNodeContext().output(*reinterpret_cast<Task*>(0));
     }
 
     modelContexts.swap(modelContextList);
@@ -935,6 +1015,84 @@ public:
 private:
   typedef std::list<Group::NodeId> NodeIdStack;
   NodeIdStack _nodeIdStack;
+};
+
+
+
+
+class Task : public Referenced {
+public:
+
+  void setTime(const real_type& time)
+  { mTime = time; }
+  const real_type& getTime() const
+  { return mTime; }
+
+private:
+  real_type mTime;
+};
+
+class ContinousTask : public Task {
+public:
+
+  void output() const
+  {
+    // The model outputs before mechanical state propagation
+    mModelContextList[0].output(*this);
+    // Now the mechanical state propagation
+    mMechanicContextList.velocities(*this);
+    // The model outputs before mechanical force propagation
+    mModelContextList[1].output(*this);
+    // Now the mechanical force propagation
+    mMechanicContextList.articulation(*this);
+    // The model outputs before mechanical acceleration propagation
+    mModelContextList[2].output(*this);
+    // Now the mechanical acceleration propagation
+    mMechanicContextList.accelerations(*this);
+    // The model outputs past mechanical acceleration propagation
+    mModelContextList[3].output(*this);
+  }
+
+  void derivative() const
+  {
+    // FIXME
+//     for (unsigned i = 0; i < 4; ++i)
+//       mModelContextList[2].derivative(*this);
+//     mMechanicContextList.derivative(*this);
+  }
+
+  ModelContextList mModelContextList[4];
+  MechanicContextList mMechanicContextList;
+};
+
+class DiscreteTask : public Task {
+public:
+  DiscreteTask(const real_type& stepsize) : mStepsize(stepsize)
+  { }
+
+  const real_type& getStepsize() const
+  { return mStepsize; }
+
+  void update()
+  {
+    mModelContextList.update(*this);
+    // FIXME
+//     mMechanicContextList.update(*this);
+  }
+
+  ModelContextList mModelContextList;
+  MechanicContextList mMechanicContextList;
+
+private:
+  real_type mStepsize;
+};
+
+typedef std::list<SharedPtr<DiscreteTask> > DiscreteTaskList;
+
+class TaskScheduler {
+public:
+  DiscreteTaskList mDiscreteTaskList;
+  SharedPtr<ContinousTask> mContinousTask;
 };
 
 class System : public Object {
