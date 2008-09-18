@@ -415,15 +415,15 @@ struct PortDataHelper {
 
   class PortDataList;
 
-  struct LeafPortData;
   struct AcceptorPortData;
   struct ProviderPortData;
   struct ProxyPortData;
 
   class PortData : public WeakReferenced {
   public:
-    PortData(PortDataList* portDataList) :
-      mParentPortDataList(portDataList)
+    PortData(PortDataList* portDataList, const PortInfo* portInfo = 0) :
+      mParentPortDataList(portDataList),
+      mPortInfo(portInfo)
     { }
     virtual ~PortData()
     { }
@@ -453,15 +453,6 @@ struct PortDataHelper {
     }
 
     WeakPtr<PortDataList> mParentPortDataList;
-  };
-
-  class LeafPortData : public PortData {
-  public:
-    LeafPortData(PortDataList* portDataList, const PortInfo* portInfo) :
-      PortData(portDataList),
-      mPortInfo(portInfo)
-    { }
-    virtual ~LeafPortData() {}
 
     const SharedPtr<const PortInfo>& getPortInfo() const
     { return mPortInfo; }
@@ -470,10 +461,10 @@ struct PortDataHelper {
     SharedPtr<const PortInfo> mPortInfo;
   };
 
-  struct ProviderPortData : public LeafPortData {
+  struct ProviderPortData : public PortData {
     ProviderPortData(PortDataList* portDataList,
                      const ProviderPortInfo* providerPort) :
-      LeafPortData(portDataList, providerPort),
+      PortData(portDataList, providerPort),
       _providerPort(providerPort)
     { }
     virtual ProviderPortData* toProviderPortData()
@@ -512,10 +503,10 @@ struct PortDataHelper {
     SharedPtr<const ProviderPortInfo> _providerPort;
     std::vector<WeakPtr<AcceptorPortData> > _acceptorPortDataList;
   };
-  struct AcceptorPortData : public LeafPortData {
+  struct AcceptorPortData : public PortData {
     AcceptorPortData(PortDataList* portDataList,
                      const AcceptorPortInfo* acceptorPort) :
-      LeafPortData(portDataList, acceptorPort),
+      PortData(portDataList, acceptorPort),
       _acceptorPort(acceptorPort)
     { }
     virtual AcceptorPortData* toAcceptorPortData()
@@ -727,7 +718,7 @@ public:
     PortDataHelper::ProviderPortData* providerPortData;
 //     providerPortData = portDataList->newProviderPortData(leaf._groupInternalPort);
     providerPortData = portDataList->newProviderPortData(0 /*FIXME*/);
-    _leafPortDataMap[getCurrentNodeId()][portId] = providerPortData;
+    _portDataMap[getCurrentNodeId()][portId] = providerPortData;
   }
   // Aussen provider, innen acceptor
   virtual void apply(const GroupProviderNode& leaf)
@@ -740,7 +731,7 @@ public:
     PortDataHelper::AcceptorPortData* acceptorPortData;
 //     acceptorPortData = portDataList->newAcceptorPortData(leaf._groupInternalPort);
     acceptorPortData = portDataList->newAcceptorPortData(0 /*FIXME*/);
-    _leafPortDataMap[getCurrentNodeId()][portId] = acceptorPortData;
+    _portDataMap[getCurrentNodeId()][portId] = acceptorPortData;
   }
 
   void allocPortData(NodeInstance* leafInstance, const LeafNode& leaf)
@@ -757,7 +748,7 @@ public:
         providerPortData = portDataList->newProviderPortData(providerPort);
 
         PortId portId = leaf.getPortId(i);
-        _leafPortDataMap[getCurrentNodeId()][portId] = providerPortData;
+        _portDataMap[getCurrentNodeId()][portId] = providerPortData;
       }
       const AcceptorPortInfo* acceptorPort = port->toAcceptorPortInfo();
       if (acceptorPort) {
@@ -765,7 +756,7 @@ public:
         acceptorPortData = portDataList->newAcceptorPortData(acceptorPort);
 
         PortId portId = leaf.getPortId(i);
-        _leafPortDataMap[getCurrentNodeId()][portId] = acceptorPortData;
+        _portDataMap[getCurrentNodeId()][portId] = acceptorPortData;
       }
     }
   }
@@ -798,8 +789,8 @@ public:
   virtual void apply(const Group& group)
   {
     // Prepare a new leaf map for the child group
-    LeafPortDataMap parentLeafPortDataMap;
-    parentLeafPortDataMap.swap(_leafPortDataMap);
+    PortDataMap parentPortDataMap;
+    parentPortDataMap.swap(_portDataMap);
 
     // Walk the children
 #if 0
@@ -845,8 +836,8 @@ public:
         continue;
       }
 
-      if (!_leafPortDataMap[acceptorNodeId][acceptorPortId]->
-          connect(_leafPortDataMap[providerNodeId][providerPortId]))
+      if (!_portDataMap[acceptorNodeId][acceptorPortId]->
+          connect(_portDataMap[providerNodeId][providerPortId]))
         std::cerr << "Cannot connect????" << std::endl;
     }
 
@@ -857,18 +848,18 @@ public:
     for (unsigned i = 0; i < group.getNumPorts(); ++i) {
       PortId portId = group.getPortId(i);
       Group::NodeId nodeId = group.getGroupPortNode(portId);
-      if (_leafPortDataMap[nodeId].empty()) {
+      if (_portDataMap[nodeId].empty()) {
         // FIXME, is this an internal error ???
         std::cerr << "Hmm, cannot find GroupPortNode for external port "
                   << i << std::endl;
         continue;
       }
 
-      parentLeafPortDataMap[getCurrentNodeId()][portId] = 
-          portDataList->newProxyPortData(_leafPortDataMap[nodeId].begin()->second);
+      parentPortDataMap[getCurrentNodeId()][portId] = 
+          portDataList->newProxyPortData(_portDataMap[nodeId].begin()->second);
     }
 
-    parentLeafPortDataMap.swap(_leafPortDataMap);
+    parentPortDataMap.swap(_portDataMap);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -888,8 +879,8 @@ public:
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
   typedef std::map<PortId, SharedPtr<PortDataHelper::PortData> > NodePortDataMap;
-  typedef std::map<Group::NodeId, NodePortDataMap> LeafPortDataMap;
-  LeafPortDataMap _leafPortDataMap;
+  typedef std::map<Group::NodeId, NodePortDataMap> PortDataMap;
+  PortDataMap _portDataMap;
   // Just to hold references to all mort data lists we have in the
   // simulation system. They are just needed during traversal for connect
   // information and to distribute port value pointers.
@@ -1057,7 +1048,7 @@ public:
   {
     // FIXME
 //     for (unsigned i = 0; i < 4; ++i)
-//       mModelContextList[2].derivative(*this);
+//       mModelContextList[i].derivative(*this);
 //     mMechanicContextList.derivative(*this);
   }
 
@@ -1162,6 +1153,10 @@ public:
   /// Return the current simulation time, convenience function
 //   const real_type& getTime(void) const
 //   { return mTime; }
+
+
+  const NodeInstanceList& getNodeInstanceList() const
+  { return mNodeInstanceList; }
 
 private:
   SharedPtr<Node> mNode;
