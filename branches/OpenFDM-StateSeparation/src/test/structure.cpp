@@ -333,7 +333,6 @@ public:
   void accelerations(const ContinousTask&)
   { }
 
-
 //   virtual void derivative(const ContinousStateValueVector&,
 //                           const PortValueList&,
 //                           ContinousStateValueVector&) const
@@ -417,9 +416,10 @@ struct PortDataHelper {
 
   struct AcceptorPortData;
   struct ProviderPortData;
-  struct ProxyPortData;
+  struct ProxyAcceptorPortData;
+  struct ProxyProviderPortData;
 
-  class PortData : public WeakReferenced {
+  struct PortData : public WeakReferenced {
   public:
     PortData(PortDataList* portDataList, const PortInfo* portInfo = 0) :
       mParentPortDataList(portDataList),
@@ -427,37 +427,42 @@ struct PortDataHelper {
     { }
     virtual ~PortData()
     { }
-    virtual ProxyPortData* toProxyPortData()
-    { return 0; }
     virtual AcceptorPortData* toAcceptorPortData()
     { return 0; }
     virtual ProviderPortData* toProviderPortData()
     { return 0; }
+    virtual ProxyAcceptorPortData* toProxyAcceptorPortData()
+    { return 0; }
+    virtual ProxyProviderPortData* toProxyProviderPortData()
+    { return 0; }
     virtual bool connect(PortData*) = 0;
-
-    virtual void print()
-    { }
 
     SharedPtr<PortDataList> getParentPortDataList() const
     { return mParentPortDataList.lock(); }
-
-    std::string getNodeName() const
+    SharedPtr<NodeInstance> getNodeInstance() const
     {
       SharedPtr<PortDataList> portDataList = getParentPortDataList();
       if (!portDataList)
-        return std::string();
-      SharedPtr<NodeInstance> nodeInstance = portDataList->mNodeInstance;
-      if (!nodeInstance)
-        return std::string();
-      return nodeInstance->getPathString();
+        return 0;
+      return portDataList->mNodeInstance;
     }
-
-    WeakPtr<PortDataList> mParentPortDataList;
 
     const SharedPtr<const PortInfo>& getPortInfo() const
     { return mPortInfo; }
 
+    void setLocalPortValue(PortValue* portValue)
+    {
+      if (!getPortInfo())
+        return;
+      SharedPtr<NodeInstance> nodeInstance = getNodeInstance();
+      if (!nodeInstance)
+        return;
+      unsigned index = getPortInfo()->getIndex();
+      nodeInstance->getPortValueList().setPortValue(index, portValue);
+    }
+
   private:
+    WeakPtr<PortDataList> mParentPortDataList;
     SharedPtr<const PortInfo> mPortInfo;
   };
 
@@ -474,34 +479,29 @@ struct PortDataHelper {
     {
       if (!portData)
         return false;
-      ProxyPortData* proxyPortData = portData->toProxyPortData();
-      if (proxyPortData)
-        return proxyPortData->connect(this);
       AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
       if (!acceptorPortData)
         return false;
       return acceptorPortData->connectToProvider(this);
     }
 
-    virtual void print()
+    virtual void createPortValue()
     {
-      std::cout << "  Provider Port \"" << getPortInfo()->getName()
-                << "\" connected to:" << std::endl;
-      for (unsigned i = 0; i < _acceptorPortDataList.size(); ++i) {
-        SharedPtr<AcceptorPortData> acceptorPortData;
-        acceptorPortData = _acceptorPortDataList[i].lock();
-        if (!acceptorPortData)
-          continue;
-        if (!acceptorPortData->getPortInfo())
-          continue;
-        std::cout << "    Node \"" << acceptorPortData->getNodeName()
-                  << "\" Port \"" << acceptorPortData->getPortInfo()->getName()
-                  << "\"" << std::endl;
-      }
+      PortValue* portValue = _providerPort->newValue();
+      if (!portValue)
+        return;
+      setPortValue(portValue);
+    }
+
+    void setPortValue(PortValue* portValue)
+    {
+      setLocalPortValue(portValue);
+      for (unsigned i = 0; i < _acceptorPortDataList.size(); ++i)
+        _acceptorPortDataList[i]->setPortValue(portValue);
     }
 
     SharedPtr<const ProviderPortInfo> _providerPort;
-    std::vector<WeakPtr<AcceptorPortData> > _acceptorPortDataList;
+    std::vector<SharedPtr<AcceptorPortData> > _acceptorPortDataList;
   };
   struct AcceptorPortData : public PortData {
     AcceptorPortData(PortDataList* portDataList,
@@ -516,9 +516,6 @@ struct PortDataHelper {
     {
       if (!portData)
         return false;
-      ProxyPortData* proxyPortData = portData->toProxyPortData();
-      if (proxyPortData)
-        return proxyPortData->connect(this);
       ProviderPortData* providerPortData = portData->toProviderPortData();
       if (!providerPortData)
         return false;
@@ -536,63 +533,45 @@ struct PortDataHelper {
       return true;
     }
 
-    virtual void print()
+    virtual void setPortValue(PortValue* portValue)
     {
-      std::cout << "  Acceptor Port \"" << getPortInfo()->getName()
-                << "\" connected from:" << std::endl;
-
-      SharedPtr<ProviderPortData> providerPortData;
-      providerPortData = _providerPortData.lock();
-      if (!providerPortData)
-        return;
-      if (!providerPortData->getPortInfo())
-        return;
-       std::cout << "    Node \"" << providerPortData->getNodeName()
-                << "\" Port \"" << providerPortData->getPortInfo()->getName()
-                << "\"" << std::endl;
+      setLocalPortValue(portValue);
     }
 
     SharedPtr<const AcceptorPortInfo> _acceptorPort;
     WeakPtr<ProviderPortData> _providerPortData;
   };
-
-  // Hmm, an other idea. How about treating the group input/output block
-  // as a regular block with inputs and outputs?
-  // Then in the output routine do nothing and just connect the PortValues of
-  // the inputs directly to the PortValues of the outputs??
-  // That would at least make the Proxy stuff simpler??
-
-  class ProxyPortData : public PortData {
+  struct ProxyAcceptorPortData : public AcceptorPortData {
   public:
-    ProxyPortData(PortDataList* portDataList, PortData* portData) :
-      PortData(portDataList)
-    {
-      if (!portData)
-        return;
-      AcceptorPortData* acceptorPortData = portData->toAcceptorPortData();
-      if (acceptorPortData) {
-        mPortDataList.push_back(acceptorPortData->_providerPortData.lock());
-      }
-      ProviderPortData* providerPortData = portData->toProviderPortData();
-      if (providerPortData) {
-        unsigned i;
-        for (i = 0; i < providerPortData->_acceptorPortDataList.size(); ++i) {
-          mPortDataList.push_back(providerPortData->_acceptorPortDataList[i].lock());
-        }
-      }
-    }
-    virtual ProxyPortData* toProxyPortData()
+    ProxyAcceptorPortData(PortDataList* portDataList,
+                          const AcceptorPortInfo* acceptorPortInfo) :
+      AcceptorPortData(portDataList, acceptorPortInfo)
+    { }
+    virtual ProxyAcceptorPortData* toProxyAcceptorPortData()
     { return this; }
-    virtual bool connect(PortData* portData)
+    virtual void setPortValue(PortValue* portValue)
     {
-      for (unsigned i = 0; i < mPortDataList.size(); ++i) {
-        if (!mPortDataList[i]->connect(portData))
-          return false;
-      }
-      return true;
+      setLocalPortValue(portValue);
+      mProxyProviderPortData->setPortValue(portValue);
     }
-    std::vector<SharedPtr<PortData> > mPortDataList;
+    SharedPtr<ProxyProviderPortData> mProxyProviderPortData;
   };
+  struct ProxyProviderPortData : public ProviderPortData {
+  public:
+    ProxyProviderPortData(PortDataList* portDataList,
+                          const ProviderPortInfo* providerPortInfo) :
+      ProviderPortData(portDataList, providerPortInfo)
+    { }
+    virtual ProxyProviderPortData* toProxyProviderPortData()
+    { return this; }
+    void setProxyAcceptorPortData(ProxyAcceptorPortData* proxyAcceptorPortData)
+    { proxyAcceptorPortData->mProxyProviderPortData = this; }
+
+    // FIXME
+    virtual void createPortValue()
+    { }
+  };
+
 
   // Return true if this leaf directly depends on one of leafInstance outputs
   class PortDataList : public WeakReferenced {
@@ -615,65 +594,34 @@ struct PortDataHelper {
       mPortDataVector.push_back(providerPortData);
       return providerPortData;
     }
-    ProxyPortData* newProxyPortData(PortData* portData)
+    ProxyAcceptorPortData* newProxyAcceptorPortData(const AcceptorPortInfo* acceptorPort)
     {
-      ProxyPortData* proxyPortData;
-      proxyPortData = new ProxyPortData(this, portData);
-      mPortDataVector.push_back(proxyPortData);
-      return proxyPortData;
+      ProxyAcceptorPortData* acceptorPortData;
+      acceptorPortData = new ProxyAcceptorPortData(this, acceptorPort);
+      mPortDataVector.push_back(acceptorPortData);
+      return acceptorPortData;
     }
-    
-    const Node& getNode() const
-    { return mNodeInstance->getNode(); }
-
-    void print()
+    ProxyProviderPortData* newProxyProviderPortData(const ProviderPortInfo* providerPort)
     {
-      for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
-        mPortDataVector[i]->print();
-      }
+      ProxyProviderPortData* providerPortData;
+      providerPortData = new ProxyProviderPortData(this, providerPort);
+      mPortDataVector.push_back(providerPortData);
+      return providerPortData;
     }
     
     bool allocAndConnectProviderPortValues()
     {
       // FIXME: move that into the PortData stuff
-      for (unsigned i = 0; i < getNode().getNumPorts(); ++i) {
-        const ProviderPortInfo* providerPortInfo;
-        providerPortInfo = getNode().getPort(i)->toProviderPortInfo();
-        if (!providerPortInfo)
-          continue;
-        
-        PortValue* portValue = providerPortInfo->newValue();
-        if (!portValue)
-          continue;
-        setPortValue(i, portValue);
-        
+      for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
         // Also set the port value to all connected ports
-        ProviderPortData* providerPortData = mPortDataVector[i]->toProviderPortData();
-        OpenFDMAssert(providerPortData);
-        
-        for (unsigned j = 0; j < providerPortData->_acceptorPortDataList.size(); ++j) {
-          SharedPtr<AcceptorPortData> acceptorPortData;
-          acceptorPortData = providerPortData->_acceptorPortDataList[j].lock();
-          // Ok, happens for proxy ports, these still show up here
-          if (!acceptorPortData)
-            continue;
-          
-          SharedPtr<PortDataList> portDataList;
-          portDataList = acceptorPortData->getParentPortDataList();
-          OpenFDMAssert(portDataList);
-          
-          // FIXME, for now the GenericNodePorts do not have PortValues for
-          // this reason.
-          if (!acceptorPortData->getPortInfo())
-            continue;
-          unsigned index = acceptorPortData->getPortInfo()->getIndex();
-          portDataList->setPortValue(index, portValue);
-        }
+        ProviderPortData* providerPortData;
+        providerPortData = mPortDataVector[i]->toProviderPortData();
+        if (!providerPortData)
+          continue;
+        providerPortData->createPortValue();
       }
       return true;
     }
-    void setPortValue(unsigned i, PortValue* portValue)
-    { mNodeInstance->getPortValueList().setPortValue(i, portValue); }
 
     /// The vector of per port connect information
     typedef std::vector<SharedPtr<PortData> > PortDataVector;
@@ -716,8 +664,7 @@ public:
     PortId portId = leaf.getPortId(0);
 
     PortDataHelper::ProviderPortData* providerPortData;
-//     providerPortData = portDataList->newProviderPortData(leaf._groupInternalPort);
-    providerPortData = portDataList->newProviderPortData(0 /*FIXME*/);
+    providerPortData = portDataList->newProxyProviderPortData(leaf._groupInternalPort);
     _portDataMap[getCurrentNodeId()][portId] = providerPortData;
   }
   // Aussen provider, innen acceptor
@@ -729,8 +676,7 @@ public:
     PortId portId = leaf.getPortId(0);
 
     PortDataHelper::AcceptorPortData* acceptorPortData;
-//     acceptorPortData = portDataList->newAcceptorPortData(leaf._groupInternalPort);
-    acceptorPortData = portDataList->newAcceptorPortData(0 /*FIXME*/);
+    acceptorPortData = portDataList->newProxyAcceptorPortData(leaf._groupInternalPort);
     _portDataMap[getCurrentNodeId()][portId] = acceptorPortData;
   }
 
@@ -855,8 +801,42 @@ public:
         continue;
       }
 
-      parentPortDataMap[getCurrentNodeId()][portId] = 
-          portDataList->newProxyPortData(_portDataMap[nodeId].begin()->second);
+      PortDataHelper::PortData* portData = _portDataMap[nodeId].begin()->second;
+      if (portData->toProxyAcceptorPortData()) {
+        PortDataHelper::ProxyAcceptorPortData* proxyAcceptorPortData;
+        proxyAcceptorPortData = portData->toProxyAcceptorPortData();
+
+        const ProviderPortInfo* providerPortInfo;
+        providerPortInfo = group.getPort(i)->toProviderPortInfo();
+        OpenFDMAssert(providerPortInfo);
+
+        PortDataHelper::ProxyProviderPortData* proxyProviderPortData;
+        proxyProviderPortData =
+          portDataList->newProxyProviderPortData(providerPortInfo);
+
+        proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
+
+        parentPortDataMap[getCurrentNodeId()][portId] = proxyProviderPortData;
+
+      } else if (portData->toProxyProviderPortData()) {
+        PortDataHelper::ProxyProviderPortData* proxyProviderPortData;
+        proxyProviderPortData = portData->toProxyProviderPortData();
+
+        const AcceptorPortInfo* acceptorPortInfo;
+        acceptorPortInfo = group.getPort(i)->toAcceptorPortInfo();
+        OpenFDMAssert(acceptorPortInfo);
+
+        PortDataHelper::ProxyAcceptorPortData* proxyAcceptorPortData;
+        proxyAcceptorPortData =
+          portDataList->newProxyAcceptorPortData(acceptorPortInfo);
+
+        proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
+
+        parentPortDataMap[getCurrentNodeId()][portId] = proxyAcceptorPortData;
+
+      } else {
+        OpenFDMAssert(false);
+      }
     }
 
     parentPortDataMap.swap(_portDataMap);
@@ -978,18 +958,6 @@ public:
 
     modelContexts.swap(modelContextList);
     return true;
-  }
-
-  void print()
-  {
-    ModelInstanceList::iterator i;
-    for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
-      std::cout << "Model \"" << (*i)->getPathString() << "\"" << std::endl;
-      PortDataHelper::PortDataList* portDataList = _portDataListMap[*i];
-      if (!portDataList)
-        continue;
-      portDataList->print();
-    }
   }
 
   void pushNodeId(const Group::NodeId& nodeId)
@@ -1120,9 +1088,6 @@ public:
     if (!nodeInstanceCollector.sortModelList())
       return false;
 
-    // Just to play :)
-    nodeInstanceCollector.print();
-    
     ModelInstanceList modelContextList;
     nodeInstanceCollector.getModelContextList(modelContextList);
     // ...
@@ -1211,6 +1176,21 @@ int main()
 
   if (!system->init())
     return 1;
+
+  NodeInstanceList::const_iterator i;
+  for (i = system->getNodeInstanceList().begin();
+       i != system->getNodeInstanceList().end(); ++i) {
+    std::cout << (*i)->getNode().getName() << std::endl;
+    for (unsigned k = 0; k < (*i)->getNode().getNumPorts(); ++k) {
+      std::cout << "  " << (*i)->getNode().getPort(k)->getName() << " "
+                << (*i)->getPortValueList().getPortValue(k);
+      const NumericPortValue* npv =
+        dynamic_cast<const NumericPortValue*>((*i)->getPortValueList().getPortValue(k));
+      if (npv)
+        std::cout << " " << npv->getValue();
+      std::cout << std::endl;
+    }
+  }
 
   return 0;
 }

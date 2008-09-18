@@ -78,7 +78,7 @@ public:
   }
   void setPortSize(const MatrixOutputPort& port, const Size& size)
   {
-    setPortValue(port.getPortIndex(), new NumericPortValue(size));
+    port.getPortValue(mPortValueVector)->getValue().resize(size);
   }
   const PortValue* getPortValue(unsigned idx) const
   {
