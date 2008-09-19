@@ -103,25 +103,24 @@ namespace OpenFDM {
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
 
+typedef std::vector<SharedPtr<const Node> > NodePath;
+
 /// A NodeInstance represents an effective model node in a ready to run
 /// System. You can access the Nodes Ports values for example.
 /// This class is meant to show up in the user interface of this simulation.
 class NodeInstance : public WeakReferenced {
 public:
-  virtual ~NodeInstance() {}
+  NodeInstance(const NodePath& nodePath) :
+    mNodePath(nodePath)
+  { }
+  virtual ~NodeInstance()
+  { }
 
   /// The actual Node this NodeInstance stems from
   const Node& getNode() const
   { return getNodeContext().getNode(); }
 
-  /// FIXME: is te wrong value, but sufficient for now to debug ...
-  const std::string& getPathString() const
-  { return getNodeContext().getNode().getName(); }
-
-  /// FIXME: put this to some global place
-//   typedef std::vector<SharedPtr<const Node> > NodePath;
-//   const NodePath& getNodePath() const { return mNodePath; }
-//   NodePath mNodePath;
+  const NodePath& getNodePath() const { return mNodePath; }
 
 //   /// Set the sample times this node will run on
 //   void setSampleTimeSet(const SampleTimeSet& sampleTimeSet)
@@ -134,6 +133,21 @@ public:
   { return getNodeContext().getPortValueList(); }
   const PortValueList& getPortValueList() const
   { return getNodeContext().getPortValueList(); }
+
+  std::string getNodeNamePath() const
+  {
+    if (mNodePath.empty())
+      return std::string();
+    std::string path = mNodePath.front()->getName();
+    NodePath::const_iterator i = mNodePath.begin();
+    if (i != mNodePath.end()) {
+      for (++i; i != mNodePath.end(); ++i) {
+        path += '/';
+        path += (*i)->getName();
+      }
+    }
+    return path;
+  }
 
 protected:
   NodeInstance() {}
@@ -148,6 +162,8 @@ private:
 
 //   /// The sample times this node will run on
 //   SampleTimeSet mSampleTimeSet;
+
+  NodePath mNodePath;
 };
 
 typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
@@ -178,8 +194,9 @@ private:
 
 class GenericNodeInstance : public NodeInstance {
 public:
-  GenericNodeInstance(NodeContext* nodeContext) :
-    mNodeContext(nodeContext)
+  GenericNodeInstance(const NodePath& nodePath, const Node* node) :
+    NodeInstance(nodePath),
+    mNodeContext(new GenericNodeContext(node))
   { }
 
 protected:
@@ -290,7 +307,8 @@ public:
 
 class ModelInstance : public NodeInstance {
 public:
-  ModelInstance(const Model* model) :
+  ModelInstance(const NodePath& nodePath, const Model* model) :
+    NodeInstance(nodePath),
     mModelContext(new ModelContext(model))
   { }
 
@@ -389,7 +407,9 @@ public:
 
 class MechanicInstance : public NodeInstance {
 public:
-  MechanicInstance(const MechanicNode* mechanicNode) :
+  MechanicInstance(const NodePath& nodePath,
+                   const MechanicNode* mechanicNode) :
+    NodeInstance(nodePath),
     mMechanicContext(new MechanicContext(mechanicNode))
   { }
 
@@ -645,9 +665,8 @@ public:
 
   PortDataHelper::PortDataList* buildGenericNodeContext(const Node& node)
   {
-    GenericNodeContext* genericNodeContext = new GenericNodeContext(&node);
     GenericNodeInstance* genericNodeInstance;
-    genericNodeInstance = new GenericNodeInstance(genericNodeContext);
+    genericNodeInstance = new GenericNodeInstance(mNodePath, &node);
     _nodeInstanceList.push_back(genericNodeInstance);
     PortDataHelper::PortDataList* portDataList = new PortDataHelper::PortDataList(genericNodeInstance);
     _portDataListMap[_nodeInstanceList.back()] = portDataList;
@@ -711,7 +730,7 @@ public:
   {
     // Need to stor the root nodes to build up the spanning tree for the
     // mechanical system here.
-    MechanicInstance* mechanicInstance = new MechanicInstance(&node);
+    MechanicInstance* mechanicInstance = new MechanicInstance(mNodePath, &node);
     _nodeInstanceList.push_back(mechanicInstance);
 //     _mechanicInstanceList.push_back(mechanicInstance);
     _rootJointInstanceList.push_back(mechanicInstance);
@@ -719,14 +738,14 @@ public:
   }
   virtual void apply(const MechanicNode& node)
   {
-    MechanicInstance* mechanicInstance = new MechanicInstance(&node);
+    MechanicInstance* mechanicInstance = new MechanicInstance(mNodePath, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     _mechanicInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
   }
   virtual void apply(const Model& node)
   {
-    ModelInstance* modelInstance = new ModelInstance(&node);
+    ModelInstance* modelInstance = new ModelInstance(mNodePath, &node);
     _nodeInstanceList.push_back(modelInstance);
     _modelInstanceList.push_back(modelInstance);
     allocPortData(modelInstance, node);
@@ -744,7 +763,9 @@ public:
 #else
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
       pushNodeId(group.getNodeId(i));
+      mNodePath.push_back(group.getChild(i));
       group.getChild(i)->accept(*this);
+      mNodePath.pop_back();
       popNodeId();
     }
 #endif
@@ -885,8 +906,9 @@ public:
         // Something already sorted in depends on modelInstance,
         // so schedule that new thing just before.
         Log(Schedule, Info)
-          << "Inserting Model \"" << modelInstance->getPathString()
-          << "\" before Model \"" << (*i)->getPathString() << "\"" << std::endl;
+          << "Inserting Model \"" << modelInstance->getNodeNamePath()
+          << "\" before Model \"" << (*i)->getNodeNamePath()
+          << "\"" << std::endl;
         i = sortedModelInstanceList.insert(i, modelInstance);
         break;
       }
@@ -894,7 +916,7 @@ public:
         // nothing found so far that depends on model instance.
         // So put it at the end.
         Log(Schedule, Info)
-          << "Appending Model \"" << modelInstance->getPathString()
+          << "Appending Model \"" << modelInstance->getNodeNamePath()
           << "\"" << std::endl;
 
         sortedModelInstanceList.push_back(modelInstance);
@@ -906,8 +928,8 @@ public:
             continue;
           Log(Schedule,Error)
             << "Detected cyclic loop: Model \""
-            << modelInstance->getPathString() << "\" depends on Model \""
-            << (*i)->getPathString() << "\"" << std::endl;
+            << modelInstance->getNodeNamePath() << "\" depends on Model \""
+            << (*i)->getNodeNamePath() << "\"" << std::endl;
           return false;
         }
       }
@@ -974,6 +996,8 @@ public:
 private:
   typedef std::list<Group::NodeId> NodeIdStack;
   NodeIdStack _nodeIdStack;
+
+  NodePath mNodePath;
 };
 
 
@@ -1180,7 +1204,7 @@ int main()
   NodeInstanceList::const_iterator i;
   for (i = system->getNodeInstanceList().begin();
        i != system->getNodeInstanceList().end(); ++i) {
-    std::cout << (*i)->getNode().getName() << std::endl;
+    std::cout << (*i)->getNodeNamePath() << std::endl;
     for (unsigned k = 0; k < (*i)->getNode().getNumPorts(); ++k) {
       std::cout << "  " << (*i)->getNode().getPort(k)->getName() << " "
                 << (*i)->getPortValueList().getPortValue(k);
