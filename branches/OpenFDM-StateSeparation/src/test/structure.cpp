@@ -684,7 +684,7 @@ public:
 
     PortDataHelper::ProviderPortData* providerPortData;
     providerPortData = portDataList->newProxyProviderPortData(leaf._groupInternalPort);
-    _portDataMap[getCurrentNodeId()][portId] = providerPortData;
+    getCurrentNodePortDataMap()[portId] = providerPortData;
   }
   // Aussen provider, innen acceptor
   virtual void apply(const GroupProviderNode& leaf)
@@ -696,7 +696,7 @@ public:
 
     PortDataHelper::AcceptorPortData* acceptorPortData;
     acceptorPortData = portDataList->newProxyAcceptorPortData(leaf._groupInternalPort);
-    _portDataMap[getCurrentNodeId()][portId] = acceptorPortData;
+    getCurrentNodePortDataMap()[portId] = acceptorPortData;
   }
 
   void allocPortData(NodeInstance* leafInstance, const LeafNode& leaf)
@@ -713,7 +713,7 @@ public:
         providerPortData = portDataList->newProviderPortData(providerPort);
 
         PortId portId = leaf.getPortId(i);
-        _portDataMap[getCurrentNodeId()][portId] = providerPortData;
+        getCurrentNodePortDataMap()[portId] = providerPortData;
       }
       const AcceptorPortInfo* acceptorPort = port->toAcceptorPortInfo();
       if (acceptorPort) {
@@ -721,7 +721,7 @@ public:
         acceptorPortData = portDataList->newAcceptorPortData(acceptorPort);
 
         PortId portId = leaf.getPortId(i);
-        _portDataMap[getCurrentNodeId()][portId] = acceptorPortData;
+        getCurrentNodePortDataMap()[portId] = acceptorPortData;
       }
     }
   }
@@ -762,7 +762,7 @@ public:
     group.traverse(*this);
 #else
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
-      pushNodeId(group.getNodeId(i));
+      pushNodeId(i);
       mNodePath.push_back(group.getChild(i));
       group.getChild(i)->accept(*this);
       mNodePath.pop_back();
@@ -773,14 +773,14 @@ public:
     // Apply the group internal connections to the instances
     unsigned numConnects = group.getNumConnects();
     for (unsigned i = 0; i < numConnects; ++i) {
-      Group::NodeId acceptorNodeId = group.getConnectAcceptorNodeId(i);
-      Group::NodeId providerNodeId = group.getConnectProviderNodeId(i);
+      unsigned acceptorNodeIndex = group.getConnectAcceptorNodeIndex(i);
+      unsigned providerNodeIndex = group.getConnectProviderNodeIndex(i);
 
-      if (!group.getChild(acceptorNodeId)) {
+      if (acceptorNodeIndex == ~0u) {
         std::cerr << "Cannot find acceptor node from nodeId" << std::endl;
         continue;
       }
-      if (!group.getChild(acceptorNodeId)) {
+      if (providerNodeIndex == ~0u) {
         std::cerr << "Cannot find provider node from nodeId" << std::endl;
         continue;
       }
@@ -794,35 +794,40 @@ public:
 
       if (!acceptorPort) {
         std::cerr << "Cannot find acceptor Port data node "
-                  << group.getChild(acceptorNodeId)->getName() << std::endl;
+                  << group.getChild(acceptorNodeIndex)->getName() << std::endl;
         continue;
       }
       if (!providerPort) {
         std::cerr << "Cannot find provider Port data node "
-                  << group.getChild(providerNodeId)->getName() << std::endl;
+                  << group.getChild(providerNodeIndex)->getName() << std::endl;
         continue;
       }
 
-      if (!_portDataMap[acceptorNodeId][acceptorPortId]->
-          connect(_portDataMap[providerNodeId][providerPortId]))
+      if (!_portDataMap[acceptorNodeIndex][acceptorPortId]->
+          connect(_portDataMap[providerNodeIndex][providerPortId]))
         std::cerr << "Cannot connect????" << std::endl;
     }
 
     PortDataHelper::PortDataList* portDataList = buildGenericNodeContext(group);
 
+    parentPortDataMap.swap(_portDataMap);
+    // Ok, some nameing niceness
+    PortDataMap childrenPortDataMap;
+    childrenPortDataMap.swap(parentPortDataMap);
+
     // add group connect routings
     // merge child list into the global list of instances
     for (unsigned i = 0; i < group.getNumPorts(); ++i) {
       PortId portId = group.getPortId(i);
-      Group::NodeId nodeId = group.getGroupPortNode(portId);
-      if (_portDataMap[nodeId].empty()) {
+      unsigned nodeIndex = group.getGroupPortNodeIndex(portId);
+      if (childrenPortDataMap[nodeIndex].empty()) {
         // FIXME, is this an internal error ???
         std::cerr << "Hmm, cannot find GroupPortNode for external port "
                   << i << std::endl;
         continue;
       }
 
-      PortDataHelper::PortData* portData = _portDataMap[nodeId].begin()->second;
+      PortDataHelper::PortData* portData = childrenPortDataMap[nodeIndex].begin()->second;
       if (portData->toProxyAcceptorPortData()) {
         PortDataHelper::ProxyAcceptorPortData* proxyAcceptorPortData;
         proxyAcceptorPortData = portData->toProxyAcceptorPortData();
@@ -837,7 +842,7 @@ public:
 
         proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
 
-        parentPortDataMap[getCurrentNodeId()][portId] = proxyProviderPortData;
+        getCurrentNodePortDataMap()[portId] = proxyProviderPortData;
 
       } else if (portData->toProxyProviderPortData()) {
         PortDataHelper::ProxyProviderPortData* proxyProviderPortData;
@@ -853,14 +858,12 @@ public:
 
         proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
 
-        parentPortDataMap[getCurrentNodeId()][portId] = proxyAcceptorPortData;
+        getCurrentNodePortDataMap()[portId] = proxyAcceptorPortData;
 
       } else {
         OpenFDMAssert(false);
       }
     }
-
-    parentPortDataMap.swap(_portDataMap);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -880,7 +883,7 @@ public:
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
   typedef std::map<PortId, SharedPtr<PortDataHelper::PortData> > NodePortDataMap;
-  typedef std::map<Group::NodeId, NodePortDataMap> PortDataMap;
+  typedef std::map<unsigned, NodePortDataMap> PortDataMap;
   PortDataMap _portDataMap;
   // Just to hold references to all mort data lists we have in the
   // simulation system. They are just needed during traversal for connect
@@ -982,20 +985,20 @@ public:
     return true;
   }
 
-  void pushNodeId(const Group::NodeId& nodeId)
-  { _nodeIdStack.push_back(nodeId); }
+  void pushNodeId(unsigned index)
+  { mNodeIndexStack.push_back(index); }
   void popNodeId()
-  { _nodeIdStack.pop_back(); }
-  Group::NodeId getCurrentNodeId() const
+  { mNodeIndexStack.pop_back(); }
+
+  NodePortDataMap& getCurrentNodePortDataMap()
   {
-    if (_nodeIdStack.empty())
-      return Group::NodeId();
-    return _nodeIdStack.back();
+    OpenFDMAssert(!mNodeIndexStack.empty());
+    return _portDataMap[mNodeIndexStack.back()];
   }
 
 private:
-  typedef std::list<Group::NodeId> NodeIdStack;
-  NodeIdStack _nodeIdStack;
+  typedef std::list<unsigned> NodeIndexStack;
+  NodeIndexStack mNodeIndexStack;
 
   NodePath mNodePath;
 };

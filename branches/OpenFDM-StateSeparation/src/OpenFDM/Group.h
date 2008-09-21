@@ -133,6 +133,10 @@ public:
       return nodeId;
     return getGroupAcceptorNode(portId);
   }
+  unsigned getGroupPortNodeIndex(const PortId& portId) const
+  {
+    return getChildNumber(getGroupPortNode(portId));
+  }
 
   PortId getGroupPort(const NodeId& nodeId) const
   {
@@ -220,11 +224,19 @@ public:
       return NodeId();
     return _connectList[i]->_acceptorNodeId;
   }
+  unsigned getConnectAcceptorNodeIndex(unsigned i) const
+  {
+    return getChildNumber(getConnectAcceptorNodeId(i));
+  }
   NodeId getConnectProviderNodeId(unsigned i) const
   {
     if (getNumConnects() <= i)
       return NodeId();
     return _connectList[i]->_providerNodeId;
+  }
+  unsigned getConnectProviderNodeIndex(unsigned i) const
+  {
+    return getChildNumber(getConnectProviderNodeId(i));
   }
 
   SharedPtr<const AcceptorPortInfo>
