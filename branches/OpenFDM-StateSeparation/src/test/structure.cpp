@@ -669,7 +669,7 @@ public:
     genericNodeInstance = new GenericNodeInstance(mNodePath, &node);
     _nodeInstanceList.push_back(genericNodeInstance);
     PortDataHelper::PortDataList* portDataList = new PortDataHelper::PortDataList(genericNodeInstance);
-    _portDataListMap[_nodeInstanceList.back()] = portDataList;
+    _portDataListList.push_back(portDataList);
 
     return portDataList;
   }
@@ -702,7 +702,7 @@ public:
   void allocPortData(NodeInstance* leafInstance, const LeafNode& leaf)
   {
     PortDataHelper::PortDataList* portDataList = new PortDataHelper::PortDataList(leafInstance);
-    _portDataListMap[SharedPtr<NodeInstance>(leafInstance)] = portDataList;
+    _portDataListList.push_back(portDataList);
 
     // FIXME: move to LeafInstance??
     for (unsigned i = 0; i < leaf.getNumPorts(); ++i) {
@@ -888,8 +888,8 @@ public:
   // Just to hold references to all mort data lists we have in the
   // simulation system. They are just needed during traversal for connect
   // information and to distribute port value pointers.
-  typedef std::map<SharedPtr<NodeInstance>,SharedPtr<PortDataHelper::PortDataList> > PortDataListMap;
-  PortDataListMap _portDataListMap;
+  typedef std::list<SharedPtr<PortDataHelper::PortDataList> > PortDataListList;
+  PortDataListList _portDataListList;
 
   // method to sort the leafs according to their dependency
   bool sortModelList()
@@ -944,12 +944,9 @@ public:
   bool
   allocPortData()
   {
-    PortDataListMap::const_iterator i;
-    for (i = _portDataListMap.begin(); i != _portDataListMap.end(); ++i) {
-      PortDataHelper::PortDataList* portDataList = i->second;
-      if (!portDataList)
-        continue;
-      if (!portDataList->allocAndConnectProviderPortValues()) {
+    PortDataListList::const_iterator i;
+    for (i = _portDataListList.begin(); i != _portDataListList.end(); ++i) {
+      if (!(*i)->allocAndConnectProviderPortValues()) {
         Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
         return false;
       }
