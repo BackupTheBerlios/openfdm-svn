@@ -25,7 +25,7 @@ class ProxyProviderPortInfo;
 
 class GroupAcceptorNode : public Node {
 public:
-  GroupAcceptorNode();
+  GroupAcceptorNode(const std::string& name = std::string());
   virtual void accept(NodeVisitor& visitor)
   { visitor.apply(*this); }
   virtual void accept(ConstNodeVisitor& visitor) const
@@ -37,7 +37,7 @@ public:
 
 class GroupProviderNode : public Node {
 public:
-  GroupProviderNode();
+  GroupProviderNode(const std::string& name = std::string());
   virtual void accept(NodeVisitor& visitor)
   { visitor.apply(*this); }
   virtual void accept(ConstNodeVisitor& visitor) const

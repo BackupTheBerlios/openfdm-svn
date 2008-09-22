@@ -8,12 +8,14 @@
 
 namespace OpenFDM {
 
-GroupAcceptorNode::GroupAcceptorNode() :
+GroupAcceptorNode::GroupAcceptorNode(const std::string& name) :
+  Node(name),
   _groupInternalPort(new ProxyProviderPortInfo(this, "output"))
 {
 }
 
-GroupProviderNode::GroupProviderNode() :
+GroupProviderNode::GroupProviderNode(const std::string& name) :
+  Node(name),
   _groupInternalPort(new ProxyAcceptorPortInfo(this, "input"))
 {
 }

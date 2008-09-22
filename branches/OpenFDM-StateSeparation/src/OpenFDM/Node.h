@@ -20,11 +20,18 @@ class ConstNodeVisitor;
 class Node : public Object {
   OPENFDM_OBJECT(Node, Object);
 public:
-  Node(const std::string& name = std::string());
+  Node(const std::string& name);
   virtual ~Node();
 
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
+  void ascend(NodeVisitor& visitor);
+  void ascend(ConstNodeVisitor& visitor) const;
+
+  unsigned getNumParents() const
+  { return mParentList.size(); }
+  WeakPtr<const Node> getParent(unsigned i) const;
+  WeakPtr<Node> getParent(unsigned i);
 
   SharedPtr<const PortInfo> getPort(const PortId& portId) const;
   SharedPtr<const PortInfo> getPort(unsigned index) const;
@@ -39,6 +46,9 @@ public:
 
 protected:
 
+  void addParent(Node* parent);
+  void removeParent(Node* parent);
+
 private:
   Node(const Node&);
   Node& operator=(const Node&);
@@ -50,6 +60,9 @@ private:
   PortList mPortList;
 
   friend class PortInfo;
+
+  typedef std::vector<WeakPtr<Node> > ParentList;
+  ParentList mParentList;
 };
 
 } // namespace OpenFDM

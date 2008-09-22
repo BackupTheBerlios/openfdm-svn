@@ -33,6 +33,46 @@ Node::accept(ConstNodeVisitor& visitor) const
   visitor.apply(*this);
 }
 
+void
+Node::ascend(NodeVisitor& visitor)
+{
+  ParentList::iterator i;
+  for (i = mParentList.begin(); i != mParentList.end(); ++i) {
+    SharedPtr<Node> parent = i->lock();
+    if (!parent)
+      continue;
+    parent->accept(visitor);
+  }
+}
+
+void
+Node::ascend(ConstNodeVisitor& visitor) const
+{
+  ParentList::const_iterator i;
+  for (i = mParentList.begin(); i != mParentList.end(); ++i) {
+    SharedPtr<const Node> parent = i->lock();
+    if (!parent)
+      continue;
+    parent->accept(visitor);
+  }
+}
+
+WeakPtr<const Node>
+Node::getParent(unsigned i) const
+{
+  if (mParentList.size() <= i)
+    return 0;
+  return mParentList[i];
+}
+
+WeakPtr<Node>
+Node::getParent(unsigned i)
+{
+  if (mParentList.size() <= i)
+    return 0;
+  return mParentList[i];
+}
+
 SharedPtr<const PortInfo>
 Node::getPort(const PortId& portId) const
 {
@@ -97,6 +137,27 @@ Node::checkPort(const PortId& portId) const
   PortList::const_iterator i;
   i = std::find(mPortList.begin(), mPortList.end(), portId._port.lock());
   return i != mPortList.end();
+}
+
+void
+Node::addParent(Node* parent)
+{
+  if (!parent)
+    return;
+  mParentList.push_back(parent);
+}
+
+void
+Node::removeParent(Node* parent)
+{
+  ParentList::iterator i;
+  for (i = mParentList.begin(); i != mParentList.end();) {
+    SharedPtr<Node> lockedParent = i->lock();
+    if (parent == lockedParent)
+      i = mParentList.erase(i);
+    else
+      ++i;
+  }
 }
 
 void
