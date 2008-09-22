@@ -758,9 +758,6 @@ public:
     parentPortDataMap.swap(_portDataMap);
 
     // Walk the children
-#if 0
-    group.traverse(*this);
-#else
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
       pushNodeId(i);
       mNodePath.push_back(group.getChild(i));
@@ -768,7 +765,6 @@ public:
       mNodePath.pop_back();
       popNodeId();
     }
-#endif
 
     // Apply the group internal connections to the instances
     unsigned numConnects = group.getNumConnects();
