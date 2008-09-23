@@ -457,16 +457,6 @@ struct PortDataHelper {
     { return 0; }
     virtual bool connect(PortData*) = 0;
 
-    SharedPtr<PortDataList> getParentPortDataList() const
-    { return mParentPortDataList.lock(); }
-    SharedPtr<NodeInstance> getNodeInstance() const
-    {
-      SharedPtr<PortDataList> portDataList = getParentPortDataList();
-      if (!portDataList)
-        return 0;
-      return portDataList->mNodeInstance;
-    }
-
     const SharedPtr<const PortInfo>& getPortInfo() const
     { return mPortInfo; }
 
@@ -474,7 +464,10 @@ struct PortDataHelper {
     {
       if (!getPortInfo())
         return;
-      SharedPtr<NodeInstance> nodeInstance = getNodeInstance();
+      SharedPtr<PortDataList> portDataList = mParentPortDataList.lock();
+      if (!portDataList)
+        return;
+      SharedPtr<NodeInstance> nodeInstance = portDataList->mNodeInstance;
       if (!nodeInstance)
         return;
       unsigned index = getPortInfo()->getIndex();
