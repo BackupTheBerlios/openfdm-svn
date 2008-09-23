@@ -938,7 +938,7 @@ public:
   }
 
   bool
-  allocPortData()
+  allocPortValues()
   {
     PortDataListList::const_iterator i;
     for (i = _portDataListList.begin(); i != _portDataListList.end(); ++i) {
@@ -1102,7 +1102,7 @@ public:
     
     // Allocates and distributes the PortValues, is required for the sort
     // steps below
-    if (!nodeInstanceCollector.allocPortData())
+    if (!nodeInstanceCollector.allocPortValues())
       return false;
     // The model instances are sorted to match the direct input property
     if (!nodeInstanceCollector.sortModelList())
