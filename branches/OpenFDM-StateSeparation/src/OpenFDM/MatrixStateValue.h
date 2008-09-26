@@ -31,6 +31,8 @@ public:
   { stateStream.readSubState(mMatrix); }
   virtual void getValue(StateStream& stateStream) const
   { stateStream.writeSubState(mMatrix); }
+  virtual LinAlg::size_type getNumStates() const
+  { return rows(mMatrix)*cols(mMatrix); }
 
 protected:
   virtual ~MatrixStateValue();

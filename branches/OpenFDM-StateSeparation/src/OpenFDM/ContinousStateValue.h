@@ -14,6 +14,7 @@ class ContinousStateValue : public StateValue {
 public:
   virtual void setValue(const StateStream& stateStream) = 0;
   virtual void getValue(StateStream& stateStream) const = 0;
+  virtual LinAlg::size_type getNumStates() const = 0;
 
 protected:
   virtual ~ContinousStateValue();
