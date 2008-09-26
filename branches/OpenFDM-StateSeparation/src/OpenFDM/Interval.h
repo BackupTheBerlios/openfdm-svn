@@ -29,17 +29,17 @@ public:
 
   bool valid() const
   { return mBegin <= mEnd; }
-  value_type length() const
+  value_type getLength() const
   { return mEnd - mBegin; }
 
   bool isLeftOf(const value_type& value) const
-  { return value <= mBegin; }
-  bool isStrictlyLeftOf(const value_type& value) const
-  { return value < mBegin; }
-  bool isRightOf(const value_type& value) const
   { return mEnd <= value; }
-  bool isStrictlyRightOf(const value_type& value) const
+  bool isStrictlyLeftOf(const value_type& value) const
   { return mEnd < value; }
+  bool isRightOf(const value_type& value) const
+  { return value <= mBegin; }
+  bool isStrictlyRightOf(const value_type& value) const
+  { return value < mBegin; }
   bool contains(const value_type& value) const
   { return mBegin <= value && value <= mEnd; }
 
