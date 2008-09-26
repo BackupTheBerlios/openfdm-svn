@@ -31,6 +31,7 @@ OpenFDMCoreHEADERS = \
   Group.h \
   ImplicitEuler.h \
   Inertia.h \
+  Interval.h \
   Interact.h \
   LeafContext.h \
   LeafNode.h \
