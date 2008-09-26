@@ -6,14 +6,14 @@
 #define OpenFDM_TemplateContinousStateInfo_H
 
 #include "ContinousStateInfo.h"
-#include "ContinousStateValue.h"
+#include "MatrixStateValue.h"
 #include "TemplateStateInfo.h"
 
 namespace OpenFDM {
 
 template<typename T>
 class TemplateContinousStateInfo : 
-    public TemplateStateInfo<T, ContinousStateInfo, ContinousStateValue> {
+    public TemplateStateInfo<T, ContinousStateInfo, MatrixStateValue> {
 };
 
 } // namespace OpenFDM
