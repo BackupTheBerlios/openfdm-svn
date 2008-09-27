@@ -122,6 +122,9 @@ OpenFDMCoreSOURCES = \
   Atomic.cpp \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
+  DoPri5.cpp \
+  ExplicitAdams.cpp \
+  ExplicitEuler.cpp \
   Frame.cpp \
   Function.cpp \
   Group.cpp \
@@ -133,11 +136,13 @@ OpenFDMCoreSOURCES = \
   MatrixStateValue.cpp \
   MechanicNode.cpp \
   MechanicPortValue.cpp \
+  MidpointRule.cpp \
   Model.cpp \
   Node.cpp \
   NodeVisitor.cpp \
   NumericPortValue.cpp \
   Object.cpp \
+  ODESolver.cpp \
   Planet.cpp \
   PortInfo.cpp \
   PortValue.cpp \
@@ -149,16 +154,11 @@ OpenFDMCoreSOURCES = \
   Unit.cpp \
   Variant.cpp
 
-#   DoPri5.cpp \
 #   Environment.cpp \
 #   EnvironmentObject.cpp \
-#   ExplicitAdams.cpp \
-#   ExplicitEuler.cpp \
 #   ImplicitEuler.cpp \
 #   Newton.cpp \
-#   MidpointRule.cpp \
 #   ReaderWriter.cpp \
-#   ODESolver.cpp \
 #   System.cpp \
 #   TaskInfo.cpp \
 #

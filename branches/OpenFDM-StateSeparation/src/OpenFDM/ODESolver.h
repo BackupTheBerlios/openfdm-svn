@@ -9,7 +9,7 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
-#include "System.h"
+#include "Function.h"
 
 namespace OpenFDM {
 
@@ -53,26 +53,19 @@ public:
   { return mStats; }
 
   void evalFunction(real_type t, const Vector& v, Vector& out)
-  {
-    SharedPtr<System> system = mSystem.lock();
-    system->evalFunction(t, v, out);
-  }
+  { mFunction->eval(t, v, out); }
   void evalJacobian(real_type t, const Vector& v, Matrix& jac)
-  {
-    SharedPtr<System> system = mSystem.lock();
-    system->evalJacobian(t, v, jac);
-  }
+  { mFunction->jac(t, v, jac); }
 
-  void setSystem(System* model)
-  { mSystem = model; }
+  void setFunction(Function* function)
+  { mFunction = function; }
 
 protected:
   real_type mStepsize;
   real_type mTime;
   Vector mState;
 
-  /// WeakPtr ???
-  WeakPtr<System> mSystem;
+  SharedPtr<Function> mFunction;
 
   Stats mStats;
 };

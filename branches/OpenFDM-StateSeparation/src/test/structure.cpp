@@ -28,6 +28,8 @@
 #include <OpenFDM/ContinousStateValueVector.h>
 #include <OpenFDM/DiscreteStateValueVector.h>
 
+#include <OpenFDM/ODESolver.h>
+#include <OpenFDM/Function.h>
 #include <OpenFDM/SampleTime.h>
 
 #include <OpenFDM/BoolStateInfo.h>
