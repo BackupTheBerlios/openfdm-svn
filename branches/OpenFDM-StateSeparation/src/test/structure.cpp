@@ -239,8 +239,8 @@ public:
 //                        mPortValueList,
 //                        mContinousStateDerivative); }
 
-  // Return true if this leaf directly depends on one of leafInstance outputs
-  bool dependsOn(const ModelContext* modelContext) const
+  // Return true if this model directly depends on one of models outputs
+  bool dependsOn(const ModelContext& modelContext) const
   {
     unsigned numPorts = mModel->getNumPorts();
     for (unsigned i = 0; i < numPorts; ++i) {
@@ -253,13 +253,13 @@ public:
       const PortValue* portValue = getPortValueList().getPortValue(i);
       if (!portValue)
         continue;
-      unsigned otherNumPorts = modelContext->mModel->getNumPorts();
+      unsigned otherNumPorts = modelContext.mModel->getNumPorts();
       for (unsigned j = 0; j < otherNumPorts; ++j) {
-        if (!modelContext->mModel->getPort(j)->toProviderPortInfo())
+        if (!modelContext.mModel->getPort(j)->toProviderPortInfo())
           continue;
 
         const PortValue* otherPortValue;
-        otherPortValue = modelContext->getPortValueList().getPortValue(j);
+        otherPortValue = modelContext.getPortValueList().getPortValue(j);
         if (portValue != otherPortValue)
           continue;
 
@@ -313,8 +313,8 @@ public:
   { }
 
   // Return true if this leaf directly depends on one of leafInstance outputs
-  bool dependsOn(const ModelInstance* modelInstance) const
-  { return mModelContext->dependsOn(modelInstance->mModelContext); }
+  bool dependsOn(const ModelInstance& modelInstance) const
+  { return mModelContext->dependsOn(*modelInstance.mModelContext); }
 
 // protected: // FIXME
   virtual ModelContext& getNodeContext()
@@ -363,6 +363,32 @@ public:
 //   void update()
 //   { }
 
+  bool isConnectedTo(const MechanicContext& mechanicContext) const
+  {
+    unsigned numPorts = mMechanicNode->getNumPorts();
+    for (unsigned i = 0; i < numPorts; ++i) {
+      SharedPtr<const PortInfo> portInfo = mMechanicNode->getPort(i);
+      OpenFDMAssert(portInfo);
+      const PortValue* portValue = getPortValueList().getPortValue(i);
+      if (!portValue)
+        continue;
+      unsigned otherNumPorts = mechanicContext.mMechanicNode->getNumPorts();
+      for (unsigned j = 0; j < otherNumPorts; ++j) {
+        if (!mechanicContext.mMechanicNode->getPort(j)->toProviderPortInfo())
+          continue;
+
+        const PortValue* otherPortValue;
+        otherPortValue = mechanicContext.getPortValueList().getPortValue(j);
+        if (portValue != otherPortValue)
+          continue;
+
+        return true;
+      }
+    }
+    return false;
+  }
+
+private:
   SharedPtr<const MechanicNode> mMechanicNode;
 
 private:
@@ -412,6 +438,9 @@ public:
     AbstractNodeInstance(nodePath),
     mMechanicContext(new MechanicContext(mechanicNode))
   { }
+
+  bool isConnectedTo(const MechanicInstance& mechanicInstance) const
+  { return mMechanicContext->isConnectedTo(*mechanicInstance.mMechanicContext); }
 
 protected:
   virtual MechanicContext& getNodeContext()
@@ -646,7 +675,7 @@ struct PortDataHelper {
   };
 };
 
-class LeafInstanceCollector : public ConstNodeVisitor {
+class NodeInstanceCollector : public ConstNodeVisitor {
 public:
 
   virtual void apply(const Node& node)
@@ -892,7 +921,7 @@ public:
       for (i = sortedModelInstanceList.begin();
            i != sortedModelInstanceList.end();
            ++i) {
-        if (!(*i)->dependsOn(modelInstance))
+        if (!(*i)->dependsOn(*modelInstance))
           continue;
 
         // Something already sorted in depends on modelInstance,
@@ -916,7 +945,7 @@ public:
         // If it cannot be put at the end, check if modelInstance depends
         // on any model that is already scheduled behind to detect cyclic loops.
         for (; i != sortedModelInstanceList.end(); ++i) {
-          if (!modelInstance->dependsOn(*i))
+          if (!modelInstance->dependsOn(*(*i)))
             continue;
           Log(Schedule,Error)
             << "Detected cyclic loop: Model \""
@@ -1090,7 +1119,7 @@ public:
       return true;
 
     // Build up the lists required to run the model.
-    LeafInstanceCollector nodeInstanceCollector;
+    NodeInstanceCollector nodeInstanceCollector;
     mNode->accept(nodeInstanceCollector);
     
     // Allocates and distributes the PortValues, is required for the sort
