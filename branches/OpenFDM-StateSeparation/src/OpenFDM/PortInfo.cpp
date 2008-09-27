@@ -18,15 +18,22 @@ PortInfo::PortInfo(Node* node, const std::string& name) :
 
 PortInfo::~PortInfo()
 {
-  SharedPtr<Node> node = mNode.lock();
-  if (node)
-    node->removePort(this);
+  clear();
 }
 
 void
 PortInfo::setName(const std::string& name)
 {
   mName = name;
+}
+
+void
+PortInfo::clear()
+{
+  SharedPtr<Node> node = mNode.lock();
+  if (!node)
+    return;
+  node->removePort(this);
 }
 
 } // namespace OpenFDM

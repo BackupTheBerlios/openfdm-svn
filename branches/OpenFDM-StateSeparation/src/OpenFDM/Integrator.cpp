@@ -11,13 +11,13 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Integrator, Model)
   DEF_OPENFDM_PROPERTY(Matrix, InitialValue, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableInitialValuePort, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Integrator::Integrator(const std::string& name = std::string()) :
   Model(name),
   mInputPort(newMatrixInputPort("input", false)),
-  mOutputPort(newMatrixOutputPort("output")),
-  mInitialValuePort(newMatrixInputPort("initialValue", true))
+  mOutputPort(newMatrixOutputPort("output"))
 {
   mMatrixStateInfo = new MatrixStateInfo;
   addContinousStateInfo(mMatrixStateInfo);
@@ -79,6 +79,21 @@ const Matrix&
 Integrator::getInitialValue() const
 {
   return mInitialValue;
+}
+
+void
+Integrator::setEnableInitialValuePort(bool enable)
+{
+  if (enable && !mInitialValuePort.empty())
+    mInitialValuePort = newMatrixInputPort("initialValue", true);
+  else if (!enable && mInitialValuePort.empty())
+    mInitialValuePort.clear();
+}
+
+bool
+Integrator::getEnableInitialValuePort() const
+{
+  return mInitialValuePort.empty();
 }
 
 } // namespace OpenFDM

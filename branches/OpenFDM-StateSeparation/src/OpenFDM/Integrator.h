@@ -27,6 +27,9 @@ public:
   void setInitialValue(const Matrix& initialValue);
   const Matrix& getInitialValue() const;
 
+  void setEnableInitialValuePort(bool enable);
+  bool getEnableInitialValuePort() const;
+
 private:
   MatrixInputPort mInputPort;
   MatrixOutputPort mOutputPort;

@@ -61,6 +61,8 @@ public:
     return portValueVector[index];
   }
 
+  void clear();
+
 private:
   PortInfo(const PortInfo&);
   PortInfo& operator=(const PortInfo&);
