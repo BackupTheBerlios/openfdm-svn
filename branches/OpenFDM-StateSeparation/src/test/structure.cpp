@@ -94,23 +94,25 @@ namespace OpenFDM {
 ///
 /// The NodeInstance is used to present the user a handle to the simulation
 /// models runtime data. Each instance has an execution context and a pointer
-/// to the actual node.
+/// to the actual node. That node might be used in more than one NodeInstance
+/// due to library models that can be referenced twice.
 ///
 /// For model execution we have a list of ModelContexs and a list of
-/// MechanicContexts. Both of them are derived from the NodeContext from above.
+/// MechanicContexts. Both of them are derived from the AbstractNodeContext
+/// from above.
 ///
 /// To connect the ports and propagate the port values over the NodeContexts
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
 
-/// A NodeInstance represents an effective model node in a ready to run
-/// System. You can access the Nodes Ports values for example.
+/// An Abstract NodeInstance represents an effective model node in a ready
+/// to run System. You can access the Nodes Ports values for example.
 /// This class is meant to show up in the user interface of this simulation.
 class AbstractNodeInstance : public WeakReferenced {
 public:
   AbstractNodeInstance(const NodePath& nodePath) :
     mNodePath(nodePath)
-  { }
+  { OpenFDMAssert(!nodePath.empty()); }
   virtual ~AbstractNodeInstance()
   { }
 
