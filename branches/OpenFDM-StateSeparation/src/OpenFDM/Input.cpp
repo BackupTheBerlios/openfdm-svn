@@ -31,7 +31,7 @@ Input::~Input(void)
 void
 Input::accept(ModelVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 const Input*

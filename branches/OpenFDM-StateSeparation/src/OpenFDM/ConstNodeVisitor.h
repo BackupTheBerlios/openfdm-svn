@@ -5,6 +5,8 @@
 #ifndef OpenFDM_ConstNodeVisitor_H
 #define OpenFDM_ConstNodeVisitor_H
 
+#include "Node.h"
+
 namespace OpenFDM {
 
 class Node;
@@ -42,6 +44,18 @@ public:
 
   virtual void apply(const Interact&);
   virtual void apply(const RootJoint&);
+
+  const NodePath& getNodePath() const { return mNodePath; }
+
+  template<typename T>
+  void handleNodePathAndApply(T& node)
+  {
+    mNodePath.push_back(&node);
+    apply(node);
+    mNodePath.pop_back();
+  }
+private:
+  NodePath mNodePath;
 };
 
 } // namespace OpenFDM

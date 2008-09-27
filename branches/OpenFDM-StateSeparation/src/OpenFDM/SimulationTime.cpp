@@ -24,7 +24,7 @@ SimulationTime::~SimulationTime(void)
 void
 SimulationTime::accept(ModelVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 bool

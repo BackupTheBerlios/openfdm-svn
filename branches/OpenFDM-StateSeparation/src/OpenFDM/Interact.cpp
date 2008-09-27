@@ -24,13 +24,13 @@ Interact::~Interact()
 void
 Interact::accept(NodeVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 void
 Interact::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 } // namespace OpenFDM

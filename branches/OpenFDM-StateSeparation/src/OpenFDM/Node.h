@@ -14,8 +14,11 @@
 
 namespace OpenFDM {
 
+class Node;
 class NodeVisitor;
 class ConstNodeVisitor;
+
+typedef std::vector<SharedPtr<const Node> > NodePath;
 
 class Node : public Object {
   OPENFDM_OBJECT(Node, Object);

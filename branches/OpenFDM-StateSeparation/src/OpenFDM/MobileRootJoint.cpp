@@ -35,7 +35,7 @@ MobileRootJoint::~MobileRootJoint(void)
 void
 MobileRootJoint::accept(ModelVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 bool

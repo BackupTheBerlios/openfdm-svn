@@ -24,13 +24,13 @@ RootJoint::~RootJoint()
 void
 RootJoint::accept(NodeVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 void
 RootJoint::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 } // namespace OpenFDM

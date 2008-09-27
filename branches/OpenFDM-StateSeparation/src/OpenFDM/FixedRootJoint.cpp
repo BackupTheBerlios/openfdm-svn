@@ -33,7 +33,7 @@ FixedRootJoint::~FixedRootJoint(void)
 void
 FixedRootJoint::accept(ModelVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 bool

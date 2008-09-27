@@ -103,8 +103,6 @@ namespace OpenFDM {
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
 
-typedef std::vector<SharedPtr<const Node> > NodePath;
-
 /// A NodeInstance represents an effective model node in a ready to run
 /// System. You can access the Nodes Ports values for example.
 /// This class is meant to show up in the user interface of this simulation.
@@ -693,7 +691,7 @@ public:
   PortDataHelper::PortDataList* buildNodeContext(const Node& node)
   {
     NodeInstance* nodeInstance;
-    nodeInstance = new NodeInstance(mNodePath, &node);
+    nodeInstance = new NodeInstance(getNodePath(), &node);
     _nodeInstanceList.push_back(nodeInstance);
     PortDataHelper::PortDataList* portDataList;
     portDataList = getCurrentNodePortDataList();
@@ -747,7 +745,7 @@ public:
   {
     // Need to stor the root nodes to build up the spanning tree for the
     // mechanical system here.
-    MechanicInstance* mechanicInstance = new MechanicInstance(mNodePath, &node);
+    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), &node);
     _nodeInstanceList.push_back(mechanicInstance);
 //     _mechanicInstanceList.push_back(mechanicInstance);
     _rootJointInstanceList.push_back(mechanicInstance);
@@ -755,14 +753,14 @@ public:
   }
   virtual void apply(const MechanicNode& node)
   {
-    MechanicInstance* mechanicInstance = new MechanicInstance(mNodePath, &node);
+    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), &node);
     _nodeInstanceList.push_back(mechanicInstance);
     _mechanicInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
   }
   virtual void apply(const Model& node)
   {
-    ModelInstance* modelInstance = new ModelInstance(mNodePath, &node);
+    ModelInstance* modelInstance = new ModelInstance(getNodePath(), &node);
     _nodeInstanceList.push_back(modelInstance);
     _modelInstanceList.push_back(modelInstance);
     allocPortData(modelInstance, node);
@@ -786,9 +784,7 @@ public:
       parentNodePortDataList.swap(mCurrentNodePortDataList);
       mCurrentNodePortDataList = _portDataMap[i];
 
-      mNodePath.push_back(group.getChild(i));
       group.getChild(i)->accept(*this);
-      mNodePath.pop_back();
 
       parentNodePortDataList.swap(mCurrentNodePortDataList);
     }
@@ -1010,8 +1006,6 @@ public:
 
 private:
   SharedPtr<PortDataHelper::PortDataList> mCurrentNodePortDataList;
-
-  NodePath mNodePath;
 };
 
 

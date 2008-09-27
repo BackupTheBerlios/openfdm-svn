@@ -92,7 +92,7 @@ System::~System(void)
 void
 System::accept(ModelVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 static bool

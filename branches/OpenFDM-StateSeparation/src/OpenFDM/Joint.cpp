@@ -33,7 +33,7 @@ Joint::~Joint(void)
 void
 Joint::accept(ModelVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 void

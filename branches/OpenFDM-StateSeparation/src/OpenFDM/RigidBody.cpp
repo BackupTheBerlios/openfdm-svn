@@ -24,13 +24,13 @@ RigidBody::~RigidBody()
 void
 RigidBody::accept(NodeVisitor& visitor)
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 void
 RigidBody::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.apply(*this);
+  visitor.handleNodePathAndApply(*this);
 }
 
 } // namespace OpenFDM
