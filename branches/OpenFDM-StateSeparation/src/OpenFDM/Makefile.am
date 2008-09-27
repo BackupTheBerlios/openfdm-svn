@@ -118,6 +118,7 @@ OpenFDMCoreHEADERS = \
   XMLDumpModelVisitor.h
 
 OpenFDMCoreSOURCES = \
+  AcceptorPortInfo.cpp \
   Assert.cpp \
   Atomic.cpp \
   ConstNodeVisitor.cpp \
@@ -146,6 +147,7 @@ OpenFDMCoreSOURCES = \
   Planet.cpp \
   PortInfo.cpp \
   PortValue.cpp \
+  ProviderPortInfo.cpp \
   RigidBody.cpp \
   RootJoint.cpp \
   SampleTime.cpp \

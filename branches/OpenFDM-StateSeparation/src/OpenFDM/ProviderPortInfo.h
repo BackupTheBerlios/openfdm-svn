@@ -12,16 +12,14 @@ namespace OpenFDM {
 
 class ProviderPortInfo : public PortInfo {
 public:
-  ProviderPortInfo(Node* node, const std::string& name) :
-    PortInfo(node, name) {}
+  ProviderPortInfo(Node* node, const std::string& name);
+  virtual ~ProviderPortInfo();
 
   /// Public interface to instantiate a new port value
-  PortValue* newValue() const
-  { return newValueImplementation(); }
+  PortValue* newValue() const;
 
   /// Dynamic casts
-  virtual const ProviderPortInfo* toProviderPortInfo() const
-  { return this; }
+  virtual const ProviderPortInfo* toProviderPortInfo() const;
 
 protected:
   /// The basic property of a provider port is that it can provide
