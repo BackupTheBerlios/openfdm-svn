@@ -702,11 +702,10 @@ public:
     PortDataHelper::PortDataList* portDataList = buildNodeContext(leaf);
 
     OpenFDMAssert(leaf.getPort(0));
-    PortId portId = leaf.getPortId(0);
 
     PortDataHelper::ProviderPortData* providerPortData;
     providerPortData = portDataList->newProxyProviderPortData(leaf._groupInternalPort);
-    getCurrentNodePortDataMap()[portId] = providerPortData;
+    getCurrentNodePortDataMap()[0] = providerPortData;
   }
   // Aussen provider, innen acceptor
   virtual void apply(const GroupProviderNode& leaf)
@@ -714,11 +713,10 @@ public:
     PortDataHelper::PortDataList* portDataList = buildNodeContext(leaf);
 
     OpenFDMAssert(leaf.getPort(0));
-    PortId portId = leaf.getPortId(0);
 
     PortDataHelper::AcceptorPortData* acceptorPortData;
     acceptorPortData = portDataList->newProxyAcceptorPortData(leaf._groupInternalPort);
-    getCurrentNodePortDataMap()[portId] = acceptorPortData;
+    getCurrentNodePortDataMap()[0] = acceptorPortData;
   }
 
   void allocPortData(AbstractNodeInstance* leafInstance, const LeafNode& leaf)
@@ -734,16 +732,14 @@ public:
         PortDataHelper::ProviderPortData* providerPortData;
         providerPortData = portDataList->newProviderPortData(providerPort);
 
-        PortId portId = leaf.getPortId(i);
-        getCurrentNodePortDataMap()[portId] = providerPortData;
+        getCurrentNodePortDataMap()[i] = providerPortData;
       }
       const AcceptorPortInfo* acceptorPort = port->toAcceptorPortInfo();
       if (acceptorPort) {
         PortDataHelper::AcceptorPortData* acceptorPortData;
         acceptorPortData = portDataList->newAcceptorPortData(acceptorPort);
 
-        PortId portId = leaf.getPortId(i);
-        getCurrentNodePortDataMap()[portId] = acceptorPortData;
+        getCurrentNodePortDataMap()[i] = acceptorPortData;
       }
     }
   }
@@ -805,10 +801,8 @@ public:
 
       SharedPtr<const AcceptorPortInfo> acceptorPort;
       acceptorPort = group.getConnectAcceptorPortInfo(i);
-      PortId acceptorPortId = SharedPtr<const PortInfo>(acceptorPort);
       SharedPtr<const ProviderPortInfo> providerPort;
       providerPort = group.getConnectProviderPortInfo(i);
-      PortId providerPortId = SharedPtr<const PortInfo>(providerPort);
 
       if (!acceptorPort) {
         std::cerr << "Cannot find acceptor Port data node "
@@ -821,8 +815,10 @@ public:
         continue;
       }
 
-      if (!_portDataMap[acceptorNodeIndex][acceptorPortId]->
-          connect(_portDataMap[providerNodeIndex][providerPortId]))
+      unsigned acceptorPortNumber = acceptorPort->getIndex();
+      unsigned providerPortNumber = providerPort->getIndex();
+      if (!_portDataMap[acceptorNodeIndex][acceptorPortNumber]->
+          connect(_portDataMap[providerNodeIndex][providerPortNumber]))
         std::cerr << "Cannot connect????" << std::endl;
     }
 
@@ -836,8 +832,7 @@ public:
     // add group connect routings
     // merge child list into the global list of instances
     for (unsigned i = 0; i < group.getNumPorts(); ++i) {
-      PortId portId = group.getPortId(i);
-      unsigned nodeIndex = group.getGroupPortNodeIndex(portId);
+      unsigned nodeIndex = group.getGroupPortNodeIndex(group.getPortId(i));
       if (childrenPortDataMap[nodeIndex].empty()) {
         // FIXME, is this an internal error ???
         std::cerr << "Hmm, cannot find GroupPortNode for external port "
@@ -860,7 +855,7 @@ public:
 
         proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
 
-        getCurrentNodePortDataMap()[portId] = proxyProviderPortData;
+        getCurrentNodePortDataMap()[i] = proxyProviderPortData;
 
       } else if (portData->toProxyProviderPortData()) {
         PortDataHelper::ProxyProviderPortData* proxyProviderPortData;
@@ -876,7 +871,7 @@ public:
 
         proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
 
-        getCurrentNodePortDataMap()[portId] = proxyAcceptorPortData;
+        getCurrentNodePortDataMap()[i] = proxyAcceptorPortData;
 
       } else {
         OpenFDMAssert(false);
@@ -900,7 +895,7 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
-  typedef std::map<PortId, SharedPtr<PortDataHelper::PortData> > NodePortDataMap;
+  typedef std::map<unsigned, SharedPtr<PortDataHelper::PortData> > NodePortDataMap;
   typedef std::map<unsigned, NodePortDataMap> PortDataMap;
   PortDataMap _portDataMap;
   // Just to hold references to all mort data lists we have in the
