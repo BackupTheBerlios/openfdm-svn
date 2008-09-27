@@ -35,13 +35,13 @@ Group::~Group()
 void
 Group::accept(NodeVisitor& visitor)
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 void
 Group::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 Group::NodeId

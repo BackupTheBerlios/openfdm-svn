@@ -24,13 +24,13 @@ LeafNode::~LeafNode()
 void
 LeafNode::accept(NodeVisitor& visitor)
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 void
 LeafNode::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 } // namespace OpenFDM

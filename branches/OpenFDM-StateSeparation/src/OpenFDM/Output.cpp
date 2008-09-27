@@ -33,13 +33,13 @@ Output::~Output(void)
 void
 Output::accept(NodeVisitor& visitor)
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 void
 Output::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 void

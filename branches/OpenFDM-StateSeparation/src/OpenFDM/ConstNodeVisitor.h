@@ -5,6 +5,7 @@
 #ifndef OpenFDM_ConstNodeVisitor_H
 #define OpenFDM_ConstNodeVisitor_H
 
+#include "Assert.h"
 #include "Node.h"
 
 namespace OpenFDM {
@@ -48,10 +49,11 @@ public:
   const NodePath& getNodePath() const { return mNodePath; }
 
   template<typename T>
-  void handleNodePathAndApply(T& node)
+  void handleNodePathAndApply(const T* node)
   {
-    mNodePath.push_back(&node);
-    apply(node);
+    OpenFDMAssert(node);
+    mNodePath.push_back(node);
+    apply(*node);
     mNodePath.pop_back();
   }
 private:

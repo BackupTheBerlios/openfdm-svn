@@ -24,13 +24,13 @@ Node::~Node()
 void
 Node::accept(NodeVisitor& visitor)
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 void
 Node::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 void

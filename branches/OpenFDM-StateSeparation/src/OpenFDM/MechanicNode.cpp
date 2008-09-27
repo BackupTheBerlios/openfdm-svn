@@ -24,13 +24,13 @@ MechanicNode::~MechanicNode()
 void
 MechanicNode::accept(NodeVisitor& visitor)
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 void
 MechanicNode::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 } // namespace OpenFDM

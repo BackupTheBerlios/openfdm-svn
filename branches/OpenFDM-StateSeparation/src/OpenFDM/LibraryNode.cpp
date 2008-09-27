@@ -25,13 +25,13 @@ LibraryNode::~LibraryNode()
 void
 LibraryNode::accept(NodeVisitor& visitor)
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 void
 LibraryNode::accept(ConstNodeVisitor& visitor) const
 {
-  visitor.handleNodePathAndApply(*this);
+  visitor.handleNodePathAndApply(this);
 }
 
 SharedPtr<LibraryModel>
