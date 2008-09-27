@@ -88,9 +88,9 @@ namespace OpenFDM {
 ///             | |     --------
 ///             | ----->| Node |
 ///             |       --------
-///             |       ---------------
-///             ------->| NodeContext |
-///                     ---------------
+///             |       -----------------------
+///             ------->| AbstractNodeContext |
+///                     -----------------------
 ///
 /// The NodeInstance is used to present the user a handle to the simulation
 /// models runtime data. Each instance has an execution context and a pointer
@@ -108,15 +108,15 @@ typedef std::vector<SharedPtr<const Node> > NodePath;
 /// A NodeInstance represents an effective model node in a ready to run
 /// System. You can access the Nodes Ports values for example.
 /// This class is meant to show up in the user interface of this simulation.
-class NodeInstance : public WeakReferenced {
+class AbstractNodeInstance : public WeakReferenced {
 public:
-  NodeInstance(const NodePath& nodePath) :
+  AbstractNodeInstance(const NodePath& nodePath) :
     mNodePath(nodePath)
   { }
-  virtual ~NodeInstance()
+  virtual ~AbstractNodeInstance()
   { }
 
-  /// The actual Node this NodeInstance stems from
+  /// The actual Node this AbstractNodeInstance stems from
   const Node& getNode() const
   { return getNodeContext().getNode(); }
 
@@ -150,15 +150,15 @@ public:
   }
 
 protected:
-  NodeInstance() {}
+  AbstractNodeInstance() {}
 
   /// The node context that belongs to this instance.
-  virtual NodeContext& getNodeContext() = 0;
-  virtual const NodeContext& getNodeContext() const = 0;
+  virtual AbstractNodeContext& getNodeContext() = 0;
+  virtual const AbstractNodeContext& getNodeContext() const = 0;
 
 private:
-  NodeInstance(const NodeInstance&);
-  NodeInstance& operator=(const NodeInstance&);
+  AbstractNodeInstance(const AbstractNodeInstance&);
+  AbstractNodeInstance& operator=(const AbstractNodeInstance&);
 
 //   /// The sample times this node will run on
 //   SampleTimeSet mSampleTimeSet;
@@ -166,7 +166,7 @@ private:
   NodePath mNodePath;
 };
 
-typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
+typedef std::list<SharedPtr<AbstractNodeInstance> > NodeInstanceList;
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -175,9 +175,9 @@ typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
 /// to fill NodeContext's for Node's that have nothing to execute,
 /// should be reflected to the user of the simulation system. Group's
 /// inputs ad outputs and their input and output models are such examples.
-class GenericNodeContext : public NodeContext {
+class NodeContext : public AbstractNodeContext {
 public:
-  GenericNodeContext(const Node* node) :
+  NodeContext(const Node* node) :
     mNode(node)
   { }
 
@@ -185,18 +185,18 @@ public:
   { return *mNode; }
 
 private:
-  GenericNodeContext();
-  GenericNodeContext(const GenericNodeContext&);
-  GenericNodeContext& operator=(const GenericNodeContext&);
+  NodeContext();
+  NodeContext(const NodeContext&);
+  NodeContext& operator=(const NodeContext&);
 
   SharedPtr<const Node> mNode;
 };
 
-class GenericNodeInstance : public NodeInstance {
+class NodeInstance : public AbstractNodeInstance {
 public:
-  GenericNodeInstance(const NodePath& nodePath, const Node* node) :
-    NodeInstance(nodePath),
-    mNodeContext(new GenericNodeContext(node))
+  NodeInstance(const NodePath& nodePath, const Node* node) :
+    AbstractNodeInstance(nodePath),
+    mNodeContext(new NodeContext(node))
   { }
 
 protected:
@@ -305,10 +305,10 @@ public:
   }
 };
 
-class ModelInstance : public NodeInstance {
+class ModelInstance : public AbstractNodeInstance {
 public:
   ModelInstance(const NodePath& nodePath, const Model* model) :
-    NodeInstance(nodePath),
+    AbstractNodeInstance(nodePath),
     mModelContext(new ModelContext(model))
   { }
 
@@ -405,11 +405,11 @@ public:
   }
 };
 
-class MechanicInstance : public NodeInstance {
+class MechanicInstance : public AbstractNodeInstance {
 public:
   MechanicInstance(const NodePath& nodePath,
                    const MechanicNode* mechanicNode) :
-    NodeInstance(nodePath),
+    AbstractNodeInstance(nodePath),
     mMechanicContext(new MechanicContext(mechanicNode))
   { }
 
@@ -467,7 +467,7 @@ struct PortDataHelper {
       SharedPtr<PortDataList> portDataList = mParentPortDataList.lock();
       if (!portDataList)
         return;
-      SharedPtr<NodeInstance> nodeInstance = portDataList->mNodeInstance;
+      SharedPtr<AbstractNodeInstance> nodeInstance = portDataList->mNodeInstance;
       if (!nodeInstance)
         return;
       unsigned index = getPortInfo()->getIndex();
@@ -589,7 +589,7 @@ struct PortDataHelper {
   // Return true if this leaf directly depends on one of leafInstance outputs
   class PortDataList : public WeakReferenced {
   public:
-    PortDataList(NodeInstance* nodeInstance) :
+    PortDataList(AbstractNodeInstance* nodeInstance) :
       mNodeInstance(nodeInstance)
     { }
     
@@ -640,9 +640,9 @@ struct PortDataHelper {
     typedef std::vector<SharedPtr<PortData> > PortDataVector;
     PortDataVector mPortDataVector;
     
-    /// The NodeInstance having some way to reference the
+    /// The AbstractNodeInstance having some way to reference the
     /// PortValues to the current connect information.
-    SharedPtr<NodeInstance> mNodeInstance;
+    SharedPtr<AbstractNodeInstance> mNodeInstance;
   };
 };
 
@@ -656,12 +656,12 @@ public:
   virtual void apply(const LibraryNode& libraryNode)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
 
-  PortDataHelper::PortDataList* buildGenericNodeContext(const Node& node)
+  PortDataHelper::PortDataList* buildNodeContext(const Node& node)
   {
-    GenericNodeInstance* genericNodeInstance;
-    genericNodeInstance = new GenericNodeInstance(mNodePath, &node);
-    _nodeInstanceList.push_back(genericNodeInstance);
-    PortDataHelper::PortDataList* portDataList = new PortDataHelper::PortDataList(genericNodeInstance);
+    NodeInstance* nodeInstance;
+    nodeInstance = new NodeInstance(mNodePath, &node);
+    _nodeInstanceList.push_back(nodeInstance);
+    PortDataHelper::PortDataList* portDataList = new PortDataHelper::PortDataList(nodeInstance);
     _portDataListList.push_back(portDataList);
 
     return portDataList;
@@ -670,7 +670,7 @@ public:
   // Aussen acceptor, innen provider
   virtual void apply(const GroupAcceptorNode& leaf)
   {
-    PortDataHelper::PortDataList* portDataList = buildGenericNodeContext(leaf);
+    PortDataHelper::PortDataList* portDataList = buildNodeContext(leaf);
 
     OpenFDMAssert(leaf.getPort(0));
     PortId portId = leaf.getPortId(0);
@@ -682,7 +682,7 @@ public:
   // Aussen provider, innen acceptor
   virtual void apply(const GroupProviderNode& leaf)
   {
-    PortDataHelper::PortDataList* portDataList = buildGenericNodeContext(leaf);
+    PortDataHelper::PortDataList* portDataList = buildNodeContext(leaf);
 
     OpenFDMAssert(leaf.getPort(0));
     PortId portId = leaf.getPortId(0);
@@ -692,7 +692,7 @@ public:
     getCurrentNodePortDataMap()[portId] = acceptorPortData;
   }
 
-  void allocPortData(NodeInstance* leafInstance, const LeafNode& leaf)
+  void allocPortData(AbstractNodeInstance* leafInstance, const LeafNode& leaf)
   {
     PortDataHelper::PortDataList* portDataList = new PortDataHelper::PortDataList(leafInstance);
     _portDataListList.push_back(portDataList);
@@ -797,7 +797,7 @@ public:
         std::cerr << "Cannot connect????" << std::endl;
     }
 
-    PortDataHelper::PortDataList* portDataList = buildGenericNodeContext(group);
+    PortDataHelper::PortDataList* portDataList = buildNodeContext(group);
 
     parentPortDataMap.swap(_portDataMap);
     // Ok, some nameing niceness

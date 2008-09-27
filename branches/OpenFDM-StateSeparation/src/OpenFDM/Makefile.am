@@ -8,6 +8,7 @@ lib_LTLIBRARIES = libOpenFDM.la
 libOpenFDM_la_LIBADD = -lrt
 
 OpenFDMCoreHEADERS = \
+  AbstractNodeContext.h \
   AcceptorPortInfo.h \
   Assert.h \
   Atomic.h \
@@ -65,7 +66,6 @@ OpenFDMCoreHEADERS = \
   MPFRFloat.h \
   Newton.h \
   Node.h \
-  NodeContext.h \
   NodeVisitor.h \
   NumericPortValue.h \
   NumericAcceptorPortInfo.h \

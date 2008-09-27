@@ -2,20 +2,17 @@
  *
  */
 
-#ifndef OpenFDM_NodeContext_H
-#define OpenFDM_NodeContext_H
+#ifndef OpenFDM_AbstractNodeContext_H
+#define OpenFDM_AbstractNodeContext_H
 
 #include "Node.h"
 #include "PortValueList.h"
 
 namespace OpenFDM {
 
-/// Hmm, NodeContext is not base of LeafContext for now. FIXME!!!
-/// This class might not be user visible. Is implemented somewhere
-/// in the simulation backend.
-class NodeContext : public Referenced {
+class AbstractNodeContext : public Referenced {
 public:
-  virtual ~NodeContext() { }
+  virtual ~AbstractNodeContext() { }
   virtual const Node& getNode() const = 0;
 
   PortValueList& getPortValueList()

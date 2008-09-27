@@ -7,11 +7,11 @@
 
 #include "ContinousStateValueVector.h"
 #include "DiscreteStateValueVector.h"
-#include "NodeContext.h"
+#include "AbstractNodeContext.h"
 
 namespace OpenFDM {
 
-class LeafContext : public NodeContext {
+class LeafContext : public AbstractNodeContext {
 public:
   // Continous States
   ContinousStateValueVector mContinousState;
