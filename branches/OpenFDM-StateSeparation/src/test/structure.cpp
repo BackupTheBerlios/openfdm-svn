@@ -1162,21 +1162,15 @@ private:
 
 using namespace OpenFDM;
 
-class PrintOutput : public Output::Callback {
-public:
-  virtual void setValue(real_type value)
-  { std::cout << value << std::endl; }
-};
-
 int main()
 {
   SharedPtr<Group> group = new Group("G0");
   Group::NodeId gain = group->addChild(new Gain("gain"));
   Group::NodeId integrator1 = group->addChild(new Integrator("I1"));
   Group::NodeId integrator2 = group->addChild(new Integrator("I2"));
-  Group::NodeId output = group->addChild(new Output("O", new PrintOutput));
+  Group::NodeId output = group->addChild(new Output("O"));
   Group::NodeId delay = group->addChild(new Delay("D"));
-  Group::NodeId outputDelay = group->addChild(new Output("OD", new PrintOutput));
+  Group::NodeId outputDelay = group->addChild(new Output("OD"));
 
   group->connect(integrator1, "output", integrator2, "input");
   group->connect(integrator2, "output", gain, "input");
@@ -1194,9 +1188,9 @@ int main()
   Group::NodeId child0 = topGroup->addChild(group);
   Group::NodeId child1 = topGroup->addChild(group);
 
-  Group::NodeId output0 = topGroup->addChild(new Output("O2", new PrintOutput));
+  Group::NodeId output0 = topGroup->addChild(new Output("O2"));
   topGroup->connect(child0, 0, output0, 0);
-  Group::NodeId output1 = topGroup->addChild(new Output("O3", new PrintOutput));
+  Group::NodeId output1 = topGroup->addChild(new Output("O3"));
   topGroup->connect(child1, 0, output1, 0);
 
   /////////////////////////////////////////////////
