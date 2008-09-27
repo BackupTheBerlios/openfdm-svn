@@ -705,7 +705,7 @@ public:
 
     PortDataHelper::ProviderPortData* providerPortData;
     providerPortData = portDataList->newProxyProviderPortData(leaf._groupInternalPort);
-    getCurrentNodePortDataMap()[0] = providerPortData;
+    setCurrentNodePortData(0, providerPortData);
   }
   // Aussen provider, innen acceptor
   virtual void apply(const GroupProviderNode& leaf)
@@ -716,7 +716,7 @@ public:
 
     PortDataHelper::AcceptorPortData* acceptorPortData;
     acceptorPortData = portDataList->newProxyAcceptorPortData(leaf._groupInternalPort);
-    getCurrentNodePortDataMap()[0] = acceptorPortData;
+    setCurrentNodePortData(0, acceptorPortData);
   }
 
   void allocPortData(AbstractNodeInstance* leafInstance, const LeafNode& leaf)
@@ -732,14 +732,14 @@ public:
         PortDataHelper::ProviderPortData* providerPortData;
         providerPortData = portDataList->newProviderPortData(providerPort);
 
-        getCurrentNodePortDataMap()[i] = providerPortData;
+        setCurrentNodePortData(i, providerPortData);
       }
       const AcceptorPortInfo* acceptorPort = port->toAcceptorPortInfo();
       if (acceptorPort) {
         PortDataHelper::AcceptorPortData* acceptorPortData;
         acceptorPortData = portDataList->newAcceptorPortData(acceptorPort);
 
-        getCurrentNodePortDataMap()[i] = acceptorPortData;
+        setCurrentNodePortData(i, acceptorPortData);
       }
     }
   }
@@ -772,7 +772,7 @@ public:
   virtual void apply(const Group& group)
   {
     // Prepare a new leaf map for the child group
-    PortDataMap parentPortDataMap;
+    PortDataMap parentPortDataMap(group.getNumChildren());
     parentPortDataMap.swap(_portDataMap);
 
     // Walk the children
@@ -840,7 +840,8 @@ public:
         continue;
       }
 
-      PortDataHelper::PortData* portData = childrenPortDataMap[nodeIndex].begin()->second;
+      PortDataHelper::PortData* portData;
+      portData = childrenPortDataMap[nodeIndex].front();
       if (portData->toProxyAcceptorPortData()) {
         PortDataHelper::ProxyAcceptorPortData* proxyAcceptorPortData;
         proxyAcceptorPortData = portData->toProxyAcceptorPortData();
@@ -855,7 +856,7 @@ public:
 
         proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
 
-        getCurrentNodePortDataMap()[i] = proxyProviderPortData;
+        setCurrentNodePortData(i, proxyProviderPortData);
 
       } else if (portData->toProxyProviderPortData()) {
         PortDataHelper::ProxyProviderPortData* proxyProviderPortData;
@@ -871,7 +872,7 @@ public:
 
         proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
 
-        getCurrentNodePortDataMap()[i] = proxyAcceptorPortData;
+        setCurrentNodePortData(i, proxyAcceptorPortData);
 
       } else {
         OpenFDMAssert(false);
@@ -895,8 +896,8 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
-  typedef std::map<unsigned, SharedPtr<PortDataHelper::PortData> > NodePortDataMap;
-  typedef std::map<unsigned, NodePortDataMap> PortDataMap;
+  typedef std::vector<SharedPtr<PortDataHelper::PortData> > PortDataVector;
+  typedef std::vector<PortDataVector> PortDataMap;
   PortDataMap _portDataMap;
   // Just to hold references to all mort data lists we have in the
   // simulation system. They are just needed during traversal for connect
@@ -1000,10 +1001,14 @@ public:
   void popNodeId()
   { mNodeIndexStack.pop_back(); }
 
-  NodePortDataMap& getCurrentNodePortDataMap()
+  void setCurrentNodePortData(unsigned i, PortDataHelper::PortData* portData)
   {
     OpenFDMAssert(!mNodeIndexStack.empty());
-    return _portDataMap[mNodeIndexStack.back()];
+    OpenFDMAssert(mNodeIndexStack.back() < _portDataMap.size());
+    PortDataVector& portDataVector = _portDataMap[mNodeIndexStack.back()];
+    if (portDataVector.size() <= i)
+      portDataVector.resize(i + 1);
+    portDataVector[i] = portData;
   }
 
 private:
