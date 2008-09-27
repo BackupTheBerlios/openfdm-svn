@@ -62,7 +62,7 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const MatrixRValue<Im
     }
 
     if (i < rows-1)
-      os << std::endl;
+      os << os.widen('\n');
   }
   os << os.widen(']');
 
