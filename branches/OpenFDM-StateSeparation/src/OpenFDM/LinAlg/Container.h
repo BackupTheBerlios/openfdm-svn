@@ -144,6 +144,15 @@ public:
   Matrix& operator*=(value_type scalar)
   { scalarMultiplyMatrix(*this, scalar); return *this; }
 
+  static Matrix zeros(size_type r, size_type c)
+  {
+    Matrix ret(r, c);
+    for (size_type i = 0; i < r; ++i)
+      for (size_type j = 0; j < c; ++j)
+        ret(i, j) = 0;
+    return ret;
+  }
+
 private:
   using MatrixLValue<Matrix<T,rows_,cols_>,rows_,cols_>::assign;
   RectangularArray<T,rows_,cols_> data_;

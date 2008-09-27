@@ -38,18 +38,16 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const MatrixRValue<Im
 
   size_type rows = A.asImpl().rows();
   size_type cols = A.asImpl().cols();
-  size_type i, j;
-  for (i = 0; i < rows; ++i) {
-    if (i == 0)
-      os << '[';
-    else
-      os << ' ';
+  os << os.widen('[');
+  for (size_type i = 0; i < rows; ++i) {
+    if (0 < i)
+      os << os.widen(' ');
 
-    for (j = 0; j < cols; ++j) {
+    for (size_type j = 0; j < cols; ++j) {
       value_type val = A.asImpl()(i, j);
     
       if (val == 0) {
-        os << std::setw(width) << '0' << ' ';
+        os << std::setw(width) << os.widen('0') << os.widen(' ');
       } else {
         int expo = static_cast<int>(floor(fabs(log10(fabs(val)))));
         
@@ -59,15 +57,14 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const MatrixRValue<Im
           os << std::setprecision(width-8);
         }
         
-        os << std::setw(width) << val << ' ';
+        os << std::setw(width) << val << os.widen(' ');
       }
     }
 
-    if (i == rows-1)
-      os << ']';
-    else
+    if (i < rows-1)
       os << std::endl;
   }
+  os << os.widen(']');
 
   // Restore old flags.
   os.flags(old_flags);
