@@ -123,6 +123,7 @@ OpenFDMCoreSOURCES = \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
   Frame.cpp \
+  Function.cpp \
   Group.cpp \
   Interact.cpp \
   LeafNode.cpp \
@@ -153,7 +154,6 @@ OpenFDMCoreSOURCES = \
 #   EnvironmentObject.cpp \
 #   ExplicitAdams.cpp \
 #   ExplicitEuler.cpp \
-#   Function.cpp \
 #   ImplicitEuler.cpp \
 #   Newton.cpp \
 #   MidpointRule.cpp \
