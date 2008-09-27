@@ -470,8 +470,8 @@ struct PortDataHelper {
 
   struct PortData : public WeakReferenced {
   public:
-    PortData(PortDataList* portDataList, const PortInfo* portInfo = 0) :
-      mParentPortDataList(portDataList),
+    PortData(AbstractNodeInstance* nodeInstance, const PortInfo* portInfo) :
+      mNodeInstance(nodeInstance),
       mPortInfo(portInfo)
     { }
     virtual ~PortData()
@@ -493,25 +493,21 @@ struct PortDataHelper {
     {
       if (!getPortInfo())
         return;
-      SharedPtr<PortDataList> portDataList = mParentPortDataList.lock();
-      if (!portDataList)
-        return;
-      SharedPtr<AbstractNodeInstance> nodeInstance = portDataList->mNodeInstance;
-      if (!nodeInstance)
+      if (!mNodeInstance)
         return;
       unsigned index = getPortInfo()->getIndex();
-      nodeInstance->getPortValueList().setPortValue(index, portValue);
+      mNodeInstance->getPortValueList().setPortValue(index, portValue);
     }
 
   private:
-    WeakPtr<PortDataList> mParentPortDataList;
+    SharedPtr<AbstractNodeInstance> mNodeInstance;
     SharedPtr<const PortInfo> mPortInfo;
   };
 
   struct ProviderPortData : public PortData {
-    ProviderPortData(PortDataList* portDataList,
+    ProviderPortData(AbstractNodeInstance* nodeInstance,
                      const ProviderPortInfo* providerPort) :
-      PortData(portDataList, providerPort),
+      PortData(nodeInstance, providerPort),
       _providerPort(providerPort)
     { }
     virtual ProviderPortData* toProviderPortData()
@@ -546,9 +542,9 @@ struct PortDataHelper {
     std::vector<SharedPtr<AcceptorPortData> > _acceptorPortDataList;
   };
   struct AcceptorPortData : public PortData {
-    AcceptorPortData(PortDataList* portDataList,
+    AcceptorPortData(AbstractNodeInstance* nodeInstance,
                      const AcceptorPortInfo* acceptorPort) :
-      PortData(portDataList, acceptorPort),
+      PortData(nodeInstance, acceptorPort),
       _acceptorPort(acceptorPort)
     { }
     virtual AcceptorPortData* toAcceptorPortData()
@@ -585,9 +581,9 @@ struct PortDataHelper {
   };
   struct ProxyAcceptorPortData : public AcceptorPortData {
   public:
-    ProxyAcceptorPortData(PortDataList* portDataList,
+    ProxyAcceptorPortData(AbstractNodeInstance* nodeInstance,
                           const AcceptorPortInfo* acceptorPortInfo) :
-      AcceptorPortData(portDataList, acceptorPortInfo)
+      AcceptorPortData(nodeInstance, acceptorPortInfo)
     { }
     virtual ProxyAcceptorPortData* toProxyAcceptorPortData()
     { return this; }
@@ -600,9 +596,9 @@ struct PortDataHelper {
   };
   struct ProxyProviderPortData : public ProviderPortData {
   public:
-    ProxyProviderPortData(PortDataList* portDataList,
+    ProxyProviderPortData(AbstractNodeInstance* nodeInstance,
                           const ProviderPortInfo* providerPortInfo) :
-      ProviderPortData(portDataList, providerPortInfo)
+      ProviderPortData(nodeInstance, providerPortInfo)
     { }
     virtual ProxyProviderPortData* toProxyProviderPortData()
     { return this; }
@@ -625,7 +621,7 @@ struct PortDataHelper {
     AcceptorPortData* newAcceptorPortData(const AcceptorPortInfo* acceptorPort)
     {
       AcceptorPortData* acceptorPortData;
-      acceptorPortData = new AcceptorPortData(this, acceptorPort);
+      acceptorPortData = new AcceptorPortData(mNodeInstance, acceptorPort);
       unsigned index = acceptorPort->getIndex();
       if (mPortDataVector.size() <= index)
         mPortDataVector.resize(index + 1);
@@ -635,7 +631,7 @@ struct PortDataHelper {
     ProviderPortData* newProviderPortData(const ProviderPortInfo* providerPort)
     {
       ProviderPortData* providerPortData;
-      providerPortData = new ProviderPortData(this, providerPort);
+      providerPortData = new ProviderPortData(mNodeInstance, providerPort);
       unsigned index = providerPort->getIndex();
       if (mPortDataVector.size() <= index)
         mPortDataVector.resize(index + 1);
@@ -645,7 +641,7 @@ struct PortDataHelper {
     ProxyAcceptorPortData* newProxyAcceptorPortData(const AcceptorPortInfo* acceptorPort)
     {
       ProxyAcceptorPortData* acceptorPortData;
-      acceptorPortData = new ProxyAcceptorPortData(this, acceptorPort);
+      acceptorPortData = new ProxyAcceptorPortData(mNodeInstance, acceptorPort);
       unsigned index = acceptorPort->getIndex();
       if (mPortDataVector.size() <= index)
         mPortDataVector.resize(index + 1);
@@ -655,7 +651,7 @@ struct PortDataHelper {
     ProxyProviderPortData* newProxyProviderPortData(const ProviderPortInfo* providerPort)
     {
       ProxyProviderPortData* providerPortData;
-      providerPortData = new ProxyProviderPortData(this, providerPort);
+      providerPortData = new ProxyProviderPortData(mNodeInstance, providerPort);
       unsigned index = providerPort->getIndex();
       if (mPortDataVector.size() <= index)
         mPortDataVector.resize(index + 1);
