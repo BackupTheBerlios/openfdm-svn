@@ -15,7 +15,11 @@ public:
   typedef T value_type;
 
   Interval() :
-    mBegin(Limits<value_type>::max()), mEnd(-Limits<value_type>::max())
+    mBegin(Limits<value_type>::min_value()),
+    mEnd(Limits<value_type>::max_value())
+  { }
+  Interval(const value_type& value) :
+    mBegin(value), mEnd(value)
   { }
   Interval(const value_type& begin, const value_type& end) :
     mBegin(begin), mEnd(end)
@@ -27,8 +31,8 @@ public:
   void setEnd(const value_type& end) { mBegin = end; }
   const value_type& getEnd() const { return mEnd; }
 
-  bool valid() const
-  { return mBegin <= mEnd; }
+  bool empty() const
+  { return mEnd < mBegin; }
   value_type getLength() const
   { return mEnd - mBegin; }
 
@@ -42,6 +46,11 @@ public:
   { return value < mBegin; }
   bool contains(const value_type& value) const
   { return mBegin <= value && value <= mEnd; }
+
+  static Interval all()
+  { return Interval(); }
+  static Interval noting()
+  { return Interval(1, -1); }
 
 private:
   value_type mBegin;
