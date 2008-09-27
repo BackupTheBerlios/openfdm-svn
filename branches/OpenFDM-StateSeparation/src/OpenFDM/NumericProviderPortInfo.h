@@ -6,20 +6,18 @@
 #define OpenFDM_NumericProviderPortInfo_H
 
 #include <string>
-#include "NumericPortValue.h"
 #include "ProviderPortInfo.h"
+#include "NumericPortValue.h"
 
 namespace OpenFDM {
 
 class NumericProviderPortInfo : public ProviderPortInfo {
 public:
-  NumericProviderPortInfo(Node* node, const std::string& name, const Size& size) :
-    ProviderPortInfo(node, name),
-    mSize(size)
-  { }
+  NumericProviderPortInfo(Node* node, const std::string& name, const Size& sz);
+  virtual ~NumericProviderPortInfo();
+
 protected:
-  virtual NumericPortValue* newValueImplementation() const
-  { return new NumericPortValue(mSize); }
+  virtual NumericPortValue* newValueImplementation() const;
 private:
   Size mSize;
 };

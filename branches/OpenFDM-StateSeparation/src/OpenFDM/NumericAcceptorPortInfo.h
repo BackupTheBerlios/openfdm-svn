@@ -7,17 +7,15 @@
 
 #include <string>
 #include "AcceptorPortInfo.h"
+#include "Matrix.h"
 
 namespace OpenFDM {
 
 class NumericAcceptorPortInfo : public AcceptorPortInfo {
 public:
   NumericAcceptorPortInfo(Node* node, const std::string& name,
-                          const Size& size, bool directInput) :
-    AcceptorPortInfo(node, name),
-    mSize(size),
-    mDirectInput(directInput)
-  { }
+                          const Size& size, bool directInput);
+  virtual ~NumericAcceptorPortInfo();
 
   virtual bool getDirectInput() const
   { return mDirectInput; }

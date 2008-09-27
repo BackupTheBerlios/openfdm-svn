@@ -141,7 +141,9 @@ OpenFDMCoreSOURCES = \
   Model.cpp \
   Node.cpp \
   NodeVisitor.cpp \
+  NumericAcceptorPortInfo.cpp \
   NumericPortValue.cpp \
+  NumericProviderPortInfo.cpp \
   Object.cpp \
   ODESolver.cpp \
   Planet.cpp \
