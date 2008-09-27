@@ -613,46 +613,38 @@ struct PortDataHelper {
   class PortDataList : public WeakReferenced {
   public:
     void setNodeInstance(AbstractNodeInstance* nodeInstance)
-    { mNodeInstance = nodeInstance; }
+    {
+      OpenFDMAssert(!mNodeInstance);
+      mNodeInstance = nodeInstance;
+      mPortDataVector.resize(nodeInstance->getNode().getNumPorts());
+    }
     
     AcceptorPortData* newAcceptorPortData(const AcceptorPortInfo* acceptorPort)
     {
       AcceptorPortData* acceptorPortData;
       acceptorPortData = new AcceptorPortData(mNodeInstance, acceptorPort);
-      unsigned index = acceptorPort->getIndex();
-      if (mPortDataVector.size() <= index)
-        mPortDataVector.resize(index + 1);
-      mPortDataVector[index] = acceptorPortData;
+      mPortDataVector[acceptorPort->getIndex()] = acceptorPortData;
       return acceptorPortData;
     }
     ProviderPortData* newProviderPortData(const ProviderPortInfo* providerPort)
     {
       ProviderPortData* providerPortData;
       providerPortData = new ProviderPortData(mNodeInstance, providerPort);
-      unsigned index = providerPort->getIndex();
-      if (mPortDataVector.size() <= index)
-        mPortDataVector.resize(index + 1);
-      mPortDataVector[index] = providerPortData;
+      mPortDataVector[providerPort->getIndex()] = providerPortData;
       return providerPortData;
     }
     ProxyAcceptorPortData* newProxyAcceptorPortData(const AcceptorPortInfo* acceptorPort)
     {
       ProxyAcceptorPortData* acceptorPortData;
       acceptorPortData = new ProxyAcceptorPortData(mNodeInstance, acceptorPort);
-      unsigned index = acceptorPort->getIndex();
-      if (mPortDataVector.size() <= index)
-        mPortDataVector.resize(index + 1);
-      mPortDataVector[index] = acceptorPortData;
+      mPortDataVector[acceptorPort->getIndex()] = acceptorPortData;
       return acceptorPortData;
     }
     ProxyProviderPortData* newProxyProviderPortData(const ProviderPortInfo* providerPort)
     {
       ProxyProviderPortData* providerPortData;
       providerPortData = new ProxyProviderPortData(mNodeInstance, providerPort);
-      unsigned index = providerPort->getIndex();
-      if (mPortDataVector.size() <= index)
-        mPortDataVector.resize(index + 1);
-      mPortDataVector[index] = providerPortData;
+      mPortDataVector[providerPort->getIndex()] = providerPortData;
       return providerPortData;
     }
     
@@ -983,7 +975,8 @@ public:
     ModelInstanceList::const_iterator j;
     for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
       if (!(*j)->getNodeContext().alloc()) {
-        Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
+        Log(Schedule, Error) << "Could not alloc for model \""
+                             << (*j)->getNodeNamePath() << "\"" << endl;
         return false;
       }
     }

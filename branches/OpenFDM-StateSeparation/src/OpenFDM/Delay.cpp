@@ -23,7 +23,8 @@ Delay::Delay(const std::string& name) :
   Model(name),
   mInputPort(newMatrixInputPort("input", true)),
   mOutputPort(newMatrixOutputPort("output")),
-  mDelay(0)
+  mDelay(0),
+  mInitialValue(Matrix::zeros(1, 1))
 {
   mMatrixStateInfo = new MatrixListStateInfo;
   addDiscreteStateInfo(mMatrixStateInfo);
@@ -36,8 +37,20 @@ Delay::~Delay()
 bool
 Delay::alloc(LeafContext& leafContext) const
 {
-  Size sz = size(leafContext.mPortValueList[mInputPort]);
-  leafContext.mPortValueList.setPortSize(mOutputPort, sz);
+  Size sz = size(mInitialValue);
+  Log(Initialization, Debug)
+    << "Size for Delay is detemined by the static initial value "
+    << "with size: " << trans(sz) << std::endl;
+  if (!leafContext.mPortValueList.setOrCheckPortSize(mInputPort, sz)) {
+    Log(Initialization, Error)
+      << "Size for input port does not match!" << std::endl;
+    return false;
+  }
+  if (!leafContext.mPortValueList.setOrCheckPortSize(mOutputPort, sz)) {
+    Log(Initialization, Error)
+      << "Size for output port does not match!" << std::endl;
+    return false;
+  }
   leafContext.mDiscreteState.setValue(*mMatrixStateInfo, leafContext);
   return true;
 }

@@ -76,9 +76,29 @@ public:
       mPortValueVector.resize(idx+1);
     mPortValueVector[idx] = portValue;
   }
-  void setPortSize(const MatrixOutputPort& port, const Size& size)
+  bool setOrCheckPortSize(const MatrixOutputPort& port, const Size& sz)
   {
-    port.getPortValue(mPortValueVector)->getValue().resize(size);
+    Size oldSize = size(port.getPortValue(mPortValueVector)->getValue());
+    // If the size is still 0x0, just set to the desired size
+    if (oldSize(0) == 0 || oldSize(1) == 0) {
+      port.getPortValue(mPortValueVector)->getValue().resize(sz(0), sz(1));
+      return true;
+    } else if (oldSize == sz)
+      return true;
+    else
+      return false;
+  }
+  bool setOrCheckPortSize(const MatrixInputPort& port, const Size& sz)
+  {
+    Size oldSize = size(port.getPortValue(mPortValueVector)->getValue());
+    // If the size is still 0x0, just set to the desired size
+    if (oldSize(0) == 0 || oldSize(1) == 0) {
+      port.getPortValue(mPortValueVector)->getValue().resize(sz(0), sz(1));
+      return true;
+    } else if (oldSize == sz)
+      return true;
+    else
+      return false;
   }
   const PortValue* getPortValue(unsigned idx) const
   {

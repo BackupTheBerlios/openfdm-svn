@@ -7,7 +7,7 @@
 namespace OpenFDM {
 
 NumericPortValue::NumericPortValue(const Size& size) :
-  mMatrix(size)
+  mMatrix(size(0), size(1))
 {
   mMatrix.clear();
 }

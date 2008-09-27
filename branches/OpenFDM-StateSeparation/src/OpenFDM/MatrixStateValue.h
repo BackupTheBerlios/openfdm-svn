@@ -12,13 +12,13 @@ namespace OpenFDM {
 
 class MatrixStateValue : public ContinousStateValue {
 public:
-  MatrixStateValue(const Size& size) : mMatrix(size)
+  MatrixStateValue(const Size& size) : mMatrix(size(0), size(1))
   { }
   MatrixStateValue()
   { }
 
   void resize(const Size& size)
-  { mMatrix.resize(size); }
+  { mMatrix.resize(size(0), size(1)); }
 
   const Matrix& getMatrix() const
   { return mMatrix; }
