@@ -179,7 +179,7 @@ class NodeContext : public AbstractNodeContext {
 public:
   NodeContext(const Node* node) :
     mNode(node)
-  { }
+  { OpenFDMAssert(mNode); }
 
   virtual const Node& getNode() const
   { return *mNode; }
@@ -219,7 +219,7 @@ class ModelContext : public LeafContext {
 public:
   ModelContext(const Model* model) :
     mModel(model)
-  { }
+  { OpenFDMAssert(mModel); }
 
   virtual const Model& getNode() const
   { return *mModel; }
@@ -334,7 +334,7 @@ class MechanicContext : public LeafContext {
 public:
   MechanicContext(const MechanicNode* mechanicNode) :
     mMechanicNode(mechanicNode)
-  { }
+  { OpenFDMAssert(mMechanicNode); }
 
   virtual const MechanicNode& getNode() const
   { return *mMechanicNode; }
