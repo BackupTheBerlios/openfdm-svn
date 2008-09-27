@@ -20,7 +20,7 @@ public:
 
   virtual bool alloc(LeafContext& leafContext) const;
   virtual void init(DiscreteStateValueVector& discreteState,
-                    ContinousStateValueVector&) const;
+                    ContinousStateValueVector&, const PortValueList&) const;
   virtual void output(const DiscreteStateValueVector& discreteState,
                       const ContinousStateValueVector&,
                       PortValueList& portValues) const;

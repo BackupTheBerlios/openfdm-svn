@@ -16,6 +16,7 @@ class LeafContext;
 class NodeVisitor;
 class ContinousStateValueVector;
 class DiscreteStateValueVector;
+class PortValueList;
 
 class LeafNode : public Node {
   OPENFDM_OBJECT(LeafNode, Node);
@@ -32,7 +33,8 @@ public:
   virtual bool alloc(LeafContext&) const // = 0;
   { return true; }
 
-  virtual void init(DiscreteStateValueVector&, ContinousStateValueVector&) const // = 0;
+  virtual void init(DiscreteStateValueVector&, ContinousStateValueVector&,
+                    const PortValueList&) const
   { }
 
   unsigned getNumContinousStateValues() const

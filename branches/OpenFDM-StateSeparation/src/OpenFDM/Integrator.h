@@ -19,7 +19,8 @@ public:
 
   virtual bool alloc(LeafContext& leafContext) const;
   virtual void init(DiscreteStateValueVector& discreteState,
-                    ContinousStateValueVector& continousState) const;
+                    ContinousStateValueVector& continousState,
+                    const PortValueList& portValueList) const;
 
   virtual void output(const DiscreteStateValueVector&, const ContinousStateValueVector& continousState, PortValueList& portValues) const;
   virtual void derivative(const DiscreteStateValueVector&, const ContinousStateValueVector& state, const PortValueList& portValues, ContinousStateValueVector& deriv) const;

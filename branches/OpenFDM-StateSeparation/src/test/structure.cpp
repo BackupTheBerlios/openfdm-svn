@@ -227,7 +227,7 @@ public:
   bool alloc()
   { return mModel->alloc(*this); }
   void init()
-  { mModel->init(mDiscreteState, mContinousState); }
+  { mModel->init(mDiscreteState, mContinousState, mPortValueList); }
   void output(const Task&)
   { mModel->output(mDiscreteState, mContinousState, mPortValueList); }
   void update(const DiscreteTask&)
@@ -342,7 +342,7 @@ public:
   bool alloc()
   { return mMechanicNode->alloc(*this); }
   void init()
-  { mMechanicNode->init(mDiscreteState, mContinousState); }
+  { mMechanicNode->init(mDiscreteState, mContinousState, mPortValueList); }
 
   void velocities(const ContinousTask&)
   { mMechanicNode->velocity(mContinousState, mPortValueList); }

@@ -59,15 +59,12 @@ Integrator::alloc(LeafContext& leafContext) const
 
 void
 Integrator::init(DiscreteStateValueVector& discreteState,
-                 ContinousStateValueVector& continousState) const
+                 ContinousStateValueVector& continousState,
+                 const PortValueList& portValues) const
 {
-  // Needs to be done here. Need port values???
-  // FIXME, can I ensure that at least the direct dependent ones are
-  // available and the other ones are inaccessible at compile time?
   if (getEnableInitialValuePort()) {
     // external initial condition
-//     continousState[*mMatrixStateInfo] = portValues[mInitialValuePort];
-    continousState[*mMatrixStateInfo].clear();
+    continousState[*mMatrixStateInfo] = portValues[mInitialValuePort];
   } else {
     // internal initial condition
     continousState[*mMatrixStateInfo] = mInitialValue;
@@ -79,12 +76,7 @@ Integrator::output(const DiscreteStateValueVector&,
                    const ContinousStateValueVector& continousState,
                    PortValueList& portValues) const
 {
-  // FIXME
-  if (getEnableInitialValuePort()
-      && size(continousState[*mMatrixStateInfo]) == Size(0, 0))
-    portValues[mOutputPort] = portValues[mInitialValuePort];
-  else
-    portValues[mOutputPort] = continousState[*mMatrixStateInfo];
+  portValues[mOutputPort] = continousState[*mMatrixStateInfo];
 }
 
 void
