@@ -7,7 +7,8 @@
 
 #include "OpenFDMConfig.h"
 
-#if !defined(NDEBUG) && (OpenFDM_ENABLE_DEBUG == 1)
+// FIXME, appears not to work currently ...
+#if !defined(NDEBUG) //&& (OpenFDM_ENABLE_DEBUG == 1)
 # define OpenFDMDebug
 #endif
 
