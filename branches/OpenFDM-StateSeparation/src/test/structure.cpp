@@ -461,8 +461,6 @@ typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
 // Just here so that I do not care for intationation order for now ...
 struct PortDataHelper {
 
-  class PortDataList;
-
   struct AcceptorPortData;
   struct ProviderPortData;
   struct ProxyAcceptorPortData;
