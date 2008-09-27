@@ -17,8 +17,6 @@ public:
   { }
   virtual ~AcceptorPortInfo() {}
 
-  virtual AcceptorPortInfo* toAcceptorPortInfo()
-  { return this; }
   virtual const AcceptorPortInfo* toAcceptorPortInfo() const
   { return this; }
 

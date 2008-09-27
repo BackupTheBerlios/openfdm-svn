@@ -53,8 +53,6 @@ public:
   ProxyAcceptorPortInfo(Node* node, const std::string& name = std::string()) :
     AcceptorPortInfo(node, name) {}
   SharedPtr<GroupAcceptorNode> mGroupPort;
-  virtual ProxyAcceptorPortInfo* toProxyAcceptorPortInfo()
-  { return this; }
   virtual const ProxyAcceptorPortInfo* toProxyAcceptorPortInfo() const
   { return this; }
 };
@@ -65,8 +63,6 @@ public:
     ProviderPortInfo(node, name) {}
   virtual PortValue* newValueImplementation() const
   { return 0; } //FIXME
-  virtual ProxyProviderPortInfo* toProxyProviderPortInfo()
-  { return this; }
   virtual const ProxyProviderPortInfo* toProxyProviderPortInfo() const
   { return this; }
   SharedPtr<GroupProviderNode> mGroupPort;

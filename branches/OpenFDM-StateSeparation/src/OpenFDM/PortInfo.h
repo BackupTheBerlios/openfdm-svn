@@ -37,19 +37,11 @@ public:
 
   unsigned getIndex() const { return mIndex; }
 
-  virtual AcceptorPortInfo* toAcceptorPortInfo()
-  { return 0; }
   virtual const AcceptorPortInfo* toAcceptorPortInfo() const
-  { return 0; }
-  virtual ProviderPortInfo* toProviderPortInfo()
   { return 0; }
   virtual const ProviderPortInfo* toProviderPortInfo() const
   { return 0; }
-  virtual ProxyAcceptorPortInfo* toProxyAcceptorPortInfo()
-  { return 0; }
   virtual const ProxyAcceptorPortInfo* toProxyAcceptorPortInfo() const
-  { return 0; }
-  virtual ProxyProviderPortInfo* toProxyProviderPortInfo()
   { return 0; }
   virtual const ProxyProviderPortInfo* toProxyProviderPortInfo() const
   { return 0; }

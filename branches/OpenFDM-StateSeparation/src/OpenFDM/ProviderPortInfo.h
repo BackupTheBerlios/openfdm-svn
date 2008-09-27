@@ -20,8 +20,6 @@ public:
   { return newValueImplementation(); }
 
   /// Dynamic casts
-  virtual ProviderPortInfo* toProviderPortInfo()
-  { return this; }
   virtual const ProviderPortInfo* toProviderPortInfo() const
   { return this; }
 
