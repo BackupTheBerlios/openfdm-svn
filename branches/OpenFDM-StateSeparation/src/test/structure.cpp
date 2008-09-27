@@ -626,28 +626,40 @@ struct PortDataHelper {
     {
       AcceptorPortData* acceptorPortData;
       acceptorPortData = new AcceptorPortData(this, acceptorPort);
-      mPortDataVector.push_back(acceptorPortData);
+      unsigned index = acceptorPort->getIndex();
+      if (mPortDataVector.size() <= index)
+        mPortDataVector.resize(index + 1);
+      mPortDataVector[index] = acceptorPortData;
       return acceptorPortData;
     }
     ProviderPortData* newProviderPortData(const ProviderPortInfo* providerPort)
     {
       ProviderPortData* providerPortData;
       providerPortData = new ProviderPortData(this, providerPort);
-      mPortDataVector.push_back(providerPortData);
+      unsigned index = providerPort->getIndex();
+      if (mPortDataVector.size() <= index)
+        mPortDataVector.resize(index + 1);
+      mPortDataVector[index] = providerPortData;
       return providerPortData;
     }
     ProxyAcceptorPortData* newProxyAcceptorPortData(const AcceptorPortInfo* acceptorPort)
     {
       ProxyAcceptorPortData* acceptorPortData;
       acceptorPortData = new ProxyAcceptorPortData(this, acceptorPort);
-      mPortDataVector.push_back(acceptorPortData);
+      unsigned index = acceptorPort->getIndex();
+      if (mPortDataVector.size() <= index)
+        mPortDataVector.resize(index + 1);
+      mPortDataVector[index] = acceptorPortData;
       return acceptorPortData;
     }
     ProxyProviderPortData* newProxyProviderPortData(const ProviderPortInfo* providerPort)
     {
       ProxyProviderPortData* providerPortData;
       providerPortData = new ProxyProviderPortData(this, providerPort);
-      mPortDataVector.push_back(providerPortData);
+      unsigned index = providerPort->getIndex();
+      if (mPortDataVector.size() <= index)
+        mPortDataVector.resize(index + 1);
+      mPortDataVector[index] = providerPortData;
       return providerPortData;
     }
     
