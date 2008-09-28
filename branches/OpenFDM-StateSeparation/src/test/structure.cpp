@@ -843,6 +843,35 @@ public:
   typedef std::list<SharedPtr<PortDataHelper::PortDataList> > PortDataListList;
   PortDataListList _portDataListList;
 
+  // Here the miracle occurs.
+  // The collected simulation nodes are packed into something that can be used
+  // to simulate the system.
+  AbstractSystem* buildSystem()
+  {
+    // Allocates and distributes the PortValues, is required for the sort
+    // steps below
+    if (!allocPortValues())
+      return 0;
+    // The model instances are sorted to match the direct input property
+    if (!sortModelList())
+      return 0;
+    // Now that they are sorted, allocate the port sizes and with that
+    // knowledge the state values.
+    if (!allocModels())
+      return 0;
+
+    // FIXME is here just for curiousity :)
+    ModelInstanceList::const_iterator i;
+    for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
+      (*i)->getNodeContext().init();
+      (*i)->getNodeContext().output(*reinterpret_cast<Task*>(0));
+    }
+
+    // FIXME:
+    return new GroupedSystem;
+  }
+
+protected:
   // method to sort the leafs according to their dependency
   bool sortModelList()
   {
@@ -893,27 +922,6 @@ public:
     return true;
   }
 
-  // Here the miracle occurs.
-  // The collected simulation nodes are packed into something that can be used
-  // to simulate the system.
-  AbstractSystem* buildSystem()
-  {
-    // Allocates and distributes the PortValues, is required for the sort
-    // steps below
-    if (!allocPortValues())
-      return 0;
-    // The model instances are sorted to match the direct input property
-    if (!sortModelList())
-      return 0;
-
-    ModelInstanceList modelContextList;
-    getModelContextList(modelContextList);
-    // ...
-
-    // FIXME:
-    return new GroupedSystem;
-  }
-
   bool
   allocPortValues()
   {
@@ -927,32 +935,16 @@ public:
     return true;
   }
 
-  bool
-  getModelContextList(ModelInstanceList& modelContexts)
+  bool allocModels()
   {
-    modelContexts.resize(0);
-
-    ModelInstanceList modelContextList;
     ModelInstanceList::const_iterator i;
-    for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i)
-      modelContextList.push_back((*i));
-
-    ModelInstanceList::const_iterator j;
-    for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
-      if (!(*j)->getNodeContext().alloc()) {
+    for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
+      if (!(*i)->getNodeContext().alloc()) {
         Log(Schedule, Error) << "Could not alloc for model \""
-                             << (*j)->getNodeNamePath() << "\"" << endl;
+                             << (*i)->getNodeNamePath() << "\"" << endl;
         return false;
       }
     }
-
-    // FIXME is here just for curiousity :)
-    for (j = modelContextList.begin(); j != modelContextList.end(); ++j) {
-      (*j)->getNodeContext().init();
-      (*j)->getNodeContext().output(*reinterpret_cast<Task*>(0));
-    }
-
-    modelContexts.swap(modelContextList);
     return true;
   }
 
