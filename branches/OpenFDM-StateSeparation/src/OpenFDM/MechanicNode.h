@@ -11,6 +11,7 @@
 namespace OpenFDM {
 
 class PortValueList;
+class DiscreteTask;
 
 class MechanicNode : public LeafNode {
   OPENFDM_OBJECT(MechanicNode, LeafNode);
@@ -30,6 +31,10 @@ public:
   virtual void derivative(const ContinousStateValueVector&,
                           const PortValueList&,
                           ContinousStateValueVector&) const
+  { }
+  virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      const PortValueList&) const
   { }
 };
 

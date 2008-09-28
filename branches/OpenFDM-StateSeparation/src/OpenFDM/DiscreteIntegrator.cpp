@@ -95,7 +95,7 @@ DiscreteIntegrator::doUpdate(Matrix& integralValue, const Matrix& derivative,
 void
 DiscreteIntegrator::update(const DiscreteTask& discreteTask,
                            DiscreteStateValueVector& discreteState,
-                           ContinousStateValueVector&,
+                           const ContinousStateValueVector&,
                            const PortValueList& portValues) const
 {
   // Just compute the integral.

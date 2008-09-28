@@ -305,8 +305,11 @@ public:
 //   void outputAcceperation()
 //   { }
 
-//   void update()
-//   { }
+  void update(const DiscreteTask& discreteTask)
+  {
+    mMechanicNode->update(discreteTask, mDiscreteState,
+                          mContinousState, mPortValueList);
+  }
 
   bool isConnectedTo(const MechanicContext& mechanicContext) const
   {
@@ -373,6 +376,11 @@ public:
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)
       (*i)->accelerations(task);
+  }
+  void update(const DiscreteTask& task) const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->update(task);
   }
 };
 

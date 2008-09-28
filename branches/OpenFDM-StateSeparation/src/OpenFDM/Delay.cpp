@@ -74,7 +74,7 @@ Delay::output(const DiscreteStateValueVector& discreteState,
 
 void
 Delay::update(const DiscreteTask&, DiscreteStateValueVector& discreteState,
-              ContinousStateValueVector&,
+              const ContinousStateValueVector&,
               const PortValueList& portValues) const
 {
   discreteState[*mMatrixStateInfo].rotate(portValues[mInputPort]);

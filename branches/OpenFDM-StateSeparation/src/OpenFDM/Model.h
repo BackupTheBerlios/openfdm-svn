@@ -38,7 +38,8 @@ public:
   // FIXME???
   // const TaskInfo& taskInfo
   virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
-                      ContinousStateValueVector&, const PortValueList&) const{}
+                      const ContinousStateValueVector&,
+                      const PortValueList&) const { }
   virtual void output(const DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       PortValueList&) const { }

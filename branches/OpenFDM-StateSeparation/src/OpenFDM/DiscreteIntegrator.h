@@ -24,7 +24,8 @@ public:
                       const ContinousStateValueVector&,
                       PortValueList& portValues) const;
   virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
-                      ContinousStateValueVector&, const PortValueList&) const;
+                      const ContinousStateValueVector&,
+                      const PortValueList&) const;
 
   /// The initial output values on the output until input values are available.
   const Matrix& getInitialValue() const;
