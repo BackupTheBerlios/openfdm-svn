@@ -6,6 +6,7 @@
 #define OpenFDM_Interval_H
 
 #include "Limits.h"
+#include "Types.h"
 
 namespace OpenFDM {
 
@@ -49,13 +50,15 @@ public:
 
   static Interval all()
   { return Interval(); }
-  static Interval noting()
+  static Interval nothing()
   { return Interval(1, -1); }
 
 private:
   value_type mBegin;
   value_type mEnd;
 };
+
+typedef Interval<real_type> TimeInterval;
 
 } // namespace OpenFDM
 
