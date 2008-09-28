@@ -47,6 +47,7 @@
 #include <OpenFDM/Interact.h>
 
 #include <OpenFDM/Gain.h>
+#include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/Integrator.h>
 #include <OpenFDM/Delay.h>
 #include <OpenFDM/Output.h>
@@ -1052,7 +1053,7 @@ System::init()
 
 using namespace OpenFDM;
 
-int main()
+Node* buildGroupExample()
 {
   SharedPtr<Group> group = new Group("G0");
   Group::NodeId gain = group->addChild(new Gain("gain"));
@@ -1083,9 +1084,33 @@ int main()
   Group::NodeId output1 = topGroup->addChild(new Output("O3"));
   topGroup->connect(child1, 0, output1, 0);
 
-  /////////////////////////////////////////////////
+  return topGroup.release();
+}
 
-  SharedPtr<System> system = new System("System", topGroup);
+Node* buildDiscreteExample()
+{
+  SharedPtr<Group> group = new Group("G0");
+  Group::NodeId gain = group->addChild(new Gain("gain"));
+  Group::NodeId integrator1 = group->addChild(new DiscreteIntegrator("I1"));
+  Group::NodeId integrator2 = group->addChild(new DiscreteIntegrator("I2"));
+  Group::NodeId output = group->addChild(new Output("O"));
+  Group::NodeId delay = group->addChild(new Delay("D"));
+  Group::NodeId outputDelay = group->addChild(new Output("OD"));
+
+  group->connect(integrator1, "output", integrator2, "input");
+  group->connect(integrator2, "output", gain, "input");
+  group->connect(gain, "output", integrator1, "input");
+  group->connect(integrator2, "output", output, "input");
+  group->connect(gain, "output", delay, "input");
+  group->connect(delay, "output", outputDelay, "input");
+
+  return group.release();
+}
+
+int main()
+{
+//   SharedPtr<System> system = new System("System", buildGroupExample());
+  SharedPtr<System> system = new System("System", buildDiscreteExample());
 
   if (!system->init())
     return 1;
