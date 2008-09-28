@@ -9,6 +9,7 @@ libOpenFDM_la_LIBADD = -lrt
 
 OpenFDMCoreHEADERS = \
   AbstractNodeContext.h \
+  AbstractNodeInstance.h \
   AbstractSystem.h \
   AcceptorPortInfo.h \
   Assert.h \
@@ -155,6 +156,7 @@ OpenFDMCoreSOURCES = \
   RootJoint.cpp \
   SampleTime.cpp \
   StateValue.cpp \
+  System.cpp \
   Time.cpp \
   Unit.cpp \
   Variant.cpp
@@ -164,7 +166,6 @@ OpenFDMCoreSOURCES = \
 #   ImplicitEuler.cpp \
 #   Newton.cpp \
 #   ReaderWriter.cpp \
-#   System.cpp \
 #   TaskInfo.cpp \
 #
 

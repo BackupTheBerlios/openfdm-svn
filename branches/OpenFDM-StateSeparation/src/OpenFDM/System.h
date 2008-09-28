@@ -7,114 +7,47 @@
 
 #include <string>
 
-#include "ModelGroup.h"
-#include "Environment.h"
+#include "AbstractNodeInstance.h"
+#include "Node.h"
+#include "Object.h"
 
 namespace OpenFDM {
 
-/// The System is the top \ref Model node.
-/// It is derived from the \ref ModelGroup and additionally provides
-/// algorithms to simulate and trim the whole system.
+/// The System is the top \ref Node for a simulation system.
+/// Provides algorithms to simulate and trim the whole system.
 
-class TaskInfo;
+class AbstractSystem;
 
-class ODESolver;
-
-class System : public ModelGroup {
-  OPENFDM_OBJECT(System, ModelGroup);
+class System : public Object {
+  OPENFDM_OBJECT(System, Object);
 public:
-  /// Constructor, we need a name
-  System(const std::string& name);
-  virtual ~System(void);
+  System(const std::string& name, Node* node = 0);
+  virtual ~System();
 
-  /// Double dispatch helper for the multibody system visitor
-  virtual void accept(ModelVisitor& visitor);
-  /// Double dispatch helper for the multibody system visitor
-//   virtual void accept(ConstModelVisitor& visitor) const;
+  SharedPtr<Node> getNode() { return mNode; }
+  SharedPtr<const Node> getNode() const { return mNode; }
+  void setNode(Node* node);
 
-  /// Set the system to its initial state
-  virtual bool init(void);
-
-  /// Note that this is called *before* update() is called.
-  virtual void output(const TaskInfo& taskInfo);
-  /// Called whenever discrete states need to be updated.
-  virtual void update(const TaskInfo& taskInfo);
-
-  virtual void setState(const StateStream& state);
-  virtual void getState(StateStream& state) const;
-  virtual void getStateDeriv(StateStream& stateDeriv);
-
-  virtual void setDiscreteState(const StateStream& state);
-  virtual void getDiscreteState(StateStream& state) const;
+  bool init();
+  void clear();
 
   /// Simulate the system until the time tEnd
-  bool simulate(real_type tEnd);
+  bool simulate(const real_type& t);
 
-  /// Bring the system in an equilibrum state near the current state
-  /// ...
+  /// Bring the system in an equilibrum state near the current state ...
   bool trim(void);
 
   /// Return the current simulation time, convenience function
-  real_type getTime(void) const
-  { return mTime; }
+  real_type getTime(void) const;
 
-  /// Sets a timestepping algorithm for use with this system.
-  void setTimestepper(ODESolver* timestepper);
-  /// Return a const reference to the timestepping algorithm
-  const ODESolver* getTimestepper(void) const { return mTimestepper; }
-  /// Return a reference to the timestepping algorithm
-  ODESolver* getTimestepper(void) { return mTimestepper; }
-
-  /// FIXME Hmm, may be different ...
-  /// May move into System ...
-  void evalFunction(real_type t, const Vector& v, Vector& out);
-  /// Compute the jacobian
-  /// The default implementation computes a numeric approximation by finite
-  /// differences
-  void evalJacobian(real_type t, const Vector& state, Matrix& jac);
-
-  Environment* getEnvironment(void) const
-  { return mEnvironment; }
-
-  /// Return the number of continous states
-  unsigned getNumContinousStates(void) const
-  { return mNumContinousStates; }
-  /// Return the number of discrete states
-  unsigned getNumDiscreteStates(void) const
-  { return mNumDiscreteStates; }
-
-protected:
-  void setNumContinousStates(unsigned numContinousStates);
-  void setNumDiscreteStates(unsigned numDiscreteStates);
+  const NodeInstanceList& getNodeInstanceList() const
+  { return mNodeInstanceList; }
 
 private:
-  /// The timestepper used to get time discrete approximate solutions to the
-  /// continous system
-  SharedPtr<ODESolver> mTimestepper;
+  SharedPtr<Node> mNode;
 
-  /// Hmm, need to think about this...
-  typedef std::vector<TaskInfo> TaskList;
-
-  TaskInfo mPerTimestepTask;
-  TaskInfo mContinousTask;
-
-  TaskList mDiscreteTaskList;
-  unsigned mCurrentTaskNum;
-  real_type mCurrentSliceTime;
-
-  typedef std::vector<SharedPtr<Model> > ModelList;
-  ModelList mDiscreteModelList;
-  ModelList mContinousModelList;
-
-  SharedPtr<Environment> mEnvironment;
-
-  /// The actual simulation time for the system
-  real_type mTime;
-
-  /// The number of states in the whole System,
-  /// might move into something like IntegrationGroup
-  unsigned mNumContinousStates;
-  unsigned mNumDiscreteStates;
+  SharedPtr<AbstractSystem> mAbstractSystem;
+  NodeInstanceList mNodeInstanceList;
 };
 
 } // namespace OpenFDM

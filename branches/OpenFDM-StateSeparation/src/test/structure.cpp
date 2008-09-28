@@ -34,6 +34,7 @@
 #include <OpenFDM/Interval.h>
 
 #include <OpenFDM/AbstractSystem.h>
+#include <OpenFDM/System.h>
 
 #include <OpenFDM/BoolStateInfo.h>
 #include <OpenFDM/RealStateInfo.h>
@@ -110,68 +111,6 @@ namespace OpenFDM {
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
 
-/// An Abstract NodeInstance represents an effective model node in a ready
-/// to run System. You can access the Nodes Ports values for example.
-/// This class is meant to show up in the user interface of this simulation.
-class AbstractNodeInstance : public WeakReferenced {
-public:
-  AbstractNodeInstance(const NodePath& nodePath) :
-    mNodePath(nodePath)
-  { OpenFDMAssert(!nodePath.empty()); }
-  virtual ~AbstractNodeInstance()
-  { }
-
-  /// The actual Node this AbstractNodeInstance stems from
-  const Node& getNode() const
-  { return getNodeContext().getNode(); }
-
-  const NodePath& getNodePath() const { return mNodePath; }
-
-//   /// Set the sample times this node will run on
-//   void setSampleTimeSet(const SampleTimeSet& sampleTimeSet)
-//   { mSampleTimeSet = sampleTimeSet; }
-//   /// Get the sample times this node will run on
-//   const SampleTimeSet& getSampleTimeSet() const
-//   { return mSampleTimeSet; }
-
-  PortValueList& getPortValueList()
-  { return getNodeContext().getPortValueList(); }
-  const PortValueList& getPortValueList() const
-  { return getNodeContext().getPortValueList(); }
-
-  std::string getNodeNamePath() const
-  {
-    if (mNodePath.empty())
-      return std::string();
-    std::string path = mNodePath.front()->getName();
-    NodePath::const_iterator i = mNodePath.begin();
-    if (i != mNodePath.end()) {
-      for (++i; i != mNodePath.end(); ++i) {
-        path += '/';
-        path += (*i)->getName();
-      }
-    }
-    return path;
-  }
-
-protected:
-  AbstractNodeInstance() {}
-
-  /// The node context that belongs to this instance.
-  virtual AbstractNodeContext& getNodeContext() = 0;
-  virtual const AbstractNodeContext& getNodeContext() const = 0;
-
-private:
-  AbstractNodeInstance(const AbstractNodeInstance&);
-  AbstractNodeInstance& operator=(const AbstractNodeInstance&);
-
-//   /// The sample times this node will run on
-//   SampleTimeSet mSampleTimeSet;
-
-  NodePath mNodePath;
-};
-
-typedef std::list<SharedPtr<AbstractNodeInstance> > NodeInstanceList;
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1107,81 +1046,26 @@ public:
   SharedPtr<ContinousTask> mContinousTask;
 };
 
-class System : public Object {
-public:
-  System(const std::string& name, Node* node = 0) :
-    Object(name),
-    mNode(node)
-  { }
-
-  SharedPtr<Node> getNode()
-  { return mNode; }
-  SharedPtr<const Node> getNode() const
-  { return mNode; }
-  void setNode(Node* node)
-  {
-    clear();
-    mNode = node;
-  }
-
-  bool init()
-  {
-    if (!mNode)
-      return false;
-
-    // Build up the lists required to run the model.
-    NodeInstanceCollector nodeInstanceCollector;
-    mNode->accept(nodeInstanceCollector);
-    
-    mAbstractSystem = nodeInstanceCollector.buildSystem();
-    if (!mAbstractSystem)
-      return false;
-
-    // Have something to run in our hands.
-    // Not get the information required to reflect the system to the user.
-    mNodeInstanceList.swap(nodeInstanceCollector._nodeInstanceList);
-
-    return true;
-  }
-
-  void clear()
-  {
-    mAbstractSystem = 0;
-    mNodeInstanceList.clear();
-  }
-
-  /// Simulate the system until the time tEnd
-  bool simulate(const real_type& t)
-  {
-    if (mAbstractSystem)
-      return false;
-    mAbstractSystem->outputAt(t);
-    return true;
-  }
-
-  /// Bring the system in an equilibrum state near the current state ...
-  bool trim(void)
-  {
+bool
+System::init()
+{
+  if (!mNode)
     return false;
-  }
-
-  /// Return the current simulation time, convenience function
-  real_type getTime(void) const
-  {
-    if (!mAbstractSystem)
-      return Limits<real_type>::quiet_NaN();
-    return mAbstractSystem->getTime();
-  }
-
-  const NodeInstanceList& getNodeInstanceList() const
-  { return mNodeInstanceList; }
-
-private:
-  SharedPtr<Node> mNode;
-
-  SharedPtr<AbstractSystem> mAbstractSystem;
-  NodeInstanceList mNodeInstanceList;
-};
+  
+  // Build up the lists required to run the model.
+  NodeInstanceCollector nodeInstanceCollector;
+  mNode->accept(nodeInstanceCollector);
+  
+  mAbstractSystem = nodeInstanceCollector.buildSystem();
+  if (!mAbstractSystem)
+    return false;
+  
+  // Have something to run in our hands.
+  // Not get the information required to reflect the system to the user.
+  mNodeInstanceList.swap(nodeInstanceCollector._nodeInstanceList);
+  
+  return true;
+}
 
 } // namespace OpenFDM
 
