@@ -232,10 +232,12 @@ public:
         return false;
     return true;
   }
-  void init() const
+  void init(const Task& task) const
   {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
+    for (list_type::const_iterator i = begin(); i != end(); ++i) {
       (*i)->init();
+      (*i)->output(task);
+    }
   }
   void output(const Task& task) const
   {
