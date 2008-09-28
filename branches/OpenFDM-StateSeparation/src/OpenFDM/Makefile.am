@@ -9,6 +9,7 @@ libOpenFDM_la_LIBADD = -lrt
 
 OpenFDMCoreHEADERS = \
   AbstractNodeContext.h \
+  AbstractSystem.h \
   AcceptorPortInfo.h \
   Assert.h \
   Atomic.h \
