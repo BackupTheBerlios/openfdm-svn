@@ -15,7 +15,7 @@ class AbstractSystem : public Referenced {
 public:
   AbstractSystem() :
     mValidityInterval(TimeInterval::nothing()),
-    mTime(Limits<real_type>::min_value())
+    mTime(Limits<real_type>::quiet_NaN())
   { }
   virtual ~AbstractSystem() {}
 

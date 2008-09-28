@@ -31,6 +31,9 @@
 #include <OpenFDM/ODESolver.h>
 #include <OpenFDM/Function.h>
 #include <OpenFDM/SampleTime.h>
+#include <OpenFDM/Interval.h>
+
+#include <OpenFDM/AbstractSystem.h>
 
 #include <OpenFDM/BoolStateInfo.h>
 #include <OpenFDM/RealStateInfo.h>
@@ -951,6 +954,27 @@ public:
     return true;
   }
 
+  // Here the miracle occurs.
+  // The collected simulation nodes are packed into something that can be used
+  // to simulate the system.
+  AbstractSystem* buildSystem()
+  {
+    // Allocates and distributes the PortValues, is required for the sort
+    // steps below
+    if (!allocPortValues())
+      return 0;
+    // The model instances are sorted to match the direct input property
+    if (!sortModelList())
+      return 0;
+
+    ModelInstanceList modelContextList;
+    getModelContextList(modelContextList);
+    // ...
+
+    // FIXME:
+    return new GroupedSystem;
+  }
+
   bool
   allocPortValues()
   {
@@ -1103,25 +1127,18 @@ public:
   bool init()
   {
     if (!mNode)
-      return true;
+      return false;
 
     // Build up the lists required to run the model.
     NodeInstanceCollector nodeInstanceCollector;
     mNode->accept(nodeInstanceCollector);
     
-    // Allocates and distributes the PortValues, is required for the sort
-    // steps below
-    if (!nodeInstanceCollector.allocPortValues())
-      return false;
-    // The model instances are sorted to match the direct input property
-    if (!nodeInstanceCollector.sortModelList())
+    mAbstractSystem = nodeInstanceCollector.buildSystem();
+    if (!mAbstractSystem)
       return false;
 
-    ModelInstanceList modelContextList;
-    nodeInstanceCollector.getModelContextList(modelContextList);
-    // ...
-
-    // Ok, all successful so far, get the lists from the visitor
+    // Have something to run in our hands.
+    // Not get the information required to reflect the system to the user.
     mNodeInstanceList.swap(nodeInstanceCollector._nodeInstanceList);
 
     return true;
@@ -1129,13 +1146,17 @@ public:
 
   void clear()
   {
+    mAbstractSystem = 0;
     mNodeInstanceList.clear();
   }
 
   /// Simulate the system until the time tEnd
-  bool simulate(real_type tEnd)
+  bool simulate(const real_type& t)
   {
-    return false;
+    if (mAbstractSystem)
+      return false;
+    mAbstractSystem->outputAt(t);
+    return true;
   }
 
   /// Bring the system in an equilibrum state near the current state ...
@@ -1145,9 +1166,12 @@ public:
   }
 
   /// Return the current simulation time, convenience function
-//   const real_type& getTime(void) const
-//   { return mTime; }
-
+  real_type getTime(void) const
+  {
+    if (!mAbstractSystem)
+      return Limits<real_type>::quiet_NaN();
+    return mAbstractSystem->getTime();
+  }
 
   const NodeInstanceList& getNodeInstanceList() const
   { return mNodeInstanceList; }
@@ -1155,6 +1179,7 @@ public:
 private:
   SharedPtr<Node> mNode;
 
+  SharedPtr<AbstractSystem> mAbstractSystem;
   NodeInstanceList mNodeInstanceList;
 };
 
