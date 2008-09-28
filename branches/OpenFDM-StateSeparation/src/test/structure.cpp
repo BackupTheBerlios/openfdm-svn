@@ -970,64 +970,6 @@ private:
   SharedPtr<PortDataHelper::PortDataList> mCurrentNodePortDataList;
 };
 
-
-class ContinousTask : public Task {
-public:
-
-  void output() const
-  {
-    // The model outputs before mechanical state propagation
-    mModelContextList[0].output(*this);
-    // Now the mechanical state propagation
-    mMechanicContextList.velocities(*this);
-    // The model outputs before mechanical force propagation
-    mModelContextList[1].output(*this);
-    // Now the mechanical force propagation
-    mMechanicContextList.articulation(*this);
-    // The model outputs before mechanical acceleration propagation
-    mModelContextList[2].output(*this);
-    // Now the mechanical acceleration propagation
-    mMechanicContextList.accelerations(*this);
-    // The model outputs past mechanical acceleration propagation
-    mModelContextList[3].output(*this);
-  }
-
-  void derivative() const
-  {
-    // FIXME
-//     for (unsigned i = 0; i < 4; ++i)
-//       mModelContextList[i].derivative(*this);
-//     mMechanicContextList.derivative(*this);
-  }
-
-  ModelContextList mModelContextList[4];
-  MechanicContextList mMechanicContextList;
-};
-
-class DiscreteTask2 : public DiscreteTask {
-public:
-  DiscreteTask2(const real_type& stepsize) : DiscreteTask(stepsize)
-  { }
-
-  void update()
-  {
-    mModelContextList.update(*this);
-    // FIXME
-//     mMechanicContextList.update(*this);
-  }
-
-  ModelContextList mModelContextList;
-  MechanicContextList mMechanicContextList;
-};
-
-typedef std::list<SharedPtr<DiscreteTask2> > DiscreteTaskList;
-
-class TaskScheduler {
-public:
-  DiscreteTaskList mDiscreteTaskList;
-  SharedPtr<ContinousTask> mContinousTask;
-};
-
 bool
 System::init()
 {
