@@ -78,6 +78,70 @@ private:
   real_type mTime;
 };
 
+// FIXME: dump them here for now. Will be required later ...
+class EnabledSystem : public AbstractSystem {
+};
+
+class GroupedSystem : public AbstractSystem {
+public:
+  unsigned getNumChildren() const
+  { return mAbstractSystemList.size(); }
+  AbstractSystem* getChild(unsigned index)
+  {
+    if (mAbstractSystemList.size() <= index)
+      return 0;
+    return mAbstractSystemList[index];
+  }
+  unsigned addChild(AbstractSystem* abstractSystem)
+  {
+    unsigned index = mAbstractSystemList.size();
+    mAbstractSystemList.push_back(abstractSystem);
+    return index;
+  }
+  void removeChild(AbstractSystem* abstractSystem)
+  {
+    AbstractSystemList::iterator i;
+    i = std::find(mAbstractSystemList.begin(), mAbstractSystemList.end(),
+                  abstractSystem);
+    if (i == mAbstractSystemList.end())
+      return;
+    mAbstractSystemList.erase(i);
+  }
+
+protected:
+  virtual void initImplementation(const real_type& t)
+  {
+    AbstractSystemList::const_iterator i;
+    for (i = mAbstractSystemList.begin(); i != mAbstractSystemList.end(); ++i) {
+      (*i)->init(t);
+    }
+  }
+  virtual void updateImplementation(const real_type& tEndHint)
+  {
+    // initially set to all
+    TimeInterval validityInterval = TimeInterval::all();
+    AbstractSystemList::const_iterator i;
+    for (i = mAbstractSystemList.begin(); i != mAbstractSystemList.end(); ++i) {
+      (*i)->update(tEndHint);
+      if (validityInterval.getBegin() < (*i)->getValidityInterval().getBegin())
+        validityInterval.setBegin((*i)->getValidityInterval().getBegin());
+      if ((*i)->getValidityInterval().getEnd() < validityInterval.getEnd())
+        validityInterval.setEnd((*i)->getValidityInterval().getEnd());
+    }
+    setValidityInterval(validityInterval);
+  }
+  virtual void outputImplementation(const real_type& t)
+  {
+    AbstractSystemList::const_iterator i;
+    for (i = mAbstractSystemList.begin(); i != mAbstractSystemList.end(); ++i)
+      (*i)->output(t);
+  }
+private:
+  typedef std::vector<SharedPtr<AbstractSystem> > AbstractSystemList;
+  AbstractSystemList mAbstractSystemList;
+};
+
+
 } // namespace OpenFDM
 
 #endif
