@@ -7,6 +7,7 @@
 
 #include "Types.h"
 #include "Model.h"
+#include "TemplateDiscreteStateInfo.h"
 
 namespace OpenFDM {
 
@@ -16,17 +17,22 @@ public:
   DiscreteIntegrator(const std::string& name);
   virtual ~DiscreteIntegrator(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-  virtual void update(const TaskInfo& taskInfo);
+  virtual bool alloc(LeafContext& leafContext) const;
+  virtual void init(DiscreteStateValueVector& discreteState,
+                    ContinousStateValueVector&, const PortValueList&) const;
+  virtual void output(const DiscreteStateValueVector& discreteState,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
+  virtual void update(DiscreteStateValueVector& discreteState,
+                      ContinousStateValueVector&,
+                      const PortValueList& portValues) const;
 
-  virtual void setDiscreteState(const StateStream& state);
-  virtual void getDiscreteState(StateStream& state) const;
+  /// The initial output values on the output until input values are available.
+  const Matrix& getInitialValue() const;
+  void setInitialValue(const Matrix& initialValue);
 
-  virtual bool dependsDirectOn(Model* model);
-
-  const Matrix& getInitialValue(void) const;
-  void setInitialValue(const Matrix& value);
+  bool getEnableInitialValuePort() const;
+  void setEnableInitialValuePort(bool enable);
 
   const Matrix& getMinSaturation(void) const;
   void setMinSaturation(const Matrix& value);
@@ -34,23 +40,19 @@ public:
   const Matrix& getMaxSaturation(void) const;
   void setMaxSaturation(const Matrix& value);
 
-  const Matrix& getIntegralOutput(void) const;
-
 private:
-  /// Holds the current output.
-  Matrix mIntegralOutput;
-  /// Holds the current integral state.
-  Matrix mIntegralState;
-  /// Holds the current integral initial state.
+  void doUpdate(Matrix& integralValue, const Matrix& derivative,
+                const real_type& dt) const;
+
+  typedef TemplateDiscreteStateInfo<Matrix> MatrixStateInfo;
+
+  MatrixInputPort mInputPort;
+  MatrixOutputPort mOutputPort;
+  MatrixInputPort mInitialValuePort;
   Matrix mInitialValue;
-  /// Holds the minimum saturation
   Matrix mMinSaturation;
-  /// Holds the maximum saturation
   Matrix mMaxSaturation;
-  /// Holds a matrix handle to the integrators input
-  MatrixPortHandle mDerivativePort;
-  /// Holds a matrix handle to the integrators initial value input
-  MatrixPortHandle mInitialValuePort;
+  SharedPtr<MatrixStateInfo> mMatrixStateInfo;
 };
 
 } // namespace OpenFDM

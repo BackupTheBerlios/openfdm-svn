@@ -4,6 +4,7 @@
 
 #include "DiscreteIntegrator.h"
 #include "Assert.h"
+#include "LeafContext.h"
 
 namespace OpenFDM {
 
@@ -14,14 +15,13 @@ BEGIN_OPENFDM_OBJECT_DEF(DiscreteIntegrator, Model)
   END_OPENFDM_OBJECT_DEF
 
 DiscreteIntegrator::DiscreteIntegrator(const std::string& name) :
-  Model(name)
+  Model(name),
+  mInputPort(newMatrixInputPort("input", false)),
+  mOutputPort(newMatrixOutputPort("output")),
+  mInitialValue(Matrix::zeros(1, 1))
 {
-  setNumInputPorts(2);
-  setInputPortName(0, "derivative");
-  setInputPortName(1, "initialValue");
-
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &DiscreteIntegrator::getIntegralOutput);
+  mMatrixStateInfo = new MatrixStateInfo;
+  addDiscreteStateInfo(mMatrixStateInfo);
 }
 
 DiscreteIntegrator::~DiscreteIntegrator(void)
@@ -29,95 +29,77 @@ DiscreteIntegrator::~DiscreteIntegrator(void)
 }
 
 bool
-DiscreteIntegrator::init(void)
+DiscreteIntegrator::alloc(LeafContext& leafContext) const
 {
-  mDerivativePort = getInputPort(0)->toMatrixPortHandle();
-  if (!mDerivativePort.isConnected()) {
-    Log(Model,Error) << "Input port to DiscreteIntegrator Model \""
-                     << getName() << "\" is not connected" << endl;
+  Size sz;
+  if (getEnableInitialValuePort()) {
+    sz = size(leafContext.mPortValueList[mInitialValuePort]);
+    Log(Initialization, Debug)
+      << "Size for Integrator is detemined by the initial input "
+      << "port with size: " << trans(sz) << std::endl;
+  } else {
+    sz = size(mInitialValue);
+    Log(Initialization, Debug)
+      << "Size for Integrator is detemined by the static initial value "
+      << "with size: " << trans(sz) << std::endl;
+  }
+  if (!leafContext.mPortValueList.setOrCheckPortSize(mInputPort, sz)) {
+    Log(Initialization, Error)
+      << "Size for input port does not match!" << std::endl;
     return false;
   }
+  if (!leafContext.mPortValueList.setOrCheckPortSize(mOutputPort, sz)) {
+    Log(Initialization, Error)
+      << "Size for input port does not match!" << std::endl;
+    return false;
+  }
+  leafContext.mDiscreteState.setValue(*mMatrixStateInfo, leafContext);
+  return true;
+}
 
-  // The initial value defaults to zero
-  mInitialValuePort = getInputPort(1)->toMatrixPortHandle();
-  if (mInitialValuePort.isConnected()) {
-    mIntegralState = mInitialValuePort.getMatrixValue();
+void
+DiscreteIntegrator::init(DiscreteStateValueVector& discreteState,
+                         ContinousStateValueVector&,
+                         const PortValueList& portValues) const
+{
+  if (getEnableInitialValuePort()) {
+    // external initial condition
+    discreteState[*mMatrixStateInfo] = portValues[mInitialValuePort];
   } else {
-    if (rows(mInitialValue) == 0 || cols(mInitialValue) == 0) {
-      mInitialValue.resize(mDerivativePort.getMatrixValue());
-      mInitialValue.clear();
-    }
-    mIntegralState = mInitialValue;
+    // internal initial condition
+    discreteState[*mMatrixStateInfo] = mInitialValue;
   }
-  mIntegralOutput = mIntegralState;
-
-  if (size(mMinSaturation) != Size(0, 0)) {
-    OpenFDMAssert(size(mMinSaturation) == size(mIntegralState));
-  }
-  if (size(mMaxSaturation) != Size(0, 0)) {
-    OpenFDMAssert(size(mMaxSaturation) == size(mIntegralState));
-  }
-
-  setNumDiscreteStates(rows(mIntegralState)*cols(mIntegralState));
-  
-  return Model::init();
 }
 
 void
-DiscreteIntegrator::output(const TaskInfo&)
+DiscreteIntegrator::output(const DiscreteStateValueVector& discreteState,
+                           const ContinousStateValueVector&,
+                           PortValueList& portValues) const
 {
-  if (mInitialValuePort.isConnected()) {
-    mIntegralState = mInitialValuePort.getMatrixValue();
-    // FIXME: must have a reset slot or something like that
-    mInitialValuePort = 0;
-  }
-
-  mIntegralOutput = mIntegralState;
+  portValues[mOutputPort] = discreteState[*mMatrixStateInfo];
 }
 
 void
-DiscreteIntegrator::update(const TaskInfo& taskInfo)
+DiscreteIntegrator::doUpdate(Matrix& integralValue, const Matrix& derivative,
+                             const real_type& dt) const
 {
-  OpenFDMAssert(mDerivativePort.isConnected());
+  integralValue += dt*derivative;
 
+  if (size(mMaxSaturation) == size(integralValue))
+    integralValue = LinAlg::min(integralValue, mMaxSaturation);
+  if (size(mMinSaturation) == size(integralValue))
+    integralValue = LinAlg::max(integralValue, mMinSaturation);
+}
+
+void
+DiscreteIntegrator::update(DiscreteStateValueVector& discreteState,
+                           ContinousStateValueVector&,
+                           const PortValueList& portValues) const
+{
   // Just compute the integral.
-  // FIXME: make sure this is the only dt ...
-  real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
-  mIntegralState += dt*mDerivativePort.getMatrixValue();
-
-  // Hmm, should that be done on state setting too???
-  if (size(mMaxSaturation) == size(mIntegralState))
-    mIntegralState = LinAlg::min(mIntegralState, mMaxSaturation);
-  if (size(mMinSaturation) == size(mIntegralState))
-    mIntegralState = LinAlg::max(mIntegralState, mMinSaturation);
-}
-
-void
-DiscreteIntegrator::setDiscreteState(const StateStream& state)
-{
-  state.readSubState(mIntegralState);
-}
-
-void
-DiscreteIntegrator::getDiscreteState(StateStream& state) const
-{
-  state.writeSubState(mIntegralState);
-}
-
-bool
-DiscreteIntegrator::dependsDirectOn(Model* model)
-{
-  if (getInputPort(1)) {
-    // return true if we find the one connected to the initial value port
-    for (unsigned j = 0; j < model->getNumOutputPorts(); ++j) {
-      if (getInputPort(1)->getPortInterface() &&
-          getInputPort(1)->getPortInterface() ==
-          model->getOutputPort(j)->getPortInterface())
-        return true;
-    }
-  }
-
-  return false;
+  // FIXME: have no task info up to now !!!
+  real_type dt = 1;//(*taskInfo.getSampleTimeSet().begin()).getSampleTime();
+  doUpdate(discreteState[*mMatrixStateInfo], portValues[mInputPort], dt);
 }
 
 const Matrix&
@@ -130,6 +112,24 @@ void
 DiscreteIntegrator::setInitialValue(const Matrix& value)
 {
   mInitialValue = value;
+}
+
+bool
+DiscreteIntegrator::getEnableInitialValuePort() const
+{
+  return mInitialValuePort.empty();
+}
+
+void
+DiscreteIntegrator::setEnableInitialValuePort(bool enable)
+{
+  if (enable == getEnableInitialValuePort())
+    return;
+
+  if (enable)
+    mInitialValuePort = newMatrixInputPort("initialValue", true);
+  else 
+    mInitialValuePort.clear();
 }
 
 const Matrix&
@@ -154,12 +154,6 @@ void
 DiscreteIntegrator::setMaxSaturation(const Matrix& value)
 {
   mMaxSaturation = value;
-}
-
-const Matrix&
-DiscreteIntegrator::getIntegralOutput(void) const
-{
-  return mIntegralOutput;
 }
 
 } // namespace OpenFDM

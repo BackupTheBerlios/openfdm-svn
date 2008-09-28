@@ -231,6 +231,7 @@ OpenFDMModelsHEADERS = \
 
 OpenFDMModelsSOURCES = \
   Delay.cpp \
+  DiscreteIntegrator.cpp \
   Gain.cpp \
   Integrator.cpp \
   Output.cpp
@@ -248,7 +249,6 @@ OpenFDMModelsSOURCES = \
 #   DefaultGround.cpp \
 #   DefaultPlanet.cpp \
 #   DiscBrake.cpp \
-#   DiscreteIntegrator.cpp \
 #   ExternalForceModel.cpp \
 #   FixedRootJoint.cpp \
 #   Force.cpp \
