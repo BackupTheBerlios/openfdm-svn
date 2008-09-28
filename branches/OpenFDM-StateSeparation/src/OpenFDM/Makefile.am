@@ -101,7 +101,7 @@ OpenFDMCoreHEADERS = \
   StateValue.h \
   System.h \
   TableData.h \
-  TaskInfo.h \
+  Task.h \
   TemplateContinousStateInfo.h \
   TemplateDiscreteStateInfo.h \
   TemplateInfoVector.h \
@@ -166,7 +166,6 @@ OpenFDMCoreSOURCES = \
 #   ImplicitEuler.cpp \
 #   Newton.cpp \
 #   ReaderWriter.cpp \
-#   TaskInfo.cpp \
 #
 
 

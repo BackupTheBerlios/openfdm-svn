@@ -73,7 +73,7 @@ Delay::output(const DiscreteStateValueVector& discreteState,
 }
 
 void
-Delay::update(DiscreteStateValueVector& discreteState,
+Delay::update(const DiscreteTask&, DiscreteStateValueVector& discreteState,
               ContinousStateValueVector&,
               const PortValueList& portValues) const
 {

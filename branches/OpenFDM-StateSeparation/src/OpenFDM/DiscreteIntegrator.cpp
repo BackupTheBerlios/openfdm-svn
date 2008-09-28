@@ -5,6 +5,7 @@
 #include "DiscreteIntegrator.h"
 #include "Assert.h"
 #include "LeafContext.h"
+#include "Task.h"
 
 namespace OpenFDM {
 
@@ -92,13 +93,13 @@ DiscreteIntegrator::doUpdate(Matrix& integralValue, const Matrix& derivative,
 }
 
 void
-DiscreteIntegrator::update(DiscreteStateValueVector& discreteState,
+DiscreteIntegrator::update(const DiscreteTask& discreteTask,
+                           DiscreteStateValueVector& discreteState,
                            ContinousStateValueVector&,
                            const PortValueList& portValues) const
 {
   // Just compute the integral.
-  // FIXME: have no task info up to now !!!
-  real_type dt = 1;//(*taskInfo.getSampleTimeSet().begin()).getSampleTime();
+  real_type dt = discreteTask.getStepsize();
   doUpdate(discreteState[*mMatrixStateInfo], portValues[mInputPort], dt);
 }
 

@@ -24,9 +24,8 @@ public:
   virtual void output(const DiscreteStateValueVector& discreteState,
                       const ContinousStateValueVector&,
                       PortValueList& portValues) const;
-  virtual void update(DiscreteStateValueVector& discreteState,
-                      ContinousStateValueVector&,
-                      const PortValueList& portValues) const;
+  virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
+                      ContinousStateValueVector&, const PortValueList&) const;
 
   /// The delay number of timeslices
   unsigned getDelay(void) const;

@@ -41,6 +41,7 @@
 #include <OpenFDM/MatrixStateInfo.h>
 
 #include <OpenFDM/LeafContext.h>
+#include <OpenFDM/Task.h>
 
 #include <OpenFDM/RigidBody.h>
 #include <OpenFDM/Interact.h>
@@ -154,8 +155,6 @@ private:
   SharedPtr<NodeContext> mNodeContext;
 };
 
-class Task;
-class DiscreteTask;
 class ContinousTask;
 
 //// This one is used to execute the simulation system
@@ -174,8 +173,8 @@ public:
   { mModel->init(mDiscreteState, mContinousState, mPortValueList); }
   void output(const Task&)
   { mModel->output(mDiscreteState, mContinousState, mPortValueList); }
-  void update(const DiscreteTask&)
-  { mModel->update(mDiscreteState, mContinousState, mPortValueList); }
+  void update(const DiscreteTask& discreteTask)
+  { mModel->update(discreteTask, mDiscreteState, mContinousState, mPortValueList); }
 
 //   void derivative()
 //   { mModel->derivative(mDiscreteState,
@@ -963,20 +962,6 @@ private:
 };
 
 
-
-
-class Task : public Referenced {
-public:
-
-  void setTime(const real_type& time)
-  { mTime = time; }
-  const real_type& getTime() const
-  { return mTime; }
-
-private:
-  real_type mTime;
-};
-
 class ContinousTask : public Task {
 public:
 
@@ -1010,13 +995,10 @@ public:
   MechanicContextList mMechanicContextList;
 };
 
-class DiscreteTask : public Task {
+class DiscreteTask2 : public DiscreteTask {
 public:
-  DiscreteTask(const real_type& stepsize) : mStepsize(stepsize)
+  DiscreteTask2(const real_type& stepsize) : DiscreteTask(stepsize)
   { }
-
-  const real_type& getStepsize() const
-  { return mStepsize; }
 
   void update()
   {
@@ -1027,12 +1009,9 @@ public:
 
   ModelContextList mModelContextList;
   MechanicContextList mMechanicContextList;
-
-private:
-  real_type mStepsize;
 };
 
-typedef std::list<SharedPtr<DiscreteTask> > DiscreteTaskList;
+typedef std::list<SharedPtr<DiscreteTask2> > DiscreteTaskList;
 
 class TaskScheduler {
 public:

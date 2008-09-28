@@ -17,6 +17,8 @@
 
 namespace OpenFDM {
 
+class ContinousTask;
+class DiscreteTask;
 class DiscreteStateValueVector;
 class ContinousStateValueVector;
 class PortValueList;
@@ -35,8 +37,8 @@ public:
   // argument? May be it is sufficient to have a const and non const version??
   // FIXME???
   // const TaskInfo& taskInfo
-  virtual void update(DiscreteStateValueVector&, ContinousStateValueVector&,
-                      const PortValueList&) const { }
+  virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
+                      ContinousStateValueVector&, const PortValueList&) const{}
   virtual void output(const DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       PortValueList&) const { }
