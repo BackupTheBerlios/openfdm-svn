@@ -29,6 +29,8 @@
 #include <OpenFDM/DiscreteStateValueVector.h>
 
 #include <OpenFDM/ODESolver.h>
+#include <OpenFDM/ExplicitEuler.h>
+#include <OpenFDM/DoPri5.h>
 #include <OpenFDM/Function.h>
 #include <OpenFDM/SampleTime.h>
 #include <OpenFDM/Interval.h>
@@ -1032,8 +1034,12 @@ Node* buildGroupExample()
 Node* buildDiscreteExample()
 {
   SharedPtr<Group> group = new Group("G0");
-  Group::NodeId gain = group->addChild(new Gain("gain"));
-  Group::NodeId integrator1 = group->addChild(new DiscreteIntegrator("I1"));
+  Group::NodeId gain = group->addChild(new Gain("gain", -1));
+  DiscreteIntegrator* di1 = new DiscreteIntegrator("I1");
+  Matrix v(1, 1);
+  v(0, 0) = 10;
+  di1->setInitialValue(v);
+  Group::NodeId integrator1 = group->addChild(di1);
   Group::NodeId integrator2 = group->addChild(new DiscreteIntegrator("I2"));
   Group::NodeId output = group->addChild(new Output("O"));
   Group::NodeId delay = group->addChild(new Delay("D"));
