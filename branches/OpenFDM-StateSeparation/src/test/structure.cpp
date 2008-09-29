@@ -35,6 +35,9 @@
 #include <OpenFDM/SampleTime.h>
 #include <OpenFDM/Interval.h>
 
+#include <OpenFDM/NodeInstance.h>
+#include <OpenFDM/ModelInstance.h>
+
 #include <OpenFDM/AbstractSystem.h>
 #include <OpenFDM/System.h>
 
@@ -117,27 +120,6 @@ namespace OpenFDM {
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
 
-class NodeInstance : public AbstractNodeInstance {
-public:
-  NodeInstance(const NodePath& nodePath, const Node* node) :
-    AbstractNodeInstance(nodePath),
-    mNodeContext(new NodeContext(node))
-  { }
-
-protected:
-  /// The node context that belongs to this instance.
-  virtual NodeContext& getNodeContext()
-  { return *mNodeContext; }
-  virtual const NodeContext& getNodeContext() const
-  { return *mNodeContext; }
-
-private:
-  SharedPtr<NodeContext> mNodeContext;
-};
-
-class ContinousTask;
-
-
 class ModelContextList : public std::list<SharedPtr<ModelContext> > {
 public:
   typedef std::list<SharedPtr<ModelContext> > list_type;
@@ -166,27 +148,6 @@ public:
     for (list_type::const_iterator i = begin(); i != end(); ++i)
       (*i)->update(task);
   }
-};
-
-class ModelInstance : public AbstractNodeInstance {
-public:
-  ModelInstance(const NodePath& nodePath, const Model* model) :
-    AbstractNodeInstance(nodePath),
-    mModelContext(new ModelContext(model))
-  { }
-
-  // Return true if this leaf directly depends on one of leafInstance outputs
-  bool dependsOn(const ModelInstance& modelInstance) const
-  { return mModelContext->dependsOn(*modelInstance.mModelContext); }
-
-// protected: // FIXME
-  virtual ModelContext& getNodeContext()
-  { return *mModelContext; }
-  virtual const ModelContext& getNodeContext() const
-  { return *mModelContext; }
-
-private:
-  SharedPtr<ModelContext> mModelContext;
 };
 
 typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;

@@ -19,11 +19,8 @@ namespace OpenFDM {
 /// This class is meant to show up in the user interface of this simulation.
 class AbstractNodeInstance : public WeakReferenced {
 public:
-  AbstractNodeInstance(const NodePath& nodePath) :
-    mNodePath(nodePath)
-  { OpenFDMAssert(!nodePath.empty()); }
-  virtual ~AbstractNodeInstance()
-  { }
+  AbstractNodeInstance(const NodePath& nodePath);
+  virtual ~AbstractNodeInstance();
 
   /// The actual Node this AbstractNodeInstance stems from
   const Node& getNode() const
@@ -43,24 +40,9 @@ public:
   const PortValueList& getPortValueList() const
   { return getNodeContext().getPortValueList(); }
 
-  std::string getNodeNamePath() const
-  {
-    if (mNodePath.empty())
-      return std::string();
-    std::string path = mNodePath.front()->getName();
-    NodePath::const_iterator i = mNodePath.begin();
-    if (i != mNodePath.end()) {
-      for (++i; i != mNodePath.end(); ++i) {
-        path += '/';
-        path += (*i)->getName();
-      }
-    }
-    return path;
-  }
+  std::string getNodeNamePath() const;
 
 protected:
-  AbstractNodeInstance() {}
-
   /// The node context that belongs to this instance.
   virtual AbstractNodeContext& getNodeContext() = 0;
   virtual const AbstractNodeContext& getNodeContext() const = 0;
