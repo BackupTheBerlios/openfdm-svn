@@ -19,11 +19,11 @@ BEGIN_OPENFDM_OBJECT_DEF(Gain, Model)
   DEF_OPENFDM_PROPERTY(Real, Gain, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-Gain::Gain(const std::string& name) :
+Gain::Gain(const std::string& name, const real_type& gain) :
   Model(name),
   mInputPort(newMatrixInputPort("input", true)),
   mOutputPort(newMatrixOutputPort("output")),
-  mGain(1)
+  mGain(gain)
 {
 }
 

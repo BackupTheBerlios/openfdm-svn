@@ -14,7 +14,7 @@ namespace OpenFDM {
 class Gain : public Model {
   OPENFDM_OBJECT(Gain, Model);
 public:
-  Gain(const std::string& name);
+  Gain(const std::string& name, const real_type& gain = real_type(1));
   virtual ~Gain(void);
 
   virtual bool alloc(LeafContext& leafContext) const;
