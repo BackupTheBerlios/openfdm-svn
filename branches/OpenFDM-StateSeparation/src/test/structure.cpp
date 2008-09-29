@@ -43,6 +43,8 @@
 #include <OpenFDM/MatrixStateInfo.h>
 
 #include <OpenFDM/LeafContext.h>
+#include <OpenFDM/NodeContext.h>
+#include <OpenFDM/ModelContext.h>
 #include <OpenFDM/Task.h>
 
 #include <OpenFDM/RigidBody.h>
@@ -115,31 +117,6 @@ namespace OpenFDM {
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
 
-
-
-////////////////////////////////////////////////////////////////////////////
-
-/// This one will not show up in any execution list, but will be used
-/// to fill NodeContext's for Node's that have nothing to execute,
-/// should be reflected to the user of the simulation system. Group's
-/// inputs ad outputs and their input and output models are such examples.
-class NodeContext : public AbstractNodeContext {
-public:
-  NodeContext(const Node* node) :
-    mNode(node)
-  { OpenFDMAssert(mNode); }
-
-  virtual const Node& getNode() const
-  { return *mNode; }
-
-private:
-  NodeContext();
-  NodeContext(const NodeContext&);
-  NodeContext& operator=(const NodeContext&);
-
-  SharedPtr<const Node> mNode;
-};
-
 class NodeInstance : public AbstractNodeInstance {
 public:
   NodeInstance(const NodePath& nodePath, const Node* node) :
@@ -160,68 +137,6 @@ private:
 
 class ContinousTask;
 
-//// This one is used to execute the simulation system
-class ModelContext : public LeafContext {
-public:
-  ModelContext(const Model* model) :
-    mModel(model)
-  { OpenFDMAssert(mModel); }
-
-  virtual const Model& getNode() const
-  { return *mModel; }
-
-  bool alloc()
-  { return mModel->alloc(*this); }
-  void init()
-  { mModel->init(mDiscreteState, mContinousState, mPortValueList); }
-  void output(const Task&)
-  { mModel->output(mDiscreteState, mContinousState, mPortValueList); }
-  void update(const DiscreteTask& discreteTask)
-  { mModel->update(discreteTask, mDiscreteState, mContinousState, mPortValueList); }
-
-//   void derivative()
-//   { mModel->derivative(mDiscreteState,
-//                        mContinousState,
-//                        mPortValueList,
-//                        mContinousStateDerivative); }
-
-  // Return true if this model directly depends on one of models outputs
-  bool dependsOn(const ModelContext& modelContext) const
-  {
-    unsigned numPorts = mModel->getNumPorts();
-    for (unsigned i = 0; i < numPorts; ++i) {
-      const AcceptorPortInfo* acceptorPortInfo;
-      acceptorPortInfo = mModel->getPort(i)->toAcceptorPortInfo();
-      if (!acceptorPortInfo)
-        continue;
-      if (!acceptorPortInfo->getDirectInput())
-        continue;
-      const PortValue* portValue = getPortValueList().getPortValue(i);
-      if (!portValue)
-        continue;
-      unsigned otherNumPorts = modelContext.mModel->getNumPorts();
-      for (unsigned j = 0; j < otherNumPorts; ++j) {
-        if (!modelContext.mModel->getPort(j)->toProviderPortInfo())
-          continue;
-
-        const PortValue* otherPortValue;
-        otherPortValue = modelContext.getPortValueList().getPortValue(j);
-        if (portValue != otherPortValue)
-          continue;
-
-        return true;
-      }
-    }
-    return false;
-  }
-
-private:
-  ModelContext();
-  ModelContext(const ModelContext&);
-  ModelContext& operator=(const ModelContext&);
-
-  SharedPtr<const Model> mModel;
-};
 
 class ModelContextList : public std::list<SharedPtr<ModelContext> > {
 public:

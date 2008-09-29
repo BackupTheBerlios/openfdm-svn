@@ -10,6 +10,8 @@
 
 namespace OpenFDM {
 
+class LeafContext;
+
 template<typename Info, typename Value>
 class TemplateValueVector {
 public:

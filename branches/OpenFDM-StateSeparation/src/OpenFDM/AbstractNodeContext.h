@@ -12,7 +12,9 @@ namespace OpenFDM {
 
 class AbstractNodeContext : public Referenced {
 public:
-  virtual ~AbstractNodeContext() { }
+  AbstractNodeContext();
+  virtual ~AbstractNodeContext();
+
   virtual const Node& getNode() const = 0;
 
   PortValueList& getPortValueList()

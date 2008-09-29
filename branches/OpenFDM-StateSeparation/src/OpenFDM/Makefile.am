@@ -64,10 +64,12 @@ OpenFDMCoreHEADERS = \
   MechanicAcceptorPortInfo.h \
   MechanicProviderPortInfo.h \
   Model.h \
+  ModelContext.h \
   Mutex.h \
   MPFRFloat.h \
   Newton.h \
   Node.h \
+  NodeContext.h \
   NodeVisitor.h \
   NumericPortValue.h \
   NumericAcceptorPortInfo.h \
@@ -120,6 +122,7 @@ OpenFDMCoreHEADERS = \
   XMLDumpModelVisitor.h
 
 OpenFDMCoreSOURCES = \
+  AbstractNodeContext.cpp \
   AcceptorPortInfo.cpp \
   Assert.cpp \
   Atomic.cpp \
@@ -141,7 +144,9 @@ OpenFDMCoreSOURCES = \
   MechanicPortValue.cpp \
   MidpointRule.cpp \
   Model.cpp \
+  ModelContext.cpp \
   Node.cpp \
+  NodeContext.cpp \
   NodeVisitor.cpp \
   NumericAcceptorPortInfo.cpp \
   NumericPortValue.cpp \
