@@ -1,67 +1,10 @@
-#include <OpenFDM/Matrix.h>
-#include <OpenFDM/Object.h>
-#include <OpenFDM/SharedPtr.h>
-#include <OpenFDM/WeakPtr.h>
-#include <OpenFDM/Rotation.h>
-#include <OpenFDM/Inertia.h>
-#include <OpenFDM/PortValue.h>
-#include <OpenFDM/PortValueList.h>
-#include <OpenFDM/PortId.h>
-#include <OpenFDM/Node.h>
-#include <OpenFDM/NodeVisitor.h>
-#include <OpenFDM/MatrixInputPort.h>
-#include <OpenFDM/MatrixOutputPort.h>
-#include <OpenFDM/RealInputPort.h>
-#include <OpenFDM/RealOutputPort.h>
-#include <OpenFDM/MechanicBodyPort.h>
-#include <OpenFDM/MechanicInteractPort.h>
-#include <OpenFDM/RootJoint.h>
-
-#include <OpenFDM/StateInfo.h>
-#include <OpenFDM/StateValue.h>
-#include <OpenFDM/ContinousStateValue.h>
-#include <OpenFDM/MatrixStateValue.h>
-
-#include <OpenFDM/StateInfoVector.h>
-#include <OpenFDM/ContinousStateInfoVector.h>
-
-#include <OpenFDM/ContinousStateValueVector.h>
-#include <OpenFDM/DiscreteStateValueVector.h>
-
-#include <OpenFDM/ODESolver.h>
-#include <OpenFDM/ExplicitEuler.h>
-#include <OpenFDM/DoPri5.h>
-#include <OpenFDM/Function.h>
-#include <OpenFDM/SampleTime.h>
-#include <OpenFDM/Interval.h>
-
-#include <OpenFDM/NodeInstance.h>
-#include <OpenFDM/ModelInstance.h>
-#include <OpenFDM/MechanicInstance.h>
-
-#include <OpenFDM/AbstractSystem.h>
-#include <OpenFDM/System.h>
-
-#include <OpenFDM/BoolStateInfo.h>
-#include <OpenFDM/RealStateInfo.h>
-#include <OpenFDM/MatrixStateInfo.h>
-
-#include <OpenFDM/LeafContext.h>
-#include <OpenFDM/NodeContext.h>
-#include <OpenFDM/ModelContext.h>
-#include <OpenFDM/MechanicContext.h>
-#include <OpenFDM/Task.h>
-
-#include <OpenFDM/RigidBody.h>
-#include <OpenFDM/Interact.h>
-
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/Integrator.h>
 #include <OpenFDM/Delay.h>
 #include <OpenFDM/Output.h>
-
 #include <OpenFDM/Group.h>
+#include <OpenFDM/System.h>
 
 using namespace OpenFDM;
 
