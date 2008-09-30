@@ -18,8 +18,7 @@ public:
   virtual ~ModelInstance();
 
   // Return true if this leaf directly depends on one of leafInstance outputs
-  bool dependsOn(const ModelInstance& modelInstance) const
-  { return mModelContext->dependsOn(*modelInstance.mModelContext); }
+  bool dependsOn(const ModelInstance& modelInstance) const;
 
   // FIXME
 // protected:

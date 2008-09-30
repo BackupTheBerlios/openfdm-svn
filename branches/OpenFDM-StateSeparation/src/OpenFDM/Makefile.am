@@ -59,6 +59,7 @@ OpenFDMCoreHEADERS = \
   MidpointRule.h \
   MechanicContext.h \
   MechanicBodyPort.h \
+  MechanicInstance.h \
   MechanicInteractPort.h \
   MechanicNode.h \
   MechanicPortValue.h \
@@ -145,6 +146,7 @@ OpenFDMCoreSOURCES = \
   Logger.cpp \
   MatrixStateValue.cpp \
   MechanicContext.cpp \
+  MechanicInstance.cpp \
   MechanicNode.cpp \
   MechanicPortValue.cpp \
   MidpointRule.cpp \

@@ -37,6 +37,7 @@
 
 #include <OpenFDM/NodeInstance.h>
 #include <OpenFDM/ModelInstance.h>
+#include <OpenFDM/MechanicInstance.h>
 
 #include <OpenFDM/AbstractSystem.h>
 #include <OpenFDM/System.h>
@@ -120,33 +121,6 @@ namespace OpenFDM {
 /// To connect the ports and propagate the port values over the NodeContexts
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
-
-class MechanicInstance : public AbstractNodeInstance {
-public:
-  MechanicInstance(const NodePath& nodePath,
-                   const MechanicNode* mechanicNode) :
-    AbstractNodeInstance(nodePath),
-    mMechanicContext(new MechanicContext(mechanicNode))
-  { }
-
-  bool isConnectedTo(const MechanicInstance& mechanicInstance) const
-  { return mMechanicContext->isConnectedTo(*mechanicInstance.mMechanicContext); }
-
-protected:
-  virtual MechanicContext& getNodeContext()
-  { return *mMechanicContext; }
-  virtual const MechanicContext& getNodeContext() const
-  { return *mMechanicContext; }
-
-private:
-  SharedPtr<MechanicContext> mMechanicContext;
-};
-
-typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
-
-
-
-
 
 // Just here so that I do not care for intationation order for now ...
 struct PortDataHelper {
