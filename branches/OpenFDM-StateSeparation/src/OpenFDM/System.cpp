@@ -262,11 +262,11 @@ public:
 
 
   virtual void apply(const Node& node)
-  { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
+  { Log(Schedule, Error) << __PRETTY_FUNCTION__ << std::endl; }
   virtual void apply(const LeafNode& leaf)
-  { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
+  { Log(Schedule, Error) << __PRETTY_FUNCTION__ << std::endl; }
   virtual void apply(const LibraryNode& libraryNode)
-  { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
+  { Log(Schedule, Error) << __PRETTY_FUNCTION__ << std::endl; }
 
   PortDataList* buildNodeContext(const Node& node)
   {
@@ -376,11 +376,11 @@ public:
       unsigned providerNodeIndex = group.getConnectProviderNodeIndex(i);
 
       if (acceptorNodeIndex == ~0u) {
-        std::cerr << "Cannot find acceptor node from nodeId" << std::endl;
+        Log(Schedule, Error) << "Cannot find acceptor node from nodeId" << std::endl;
         continue;
       }
       if (providerNodeIndex == ~0u) {
-        std::cerr << "Cannot find provider node from nodeId" << std::endl;
+        Log(Schedule, Error) << "Cannot find provider node from nodeId" << std::endl;
         continue;
       }
 
@@ -390,12 +390,12 @@ public:
       providerPort = group.getConnectProviderPortInfo(i);
 
       if (!acceptorPort) {
-        std::cerr << "Cannot find acceptor Port data node "
+        Log(Schedule, Error) << "Cannot find acceptor Port data node "
                   << group.getChild(acceptorNodeIndex)->getName() << std::endl;
         continue;
       }
       if (!providerPort) {
-        std::cerr << "Cannot find provider Port data node "
+        Log(Schedule, Error) << "Cannot find provider Port data node "
                   << group.getChild(providerNodeIndex)->getName() << std::endl;
         continue;
       }
@@ -404,7 +404,7 @@ public:
       unsigned providerPortNumber = providerPort->getIndex();
       if (!_portDataMap[acceptorNodeIndex]->mPortDataVector[acceptorPortNumber]->
           connect(_portDataMap[providerNodeIndex]->mPortDataVector[providerPortNumber]))
-        std::cerr << "Cannot connect????" << std::endl;
+        Log(Schedule, Error) << "Cannot connect????" << std::endl;
     }
 
     SharedPtr<PortDataList> portDataList = buildNodeContext(group);
@@ -420,8 +420,8 @@ public:
       unsigned nodeIndex = group.getGroupPortNodeIndex(group.getPortId(i));
       if (childrenPortDataMap[nodeIndex]->mPortDataVector.empty()) {
         // FIXME, is this an internal error ???
-        std::cerr << "Hmm, cannot find GroupPortNode for external port "
-                  << i << std::endl;
+        Log(Schedule, Error) << "Hmm, cannot find GroupPortNode for external "
+                             << "port " << i << std::endl;
         continue;
       }
 
