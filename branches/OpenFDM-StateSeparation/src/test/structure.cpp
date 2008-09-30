@@ -120,36 +120,6 @@ namespace OpenFDM {
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
 
-class ModelContextList : public std::list<SharedPtr<ModelContext> > {
-public:
-  typedef std::list<SharedPtr<ModelContext> > list_type;
-
-  bool alloc() const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      if (!(*i)->alloc())
-        return false;
-    return true;
-  }
-  void init(const Task& task) const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i) {
-      (*i)->init();
-      (*i)->output(task);
-    }
-  }
-  void output(const Task& task) const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      (*i)->output(task);
-  }
-  void update(const DiscreteTask& task) const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      (*i)->update(task);
-  }
-};
-
 class MechanicContext : public LeafContext {
 public:
   MechanicContext(const MechanicNode* mechanicNode) :
