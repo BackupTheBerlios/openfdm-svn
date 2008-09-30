@@ -48,6 +48,7 @@
 #include <OpenFDM/LeafContext.h>
 #include <OpenFDM/NodeContext.h>
 #include <OpenFDM/ModelContext.h>
+#include <OpenFDM/MechanicContext.h>
 #include <OpenFDM/Task.h>
 
 #include <OpenFDM/RigidBody.h>
@@ -119,115 +120,6 @@ namespace OpenFDM {
 /// To connect the ports and propagate the port values over the NodeContexts
 /// there must be a PortData like structure that is only built during simulation
 /// model initialization.
-
-class MechanicContext : public LeafContext {
-public:
-  MechanicContext(const MechanicNode* mechanicNode) :
-    mMechanicNode(mechanicNode)
-  { OpenFDMAssert(mMechanicNode); }
-
-  virtual const MechanicNode& getNode() const
-  { return *mMechanicNode; }
-
-  bool alloc()
-  { return mMechanicNode->alloc(*this); }
-  void init(const Task&)
-  { mMechanicNode->init(mDiscreteState, mContinousState, mPortValueList); }
-
-  void velocities(const ContinousTask&)
-  { mMechanicNode->velocity(mContinousState, mPortValueList); }
-  void articulation(const ContinousTask&)
-  { mMechanicNode->articulation(mContinousState, mPortValueList); }
-  void accelerations(const ContinousTask&)
-  { }
-
-//   virtual void derivative(const ContinousStateValueVector&,
-//                           const PortValueList&,
-//                           ContinousStateValueVector&) const
- 
-//   void outputVelocities()
-//   { }
-//   void outputAcceperation()
-//   { }
-
-  void update(const DiscreteTask& discreteTask)
-  {
-    mMechanicNode->update(discreteTask, mDiscreteState,
-                          mContinousState, mPortValueList);
-  }
-
-  bool isConnectedTo(const MechanicContext& mechanicContext) const
-  {
-    unsigned numPorts = mMechanicNode->getNumPorts();
-    for (unsigned i = 0; i < numPorts; ++i) {
-      SharedPtr<const PortInfo> portInfo = mMechanicNode->getPort(i);
-      OpenFDMAssert(portInfo);
-      const PortValue* portValue = getPortValueList().getPortValue(i);
-      if (!portValue)
-        continue;
-      unsigned otherNumPorts = mechanicContext.mMechanicNode->getNumPorts();
-      for (unsigned j = 0; j < otherNumPorts; ++j) {
-        if (!mechanicContext.mMechanicNode->getPort(j)->toProviderPortInfo())
-          continue;
-
-        const PortValue* otherPortValue;
-        otherPortValue = mechanicContext.getPortValueList().getPortValue(j);
-        if (portValue != otherPortValue)
-          continue;
-
-        return true;
-      }
-    }
-    return false;
-  }
-
-private:
-  SharedPtr<const MechanicNode> mMechanicNode;
-
-private:
-  MechanicContext();
-  MechanicContext(const MechanicContext&);
-  MechanicContext& operator=(const MechanicContext&);
-};
-
-class MechanicContextList : public std::list<SharedPtr<MechanicContext> > {
-public:
-  typedef std::list<SharedPtr<MechanicContext> > list_type;
-
-  bool alloc() const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      if (!(*i)->alloc())
-        return false;
-    return true;
-  }
-  void init(const Task& task) const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      (*i)->init(task);
-  }
-  void velocities(const ContinousTask& task) const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      (*i)->velocities(task);
-  }
-  void articulation(const ContinousTask& task) const
-  {
-    // Note that this list is traversed from the mechanic leafs to the root
-    for (list_type::const_reverse_iterator i = rbegin(); i != rend(); ++i)
-      (*i)->articulation(task);
-  }
-  void accelerations(const ContinousTask& task) const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      (*i)->accelerations(task);
-  }
-  void update(const DiscreteTask& task) const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      (*i)->update(task);
-  }
-};
 
 class MechanicInstance : public AbstractNodeInstance {
 public:
