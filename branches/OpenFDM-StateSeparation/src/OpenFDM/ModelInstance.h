@@ -5,8 +5,10 @@
 #ifndef OpenFDM_ModelInstance_H
 #define OpenFDM_ModelInstance_H
 
+#include <list>
 #include "AbstractNodeInstance.h"
 #include "ModelContext.h"
+#include "SharedPtr.h"
 
 namespace OpenFDM {
 
@@ -28,6 +30,8 @@ public:
 private:
   SharedPtr<ModelContext> mModelContext;
 };
+
+typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
 
 } // namespace OpenFDM
 

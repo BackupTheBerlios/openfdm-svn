@@ -150,10 +150,6 @@ public:
   }
 };
 
-typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
-
-
-
 class MechanicContext : public LeafContext {
 public:
   MechanicContext(const MechanicNode* mechanicNode) :
@@ -165,7 +161,7 @@ public:
 
   bool alloc()
   { return mMechanicNode->alloc(*this); }
-  void init()
+  void init(const Task&)
   { mMechanicNode->init(mDiscreteState, mContinousState, mPortValueList); }
 
   void velocities(const ContinousTask&)
@@ -235,10 +231,10 @@ public:
         return false;
     return true;
   }
-  void init() const
+  void init(const Task& task) const
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)
-      (*i)->init();
+      (*i)->init(task);
   }
   void velocities(const ContinousTask& task) const
   {
