@@ -123,7 +123,8 @@ namespace OpenFDM {
 /// model initialization.
 
 // Just here so that I do not care for intationation order for now ...
-struct PortDataHelper {
+class System::NodeInstanceCollector : public ConstNodeVisitor {
+public:
 
   struct AcceptorPortData;
   struct ProviderPortData;
@@ -334,10 +335,7 @@ struct PortDataHelper {
     /// PortValues to the current connect information.
     SharedPtr<AbstractNodeInstance> mNodeInstance;
   };
-};
 
-class NodeInstanceCollector : public ConstNodeVisitor {
-public:
 
   virtual void apply(const Node& node)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
@@ -346,12 +344,12 @@ public:
   virtual void apply(const LibraryNode& libraryNode)
   { std::cerr << __PRETTY_FUNCTION__ << std::endl; }
 
-  PortDataHelper::PortDataList* buildNodeContext(const Node& node)
+  PortDataList* buildNodeContext(const Node& node)
   {
     NodeInstance* nodeInstance;
     nodeInstance = new NodeInstance(getNodePath(), &node);
     _nodeInstanceList.push_back(nodeInstance);
-    PortDataHelper::PortDataList* portDataList;
+    PortDataList* portDataList;
     portDataList = getCurrentNodePortDataList();
     portDataList->setNodeInstance(nodeInstance);
     return portDataList;
@@ -360,27 +358,27 @@ public:
   // Aussen acceptor, innen provider
   virtual void apply(const GroupAcceptorNode& leaf)
   {
-    PortDataHelper::PortDataList* portDataList = buildNodeContext(leaf);
+    PortDataList* portDataList = buildNodeContext(leaf);
 
     OpenFDMAssert(leaf.getPort(0));
 
-    PortDataHelper::ProviderPortData* providerPortData;
+    ProviderPortData* providerPortData;
     providerPortData = portDataList->newProxyProviderPortData(leaf._groupInternalPort);
   }
   // Aussen provider, innen acceptor
   virtual void apply(const GroupProviderNode& leaf)
   {
-    PortDataHelper::PortDataList* portDataList = buildNodeContext(leaf);
+    PortDataList* portDataList = buildNodeContext(leaf);
 
     OpenFDMAssert(leaf.getPort(0));
 
-    PortDataHelper::AcceptorPortData* acceptorPortData;
+    AcceptorPortData* acceptorPortData;
     acceptorPortData = portDataList->newProxyAcceptorPortData(leaf._groupInternalPort);
   }
 
   void allocPortData(AbstractNodeInstance* nodeInstance, const LeafNode& leaf)
   {
-    PortDataHelper::PortDataList* portDataList;
+    PortDataList* portDataList;
     portDataList = getCurrentNodePortDataList();
     portDataList->setNodeInstance(nodeInstance);
 
@@ -388,12 +386,12 @@ public:
       SharedPtr<const PortInfo> port = leaf.getPort(i);
       const ProviderPortInfo* providerPort = port->toProviderPortInfo();
       if (providerPort) {
-        PortDataHelper::ProviderPortData* providerPortData;
+        ProviderPortData* providerPortData;
         providerPortData = portDataList->newProviderPortData(providerPort);
       }
       const AcceptorPortInfo* acceptorPort = port->toAcceptorPortInfo();
       if (acceptorPort) {
-        PortDataHelper::AcceptorPortData* acceptorPortData;
+        AcceptorPortData* acceptorPortData;
         acceptorPortData = portDataList->newAcceptorPortData(acceptorPort);
       }
     }
@@ -429,8 +427,8 @@ public:
     // Prepare a new leaf map for the child group
     PortDataMap parentPortDataMap(group.getNumChildren());
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
-      PortDataHelper::PortDataList* portDataList;
-      portDataList = new PortDataHelper::PortDataList;
+      PortDataList* portDataList;
+      portDataList = new PortDataList;
       parentPortDataMap[i] = portDataList;
       _portDataListList.push_back(portDataList);
     }
@@ -438,7 +436,7 @@ public:
 
     // Walk the children
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
-      SharedPtr<PortDataHelper::PortDataList> parentNodePortDataList;
+      SharedPtr<PortDataList> parentNodePortDataList;
       parentNodePortDataList.swap(mCurrentNodePortDataList);
       mCurrentNodePortDataList = _portDataMap[i];
 
@@ -485,7 +483,7 @@ public:
         std::cerr << "Cannot connect????" << std::endl;
     }
 
-    SharedPtr<PortDataHelper::PortDataList> portDataList = buildNodeContext(group);
+    SharedPtr<PortDataList> portDataList = buildNodeContext(group);
 
     parentPortDataMap.swap(_portDataMap);
     // Ok, some nameing niceness
@@ -503,31 +501,31 @@ public:
         continue;
       }
 
-      PortDataHelper::PortData* portData;
+      PortData* portData;
       portData = childrenPortDataMap[nodeIndex]->mPortDataVector.front();
       if (portData->toProxyAcceptorPortData()) {
-        PortDataHelper::ProxyAcceptorPortData* proxyAcceptorPortData;
+        ProxyAcceptorPortData* proxyAcceptorPortData;
         proxyAcceptorPortData = portData->toProxyAcceptorPortData();
 
         const ProviderPortInfo* providerPortInfo;
         providerPortInfo = group.getPort(i)->toProviderPortInfo();
         OpenFDMAssert(providerPortInfo);
 
-        PortDataHelper::ProxyProviderPortData* proxyProviderPortData;
+        ProxyProviderPortData* proxyProviderPortData;
         proxyProviderPortData =
           portDataList->newProxyProviderPortData(providerPortInfo);
 
         proxyProviderPortData->setProxyAcceptorPortData(proxyAcceptorPortData);
 
       } else if (portData->toProxyProviderPortData()) {
-        PortDataHelper::ProxyProviderPortData* proxyProviderPortData;
+        ProxyProviderPortData* proxyProviderPortData;
         proxyProviderPortData = portData->toProxyProviderPortData();
 
         const AcceptorPortInfo* acceptorPortInfo;
         acceptorPortInfo = group.getPort(i)->toAcceptorPortInfo();
         OpenFDMAssert(acceptorPortInfo);
 
-        PortDataHelper::ProxyAcceptorPortData* proxyAcceptorPortData;
+        ProxyAcceptorPortData* proxyAcceptorPortData;
         proxyAcceptorPortData =
           portDataList->newProxyAcceptorPortData(acceptorPortInfo);
 
@@ -555,12 +553,12 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
-  typedef std::vector<SharedPtr<PortDataHelper::PortDataList> > PortDataMap;
+  typedef std::vector<SharedPtr<PortDataList> > PortDataMap;
   PortDataMap _portDataMap;
   // Just to hold references to all mort data lists we have in the
   // simulation system. They are just needed during traversal for connect
   // information and to distribute port value pointers.
-  typedef std::list<SharedPtr<PortDataHelper::PortDataList> > PortDataListList;
+  typedef std::list<SharedPtr<PortDataList> > PortDataListList;
   PortDataListList _portDataListList;
 
   // Here the miracle occurs.
@@ -668,16 +666,16 @@ protected:
     return true;
   }
 
-  PortDataHelper::PortDataList* getCurrentNodePortDataList()
+  PortDataList* getCurrentNodePortDataList()
   {
     if (!mCurrentNodePortDataList)
       // will happen for the toplevel group node ..
-      mCurrentNodePortDataList = new PortDataHelper::PortDataList;
+      mCurrentNodePortDataList = new PortDataList;
     return mCurrentNodePortDataList;
   }
 
 private:
-  SharedPtr<PortDataHelper::PortDataList> mCurrentNodePortDataList;
+  SharedPtr<PortDataList> mCurrentNodePortDataList;
 };
 
 bool

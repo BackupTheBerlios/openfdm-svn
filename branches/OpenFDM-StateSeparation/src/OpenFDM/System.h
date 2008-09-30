@@ -44,6 +44,8 @@ public:
   { return mNodeInstanceList; }
 
 private:
+  class NodeInstanceCollector;
+
   SharedPtr<Node> mNode;
 
   SharedPtr<AbstractSystem> mAbstractSystem;
