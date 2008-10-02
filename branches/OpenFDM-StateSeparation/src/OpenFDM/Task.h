@@ -5,6 +5,10 @@
 #ifndef OpenFDM_Task_H
 #define OpenFDM_Task_H
 
+#include "Referenced.h"
+#include "MechanicContext.h"
+#include "ModelContext.h"
+
 namespace OpenFDM {
 
 class Task : public Referenced {
@@ -30,8 +34,22 @@ public:
   const real_type& getStepsize() const
   { return mStepsize; }
 
+  void output()
+  {
+    mModelContextList.output(*this);
+    mMechanicContextList.init(*this);
+  }
+  void update()
+  {
+    mModelContextList.update(*this);
+    mMechanicContextList.update(*this);
+  }
+
+  ModelContextList mModelContextList;
+  MechanicContextList mMechanicContextList;
+
 private:
-  real_type mStepsize;
+  const real_type mStepsize;
 };
 
 } // namespace OpenFDM
