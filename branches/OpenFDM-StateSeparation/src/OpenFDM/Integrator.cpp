@@ -53,7 +53,7 @@ Integrator::alloc(LeafContext& leafContext) const
       << "Size for input port does not match!" << std::endl;
     return false;
   }
-  leafContext.mContinousState.setValue(*mMatrixStateInfo, leafContext);
+  leafContext.setContinousStateSize(*mMatrixStateInfo, sz);
   return true;
 }
 
