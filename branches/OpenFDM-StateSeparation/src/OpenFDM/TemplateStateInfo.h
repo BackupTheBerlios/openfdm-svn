@@ -37,7 +37,7 @@ public:
   const_reference getValue(const TemplateValueVector<I,V>& valueVector) const
   { return getValueReference(valueVector.getValue(*this)); }
 
-// protected:
+protected:
   struct Value : public V {
     value_type mValue;
   };

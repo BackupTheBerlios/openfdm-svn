@@ -55,7 +55,7 @@ private:
     }
   };
 
-  typedef  TemplateDiscreteStateInfo<MatrixList> MatrixListStateInfo;
+  typedef TemplateDiscreteStateInfo<MatrixList> MatrixListStateInfo;
 
   MatrixInputPort mInputPort;
   MatrixOutputPort mOutputPort;
