@@ -13,8 +13,9 @@
 namespace OpenFDM {
 
 class Task;
-class DiscreteTask;
 class ContinousTask;
+class DiscreteTask;
+class InitTask;
 
 class MechanicContext : public LeafContext {
 public:
@@ -25,19 +26,19 @@ public:
 
   bool alloc()
   { return mMechanicNode->alloc(*this); }
-  void init(const Task&)
+  void init(const /*Init*/Task&)
   { mMechanicNode->init(mDiscreteState, mContinousState, mPortValueList); }
 
-  void velocities(const ContinousTask&)
+  void velocities(const Task&)
   { mMechanicNode->velocity(mContinousState, mPortValueList); }
-  void articulation(const ContinousTask&)
+  void articulation(const Task&)
   { mMechanicNode->articulation(mContinousState, mPortValueList); }
-  void accelerations(const ContinousTask&)
+  void accelerations(const Task&)
   { }
 
-//   virtual void derivative(const ContinousStateValueVector&,
-//                           const PortValueList&,
-//                           ContinousStateValueVector&) const
+  void derivative(const Task&)
+  { mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,
+                              mContinousStateDerivative); }
  
 //   void outputVelocities()
 //   { }
@@ -72,23 +73,23 @@ public:
         return false;
     return true;
   }
-  void init(const Task& task) const
+  void init(const /*Init*/Task& task) const
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)
       (*i)->init(task);
   }
-  void velocities(const ContinousTask& task) const
+  void velocities(const Task& task) const
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)
       (*i)->velocities(task);
   }
-  void articulation(const ContinousTask& task) const
+  void articulation(const Task& task) const
   {
     // Note that this list is traversed from the mechanic leafs to the root
     for (list_type::const_reverse_iterator i = rbegin(); i != rend(); ++i)
       (*i)->articulation(task);
   }
-  void accelerations(const ContinousTask& task) const
+  void accelerations(const Task& task) const
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)
       (*i)->accelerations(task);
@@ -97,6 +98,11 @@ public:
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)
       (*i)->update(task);
+  }
+  void derivative(const Task& task) const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->derivative(task);
   }
 };
 

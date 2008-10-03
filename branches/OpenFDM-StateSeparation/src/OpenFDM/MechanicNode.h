@@ -28,7 +28,8 @@ public:
   virtual void articulation(const ContinousStateValueVector&,
                             PortValueList&) const
   { }
-  virtual void derivative(const ContinousStateValueVector&,
+  virtual void derivative(const DiscreteStateValueVector&,
+                          const ContinousStateValueVector&,
                           const PortValueList&,
                           ContinousStateValueVector&) const
   { }

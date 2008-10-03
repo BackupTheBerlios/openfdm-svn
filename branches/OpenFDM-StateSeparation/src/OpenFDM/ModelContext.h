@@ -13,8 +13,9 @@
 namespace OpenFDM {
 
 class Task;
-class DiscreteTask;
 class ContinousTask;
+class DiscreteTask;
+class InitTask;
 
 //// This one is used to execute the simulation system
 class ModelContext : public LeafContext {
@@ -26,18 +27,16 @@ public:
 
   bool alloc()
   { return mModel->alloc(*this); }
-  void init()
+  void init(const /*Init*/Task&)
   { mModel->init(mDiscreteState, mContinousState, mPortValueList); }
   void output(const Task&)
   { mModel->output(mDiscreteState, mContinousState, mPortValueList); }
   void update(const DiscreteTask& discreteTask)
   { mModel->update(discreteTask, mDiscreteState, mContinousState, mPortValueList); }
 
-//   void derivative()
-//   { mModel->derivative(mDiscreteState,
-//                        mContinousState,
-//                        mPortValueList,
-//                        mContinousStateDerivative); }
+  void derivative(const Task&)
+  { mModel->derivative(mDiscreteState, mContinousState, mPortValueList,
+                       mContinousStateDerivative); }
 
   // Return true if this model directly depends on one of models outputs
   bool dependsOn(const ModelContext& modelContext) const;
@@ -61,10 +60,10 @@ public:
         return false;
     return true;
   }
-  void init(const Task& task) const
+  void init(const /*Init*/Task& task) const
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i) {
-      (*i)->init();
+      (*i)->init(task);
       (*i)->output(task);
     }
   }
@@ -77,6 +76,11 @@ public:
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)
       (*i)->update(task);
+  }
+  void derivative(const Task& task) const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->derivative(task);
   }
 };
 

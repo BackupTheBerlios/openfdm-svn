@@ -505,7 +505,7 @@ public:
     // FIXME is here just for curiousity :)
     ModelInstanceList::const_iterator i;
     for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
-      (*i)->getNodeContext().init();
+      (*i)->getNodeContext().init(*reinterpret_cast<Task*>(0));
       (*i)->getNodeContext().output(*reinterpret_cast<Task*>(0));
     }
 
