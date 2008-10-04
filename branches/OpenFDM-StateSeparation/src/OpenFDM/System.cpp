@@ -654,7 +654,7 @@ System::clear()
 bool
 System::simulate(const real_type& t)
 {
-  if (mAbstractSystem)
+  if (!mAbstractSystem)
     return false;
   mAbstractSystem->outputAt(t);
   return true;

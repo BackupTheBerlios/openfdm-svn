@@ -251,26 +251,63 @@ private:
   virtual void apply(const Node& node)
   {
     HDF5Group parentGroup = mCurrentGroup;
-    mCurrentGroup = HDF5Group(parentGroup, node.getName());
+    std::string name = node.getName();
+    name = mCurrentUniqueStringSet.makeUnique(name);
+
+    std::cout << name << std::endl;
+    mCurrentGroup = HDF5Group(parentGroup, name);
     appendPortValues(node);
     mCurrentGroup = parentGroup;
   }
   virtual void apply(const Group& group)
   {
     HDF5Group parentGroup = mCurrentGroup;
-    mCurrentGroup = HDF5Group(parentGroup, group.getName());
+    std::string name = group.getName();
+    name = mCurrentUniqueStringSet.makeUnique(name);
+    std::cout << name << std::endl;
+    mCurrentGroup = HDF5Group(parentGroup, name);
 
     appendPortValues(group);
+
+    UniqueStringSet parentUniqueStringSet;
+    parentUniqueStringSet.swap(mCurrentUniqueStringSet);
     group.traverse(*this);
+    parentUniqueStringSet.swap(mCurrentUniqueStringSet);
 
     mCurrentGroup = parentGroup;
   }
+
+  // Helper class that makes names unique ...
+  struct UniqueStringSet {
+    UniqueStringSet()
+    { _strings.insert(""); }
+    std::string makeUnique(const std::string& s)
+    {
+      if (_strings.find(s) == _strings.end()) {
+        _strings.insert(s);
+        return s;
+      }
+      std::string unique;
+      unsigned id = 0;
+      do {
+        std::stringstream ss;
+        ss << s << ++id;
+        unique = ss.str();
+      } while (_strings.find(unique) != _strings.end());
+      return unique;
+    }
+    void swap(UniqueStringSet other)
+    { _strings.swap(other._strings); }
+  private:
+    std::set<std::string> _strings;
+  };
 
   // FIXME: do we need???
   SharedPtr<const System> mSystem;
 
   HDF5File mHDF5File;
   HDF5Group mCurrentGroup;
+  UniqueStringSet mCurrentUniqueStringSet;
   HDFMatrixStream mTimeStream;
 
   struct MatrixDumper : public Referenced {
@@ -288,27 +325,6 @@ private:
 
   typedef std::list<SharedPtr<MatrixDumper> > DumperList;
   DumperList mDumperList;
-
-  // Helper class that makes names unique ...
-  struct UniqueStringSet {
-    std::string makeUnique(const std::string& s)
-    {
-      if (_strings.find(s) == _strings.end()) {
-        _strings.insert(s);
-        return s;
-      }
-      std::string unique;
-      unsigned id = 0;
-      do {
-        std::stringstream ss;
-        ss << s << ++id;
-        unique = ss.str();
-      } while (_strings.find(unique) != _strings.end());
-      return unique;
-    }
-  private:
-    std::set<std::string> _strings;
-  };
 };
 
 } // namespace OpenFDM
