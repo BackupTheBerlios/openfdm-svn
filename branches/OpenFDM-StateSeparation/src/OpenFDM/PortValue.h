@@ -17,7 +17,7 @@ public:
   //virtual MechanicPortValue* toMechanicPortValue() { return 0; }
   //virtual FluidPortValue* toFluidPortValue() { return 0; }
 
-  static void destroy(PortValue* portValue)
+  static void destroy(const PortValue* portValue)
   { delete portValue; }
 
 protected:
