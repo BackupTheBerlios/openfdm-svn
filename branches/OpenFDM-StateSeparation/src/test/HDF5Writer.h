@@ -253,8 +253,6 @@ private:
     HDF5Group parentGroup = mCurrentGroup;
     std::string name = node.getName();
     name = mCurrentUniqueStringSet.makeUnique(name);
-
-    std::cout << name << std::endl;
     mCurrentGroup = HDF5Group(parentGroup, name);
     appendPortValues(node);
     mCurrentGroup = parentGroup;
@@ -264,7 +262,6 @@ private:
     HDF5Group parentGroup = mCurrentGroup;
     std::string name = group.getName();
     name = mCurrentUniqueStringSet.makeUnique(name);
-    std::cout << name << std::endl;
     mCurrentGroup = HDF5Group(parentGroup, name);
 
     appendPortValues(group);
