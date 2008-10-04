@@ -19,7 +19,7 @@ quattest_SOURCES = quattest.cpp
 quattest_LDADD = ../OpenFDM/libOpenFDM.la
 
 structure_SOURCES = structure.cpp
-structure_LDADD = ../OpenFDM/libOpenFDM.la
+structure_LDADD = ../OpenFDM/libOpenFDM.la -lhdf5
 
 # simulationtime_SOURCES = simulationtime.cpp
 # simulationtime_LDADD = ../OpenFDM/libOpenFDM.la

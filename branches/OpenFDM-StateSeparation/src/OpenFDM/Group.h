@@ -79,6 +79,19 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
+  void traverse(NodeVisitor& visitor)
+  {
+    unsigned numChildren = getNumChildren();
+    for (unsigned i = 0; i < numChildren; ++i)
+      getChild(i)->accept(visitor);
+  }
+  void traverse(ConstNodeVisitor& visitor) const
+  {
+    unsigned numChildren = getNumChildren();
+    for (unsigned i = 0; i < numChildren; ++i)
+      getChild(i)->accept(visitor);
+  }
+
   NodeId addChild(const SharedPtr<Node>& node);
   unsigned getNumChildren() const;
   NodeId getNodeId(unsigned i) const;

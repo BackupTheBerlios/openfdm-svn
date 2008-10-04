@@ -8,9 +8,9 @@
 #include <sstream>
 #include <set>
 #include <hdf5.h>
-#include <OpenFDM/ModelGroup.h>
-#include <OpenFDM/ModelVisitor.h>
 #include <OpenFDM/System.h>
+#include <OpenFDM/ConstNodeVisitor.h>
+#include <OpenFDM/NodeInstance.h>
 
 namespace OpenFDM {
 
@@ -178,66 +178,118 @@ private:
   HDF5Object _parent;
 };
 
-class HDF5Writer : public ModelVisitor {
+
+
+
+class HDF5Log : protected ConstNodeVisitor {
 public:
-  HDF5Writer(const std::string& filename) :
-    _hdf5File(filename),
-    _group(_hdf5File, "System"),
-    _ts(_group.getId(), "t")
+  HDF5Log(const std::string& filename) :
+    mHDF5File(filename),
+    mCurrentGroup(mHDF5File, "System"),
+    mTimeStream(mCurrentGroup.getId(), "t")
   { }
-  ~HDF5Writer()
+  ~HDF5Log()
   { }
 
-  virtual void apply(Model& model)
+  void attachTo(const System* system)
   {
-    HDF5Group modelGroup(_group, model.getName());
-
-    dumpObject(modelGroup, model);
-
-    unsigned numOutputs = model.getNumOutputPorts();
-    if (numOutputs > 0) {
-      HDF5Group outputGroup(modelGroup, "outputs");
-      UniqueStringSet outputStringSet;
-      for (unsigned i = 0; i < numOutputs; ++i) {
-        NumericPortProvider* numericPort = model.getOutputPort(i);
-        if (!numericPort)
-          continue;
-        PortInterface* portInterface = numericPort->getPortInterface();
-        if (!portInterface)
-          continue;
-        MatrixPortInterface* matrixPortInterface;
-        matrixPortInterface = portInterface->toMatrixPortInterface();
-        if (!matrixPortInterface)
-          continue;
-        
-        std::string name;
-        name = outputStringSet.makeUnique(model.getOutputPort(i)->getName());
-        _dumperList.push_back(new MatrixDumper(matrixPortInterface, outputGroup.getId(), name));
-      }
-    }
+    if (!system)
+      return;
+    if (!system->getNode())
+      return;
+    mSystem = system;
+    system->getNode()->accept(*this);
   }
-  virtual void apply(ModelGroup& modelGroup)
-  {
-    HDF5Group parentGroup = _group;
-    _group = HDF5Group(_group, modelGroup.getName()),
 
-    dumpObject(_group, modelGroup);
-
-    traverse(modelGroup);
-    _group = parentGroup;
-  }
-  virtual void apply(System& system)
+  void dump()
   {
-    if (_dumperList.empty())
-      ModelVisitor::apply(system);
-    _ts.append(system.getTime());
-    for (DumperList::iterator i = _dumperList.begin(); i != _dumperList.end();
-         ++i) {
+    if (mSystem)
+      mTimeStream.append(mSystem->getTime());
+    DumperList::iterator i;
+    for (i = mDumperList.begin(); i != mDumperList.end(); ++i)
       (*i)->append();
-    }
   }
 
 private:
+  const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const
+  {
+    /// FIXME, use a map for that???
+    NodeInstanceList::const_iterator i;
+    for (i = mSystem->getNodeInstanceList().begin();
+         i != mSystem->getNodeInstanceList().end(); ++i) {
+      if ((*i)->getNodePath() == nodePath)
+        return (*i);
+    }
+    return 0;
+  }
+
+  void appendPortValues(const AbstractNodeInstance& nodeInstance)
+  {
+    UniqueStringSet uniqueStringSet;
+
+    HDF5Group portValuesGroup(mCurrentGroup, "portValues");
+    unsigned numPorts = nodeInstance.getNode().getNumPorts();
+    for (unsigned i = 0; i < numPorts; ++i) {
+      const PortValue* portValue;
+      portValue = nodeInstance.getPortValueList().getPortValue(i);
+      const NumericPortValue* npv;
+      npv = dynamic_cast<const NumericPortValue*>(portValue);
+      if (!npv)
+        continue;
+      std::string name = nodeInstance.getNode().getPort(i)->getName();
+      name = uniqueStringSet.makeUnique(name);
+      mDumperList.push_back(new MatrixDumper(npv, portValuesGroup, name));
+    }
+  }
+  void appendPortValues(const Node& node)
+  {
+    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
+    OpenFDMAssert(nodeInstance);
+    appendPortValues(*nodeInstance);
+  }
+
+  virtual void apply(const Node& node)
+  {
+    HDF5Group parentGroup = mCurrentGroup;
+    mCurrentGroup = HDF5Group(parentGroup, node.getName());
+    appendPortValues(node);
+    mCurrentGroup = parentGroup;
+  }
+  virtual void apply(const Group& group)
+  {
+    HDF5Group parentGroup = mCurrentGroup;
+    mCurrentGroup = HDF5Group(parentGroup, group.getName());
+
+    appendPortValues(group);
+    group.traverse(*this);
+
+    mCurrentGroup = parentGroup;
+  }
+
+  // FIXME: do we need???
+  SharedPtr<const System> mSystem;
+
+  HDF5File mHDF5File;
+  HDF5Group mCurrentGroup;
+  HDFMatrixStream mTimeStream;
+
+  struct MatrixDumper : public Referenced {
+    MatrixDumper(const NumericPortValue* numericPortValue,
+                 const HDF5Object& parent, const std::string& name) :
+      mNumericPortValue(numericPortValue),
+      _stream(parent, name)
+    { OpenFDMAssert(numericPortValue); }
+    void append()
+    { _stream.append(mNumericPortValue->getValue()); }
+
+    SharedPtr<const NumericPortValue> mNumericPortValue;
+    HDFMatrixStream _stream;
+  };
+
+  typedef std::list<SharedPtr<MatrixDumper> > DumperList;
+  DumperList mDumperList;
+
+  // Helper class that makes names unique ...
   struct UniqueStringSet {
     std::string makeUnique(const std::string& s)
     {
@@ -257,55 +309,6 @@ private:
   private:
     std::set<std::string> _strings;
   };
-
-  void dumpObject(HDF5Object& parent, Object& object)
-  {
-    HDF5Group propertyGroup(parent, "properties");
-    std::vector<PropertyInfo> propertyInfoList;
-    object.getPropertyInfoList(propertyInfoList);
-    std::vector<PropertyInfo>::const_iterator i;
-    for (i = propertyInfoList.begin(); i != propertyInfoList.end(); ++i) {
-      std::string name = i->getName();
-      Variant v;
-      if (!object.getPropertyValue(name, v))
-        continue;
-      if (v.isMatrix()) {
-        HDFMatrixStream value(propertyGroup, name);
-        value.append(v.toMatrix());
-      } if (v.isReal()) {
-        HDFMatrixStream value(propertyGroup, name);
-        value.append(v.toReal());
-      } if (v.isInteger()) {
-        // FIXME, converts to double ...
-        HDFMatrixStream value(propertyGroup, name);
-        value.append(v.toInteger());
-      } if (v.isUnsigned()) {
-        // FIXME, converts to double ...
-        HDFMatrixStream value(propertyGroup, name);
-        value.append(v.toUnsigned());
-      }
-    }
-  }
-
-  HDF5File _hdf5File;
-  HDF5Group _group;
-
-  HDFMatrixStream _ts;
-
-  struct MatrixDumper : public Referenced {
-    MatrixDumper(MatrixPortInterface* matrixPortInterface, const HDF5Object& parent, const std::string& name) :
-      _matrixPortInterface(matrixPortInterface),
-      _stream(parent, name)
-    { }
-    void append()
-    { _stream.append(_matrixPortInterface->getMatrixValue()); }
-
-    SharedPtr<MatrixPortInterface> _matrixPortInterface;
-    HDFMatrixStream _stream;
-  };
-
-  typedef std::list<SharedPtr<MatrixDumper> > DumperList;
-  DumperList _dumperList;
 };
 
 } // namespace OpenFDM

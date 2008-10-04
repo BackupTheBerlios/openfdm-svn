@@ -6,6 +6,8 @@
 #include <OpenFDM/Group.h>
 #include <OpenFDM/System.h>
 
+#include "HDF5Writer.h"
+
 using namespace OpenFDM;
 
 Node* buildGroupExample()
@@ -78,19 +80,14 @@ int main()
   if (!system->init())
     return 1;
 
-  NodeInstanceList::const_iterator i;
-  for (i = system->getNodeInstanceList().begin();
-       i != system->getNodeInstanceList().end(); ++i) {
-    std::cout << (*i)->getNodeNamePath() << std::endl;
-    for (unsigned k = 0; k < (*i)->getNode().getNumPorts(); ++k) {
-      std::cout << "  " << (*i)->getNode().getPort(k)->getName() << " "
-                << (*i)->getPortValueList().getPortValue(k);
-      const NumericPortValue* npv =
-        dynamic_cast<const NumericPortValue*>((*i)->getPortValueList().getPortValue(k));
-      if (npv)
-        std::cout << " " << npv->getValue();
-      std::cout << std::endl;
-    }
+  HDF5Log log("system.h5");
+  log.attachTo(system);
+  log.dump();
+
+  double h = 0.01;
+  while (system->getTime() < 10) {
+    system->simulate(system->getTime() + h);
+    log.dump();
   }
 
   return 0;
