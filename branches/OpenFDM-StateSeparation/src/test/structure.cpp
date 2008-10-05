@@ -82,12 +82,12 @@ int main()
 
   HDF5Log log("system.h5");
   log.attachTo(system);
-  log.dump();
+  log.output(system->getTime());
 
   double h = 0.01;
   while (system->getTime() < 10) {
     system->simulate(system->getTime() + h);
-    log.dump();
+    log.output(system->getTime());
   }
 
   return 0;

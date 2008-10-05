@@ -7,6 +7,7 @@
 
 #include <sstream>
 #include <set>
+#include <map>
 #include <hdf5.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/ConstNodeVisitor.h>
@@ -30,7 +31,7 @@ public:
   { return _id; }
 
   int getNumReferences() const
-  { return H5Iget_ref(_id); }
+  { if (_id < 0) return 0; return H5Iget_ref(_id); }
   bool valid() const
   { return 0 <= _id && H5I_BADID != H5Iget_type(_id); }
 
@@ -54,17 +55,25 @@ public:
   }
 
 protected:
+  // Assign this object a new reference, the reference count is not incremented
+  // in this method
+  void assignNewRef(hid_t id)
+  {
+    if (_id == id)
+      return;
+    release();
+    _id = id;
+  }
   void assign(hid_t id)
   {
     if (_id == id)
       return;
-    if (_id < 0 || H5I_BADID == H5Iget_type(_id))
-      release();
-    H5Iinc_ref(id);
+    if (0 <= id && H5I_BADID != H5Iget_type(id))
+      H5Iinc_ref(id);
     release();
     _id = id;
   }
-// private:
+private:
   hid_t _id;
 };
 
@@ -78,15 +87,27 @@ public:
 
   bool create(const HDF5Object& parent, const std::string& name)
   {
+    hid_t id;
 #if (1 < H5_VERS_MAJOR || (1 == H5_VERS_MAJOR && 8 <= H5_VERS_MINOR))
-    _id = H5Gcreate(parent.getId(), name.c_str(),  H5P_DEFAULT,  H5P_DEFAULT,  H5P_DEFAULT);
+    id = H5Gcreate(parent.getId(), name.c_str(), H5P_DEFAULT, H5P_DEFAULT,
+                   H5P_DEFAULT);
 #else
-    _id = H5Gcreate(parent.getId(), name.c_str(), 0);
+    id = H5Gcreate(parent.getId(), name.c_str(), 0);
 #endif
-    if (_id < 0)
-      return false;
-    return true;
+    assignNewRef(id);
+    return 0 < id;
   }
+
+//   bool link(const HDF5Object& object, const std::string& name)
+//   {
+//     if (!valid())
+//       return false;
+//     if (!object.valid())
+//       return false;
+//     int status = H5Olink(object.getId(), getId(), name.c_str(),
+//                          H5P_DEFAULT, H5P_DEFAULT);
+//     return 0 <= status;
+//   }
 };
 
 class HDF5File : public HDF5Object {
@@ -96,7 +117,10 @@ public:
   HDF5File(const std::string& filename)
   { open(filename); }
   void open(const std::string& name)
-  { _id = H5Fcreate(name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT); }
+  {
+    hid_t id = H5Fcreate(name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    assignNewRef(id);
+  }
 };
 
 class HDFMatrixStream : public HDF5Object {
@@ -118,7 +142,7 @@ public:
   void append(const Matrix& matrix)
   {
     herr_t status;
-    if (_id < 0) {
+    if (!valid()) {
       hsize_t rank = 3;
       if (cols(matrix) == 1) {
         rank = 2;
@@ -137,21 +161,23 @@ public:
 
       hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
       status = H5Pset_chunk(cparms, rank, chunk_dims);
+      hid_t id;
 #if (1 < H5_VERS_MAJOR || (1 == H5_VERS_MAJOR && 8 <= H5_VERS_MINOR))
-      _id = H5Dcreate(_parent.getId(), _name.c_str(), H5T_NATIVE_DOUBLE,
+      id = H5Dcreate(_parent.getId(), _name.c_str(), H5T_NATIVE_DOUBLE,
                       _dataspace.getId(), H5P_DEFAULT, cparms, H5P_DEFAULT);
 #else
-      _id = H5Dcreate(_parent.getId(), _name.c_str(), H5T_NATIVE_DOUBLE,
+      id = H5Dcreate(_parent.getId(), _name.c_str(), H5T_NATIVE_DOUBLE,
                       _dataspace.getId(), cparms);
 #endif
+      assignNewRef(id);
       H5Pclose(cparms);
     } else {
       // increment size
       _dims[0] += 1;
-      status = H5Dextend(_id, _dims);
+      status = H5Dextend(getId(), _dims);
     }
 
-    HDF5Object filespace = H5Dget_space(_id);
+    HDF5Object filespace = H5Dget_space(getId());
     hsize_t offset[3] = { _dims[0] - 1, 0, 0 };
     hsize_t dims1[3] = { 1, _dims[1], _dims[2] };
     status = H5Sselect_hyperslab(filespace.getId(), H5S_SELECT_SET,
@@ -178,10 +204,79 @@ private:
   HDF5Object _parent;
 };
 
+class DataLogObject : public ConstNodeVisitor {
+public:
+  virtual ~DataLogObject() {}
+
+  virtual void output(const real_type& t) = 0;
+
+  void attachTo(const System* system)
+  {
+    mNodeInstanceMap.clear();
+    if (!system)
+      return;
+    // Build an index to the system nodes
+    NodeInstanceList::const_iterator i;
+    for (i = system->getNodeInstanceList().begin();
+         i != system->getNodeInstanceList().end(); ++i) {
+      mNodeInstanceMap[(*i)->getNodePath()] = *i;
+    }
+    system->getNode()->accept(*this);
+  }
+
+  virtual void apply(const PortInfo* portInfo, const PortValue* portValue)
+  { }
+  virtual void apply(const PortInfo* portInfo,
+                     const NumericPortValue* numericPortValue)
+  { apply(portInfo, static_cast<const PortValue*>(numericPortValue)); }
+  virtual void apply(const PortInfo* portInfo,
+                     const MechanicPortValue* mechanicPortValue)
+  { apply(portInfo, static_cast<const PortValue*>(mechanicPortValue)); }
+
+protected:
+  const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const
+  {
+    NodeInstanceMap::const_iterator i = mNodeInstanceMap.find(nodePath);
+    if (i == mNodeInstanceMap.end())
+      return 0;
+    return i->second;
+  }
+  void appendPortValues(const Node&)
+  {
+    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
+    appendPortValues(*nodeInstance);
+  }
+  void appendPortValues(const AbstractNodeInstance& nodeInstance)
+  {
+    unsigned numPorts = nodeInstance.getNode().getNumPorts();
+    for (unsigned i = 0; i < numPorts; ++i) {
+      const PortValue* portValue;
+      portValue = nodeInstance.getPortValueList().getPortValue(i);
+      const NumericPortValue* npv;
+      npv = dynamic_cast<const NumericPortValue*>(portValue);
+      if (npv) {
+        apply(nodeInstance.getNode().getPort(i), npv);
+        continue;
+      }
+
+      const MechanicPortValue* mpv;
+      mpv = dynamic_cast<const MechanicPortValue*>(portValue);
+      if (npv) {
+        apply(nodeInstance.getNode().getPort(i), mpv);
+        continue;
+      }
+
+      apply(nodeInstance.getNode().getPort(i), portValue);
+    }
+  }
+
+private:
+  typedef std::map<NodePath, SharedPtr<const AbstractNodeInstance> > NodeInstanceMap;
+  NodeInstanceMap mNodeInstanceMap;
+};
 
 
-
-class HDF5Log : protected ConstNodeVisitor {
+class HDF5Log : public DataLogObject {
 public:
   HDF5Log(const std::string& filename) :
     mHDF5File(filename),
@@ -191,68 +286,39 @@ public:
   ~HDF5Log()
   { }
 
-  void attachTo(const System* system)
+// private:
+  void output(const real_type& t)
   {
-    if (!system)
-      return;
-    if (!system->getNode())
-      return;
-    mSystem = system;
-    system->getNode()->accept(*this);
-  }
-
-  void dump()
-  {
-    if (mSystem)
-      mTimeStream.append(mSystem->getTime());
+    mTimeStream.append(t);
     DumperList::iterator i;
     for (i = mDumperList.begin(); i != mDumperList.end(); ++i)
       (*i)->append();
   }
 
-private:
-  const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const
+  virtual void apply(const PortInfo* portInfo,
+                     const NumericPortValue* numericPortValue)
   {
-    /// FIXME, use a map for that???
-    NodeInstanceList::const_iterator i;
-    for (i = mSystem->getNodeInstanceList().begin();
-         i != mSystem->getNodeInstanceList().end(); ++i) {
-      if ((*i)->getNodePath() == nodePath)
-        return (*i);
-    }
-    return 0;
+    OpenFDMAssert(mCurrentPortValuesGroup.valid());
+    std::string name = portInfo->getName();
+    name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
+    mDumperList.push_back(new MatrixDumper(numericPortValue, mCurrentPortValuesGroup, name));
   }
 
-  void appendPortValues(const AbstractNodeInstance& nodeInstance)
-  {
-    UniqueStringSet uniqueStringSet;
-
-    HDF5Group portValuesGroup(mCurrentGroup, "portValues");
-    unsigned numPorts = nodeInstance.getNode().getNumPorts();
-    for (unsigned i = 0; i < numPorts; ++i) {
-      const PortValue* portValue;
-      portValue = nodeInstance.getPortValueList().getPortValue(i);
-      const NumericPortValue* npv;
-      npv = dynamic_cast<const NumericPortValue*>(portValue);
-      if (!npv)
-        continue;
-      std::string name = nodeInstance.getNode().getPort(i)->getName();
-      name = uniqueStringSet.makeUnique(name);
-      mDumperList.push_back(new MatrixDumper(npv, portValuesGroup, name));
-    }
-  }
   void appendPortValues(const Node& node)
   {
-    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
-    OpenFDMAssert(nodeInstance);
-    appendPortValues(*nodeInstance);
+    OpenFDMAssert(mCurrentGroup.valid());
+    mCurrentPortValuesGroup = HDF5Group(mCurrentGroup, "portValues");
+    DataLogObject::appendPortValues(node);
+    mCurrentPortValuesGroup = HDF5Group();
+    mCurrentPortValuesUniqueStringSet = UniqueStringSet();
   }
 
   virtual void apply(const Node& node)
   {
     HDF5Group parentGroup = mCurrentGroup;
+    OpenFDMAssert(mCurrentGroup.valid());
     std::string name = node.getName();
-    name = mCurrentUniqueStringSet.makeUnique(name);
+    name = mCurrentGroupUniqueStringSet.makeUnique(name);
     mCurrentGroup = HDF5Group(parentGroup, name);
     appendPortValues(node);
     mCurrentGroup = parentGroup;
@@ -260,16 +326,17 @@ private:
   virtual void apply(const Group& group)
   {
     HDF5Group parentGroup = mCurrentGroup;
+    OpenFDMAssert(mCurrentGroup.valid());
     std::string name = group.getName();
-    name = mCurrentUniqueStringSet.makeUnique(name);
+    name = mCurrentGroupUniqueStringSet.makeUnique(name);
     mCurrentGroup = HDF5Group(parentGroup, name);
 
     appendPortValues(group);
 
     UniqueStringSet parentUniqueStringSet;
-    parentUniqueStringSet.swap(mCurrentUniqueStringSet);
+    parentUniqueStringSet.swap(mCurrentGroupUniqueStringSet);
     group.traverse(*this);
-    parentUniqueStringSet.swap(mCurrentUniqueStringSet);
+    parentUniqueStringSet.swap(mCurrentGroupUniqueStringSet);
 
     mCurrentGroup = parentGroup;
   }
@@ -293,19 +360,24 @@ private:
       } while (_strings.find(unique) != _strings.end());
       return unique;
     }
-    void swap(UniqueStringSet other)
+    void swap(UniqueStringSet& other)
     { _strings.swap(other._strings); }
   private:
     std::set<std::string> _strings;
   };
 
-  // FIXME: do we need???
-  SharedPtr<const System> mSystem;
-
   HDF5File mHDF5File;
   HDF5Group mCurrentGroup;
-  UniqueStringSet mCurrentUniqueStringSet;
   HDFMatrixStream mTimeStream;
+
+  UniqueStringSet mCurrentPortValuesUniqueStringSet;
+  UniqueStringSet mCurrentGroupUniqueStringSet;
+
+  HDF5Group mCurrentPortValuesGroup;
+
+  // Only hdf5 version >= 1.8 can do hard links
+//   typedef std::map<const PortValue*, SharedPtr<HDF5Object> > PortValueMap;
+//   PortValueMap mPortValueMap;
 
   struct MatrixDumper : public Referenced {
     MatrixDumper(const NumericPortValue* numericPortValue,
