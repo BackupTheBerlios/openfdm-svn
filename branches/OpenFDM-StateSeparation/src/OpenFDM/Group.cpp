@@ -44,6 +44,20 @@ Group::accept(ConstNodeVisitor& visitor) const
   visitor.handleNodePathAndApply(this);
 }
 
+void Group::traverse(NodeVisitor& visitor)
+{
+  ChildList::const_iterator i;
+  for (i = _childList.begin(); i != _childList.end(); ++i)
+    (*i)->node->accept(visitor);
+}
+
+void Group::traverse(ConstNodeVisitor& visitor) const
+{
+  ChildList::const_iterator i;
+  for (i = _childList.begin(); i != _childList.end(); ++i)
+    (*i)->node->accept(visitor);
+}
+
 Group::NodeId
 Group::addChild(const SharedPtr<Node>& node)
 {
