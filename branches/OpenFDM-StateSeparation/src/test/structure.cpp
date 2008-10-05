@@ -4,6 +4,8 @@
 #include <OpenFDM/Delay.h>
 #include <OpenFDM/Output.h>
 #include <OpenFDM/Group.h>
+#include <OpenFDM/LibraryNode.h>
+#include <OpenFDM/LibraryModel.h>
 #include <OpenFDM/System.h>
 
 #include "HDF5Writer.h"
@@ -28,7 +30,7 @@ bool testSelfReferencingDirectInput()
   return true;
 }
 
-Node* buildGroupExample()
+Node* buildContinousExample()
 {
   SharedPtr<Group> group = new Group("G0");
   Group::NodeId gain = group->addChild(new Gain("gain", -1));
@@ -49,19 +51,14 @@ Node* buildGroupExample()
   group->connect(gain, "output", delay, "input");
   group->connect(delay, "output", outputDelay, "input");
 
-  //FIXME: broken naming
-//   Group::NodeId groupOutputNode = group->addAcceptorPort();
   Group::NodeId groupOutputNode = group->addProviderPort();
   group->connect(integrator2, "output", groupOutputNode, "input");
 
   SharedPtr<Group> topGroup = new Group("G1");
-  Group::NodeId child0 = topGroup->addChild(group);
-  Group::NodeId child1 = topGroup->addChild(group);
+  Group::NodeId child = topGroup->addChild(group);
 
-  Group::NodeId output0 = topGroup->addChild(new Output("O2"));
-  topGroup->connect(child0, 0, output0, 0);
-  Group::NodeId output1 = topGroup->addChild(new Output("O3"));
-  topGroup->connect(child1, 0, output1, 0);
+  Group::NodeId output0 = topGroup->addChild(new Output("Output"));
+  topGroup->connect(child, 0, output0, 0);
 
   return topGroup.release();
 }
@@ -90,10 +87,29 @@ Node* buildDiscreteExample()
   return group.release();
 }
 
+Node* buildLibraryNodeExample()
+{
+  SharedPtr<Node> node = buildDiscreteExample();
+  SharedPtr<LibraryModel> libraryModel = new LibraryModel("Library Model");
+  libraryModel->setNode(node);
+  
+  SharedPtr<LibraryNode> libraryNode1 = new LibraryNode("Library Node 1");
+  libraryNode1->setLibraryModel(libraryModel);
+
+  SharedPtr<LibraryNode> libraryNode2 = new LibraryNode("Library Node 2");
+  libraryNode2->setLibraryModel(libraryModel);
+
+  SharedPtr<Group> group = new Group("Group");
+  group->addChild(libraryNode1);
+  group->addChild(libraryNode2);
+  return group.release();
+}
+
 int main()
 {
-  SharedPtr<System> system = new System("System", buildGroupExample());
+  SharedPtr<System> system = new System("System", buildContinousExample());
 //   SharedPtr<System> system = new System("System", buildDiscreteExample());
+//   SharedPtr<System> system = new System("System", buildLibraryNodeExample());
 
   if (!system->init())
     return 1;
