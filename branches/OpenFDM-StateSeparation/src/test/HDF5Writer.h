@@ -82,6 +82,16 @@ class HDF5Group : public HDF5Object {
 public:
   HDF5Group()
   { }
+  HDF5Group(const HDF5Object& object)
+  {
+    if (!object.valid())
+      return;
+    if (H5Iget_type(object.getId()) != H5I_GROUP)
+      return;
+    assign(object.getId());
+  }
+  HDF5Group(const HDF5Group& group)
+  { assign(group.getId()); }
   HDF5Group(const HDF5Object& parent, const std::string& filename)
   { create(parent, filename); }
 
@@ -114,6 +124,16 @@ class HDF5File : public HDF5Object {
 public:
   HDF5File()
   { }
+  HDF5File(const HDF5File& file)
+  { assign(file.getId()); }
+  HDF5File(const HDF5Object& object)
+  {
+    if (!object.valid())
+      return;
+    if (H5Iget_type(object.getId()) != H5I_FILE)
+      return;
+    assign(object.getId());
+  }
   HDF5File(const std::string& filename)
   { open(filename); }
   void open(const std::string& name)
