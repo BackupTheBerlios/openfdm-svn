@@ -59,8 +59,6 @@ protected:
   // in this method
   void assignNewRef(hid_t id)
   {
-    if (_id == id)
-      return;
     release();
     _id = id;
   }
@@ -94,6 +92,9 @@ public:
   { assign(group.getId()); }
   HDF5Group(const HDF5Object& parent, const std::string& filename)
   { create(parent, filename); }
+
+  HDF5Group& operator=(const HDF5Group& object)
+  { assign(object.getId()); return *this; }
 
   bool create(const HDF5Object& parent, const std::string& name)
   {
@@ -136,6 +137,8 @@ public:
   }
   HDF5File(const std::string& filename)
   { open(filename); }
+  HDF5File& operator=(const HDF5File& object)
+  { assign(object.getId()); return *this; }
   void open(const std::string& name)
   {
     hid_t id = H5Fcreate(name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
