@@ -105,6 +105,7 @@ OpenFDMCoreHEADERS = \
   StateInfoVector.h \
   StateValue.h \
   System.h \
+  SystemLog.h \
   TableData.h \
   Task.h \
   TemplateContinousStateInfo.h \

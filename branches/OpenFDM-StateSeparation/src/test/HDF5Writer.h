@@ -7,11 +7,8 @@
 
 #include <sstream>
 #include <set>
-#include <map>
 #include <hdf5.h>
-#include <OpenFDM/System.h>
-#include <OpenFDM/ConstNodeVisitor.h>
-#include <OpenFDM/NodeInstance.h>
+#include <OpenFDM/SystemLog.h>
 
 namespace OpenFDM {
 
@@ -227,79 +224,7 @@ private:
   HDF5Object _parent;
 };
 
-class DataLogObject : public ConstNodeVisitor {
-public:
-  virtual ~DataLogObject() {}
-
-  virtual void output(const real_type& t) = 0;
-
-  void attachTo(const System* system)
-  {
-    mNodeInstanceMap.clear();
-    if (!system)
-      return;
-    // Build an index to the system nodes
-    ConstNodeInstanceList::const_iterator i;
-    for (i = system->getNodeInstanceList().begin();
-         i != system->getNodeInstanceList().end(); ++i) {
-      mNodeInstanceMap[(*i)->getNodePath()] = *i;
-    }
-    system->getNode()->accept(*this);
-  }
-
-  virtual void apply(const PortInfo* portInfo, const PortValue* portValue)
-  { }
-  virtual void apply(const PortInfo* portInfo,
-                     const NumericPortValue* numericPortValue)
-  { apply(portInfo, static_cast<const PortValue*>(numericPortValue)); }
-  virtual void apply(const PortInfo* portInfo,
-                     const MechanicPortValue* mechanicPortValue)
-  { apply(portInfo, static_cast<const PortValue*>(mechanicPortValue)); }
-
-protected:
-  const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const
-  {
-    NodeInstanceMap::const_iterator i = mNodeInstanceMap.find(nodePath);
-    if (i == mNodeInstanceMap.end())
-      return 0;
-    return i->second;
-  }
-  void appendPortValues(const Node&)
-  {
-    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
-    appendPortValues(*nodeInstance);
-  }
-  void appendPortValues(const AbstractNodeInstance& nodeInstance)
-  {
-    unsigned numPorts = nodeInstance.getNode().getNumPorts();
-    for (unsigned i = 0; i < numPorts; ++i) {
-      const PortValue* portValue;
-      portValue = nodeInstance.getPortValueList().getPortValue(i);
-      const NumericPortValue* npv;
-      npv = dynamic_cast<const NumericPortValue*>(portValue);
-      if (npv) {
-        apply(nodeInstance.getNode().getPort(i), npv);
-        continue;
-      }
-
-      const MechanicPortValue* mpv;
-      mpv = dynamic_cast<const MechanicPortValue*>(portValue);
-      if (npv) {
-        apply(nodeInstance.getNode().getPort(i), mpv);
-        continue;
-      }
-
-      apply(nodeInstance.getNode().getPort(i), portValue);
-    }
-  }
-
-private:
-  typedef std::map<NodePath, SharedPtr<const AbstractNodeInstance> > NodeInstanceMap;
-  NodeInstanceMap mNodeInstanceMap;
-};
-
-
-class HDF5Log : public DataLogObject {
+class HDF5Log : public SystemLog {
 public:
   HDF5Log(const std::string& filename) :
     mHDF5File(filename),
@@ -331,7 +256,7 @@ public:
   {
     OpenFDMAssert(mCurrentGroup.valid());
     mCurrentPortValuesGroup = HDF5Group(mCurrentGroup, "portValues");
-    DataLogObject::appendPortValues(node);
+    SystemLog::appendPortValues(node);
     mCurrentPortValuesGroup = HDF5Group();
     mCurrentPortValuesUniqueStringSet = UniqueStringSet();
   }
