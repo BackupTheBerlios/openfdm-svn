@@ -851,4 +851,22 @@ System::getTime(void) const
   return mAbstractSystem->getTime();
 }
 
+const AbstractNodeInstance*
+System::getNodeInstance(const NodePath& nodePath) const
+{
+  NodeInstanceMap::const_iterator i = mNodeInstanceMap.find(nodePath);
+  if (i == mNodeInstanceMap.end())
+    return 0;
+  return i->second;
+}
+
+AbstractNodeInstance*
+System::getNodeInstance(const NodePath& nodePath)
+{
+  NodeInstanceMap::const_iterator i = mNodeInstanceMap.find(nodePath);
+  if (i == mNodeInstanceMap.end())
+    return 0;
+  return i->second;
+}
+
 } // namespace OpenFDM

@@ -40,23 +40,13 @@ public:
   /// Return the current simulation time, convenience function
   real_type getTime(void) const;
 
+  /// Get the whole NodeInstance list
   const ConstNodeInstanceList& getNodeInstanceList() const
   { return mNodeInstanceList; }
 
-  const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const
-  {
-    NodeInstanceMap::const_iterator i = mNodeInstanceMap.find(nodePath);
-    if (i == mNodeInstanceMap.end())
-      return 0;
-    return i->second;
-  }
-  AbstractNodeInstance* getNodeInstance(const NodePath& nodePath)
-  {
-    NodeInstanceMap::const_iterator i = mNodeInstanceMap.find(nodePath);
-    if (i == mNodeInstanceMap.end())
-      return 0;
-    return i->second;
-  }
+  /// Get node instances by their path within the system
+  const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const;
+  AbstractNodeInstance* getNodeInstance(const NodePath& nodePath);
 
 private:
   class NodeInstanceCollector;
