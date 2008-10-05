@@ -74,8 +74,8 @@ Node* buildDiscreteExample()
 
 int main()
 {
-//   SharedPtr<System> system = new System("System", buildGroupExample());
-  SharedPtr<System> system = new System("System", buildDiscreteExample());
+  SharedPtr<System> system = new System("System", buildGroupExample());
+//   SharedPtr<System> system = new System("System", buildDiscreteExample());
 
   if (!system->init())
     return 1;

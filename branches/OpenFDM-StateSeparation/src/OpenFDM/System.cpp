@@ -12,6 +12,10 @@
 #include "NodeInstance.h"
 #include "Object.h"
 #include "RootJoint.h"
+#include "Task.h"
+
+#include "Function.h"
+#include "ExplicitEuler.h"
 
 namespace OpenFDM {
 
@@ -47,6 +51,164 @@ namespace OpenFDM {
 /// FIXME: IMO THIS MUST WORK THIS WAY
 ///
 
+class ContinousSystemFunction : public Function {
+public:
+  virtual size_type inSize(void) const
+  { return mContinousTask->getNumStates(); }
+  virtual size_type outSize(void) const
+  { return mContinousTask->getNumStates(); }
+  virtual void eval(value_type t, const invector_type& v, outvector_type& out)
+  {
+    mContinousTask->setStateValue(v);
+    mContinousTask->output(t);
+    mContinousTask->derivative();
+    mContinousTask->getStateDerivative(out);
+  }
+  SharedPtr<ContinousTask> mContinousTask;
+};
+
+class DiscreteSystem : public AbstractSystem {
+  struct TimeSlice;
+public:
+  DiscreteSystem(const real_type& basicSampleTime, unsigned numSteps) :
+    mCycleTime(basicSampleTime*numSteps),
+    mBasicSampleTime(basicSampleTime)
+  {
+    DiscreteTask *discreteTask = new DiscreteTask(basicSampleTime);
+    TimeSlice timeSlice;
+    timeSlice.mTaskIndex.push_back(0);
+    mDiscreteTaskList.push_back(discreteTask);
+    mList.push_back(timeSlice);
+
+    mContinousTask = new ContinousTask;
+    mInitTask = new InitTask;
+
+    mContinousSystemFunction = new ContinousSystemFunction;
+    mContinousSystemFunction->mContinousTask = mContinousTask;
+
+    mODESolver = new ExplicitEuler;
+    mODESolver->setFunction(mContinousSystemFunction);
+  }
+
+  void appendModelContext(unsigned stride, ModelContext* modelContext)
+  {
+    // The init task contains them all
+    mInitTask->mModelContextList[0].push_back(modelContext);
+    // FIXME: decide which ones where ...
+    mDiscreteTaskList[0]->mModelContextList.push_back(modelContext);
+    mContinousTask->mModelContextList[0].push_back(modelContext);
+    mContinousTask->appendStateValuesFromLeafContext(*modelContext);
+  }
+
+protected:
+  virtual void initImplementation(const real_type& t)
+  {
+    mInitTask->init(t);
+
+    if (mList.empty())
+      return;
+
+    mList.front().mSampleHit = t;
+
+    // Set the state into the ode solver
+    Vector v;
+    mContinousTask->getStateValue(v);
+    mODESolver->setState(v);
+    mODESolver->setTime(t);
+  }
+
+  virtual void discreteUpdateImplementation()
+  {
+    if (mList.empty())
+      return;
+    // std::rotate(...) ... nein - ist ineffizient ...
+    discreteUpdate(mList.front());
+    // FIXME: do something that does not creep away ...
+    mList.front().mSampleHit += mCycleTime;
+    discreteOutput(mList.front());
+
+    // FIXME:
+    real_type startTime = getValidityInterval().getEnd();
+    real_type endTime = mBasicSampleTime + getValidityInterval().getEnd();
+    // Note that this implicitly sets the value of the next sample hit to the
+    // end of this validity interval.
+    setValidityInterval(TimeInterval(startTime, endTime));
+  }
+  void discreteUpdate(const TimeSlice& timeSlice)
+  {
+    for (unsigned i = 0; i < timeSlice.mTaskIndex.size(); ++i) {
+      unsigned index = timeSlice.mTaskIndex[i];
+      mDiscreteTaskList[index]->update(timeSlice.mSampleHit);
+    }
+  }
+  // FIXME ???
+  void discreteOutput(const TimeSlice& timeSlice)
+  {
+    for (unsigned i = 0; i < timeSlice.mTaskIndex.size(); ++i) {
+      unsigned index = timeSlice.mTaskIndex[i];
+      mDiscreteTaskList[index]->output(timeSlice.mSampleHit);
+    }
+  }
+
+  virtual void continousUpdateImplementation(const real_type& tEnd)
+  {
+    mODESolver->integrate(tEnd);
+  }
+  real_type getNextDiscreteSampleHit() const
+  {
+    OpenFDMAssert(getNextDiscreteSampleHitAlternate() == getValidityInterval().getEnd());
+    return getValidityInterval().getEnd();
+  }
+  real_type getNextDiscreteSampleHitAlternate() const
+  {
+    if (mList.empty())
+      return Limits<real_type>::max_value();
+    return mList.front().mSampleHit;
+  }
+
+  virtual void outputImplementation(const real_type& t)
+  {
+    if (mContinousTask)
+      mContinousTask->output(t);
+  }
+
+private:
+  struct TimeSlice {
+    /// The list of task indices that must be executed at this sample hit
+    std::vector<unsigned> mTaskIndex;
+    /// The time of the next sample hit
+    real_type mSampleHit;
+    /// Helps to get less drifting time values:
+    /// mCycleOffset*mCycleTime is the time offset of this slice in a complete
+    /// cycle of all slices ...
+    //const real_type mCycleOffset;
+  };
+
+  /// The time for all timeslices in the system.
+  /// Used to increment the sample hit times ...
+  /// FIXME
+  const real_type mCycleTime;
+  const real_type mBasicSampleTime;
+
+  /// The Task responsible for initializing the model contexts.
+  /// Contains all node contexts in execution order.
+  /// All other tasks just contain their relevant subsets.
+  SharedPtr<InitTask> mInitTask;
+  /// All discrete Tasks in this System.
+  std::vector<SharedPtr<DiscreteTask> > mDiscreteTaskList;
+  /// The time slice sorted list of tasks to execute on each update.
+  /// Past each update this list is rotated by one entry.
+  std::list<TimeSlice> mList;
+  /// The continous task that is used to compute continous outputs.
+  /// (should! FIXME) Contains only those tasks that change on continous output.
+  SharedPtr<ContinousTask> mContinousTask;
+  SharedPtr<ContinousSystemFunction> mContinousSystemFunction;
+  SharedPtr<ODESolver> mODESolver;
+};
+
+////////////////////////////////////////////////////////////////////
+
+// Just here so that I do not care for intationation order for now ...
 class System::NodeInstanceCollector : public ConstNodeVisitor {
 public:
 
@@ -502,15 +664,19 @@ public:
     if (!allocModels())
       return 0;
 
-    // FIXME is here just for curiousity :)
+    // Now the system is ready for state initialization and execution
+    // Build up te abstract system and return that
+
+    // For the first cut, assume many things like basic step size and such ...
+    SharedPtr<DiscreteSystem> discreteSystem;
+    discreteSystem = new DiscreteSystem(0.01, 1);
+
     ModelInstanceList::const_iterator i;
     for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
-      (*i)->getNodeContext().init(*reinterpret_cast<Task*>(0));
-      (*i)->getNodeContext().output(*reinterpret_cast<Task*>(0));
+      discreteSystem->appendModelContext(1, &(*i)->getNodeContext());
     }
 
-    // FIXME:
-    return new GroupedSystem;
+    return discreteSystem.release();
   }
 
 protected:
@@ -635,7 +801,7 @@ System::init()
   mAbstractSystem = nodeInstanceCollector.buildSystem();
   if (!mAbstractSystem)
     return false;
-  
+
   // Have something to run in our hands.
   // Not get the information required to reflect the system to the user.
   NodeInstanceList::iterator i;
@@ -645,6 +811,9 @@ System::init()
     mNodeInstanceList.push_back(*i);
   }
   
+  // Hmm, really here???
+  mAbstractSystem->init(0);
+
   return true;
 }
 

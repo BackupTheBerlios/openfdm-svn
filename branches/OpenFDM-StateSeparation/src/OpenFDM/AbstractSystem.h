@@ -28,9 +28,17 @@ public:
   {
     // Cry if we cannot do anything!
     OpenFDMAssert(!getValidityInterval().empty());
+
+//     if (equal(getTime(), getValidityInterval().getEnd())
+//     continousUpdate(tEnd);
+
     // update until our requested end time is in the current interval.
-    while (needUpdate(t))
-      update(t);
+    while (needUpdate(t)) {
+      discreteUpdate();
+
+      real_type tEnd = min(getValidityInterval().getEnd(), t);
+      continousUpdate(tEnd);
+    }
     if (t != mTime)
       output(t);
   }
@@ -46,9 +54,16 @@ public:
                        << mValidityInterval.getEnd() << std::endl;
   }
 
-  void update(const real_type& tEndHint)
+  void discreteUpdate()
   {
-    updateImplementation(tEndHint);
+    discreteUpdateImplementation();
+    Log(Schedule,Info) << "Updated to time Interval from t = "
+                       << mValidityInterval.getBegin() << " to t = "
+                       << mValidityInterval.getEnd() << std::endl;
+  }
+  void continousUpdate(const real_type& tEnd)
+  {
+    continousUpdateImplementation(tEnd);
     Log(Schedule,Info) << "Updated to time Interval from t = "
                        << mValidityInterval.getBegin() << " to t = "
                        << mValidityInterval.getEnd() << std::endl;
@@ -60,6 +75,16 @@ public:
     outputImplementation(mTime);
     Log(Schedule,Info) << "Output for time t =  " << t << std::endl;
   }
+
+  /// FIXME: make that non virtual, but keep that up to date in the
+  /// implementation.
+  /// Hmm that interval concept is better????
+//   virtual real_type getNextDiscreteSampleHit() const
+//   {
+//     // Hmm, is this not enough for the sample hits??
+//     return mValidityInterval.getEnd();
+//   }
+
 protected:
 
   void setValidityInterval(const TimeInterval& validityInterval)
@@ -69,7 +94,8 @@ protected:
 
   bool needUpdate(const real_type& t) const
   { return getValidityInterval().isStrictlyLeftOf(t); }
-  virtual void updateImplementation(const real_type& tEndHint) = 0;
+  virtual void discreteUpdateImplementation() = 0;
+  virtual void continousUpdateImplementation(const real_type& tEnd) = 0;
 
   virtual void outputImplementation(const real_type& t) = 0;
 
@@ -78,12 +104,90 @@ private:
   real_type mTime;
 };
 
-// FIXME: dump them here for now. Will be required later ...
 class EnabledSystem : public AbstractSystem {
+public:
+  enum EnableMode {
+    /// If disabled, the models output/state is just held.
+    /// On reenable, the model just continues to work
+    Hold,
+    /// If disabled, the models output/state is just held.
+    /// On reenable, the model is initialized
+    HoldReset,
+    /// If disabled, the models output/state is initialized
+    ResetHold
+  };
+
+  EnableMode getEnableMode(void) const
+  { return mEnableMode; }
+  void setEnableMode(EnableMode enableMode)
+  { mEnableMode = enableMode; }
+
+  void setSystem(AbstractSystem* system)
+  { mAbstractSystem = system; }
+  AbstractSystem* getSystem() const
+  { return mAbstractSystem; }
+
+  void setPortValue(NumericPortValue* portValue)
+  { mEnablePort = portValue; }
+  NumericPortValue* getPortValue() const
+  { return mEnablePort; }
+
+protected:
+  virtual void initImplementation(const real_type& t)
+  {
+    mEnabledState = getEnableInput();
+    mAbstractSystem->init(t);
+  }
+  virtual void discreteUpdateImplementation()
+  {
+    if (getEnableInput()) {
+      if (mEnabledState) {
+      } else {
+        if (mEnableMode == HoldReset) {
+          mAbstractSystem->init(getTime());
+        }       
+      }
+      mEnabledState = true;
+      mAbstractSystem->discreteUpdate();
+    } else {
+      if (mEnabledState) {
+        if (mEnableMode == ResetHold) {
+          mAbstractSystem->init(getTime());
+        }
+      } else {
+      }
+      mEnabledState = false;
+    }
+  }
+  virtual void continousUpdateImplementation(const real_type& tEnd)
+  {
+    if (!mEnabledState)
+      return;
+    mAbstractSystem->continousUpdate(tEnd);
+  }
+  virtual void outputImplementation(const real_type& t)
+  {
+    if (!mEnabledState)
+      return;
+    mAbstractSystem->output(t);
+  }
+
+  bool getEnableInput() const
+  { return 0.5 < abs(mEnablePort->getValue()(0, 0)); }
+
+private:
+  SharedPtr<AbstractSystem> mAbstractSystem;
+
+  SharedPtr<NumericPortValue> mEnablePort;
+  bool mEnabledState;
+  EnableMode mEnableMode;
 };
 
 class GroupedSystem : public AbstractSystem {
 public:
+  // FIXME: that 'nextSampleTime can be computed during the discreteUpdate
+  // step ...
+
   unsigned getNumChildren() const
   { return mAbstractSystemList.size(); }
   AbstractSystem* getChild(unsigned index)
@@ -116,19 +220,27 @@ protected:
       (*i)->init(t);
     }
   }
-  virtual void updateImplementation(const real_type& tEndHint)
+  virtual void continousUpdateImplementation(const real_type& tEnd)
+  {
+//     // initially set to all
+//     TimeInterval validityInterval = TimeInterval::all();
+//     AbstractSystemList::const_iterator i;
+//     for (i = mAbstractSystemList.begin(); i != mAbstractSystemList.end(); ++i) {
+//       (*i)->update(tEndHint);
+//       if (validityInterval.getBegin() < (*i)->getValidityInterval().getBegin())
+//         validityInterval.setBegin((*i)->getValidityInterval().getBegin());
+//       if ((*i)->getValidityInterval().getEnd() < validityInterval.getEnd())
+//         validityInterval.setEnd((*i)->getValidityInterval().getEnd());
+//     }
+//     setValidityInterval(validityInterval);
+  }
+  virtual void discreteUpdateImplementation()
   {
     // initially set to all
-    TimeInterval validityInterval = TimeInterval::all();
-    AbstractSystemList::const_iterator i;
-    for (i = mAbstractSystemList.begin(); i != mAbstractSystemList.end(); ++i) {
-      (*i)->update(tEndHint);
-      if (validityInterval.getBegin() < (*i)->getValidityInterval().getBegin())
-        validityInterval.setBegin((*i)->getValidityInterval().getBegin());
-      if ((*i)->getValidityInterval().getEnd() < validityInterval.getEnd())
-        validityInterval.setEnd((*i)->getValidityInterval().getEnd());
-    }
-    setValidityInterval(validityInterval);
+//     AbstractSystemList::const_iterator i;
+//     for (i = mAbstractSystemList.begin(); i != mAbstractSystemList.end(); ++i) {
+//       (*i)->update();
+//     }
   }
   virtual void outputImplementation(const real_type& t)
   {
@@ -140,7 +252,6 @@ private:
   typedef std::vector<SharedPtr<AbstractSystem> > AbstractSystemList;
   AbstractSystemList mAbstractSystemList;
 };
-
 
 } // namespace OpenFDM
 
