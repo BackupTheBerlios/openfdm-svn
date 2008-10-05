@@ -12,13 +12,14 @@
 
 namespace OpenFDM {
 
-class HDF5Object : public Referenced {
+class HDF5Object {
 public:
   HDF5Object() : _id(-1) { }
-  HDF5Object(hid_t id) : _id(-1) { assign(id); }
+  HDF5Object(hid_t id, bool newRef) : _id(-1)
+  { if (newRef) assignNewRef(id); else assign(id); }
   HDF5Object(const HDF5Object& object) : _id(-1)
   { assign(object.getId()); }
-  virtual ~HDF5Object()
+  ~HDF5Object()
   { release(); }
 
   HDF5Object& operator=(const HDF5Object& object)
@@ -72,7 +73,6 @@ private:
   hid_t _id;
 };
 
-
 class HDF5Group : public HDF5Object {
 public:
   HDF5Group()
@@ -95,6 +95,8 @@ public:
 
   bool create(const HDF5Object& parent, const std::string& name)
   {
+    if (!parent.valid())
+      return false;
     hid_t id;
 #if (1 < H5_VERS_MAJOR || (1 == H5_VERS_MAJOR && 8 <= H5_VERS_MINOR))
     id = H5Gcreate(parent.getId(), name.c_str(), H5P_DEFAULT, H5P_DEFAULT,
@@ -103,7 +105,7 @@ public:
     id = H5Gcreate(parent.getId(), name.c_str(), 0);
 #endif
     assignNewRef(id);
-    return 0 < id;
+    return 0 <= id;
   }
 
 //   bool link(const HDF5Object& object, const std::string& name)
@@ -136,20 +138,94 @@ public:
   { open(filename); }
   HDF5File& operator=(const HDF5File& object)
   { assign(object.getId()); return *this; }
-  void open(const std::string& name)
+  bool open(const std::string& name)
   {
     hid_t id = H5Fcreate(name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     assignNewRef(id);
+    return 0 <= id;
+  }
+};
+
+class HDFMatrix : public HDF5Object {
+public:
+  HDFMatrix()
+  { }
+  HDFMatrix(const HDF5Object& parent, const std::string& name,
+            const Matrix& matrix)
+  { create(parent, name, matrix); }
+
+  bool create(const HDF5Object& parent, const std::string& name,
+              const Matrix& matrix)
+  {
+    if (!parent.valid())
+      return false;
+
+    hsize_t rank = 2;
+    hsize_t dims[2] = { rows(matrix), cols(matrix) };
+
+//     HDF5Object dataspace(H5Screate(H5S_NULL));
+//     HDF5Object dataspace(H5Screate(H5S_SIMPLE));
+    HDF5Object dataspace(H5Screate_simple(rank, dims, 0), true);
+    if (!dataspace.valid())
+      return false;
+
+    hid_t id;
+#if (1 < H5_VERS_MAJOR || (1 == H5_VERS_MAJOR && 8 <= H5_VERS_MINOR))
+    id = H5Dcreate(parent.getId(), name.c_str(), H5T_NATIVE_DOUBLE,
+                   dataspace.getId(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+#else
+    id = H5Dcreate(parent.getId(), name.c_str(), H5T_NATIVE_DOUBLE,
+                   dataspace.getId(), H5P_DEFAULT);
+#endif
+    if (id < 0)
+      return false;
+    assignNewRef(id);
+
+    if (H5Dwrite(getId(), H5T_NATIVE_DOUBLE, H5S_ALL,
+                 H5S_ALL, H5P_DEFAULT, matrix.find(0, 0)) < 0)
+      return false;
+
+    return true;
   }
 };
 
 class HDFMatrixStream : public HDF5Object {
 public:
-  HDFMatrixStream(const HDF5Object& parent, const std::string& name) :
-    _name(name),
-    _chunklen(100),
-    _parent(parent)
+  HDFMatrixStream(const HDF5Object& parent, const std::string& name,
+                  const Size& size)
   {
+    hsize_t _chunklen(100);
+    herr_t status;
+    hsize_t rank = 3;
+    if (size(0) == 1) {
+      rank = 2;
+      if (size(1) == 1)
+        rank = 1;
+    }
+    _dims[0] = 1;
+    _dims[1] = size(0);
+    _dims[2] = size(1);
+    hsize_t maxdims[3] = { H5S_UNLIMITED, _dims[1], _dims[2] };
+    _dataspace = HDF5Object(H5Screate_simple(rank, _dims, maxdims), true);
+    if (!_dataspace.valid())
+      return;
+
+    _dims[0] = 0;
+
+    hsize_t chunk_dims[3] = { _chunklen, _dims[1], _dims[2] };
+    
+    HDF5Object cparms(H5Pcreate(H5P_DATASET_CREATE), true);
+    status = H5Pset_chunk(cparms.getId(), rank, chunk_dims);
+    hid_t id;
+#if (1 < H5_VERS_MAJOR || (1 == H5_VERS_MAJOR && 8 <= H5_VERS_MINOR))
+    id = H5Dcreate(parent.getId(), name.c_str(), H5T_NATIVE_DOUBLE,
+                   _dataspace.getId(), H5P_DEFAULT, cparms.getId(),
+                   H5P_DEFAULT);
+#else
+    id = H5Dcreate(parent.getId(), name.c_str(), H5T_NATIVE_DOUBLE,
+                   _dataspace.getId(), cparms.getId());
+#endif
+    assignNewRef(id);
   }
 
   void append(const real_type& scalar)
@@ -161,67 +237,29 @@ public:
 
   void append(const Matrix& matrix)
   {
-    herr_t status;
-    if (!valid()) {
-      hsize_t rank = 3;
-      if (cols(matrix) == 1) {
-        rank = 2;
-        if (rows(matrix) == 1)
-          rank = 1;
-      }
-      _dims[0] = 1;
-      _dims[1] = rows(matrix);
-      _dims[2] = cols(matrix);
-      hsize_t maxdims[3] = { H5S_UNLIMITED, _dims[1], _dims[2] };
-      _dataspace = H5Screate_simple(rank, _dims, maxdims);
-      if (!_dataspace.valid())
-        return;
+    if (!valid())
+      return;
 
-      hsize_t chunk_dims[3] = { _chunklen, rows(matrix), cols(matrix) };
+    // increment size
+    _dims[0] += 1;
+    herr_t status = H5Dextend(getId(), _dims);
 
-      hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
-      status = H5Pset_chunk(cparms, rank, chunk_dims);
-      hid_t id;
-#if (1 < H5_VERS_MAJOR || (1 == H5_VERS_MAJOR && 8 <= H5_VERS_MINOR))
-      id = H5Dcreate(_parent.getId(), _name.c_str(), H5T_NATIVE_DOUBLE,
-                      _dataspace.getId(), H5P_DEFAULT, cparms, H5P_DEFAULT);
-#else
-      id = H5Dcreate(_parent.getId(), _name.c_str(), H5T_NATIVE_DOUBLE,
-                      _dataspace.getId(), cparms);
-#endif
-      assignNewRef(id);
-      H5Pclose(cparms);
-    } else {
-      // increment size
-      _dims[0] += 1;
-      status = H5Dextend(getId(), _dims);
-    }
-
-    HDF5Object filespace = H5Dget_space(getId());
+    HDF5Object filespace(H5Dget_space(getId()), true);
     hsize_t offset[3] = { _dims[0] - 1, 0, 0 };
     hsize_t dims1[3] = { 1, _dims[1], _dims[2] };
     status = H5Sselect_hyperslab(filespace.getId(), H5S_SELECT_SET,
                                  offset, NULL, dims1, NULL);
 
-    std::vector<double> data(_dims[1]*_dims[2]);
-    for (hsize_t i = 0; i < _dims[1]; ++i)
-      for (hsize_t j = 0; j < _dims[2]; ++j)
-        // FIXME?? row or column major ...
-        data[j + i*_dims[2]] = matrix(i, j);
-        // data[i + j*_dims[1]] = matrix(i, j);
     status = H5Dwrite(getId(), H5T_NATIVE_DOUBLE,
                       _dataspace.getId(), filespace.getId(),
-                      H5P_DEFAULT, &data.front());
+                      H5P_DEFAULT, matrix.find(0, 0));
+
+    H5Sselect_none(filespace.getId());
   }
 
 private:
-  std::string _name;
   hsize_t _dims[3];
   HDF5Object _dataspace;
-
-  hsize_t _chunklen;
-
-  HDF5Object _parent;
 };
 
 class HDF5Log : public SystemLog {
@@ -229,7 +267,7 @@ public:
   HDF5Log(const std::string& filename) :
     mHDF5File(filename),
     mCurrentGroup(mHDF5File, "System"),
-    mTimeStream(mCurrentGroup.getId(), "t")
+    mTimeStream(mCurrentGroup, "t", Size(1, 1))
   { }
   ~HDF5Log()
   { }
@@ -331,7 +369,7 @@ public:
     MatrixDumper(const NumericPortValue* numericPortValue,
                  const HDF5Object& parent, const std::string& name) :
       mNumericPortValue(numericPortValue),
-      _stream(parent, name)
+      _stream(parent, name, size(mNumericPortValue->getValue()))
     { OpenFDMAssert(numericPortValue); }
     void append()
     { _stream.append(mNumericPortValue->getValue()); }
