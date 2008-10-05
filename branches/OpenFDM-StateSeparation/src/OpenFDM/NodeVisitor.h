@@ -7,6 +7,7 @@
 
 #include "Assert.h"
 #include "Node.h"
+#include "Referenced.h"
 
 namespace OpenFDM {
 
@@ -23,7 +24,7 @@ class RigidBody;
 class RootJoint;
 class Interact;
 
-class NodeVisitor {
+class NodeVisitor : public Referenced {
 public:
   virtual ~NodeVisitor();
 

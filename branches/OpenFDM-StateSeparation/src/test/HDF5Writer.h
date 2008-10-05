@@ -216,7 +216,7 @@ public:
     if (!system)
       return;
     // Build an index to the system nodes
-    NodeInstanceList::const_iterator i;
+    ConstNodeInstanceList::const_iterator i;
     for (i = system->getNodeInstanceList().begin();
          i != system->getNodeInstanceList().end(); ++i) {
       mNodeInstanceMap[(*i)->getNodePath()] = *i;

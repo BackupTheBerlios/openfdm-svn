@@ -6,6 +6,8 @@
 #define OpenFDM_AbstractNodeInstance_H
 
 #include <string>
+#include <list>
+#include <map>
 #include "AbstractNodeContext.h"
 #include "Assert.h"
 #include "Node.h"
@@ -58,6 +60,8 @@ private:
 };
 
 typedef std::list<SharedPtr<AbstractNodeInstance> > NodeInstanceList;
+typedef std::list<SharedPtr<const AbstractNodeInstance> > ConstNodeInstanceList;
+typedef std::map<NodePath, SharedPtr<AbstractNodeInstance> > NodeInstanceMap;
 
 } // namespace OpenFDM
 

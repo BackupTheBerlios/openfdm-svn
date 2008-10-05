@@ -638,7 +638,12 @@ System::init()
   
   // Have something to run in our hands.
   // Not get the information required to reflect the system to the user.
-  mNodeInstanceList.swap(nodeInstanceCollector._nodeInstanceList);
+  NodeInstanceList::iterator i;
+  for (i = nodeInstanceCollector._nodeInstanceList.begin();
+       i != nodeInstanceCollector._nodeInstanceList.end(); ++i) {
+    mNodeInstanceMap[(*i)->getNodePath()] = *i;
+    mNodeInstanceList.push_back(*i);
+  }
   
   return true;
 }
@@ -648,6 +653,7 @@ System::clear()
 {
   mAbstractSystem = 0;
   mNodeInstanceList.clear();
+  mNodeInstanceMap.clear();
 }
 
 /// Simulate the system until the time tEnd
