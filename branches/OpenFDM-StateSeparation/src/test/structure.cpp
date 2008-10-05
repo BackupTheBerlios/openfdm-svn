@@ -10,6 +10,24 @@
 
 using namespace OpenFDM;
 
+// Build a system with a single gain component referencing itself
+bool testSelfReferencingDirectInput()
+{
+  Group* group = new Group("group");
+  Group::NodeId gain = group->addChild(new Gain("gain"));
+  group->connect(gain, "output", gain, "input");
+
+  SharedPtr<System> system = new System("Self referencing Gain");
+  system->setNode(group);
+
+  if (system->init()) {
+    std::cerr << "Detection of self referencing direct input loops failed!"
+              << std::endl;
+    return false;
+  }
+  return true;
+}
+
 Node* buildGroupExample()
 {
   SharedPtr<Group> group = new Group("G0");
