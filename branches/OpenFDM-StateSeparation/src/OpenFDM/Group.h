@@ -84,69 +84,33 @@ public:
 
   NodeId addChild(const SharedPtr<Node>& node);
   unsigned getNumChildren() const;
-  NodeId getNodeId(unsigned i) const;
   unsigned getChildNumber(const NodeId& nodeId) const;
   SharedPtr<Node> getChild(unsigned i);
   SharedPtr<const Node> getChild(unsigned i) const;
   SharedPtr<Node> getChild(const NodeId& nodeId);
   SharedPtr<const Node> getChild(const NodeId& nodeId) const;
 
-  NodeId getGroupAcceptorNode(const PortId& portId) const
-  {
-    SharedPtr<const PortInfo> port = getPort(portId);
-    if (!port)
-      return NodeId();
-    const ProxyAcceptorPortInfo* proxyAcceptorPort = port->toProxyAcceptorPortInfo();
-    if (!proxyAcceptorPort)
-      return NodeId();
-
-    SharedPtr<GroupAcceptorNode> groupPort = proxyAcceptorPort->mGroupPort;
-    ChildList::const_iterator i;
-    for (i = _childList.begin(); i != _childList.end(); ++i) {
-      if ((*i)->node == groupPort)
-        return NodeId(*i);
-    }
-    return NodeId();
-  }
-  NodeId getGroupProviderNode(const PortId& portId) const
-  {
-    SharedPtr<const PortInfo> port = getPort(portId);
-    if (!port)
-      return NodeId();
-    const ProxyProviderPortInfo* proxyProviderPort = port->toProxyProviderPortInfo();
-    if (!proxyProviderPort)
-      return NodeId();
-
-    SharedPtr<GroupProviderNode> groupPort = proxyProviderPort->mGroupPort;
-    ChildList::const_iterator i;
-    for (i = _childList.begin(); i != _childList.end(); ++i) {
-      if ((*i)->node == groupPort)
-        return NodeId(*i);
-    }
-    return NodeId();
-  }
-  NodeId getGroupPortNode(const PortId& portId) const
-  {
-    NodeId nodeId = getGroupProviderNode(portId);
-    if (getChild(nodeId)) // FIXME!!
-      return nodeId;
-    return getGroupAcceptorNode(portId);
-  }
   unsigned getGroupPortNodeIndex(const PortId& portId) const
   {
-    return getChildNumber(getGroupPortNode(portId));
-  }
+    SharedPtr<const PortInfo> port = getPort(portId);
+    if (!port)
+      return ~0u;
 
-  PortId getGroupPort(const NodeId& nodeId) const
-  {
-    // FIXME horrible algorithm
-    unsigned numPorts = getNumPorts();
-    for (unsigned i = 0; i < numPorts; ++i) {
-      NodeId thisId = getGroupPortNode(getPortId(i));
-      if (getChildNumber(nodeId) == getChildNumber(thisId))
-        return getPortId(i);
+    SharedPtr<Node> node;
+    const ProxyProviderPortInfo* proxyProviderPort = port->toProxyProviderPortInfo();
+    const ProxyAcceptorPortInfo* proxyAcceptorPort = port->toProxyAcceptorPortInfo();
+    if (proxyProviderPort) {
+      node = proxyProviderPort->mGroupPort;
+    } else if (proxyAcceptorPort) {
+      node = proxyAcceptorPort->mGroupPort;
+    } else
+      return ~0u;
+
+    for (unsigned i = 0; i < _childList.size(); ++i) {
+      if (_childList[i]->node == node)
+        return i;
     }
-    return PortId();
+    return ~0u;
   }
 
   // add a new group port to the group
@@ -253,11 +217,6 @@ public:
     return _connectList[i]->_providerPort.lock();
   }
 
-  PortId getConnectAcceptorPortId(unsigned i) const
-  { return PortId(SharedPtr<const PortInfo>(getConnectAcceptorPortInfo(i))); }
-  PortId getConnectProviderPortId(unsigned i) const
-  { return PortId(SharedPtr<const PortInfo>(getConnectProviderPortInfo(i))); }
-
 private:
   class Child;
 public:
@@ -303,18 +262,6 @@ public:
         return 0;
       return node->getPort(portId);
     }
-
-    std::string getId() const
-    {
-      SharedPtr<Child> child = _child.lock();
-      if (!child)
-        return std::string();
-      return _child.lock()->identifier;
-    }
-
-    // FIXME, do I need ???
-    bool operator<(const NodeId& nodeId) const
-    { return _child < nodeId._child; }
 
   private:
     friend class Group;

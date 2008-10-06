@@ -72,14 +72,6 @@ Group::getNumChildren() const
   return _childList.size();
 }
 
-Group::NodeId
-Group::getNodeId(unsigned i) const
-{
-  if (_childList.size() <= i)
-    return NodeId();
-  return NodeId(_childList[i]);
-}
-
 unsigned
 Group::getChildNumber(const NodeId& nodeId) const
 {
