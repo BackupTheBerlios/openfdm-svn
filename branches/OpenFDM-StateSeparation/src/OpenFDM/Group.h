@@ -20,6 +20,11 @@
 
 namespace OpenFDM {
 
+/// Port structure:
+/// InputPort (NumericPortValue, size constraint?)
+/// OutputPort (NumericPortValue, size constraint?)
+/// BodyLink (MechanicPortValue ...)
+
 class ProxyAcceptorPortInfo;
 class ProxyProviderPortInfo;
 
@@ -84,12 +89,8 @@ public:
 
   NodeId addChild(const SharedPtr<Node>& node);
   unsigned getNumChildren() const;
-  unsigned getChildNumber(const NodeId& nodeId) const;
   SharedPtr<Node> getChild(unsigned i);
   SharedPtr<const Node> getChild(unsigned i) const;
-  SharedPtr<Node> getChild(const NodeId& nodeId);
-  SharedPtr<const Node> getChild(const NodeId& nodeId) const;
-
   unsigned getGroupPortNodeIndex(const PortId& portId) const
   {
     SharedPtr<const PortInfo> port = getPort(portId);
@@ -180,26 +181,20 @@ public:
 
   unsigned getNumConnects() const
   { return _connectList.size(); }
-  
-  NodeId getConnectAcceptorNodeId(unsigned i) const
-  {
-    if (getNumConnects() <= i)
-      return NodeId();
-    return _connectList[i]->_acceptorNodeId;
-  }
+
   unsigned getConnectAcceptorNodeIndex(unsigned i) const
   {
-    return getChildNumber(getConnectAcceptorNodeId(i));
-  }
-  NodeId getConnectProviderNodeId(unsigned i) const
-  {
     if (getNumConnects() <= i)
-      return NodeId();
-    return _connectList[i]->_providerNodeId;
+      return ~0u;
+    NodeId nodeId = _connectList[i]->_acceptorNodeId;
+    return getChildNumber(nodeId);
   }
   unsigned getConnectProviderNodeIndex(unsigned i) const
   {
-    return getChildNumber(getConnectProviderNodeId(i));
+    if (getNumConnects() <= i)
+      return ~0u;
+    NodeId nodeId = _connectList[i]->_providerNodeId;
+    return getChildNumber(nodeId);
   }
 
   SharedPtr<const AcceptorPortInfo>
@@ -218,6 +213,9 @@ public:
   }
 
 private:
+  unsigned getChildNumber(const NodeId& nodeId) const;
+  SharedPtr<Node> getChild(const NodeId& nodeId);
+  SharedPtr<const Node> getChild(const NodeId& nodeId) const;
   class Child;
 public:
   class NodeId {
