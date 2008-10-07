@@ -111,17 +111,14 @@ int main()
 //   SharedPtr<System> system = new System("System", buildDiscreteExample());
 //   SharedPtr<System> system = new System("System", buildLibraryNodeExample());
 
+  system->attach(new HDF5Log("system.h5"));
+
   if (!system->init())
     return 1;
-
-  HDF5Log log("system.h5");
-  log.attachTo(system);
-  log.output(system->getTime());
 
   double h = 0.01;
   while (system->getTime() < 10) {
     system->simulate(system->getTime() + h);
-    log.output(system->getTime());
   }
 
   return 0;

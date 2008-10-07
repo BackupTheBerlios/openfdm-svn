@@ -12,6 +12,7 @@
 #include "NodeInstance.h"
 #include "Object.h"
 #include "RootJoint.h"
+#include "SystemLog.h"
 #include "Task.h"
 
 #include "Function.h"
@@ -109,6 +110,7 @@ protected:
       return;
 
     mList.front().mSampleHit = t;
+    discreteOutput(mList.front());
 
     // Set the state into the ode solver
     Vector v;
@@ -810,6 +812,10 @@ System::init()
     mNodeInstanceMap[(*i)->getNodePath()] = *i;
     mNodeInstanceList.push_back(*i);
   }
+
+  SystemLogList::const_iterator j;
+  for (j = mSystemLogList.begin(); j != mSystemLogList.end(); ++j)
+    (*j)->attachTo(this);
   
   // Hmm, really here???
   mAbstractSystem->init(0);
@@ -823,6 +829,10 @@ System::clear()
   mAbstractSystem = 0;
   mNodeInstanceList.clear();
   mNodeInstanceMap.clear();
+
+  SystemLogList::const_iterator i;
+  for (i = mSystemLogList.begin(); i != mSystemLogList.end(); ++i)
+    (*i)->attachTo(0);
 }
 
 /// Simulate the system until the time tEnd
@@ -832,6 +842,11 @@ System::simulate(const real_type& t)
   if (!mAbstractSystem)
     return false;
   mAbstractSystem->outputAt(t);
+
+  SystemLogList::const_iterator i;
+  for (i = mSystemLogList.begin(); i != mSystemLogList.end(); ++i)
+    (*i)->output(t);
+
   return true;
 }
 
@@ -867,6 +882,29 @@ System::getNodeInstance(const NodePath& nodePath)
   if (i == mNodeInstanceMap.end())
     return 0;
   return i->second;
+}
+
+void
+System::attach(SystemLog* systemLog)
+{
+  mSystemLogList.push_back(systemLog);
+  if (!mAbstractSystem)
+    return;
+  systemLog->attachTo(this);
+}
+
+void
+System::detach(SystemLog* systemLog)
+{
+  SystemLogList::iterator i = mSystemLogList.begin();
+  while (i != mSystemLogList.end()) {
+    if (*i == systemLog) {
+      i = mSystemLogList.erase(i);
+      if (mAbstractSystem)
+        systemLog->attachTo(0);
+    } else
+      ++i;
+  }
 }
 
 } // namespace OpenFDM
