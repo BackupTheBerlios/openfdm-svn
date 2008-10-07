@@ -270,40 +270,12 @@ public:
 private:
 
   struct Child : public WeakReferenced {
-    Child(Group* _group, Node* _node, std::string& id) :
-      group(_group), node(_node), identifier(id)
+    Child(Group* _group, Node* _node) :
+      group(_group), node(_node)
     { }
     WeakPtr<Group> group;
     SharedPtr<Node> node;
-    // what happens if the nodes name changes ?? FIXME
-    std::string identifier;
   };
-
-  std::string getUniqueIdentifier(const std::string& name) const
-  {
-    if (isUniqueIdentifier(name))
-      return name;
-    unsigned counter = 0;
-    std::string identifier;
-    do {
-      std::stringstream ss;
-      ss << name << '(' << ++counter << ')';
-      identifier = ss.str();
-    } while (!isUniqueIdentifier(identifier));
-    OpenFDMAssert(!identifier.empty());
-    return identifier;
-  }
-
-  // Tells true if the identifier is not yet used
-  bool isUniqueIdentifier(const std::string& identifier) const
-  {
-    for (ChildList::const_iterator i = _childList.begin();
-         i != _childList.end(); ++i) {
-      if ((*i)->identifier == identifier)
-        return false;
-    }
-    return true;
-  }
 
   struct Connect : public WeakReferenced {
     bool setProvider(const NodeId& node, const PortId& portId)
@@ -315,7 +287,6 @@ private:
       if (!providerPort)
         return false;
       _providerNodeId = node;
-      _providerPortId = portId;
       _providerPort = providerPort;
       return true;
     }
@@ -328,17 +299,14 @@ private:
       if (!acceptorPort)
         return false;
       _acceptorNodeId = node;
-      _acceptorPortId = portId;
       _acceptorPort = acceptorPort;
       return true;
     }
 
     NodeId _providerNodeId;
-    PortId _providerPortId;
     WeakPtr<const ProviderPortInfo> _providerPort;
 
     NodeId _acceptorNodeId;
-    PortId _acceptorPortId;
     WeakPtr<const AcceptorPortInfo> _acceptorPort;
 
     // Where the line in the gui will be ...??

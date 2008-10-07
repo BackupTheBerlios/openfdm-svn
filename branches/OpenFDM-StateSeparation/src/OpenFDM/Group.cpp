@@ -61,8 +61,7 @@ void Group::traverse(ConstNodeVisitor& visitor) const
 Group::NodeId
 Group::addChild(const SharedPtr<Node>& node)
 {
-  std::string identifier = getUniqueIdentifier(node->getName());
-  _childList.push_back(new Child(this, node, identifier));
+  _childList.push_back(new Child(this, node));
   return NodeId(_childList.back());
 }
 
