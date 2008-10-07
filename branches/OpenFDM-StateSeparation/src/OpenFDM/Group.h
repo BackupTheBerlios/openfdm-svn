@@ -23,7 +23,7 @@ namespace OpenFDM {
 /// Port structure:
 /// InputPort (NumericPortValue, size constraint?)
 /// OutputPort (NumericPortValue, size constraint?)
-/// BodyLink (MechanicPortValue ...)
+/// MechanicLink (MechanicPortValue ...)
 
 class ProxyAcceptorPortInfo;
 class ProxyProviderPortInfo;
@@ -155,6 +155,10 @@ public:
       return false;
     SharedPtr<const PortInfo> port1 = nodeId1.getPortPtr(portId1);
     if (!port1)
+      return false;
+
+    // Just a crude first time check if this will work in principle.
+    if (!port0->canConnect(*port1))
       return false;
 
     if (port0->toProviderPortInfo() && port1->toAcceptorPortInfo()) {

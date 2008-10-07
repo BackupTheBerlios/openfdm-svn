@@ -15,6 +15,9 @@ public:
   AcceptorPortInfo(Node* node, const std::string& name);
   virtual ~AcceptorPortInfo();
 
+  virtual bool canConnect(const PortInfo& portInfo) const
+  { return portInfo.toProviderPortInfo(); }
+
   virtual const AcceptorPortInfo* toAcceptorPortInfo() const;
 
   virtual bool getDirectInput() const

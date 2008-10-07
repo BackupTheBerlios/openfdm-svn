@@ -18,6 +18,9 @@ public:
   /// Public interface to instantiate a new port value
   PortValue* newValue() const;
 
+  virtual bool canConnect(const PortInfo& portInfo) const
+  { return portInfo.toAcceptorPortInfo(); }
+
   /// Dynamic casts
   virtual const ProviderPortInfo* toProviderPortInfo() const;
 

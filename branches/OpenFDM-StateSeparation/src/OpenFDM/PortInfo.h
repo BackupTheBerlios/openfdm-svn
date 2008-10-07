@@ -37,6 +37,9 @@ public:
 
   unsigned getIndex() const { return mIndex; }
 
+  virtual bool canConnect(const PortInfo& portInfo) const
+  { return false; }
+
   virtual const AcceptorPortInfo* toAcceptorPortInfo() const
   { return 0; }
   virtual const ProviderPortInfo* toProviderPortInfo() const
@@ -45,7 +48,8 @@ public:
   { return 0; }
   virtual const ProxyProviderPortInfo* toProxyProviderPortInfo() const
   { return 0; }
-  
+
+  // May be virtual here ???, identify the fast and the slow path ...
   PortValue* getPortValue(const PortValueVector& portValueVector) const
   {
     unsigned index = getIndex();
