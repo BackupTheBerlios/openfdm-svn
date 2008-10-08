@@ -432,40 +432,36 @@ public:
     // Apply the group internal connections to the instances
     unsigned numConnects = group.getNumConnects();
     for (unsigned i = 0; i < numConnects; ++i) {
-      unsigned acceptorNodeIndex = group.getConnectAcceptorNodeIndex(i);
-      unsigned providerNodeIndex = group.getConnectProviderNodeIndex(i);
-
-      if (acceptorNodeIndex == ~0u) {
+      unsigned nodeIndex0 = group.getConnectNodeIndex0(i);
+      if (nodeIndex0 == ~0u) {
         Log(Schedule, Error)
-          << "Cannot find acceptor node from nodeId" << std::endl;
+          << "Cannot find node from nodeId" << std::endl;
         continue;
       }
-      if (providerNodeIndex == ~0u) {
+      unsigned nodeIndex1 = group.getConnectNodeIndex1(i);
+      if (nodeIndex1 == ~0u) {
         Log(Schedule, Error)
-          << "Cannot find provider node from nodeId" << std::endl;
+          << "Cannot find node from nodeId" << std::endl;
         continue;
       }
 
-      SharedPtr<const AcceptorPortInfo> acceptorPort;
-      acceptorPort = group.getConnectAcceptorPortInfo(i);
-      SharedPtr<const ProviderPortInfo> providerPort;
-      providerPort = group.getConnectProviderPortInfo(i);
-
-      if (!acceptorPort) {
-        Log(Schedule, Error) << "Cannot find acceptor Port data node "
-                  << group.getChild(acceptorNodeIndex)->getName() << std::endl;
-        continue;
-      }
-      if (!providerPort) {
+      SharedPtr<const PortInfo> portInfo0 = group.getConnectPortInfo0(i);
+      if (!portInfo0) {
         Log(Schedule, Error) << "Cannot find provider Port data node "
-                  << group.getChild(providerNodeIndex)->getName() << std::endl;
+                  << group.getChild(nodeIndex0)->getName() << std::endl;
+        continue;
+      }
+      SharedPtr<const PortInfo> portInfo1 = group.getConnectPortInfo1(i);
+      if (!portInfo1) {
+        Log(Schedule, Error) << "Cannot find acceptor Port data node "
+                  << group.getChild(nodeIndex1)->getName() << std::endl;
         continue;
       }
 
-      unsigned acceptorPortNumber = acceptorPort->getIndex();
-      unsigned providerPortNumber = providerPort->getIndex();
-      if (!_portDataMap[acceptorNodeIndex]->mPortDataVector[acceptorPortNumber]->
-          connect(_portDataMap[providerNodeIndex]->mPortDataVector[providerPortNumber]))
+      unsigned portInfoIndex0 = portInfo0->getIndex();
+      unsigned portInfoIndex1 = portInfo1->getIndex();
+      if (!_portDataMap[nodeIndex1]->mPortDataVector[portInfoIndex1]->
+          connect(_portDataMap[nodeIndex0]->mPortDataVector[portInfoIndex0]))
         Log(Schedule, Error) << "Cannot connect????" << std::endl;
     }
 

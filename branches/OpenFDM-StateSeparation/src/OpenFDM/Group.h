@@ -169,59 +169,48 @@ public:
     if (!port0->canConnect(*port1))
       return false;
 
-    if (port0->toProviderPortInfo() && port1->toAcceptorPortInfo()) {
-      SharedPtr<Connect> connect = new Connect;
-      if (!connect->setProvider(nodeId0, portId0))
-        return false;
-      if (!connect->addAcceptor(nodeId1, portId1))
-        return false;
-      _connectList.push_back(connect);
-      return true;
-    } else if (port1->toProviderPortInfo() && port0->toAcceptorPortInfo()) {
-      SharedPtr<Connect> connect = new Connect;
-      if (!connect->setProvider(nodeId1, portId1))
-        return false;
-      if (!connect->addAcceptor(nodeId0, portId0))
-        return false;
-      _connectList.push_back(connect);
-      return true;
-    } else {
-      return false;
-    }
+    SharedPtr<Connect> connect = new Connect;
+    connect->_portId0 = portId0;
+    connect->_nodeId0 = nodeId0;
+    connect->_portId1 = portId1;
+    connect->_nodeId1 = nodeId1;
+    _connectList.push_back(connect);
+
+    return true;
   }
 
 
   unsigned getNumConnects() const
   { return _connectList.size(); }
 
-  unsigned getConnectAcceptorNodeIndex(unsigned i) const
+  unsigned getConnectNodeIndex0(unsigned i) const
   {
     if (getNumConnects() <= i)
       return ~0u;
-    NodeId nodeId = _connectList[i]->_acceptorNodeId;
-    return getChildNumber(nodeId);
+    return getChildNumber(_connectList[i]->_nodeId0);
   }
-  unsigned getConnectProviderNodeIndex(unsigned i) const
+  unsigned getConnectNodeIndex1(unsigned i) const
   {
     if (getNumConnects() <= i)
       return ~0u;
-    NodeId nodeId = _connectList[i]->_providerNodeId;
-    return getChildNumber(nodeId);
+    return getChildNumber(_connectList[i]->_nodeId1);
   }
 
-  SharedPtr<const AcceptorPortInfo>
-  getConnectAcceptorPortInfo(unsigned i) const
+  SharedPtr<const PortInfo>
+  getConnectPortInfo0(unsigned i) const
   {
     if (getNumConnects() <= i)
       return 0;
-    return _connectList[i]->_acceptorPort.lock();
+    SharedPtr<const Node> node = getChild(_connectList[i]->_nodeId0);
+    return node->getPort(_connectList[i]->_portId0);
   }
-  SharedPtr<const ProviderPortInfo>
-  getConnectProviderPortInfo(unsigned i) const
+  SharedPtr<const PortInfo>
+  getConnectPortInfo1(unsigned i) const
   {
     if (getNumConnects() <= i)
       return 0;
-    return _connectList[i]->_providerPort.lock();
+    SharedPtr<const Node> node = getChild(_connectList[i]->_nodeId1);
+    return node->getPort(_connectList[i]->_portId1);
   }
 
 private:
@@ -290,36 +279,11 @@ private:
   };
 
   struct Connect : public WeakReferenced {
-    bool setProvider(const NodeId& node, const PortId& portId)
-    {
-      SharedPtr<const PortInfo> port = node.getPortPtr(portId);
-      if (!port)
-        return false;
-      const ProviderPortInfo* providerPort = port->toProviderPortInfo();
-      if (!providerPort)
-        return false;
-      _providerNodeId = node;
-      _providerPort = providerPort;
-      return true;
-    }
-    bool addAcceptor(const NodeId& node, const PortId& portId)
-    {
-      SharedPtr<const PortInfo> port = node.getPortPtr(portId);
-      if (!port)
-        return false;
-      const AcceptorPortInfo* acceptorPort = port->toAcceptorPortInfo();
-      if (!acceptorPort)
-        return false;
-      _acceptorNodeId = node;
-      _acceptorPort = acceptorPort;
-      return true;
-    }
+    NodeId _nodeId0;
+    PortId _portId0;
 
-    NodeId _providerNodeId;
-    WeakPtr<const ProviderPortInfo> _providerPort;
-
-    NodeId _acceptorNodeId;
-    WeakPtr<const AcceptorPortInfo> _acceptorPort;
+    NodeId _nodeId1;
+    PortId _portId1;
 
     // Where the line in the gui will be ...??
     // std::list<Vector2> _positions;
