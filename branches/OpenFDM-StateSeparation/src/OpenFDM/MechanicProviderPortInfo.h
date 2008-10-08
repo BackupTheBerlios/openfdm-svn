@@ -16,6 +16,8 @@ public:
   MechanicProviderPortInfo(Node* node, const std::string& name) :
     ProviderPortInfo(node, name)
   { }
+  virtual bool acceptPortValue(const PortValue* portValue) const
+  { return dynamic_cast<const MechanicPortValue*>(portValue); }
 protected:
   virtual MechanicPortValue* newValueImplementation() const
   { return new MechanicPortValue; }

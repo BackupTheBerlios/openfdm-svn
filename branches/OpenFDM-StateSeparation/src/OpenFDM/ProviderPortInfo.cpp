@@ -15,12 +15,6 @@ ProviderPortInfo::~ProviderPortInfo()
 {
 }
 
-PortValue*
-ProviderPortInfo::newValue() const
-{
-  return newValueImplementation();
-}
-
 const ProviderPortInfo*
 ProviderPortInfo::toProviderPortInfo() const
 {

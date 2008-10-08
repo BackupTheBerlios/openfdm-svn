@@ -7,6 +7,7 @@
 
 #include <string>
 #include "AcceptorPortInfo.h"
+#include "MechanicPortValue.h"
 
 namespace OpenFDM {
 
@@ -15,6 +16,9 @@ public:
   MechanicAcceptorPortInfo(Node* node, const std::string& name) :
     AcceptorPortInfo(node, name)
   { }
+
+  virtual bool acceptPortValue(const PortValue* portValue) const
+  { return dynamic_cast<const MechanicPortValue*>(portValue); }
 };
 
 } // namespace OpenFDM

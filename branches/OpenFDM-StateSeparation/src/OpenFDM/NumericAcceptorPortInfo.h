@@ -8,6 +8,7 @@
 #include <string>
 #include "AcceptorPortInfo.h"
 #include "Matrix.h"
+#include "NumericPortValue.h"
 
 namespace OpenFDM {
 
@@ -21,6 +22,12 @@ public:
   { return mDirectInput; }
   void setDirectInput(bool directInput)
   { mDirectInput = directInput; }
+
+  virtual unsigned getMaxConnects() const
+  { return 1; }
+
+  virtual bool acceptPortValue(const PortValue* portValue) const
+  { return dynamic_cast<const NumericPortValue*>(portValue); }
 
 private:
   Size mSize;

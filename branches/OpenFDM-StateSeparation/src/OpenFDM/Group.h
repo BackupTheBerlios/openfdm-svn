@@ -60,6 +60,11 @@ public:
   SharedPtr<GroupAcceptorNode> mGroupPort;
   virtual const ProxyAcceptorPortInfo* toProxyAcceptorPortInfo() const
   { return this; }
+
+  // FIXME
+  virtual bool acceptPortValue(const PortValue* portValue) const
+  { return true; }
+
 };
 
 class ProxyProviderPortInfo : public ProviderPortInfo {
@@ -70,6 +75,9 @@ public:
   { return 0; } //FIXME
   virtual const ProxyProviderPortInfo* toProxyProviderPortInfo() const
   { return this; }
+  // FIXME
+  virtual bool acceptPortValue(const PortValue* portValue) const
+  { return true; }
   SharedPtr<GroupProviderNode> mGroupPort;
 };
 

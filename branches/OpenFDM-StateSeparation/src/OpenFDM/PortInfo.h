@@ -59,6 +59,20 @@ public:
 
   void clear();
 
+  virtual unsigned getMaxConnects() const
+  { return 1; }
+
+  virtual bool acceptPortValue(const PortValue*) const
+  { return false; }
+
+  /// Public interface to instantiate a new port value
+  PortValue* newValue() const
+  { return newValueImplementation(); }
+
+protected:
+  virtual PortValue* newValueImplementation() const // = 0;
+  { return 0; }
+
 private:
   PortInfo(const PortInfo&);
   PortInfo& operator=(const PortInfo&);
