@@ -5,7 +5,6 @@
 #ifndef OpenFDM_MatrixOutputPort_H
 #define OpenFDM_MatrixOutputPort_H
 
-#include "NumericProviderPortInfo.h"
 #include "NumericPortValue.h"
 #include "SharedPtr.h"
 
@@ -14,7 +13,7 @@ namespace OpenFDM {
 class MatrixOutputPort {
 public:
   MatrixOutputPort(Node* node, const std::string& name, const Size& size) :
-    mPort(new NumericProviderPortInfo(node, name, size))
+    mPort(new OutputPortInfo(node, name, size))
   { }
   NumericPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -26,7 +25,7 @@ public:
   unsigned getPortIndex() const
   { return mPort->getIndex(); }
 private:
-  SharedPtr<NumericProviderPortInfo> mPort;
+  SharedPtr<OutputPortInfo> mPort;
 };
 
 

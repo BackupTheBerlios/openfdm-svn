@@ -5,7 +5,6 @@
 #ifndef OpenFDM_MatrixInputPort_H
 #define OpenFDM_MatrixInputPort_H
 
-#include "NumericAcceptorPortInfo.h"
 #include "NumericPortValue.h"
 #include "SharedPtr.h"
 
@@ -17,7 +16,7 @@ public:
   { }
   MatrixInputPort(Node* node, const std::string& name,
                   const Size& size, bool directInput) :
-    mPort(new NumericAcceptorPortInfo(node, name, size, directInput))
+    mPort(new InputPortInfo(node, name, size, directInput))
   { }
   NumericPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -38,7 +37,7 @@ public:
   void setDirectInput(bool directInput) const
   { OpenFDMAssert(mPort); mPort->setDirectInput(directInput); }
 private:
-  SharedPtr<NumericAcceptorPortInfo> mPort;
+  SharedPtr<InputPortInfo> mPort;
 };
 
 } // namespace OpenFDM

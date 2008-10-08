@@ -6,7 +6,6 @@
 #define OpenFDM_RigidBody_H
 
 #include <string>
-#include "MechanicInteractPort.h"
 #include "MechanicNode.h"
 
 namespace OpenFDM {
@@ -19,10 +18,6 @@ public:
 
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
-
-protected:
-  MechanicInteractPort newMechanicInteractPort(const std::string& name)
-  { return MechanicInteractPort(this, name); }
 };
 
 } // namespace OpenFDM

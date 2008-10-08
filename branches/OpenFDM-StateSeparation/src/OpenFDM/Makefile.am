@@ -11,7 +11,6 @@ OpenFDMCoreHEADERS = \
   AbstractNodeContext.h \
   AbstractNodeInstance.h \
   AbstractSystem.h \
-  AcceptorPortInfo.h \
   Assert.h \
   Atomic.h \
   BoolStateInfo.h \
@@ -57,13 +56,10 @@ OpenFDMCoreHEADERS = \
   MatrixStateInfo.h \
   MidpointRule.h \
   MechanicContext.h \
-  MechanicBodyPort.h \
   MechanicInstance.h \
-  MechanicInteractPort.h \
+  MechanicLink.h \
   MechanicNode.h \
   MechanicPortValue.h \
-  MechanicAcceptorPortInfo.h \
-  MechanicProviderPortInfo.h \
   Model.h \
   ModelContext.h \
   ModelInstance.h \
@@ -75,8 +71,6 @@ OpenFDMCoreHEADERS = \
   NodeInstance.h \
   NodeVisitor.h \
   NumericPortValue.h \
-  NumericAcceptorPortInfo.h \
-  NumericProviderPortInfo.h \
   Object.h \
   ODESolver.h \
   OpenFDMConfig.h \
@@ -87,7 +81,6 @@ OpenFDMCoreHEADERS = \
   PortInfo.h \
   PortValue.h \
   PortValueList.h \
-  ProviderPortInfo.h \
   Quaternion.h \
   ReaderWriter.h \
   RealInputPort.h \
@@ -128,7 +121,6 @@ OpenFDMCoreHEADERS = \
 OpenFDMCoreSOURCES = \
   AbstractNodeContext.cpp \
   AbstractNodeInstance.cpp \
-  AcceptorPortInfo.cpp \
   Assert.cpp \
   Atomic.cpp \
   ConstNodeVisitor.cpp \
@@ -156,15 +148,12 @@ OpenFDMCoreSOURCES = \
   NodeContext.cpp \
   NodeInstance.cpp \
   NodeVisitor.cpp \
-  NumericAcceptorPortInfo.cpp \
   NumericPortValue.cpp \
-  NumericProviderPortInfo.cpp \
   Object.cpp \
   ODESolver.cpp \
   Planet.cpp \
   PortInfo.cpp \
   PortValue.cpp \
-  ProviderPortInfo.cpp \
   RigidBody.cpp \
   RootJoint.cpp \
   SampleTime.cpp \

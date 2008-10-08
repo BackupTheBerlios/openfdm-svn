@@ -8,14 +8,12 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "AcceptorPortInfo.h"
 #include "ConstNodeVisitor.h"
 #include "Node.h"
 #include "NodeVisitor.h"
 #include "Object.h"
 #include "PortId.h"
 #include "PortInfo.h"
-#include "ProviderPortInfo.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
@@ -25,9 +23,6 @@ namespace OpenFDM {
 /// OutputPort (NumericPortValue, size constraint?)
 /// MechanicLink (MechanicPortValue ...)
 
-class ProxyAcceptorPortInfo;
-class ProxyProviderPortInfo;
-
 class GroupAcceptorNode : public Node {
 public:
   GroupAcceptorNode(const std::string& name = std::string());
@@ -35,9 +30,11 @@ public:
   { visitor.apply(*this); }
   virtual void accept(ConstNodeVisitor& visitor) const
   { visitor.apply(*this); }
-// private:
-  SharedPtr<ProxyProviderPortInfo> _groupInternalPort;
-//   WeakPtr<ProxyAcceptorPortInfo> _groupExternalPort;
+  unsigned getExternalPortIndex() const
+  { return mExternalPortInfo->getIndex(); }
+
+  SharedPtr<OutputPortInfo> _groupInternalPort;
+  SharedPtr<const PortInfo> mExternalPortInfo;
 };
 
 class GroupProviderNode : public Node {
@@ -47,38 +44,11 @@ public:
   { visitor.apply(*this); }
   virtual void accept(ConstNodeVisitor& visitor) const
   { visitor.apply(*this); }
-// private:
-  SharedPtr<ProxyAcceptorPortInfo> _groupInternalPort;
-//   WeakPtr<ProxyProviderPortInfo> _groupExternalPort;
-//   MatrixInputPort mInputPort;
-};
+  unsigned getExternalPortIndex() const
+  { return mExternalPortInfo->getIndex(); }
 
-class ProxyAcceptorPortInfo : public AcceptorPortInfo {
-public:
-  ProxyAcceptorPortInfo(Node* node, const std::string& name = std::string()) :
-    AcceptorPortInfo(node, name) {}
-  SharedPtr<GroupAcceptorNode> mGroupPort;
-  virtual const ProxyAcceptorPortInfo* toProxyAcceptorPortInfo() const
-  { return this; }
-
-  // FIXME
-  virtual bool acceptPortValue(const PortValue* portValue) const
-  { return true; }
-
-};
-
-class ProxyProviderPortInfo : public ProviderPortInfo {
-public:
-  ProxyProviderPortInfo(Node* node, const std::string& name = std::string()) :
-    ProviderPortInfo(node, name) {}
-  virtual PortValue* newValueImplementation() const
-  { return 0; } //FIXME
-  virtual const ProxyProviderPortInfo* toProxyProviderPortInfo() const
-  { return this; }
-  // FIXME
-  virtual bool acceptPortValue(const PortValue* portValue) const
-  { return true; }
-  SharedPtr<GroupProviderNode> mGroupPort;
+  SharedPtr<InputPortInfo> _groupInternalPort;
+  SharedPtr<const PortInfo> mExternalPortInfo;
 };
 
 class Group : public Node {
@@ -99,44 +69,24 @@ public:
   unsigned getNumChildren() const;
   SharedPtr<Node> getChild(unsigned i);
   SharedPtr<const Node> getChild(unsigned i) const;
-  unsigned getGroupPortNodeIndex(const PortId& portId) const
-  {
-    SharedPtr<const PortInfo> port = getPort(portId);
-    if (!port)
-      return ~0u;
-
-    SharedPtr<Node> node;
-    const ProxyProviderPortInfo* proxyProviderPort = port->toProxyProviderPortInfo();
-    const ProxyAcceptorPortInfo* proxyAcceptorPort = port->toProxyAcceptorPortInfo();
-    if (proxyProviderPort) {
-      node = proxyProviderPort->mGroupPort;
-    } else if (proxyAcceptorPort) {
-      node = proxyAcceptorPort->mGroupPort;
-    } else
-      return ~0u;
-
-    for (unsigned i = 0; i < _childList.size(); ++i) {
-      if (_childList[i]->node == node)
-        return i;
-    }
-    return ~0u;
-  }
 
   // add a new group port to the group
   NodeId addAcceptorPort()
   {
     GroupAcceptorNode *groupAcceptorNode = new GroupAcceptorNode;
     NodeId nodeId = addChild(groupAcceptorNode);
-    ProxyAcceptorPortInfo* proxyPort = new ProxyAcceptorPortInfo(this, "ProxyPort");
-    proxyPort->mGroupPort = groupAcceptorNode;
+    InputPortInfo* inputPortInfo;
+    inputPortInfo = new InputPortInfo(this, "input", Size(0, 0), false);
+    groupAcceptorNode->mExternalPortInfo = inputPortInfo;
     return nodeId;
   }
   NodeId addProviderPort()
   {
     GroupProviderNode *groupProviderNode = new GroupProviderNode;
     NodeId nodeId = addChild(groupProviderNode);
-    ProxyProviderPortInfo* proxyPort = new ProxyProviderPortInfo(this, "ProxyPort");
-    proxyPort->mGroupPort = groupProviderNode;
+    OutputPortInfo* outputPortInfo;
+    outputPortInfo = new OutputPortInfo(this, "output", Size(0, 0));
+    groupProviderNode->mExternalPortInfo = outputPortInfo;
     return nodeId;
   }
 

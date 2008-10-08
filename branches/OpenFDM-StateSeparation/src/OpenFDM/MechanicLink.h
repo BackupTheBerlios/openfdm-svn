@@ -2,19 +2,19 @@
  *
  */
 
-#ifndef OpenFDM_MechanicInteractPort_H
-#define OpenFDM_MechanicInteractPort_H
+#ifndef OpenFDM_MechanicLink_H
+#define OpenFDM_MechanicLink_H
 
-#include "MechanicProviderPortInfo.h"
 #include "MechanicPortValue.h"
+#include "PortInfo.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
 
-class MechanicInteractPort {
+class MechanicLink {
 public:
-  MechanicInteractPort(Node* node, const std::string& name) :
-    mPort(new MechanicProviderPortInfo(node, name))
+  MechanicLink(Node* node, const std::string& name) :
+    mPort(new MechanicLinkInfo(node, name))
   {}
   MechanicPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -26,7 +26,7 @@ public:
   unsigned getPortIndex() const
   { return mPort->getIndex(); }
 private:
-  SharedPtr<MechanicProviderPortInfo> mPort;
+  SharedPtr<MechanicLinkInfo> mPort;
 };
 
 } // namespace OpenFDM

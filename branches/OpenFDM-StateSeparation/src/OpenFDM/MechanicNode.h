@@ -7,6 +7,7 @@
 
 #include <string>
 #include "LeafNode.h"
+#include "MechanicLink.h"
 
 namespace OpenFDM {
 
@@ -37,6 +38,9 @@ public:
                       const ContinousStateValueVector&,
                       const PortValueList&) const
   { }
+protected:
+  MechanicLink newMechanicLink(const std::string& name)
+  { return MechanicLink(this, name); }
 };
 
 } // namespace OpenFDM

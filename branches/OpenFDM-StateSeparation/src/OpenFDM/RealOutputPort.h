@@ -5,8 +5,8 @@
 #ifndef OpenFDM_RealOutputPort_H
 #define OpenFDM_RealOutputPort_H
 
-#include "NumericProviderPortInfo.h"
 #include "NumericPortValue.h"
+#include "PortInfo.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
@@ -14,7 +14,7 @@ namespace OpenFDM {
 class RealOutputPort {
 public:
   RealOutputPort(Node* node, const std::string& name) :
-    mPort(new NumericProviderPortInfo(node, name, Size(1, 1)))
+    mPort(new OutputPortInfo(node, name, Size(1, 1)))
   { }
   NumericPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -26,7 +26,7 @@ public:
   unsigned getPortIndex() const
   { return mPort->getIndex(); }
 private:
-  SharedPtr<NumericProviderPortInfo> mPort;
+  SharedPtr<OutputPortInfo> mPort;
 };
 
 } // namespace OpenFDM

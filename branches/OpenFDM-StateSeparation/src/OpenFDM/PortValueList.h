@@ -8,8 +8,7 @@
 #include "PortValue.h"
 #include "MatrixInputPort.h"
 #include "MatrixOutputPort.h"
-#include "MechanicBodyPort.h"
-#include "MechanicInteractPort.h"
+#include "MechanicLink.h"
 #include "RealInputPort.h"
 #include "RealOutputPort.h"
 
@@ -53,15 +52,11 @@ public:
 
 
   // Accessors for matrix valued ports
-  bool isConnected(const MechanicBodyPort& port) const
-  { return port.getPortValue(mPortValueVector); }
-  bool isConnected(const MechanicInteractPort& port) const
+  bool isConnected(const MechanicLink& port) const
   { return port.getPortValue(mPortValueVector); }
 
   // FIXME Implement access control for the port value
-  MechanicPortValue& operator[](const MechanicBodyPort& port) const
-  { return *port.getPortValue(mPortValueVector); }
-  MechanicPortValue& operator[](const MechanicInteractPort& port)
+  MechanicPortValue& operator[](const MechanicLink& port) const
   { return *port.getPortValue(mPortValueVector); }
 
 

@@ -289,7 +289,7 @@ public:
         return true;
       if (mProxyPortData.lock())
         return true;
-      PortValue* portValue = getPortInfo()->newValue();
+      SharedPtr<PortValue> portValue = getPortInfo()->newValue();
       if (!portValue)
         return true; // FIXME
       return setConnectedPortValues(portValue);
@@ -361,14 +361,16 @@ public:
   {
     PortDataList* portDataList = buildNodeContext(leaf);
     OpenFDMAssert(leaf.getPort(0));
-    portDataList->newPortData(leaf.getPort(0));
+    PortData* portData = portDataList->newPortData(leaf.getPort(0));
+    _groupPortDataMap[leaf.getExternalPortIndex()] = portData;
   }
   // Aussen provider, innen acceptor
   virtual void apply(const GroupProviderNode& leaf)
   {
     PortDataList* portDataList = buildNodeContext(leaf);
     OpenFDMAssert(leaf.getPort(0));
-    portDataList->newPortData(leaf.getPort(0));
+    PortData* portData = portDataList->newPortData(leaf.getPort(0));
+    _groupPortDataMap[leaf.getExternalPortIndex()] = portData;
   }
 
   void allocPortData(AbstractNodeInstance* nodeInstance, const LeafNode& leaf)
@@ -417,6 +419,10 @@ public:
       _portDataListList.push_back(portDataList);
     }
     parentPortDataMap.swap(_portDataMap);
+
+    // Get PortDataList indexed by group port index
+    ExternalGroupPortDataMap parentGroupPortDataMap(group.getNumPorts());
+    parentGroupPortDataMap.swap(_groupPortDataMap);
 
     // Walk the children
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
@@ -475,16 +481,7 @@ public:
     // add group connect routings
     // merge child list into the global list of instances
     for (unsigned i = 0; i < group.getNumPorts(); ++i) {
-      unsigned nodeIndex = group.getGroupPortNodeIndex(group.getPortId(i));
-      if (childrenPortDataMap[nodeIndex]->mPortDataVector.empty()) {
-        // FIXME, is this an internal error ???
-        Log(Schedule, Error) << "Hmm, cannot find GroupPortNode for external "
-                             << "port " << i << std::endl;
-        continue;
-      }
-
-      PortData* portData;
-      portData = childrenPortDataMap[nodeIndex]->mPortDataVector.front();
+      PortData* portData = _groupPortDataMap[i];
 
       PortData* parentPortData;
       parentPortData = portDataList->newPortData(group.getPort(i));
@@ -492,6 +489,9 @@ public:
       parentPortData->setProxyPortData(portData);
       portData->setProxyPortData(parentPortData);
     }
+
+    // Swap the PortDataList by external port index map back
+    parentGroupPortDataMap.swap(_groupPortDataMap);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -512,6 +512,9 @@ public:
   // Used to map connections in groups ...
   typedef std::vector<SharedPtr<PortDataList> > PortDataMap;
   PortDataMap _portDataMap;
+  // Holds the PortDataList pointer indexed by parent groups port index
+  typedef std::vector<SharedPtr<PortData> > ExternalGroupPortDataMap;
+  ExternalGroupPortDataMap _groupPortDataMap;
   // Just to hold references to all mort data lists we have in the
   // simulation system. They are just needed during traversal for connect
   // information and to distribute port value pointers.

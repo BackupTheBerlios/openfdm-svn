@@ -34,7 +34,7 @@ MechanicContext::isConnectedTo(const MechanicContext& mechanicContext) const
       continue;
     unsigned otherNumPorts = mechanicContext.mMechanicNode->getNumPorts();
     for (unsigned j = 0; j < otherNumPorts; ++j) {
-      if (!mechanicContext.mMechanicNode->getPort(j)->toProviderPortInfo())
+      if (!mechanicContext.mMechanicNode->getPort(j)->toMechanicLinkInfo())
         continue;
       
       const PortValue* otherPortValue;
