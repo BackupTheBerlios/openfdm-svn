@@ -55,15 +55,13 @@ protected:
     for (unsigned i = 0; i < numPorts; ++i) {
       const PortValue* portValue;
       portValue = nodeInstance.getPortValueList().getPortValue(i);
-      const NumericPortValue* npv;
-      npv = dynamic_cast<const NumericPortValue*>(portValue);
+      const NumericPortValue* npv = portValue->toNumericPortValue();
       if (npv) {
         apply(nodeInstance.getNode().getPort(i), npv);
         continue;
       }
 
-      const MechanicPortValue* mpv;
-      mpv = dynamic_cast<const MechanicPortValue*>(portValue);
+      const MechanicPortValue* mpv = portValue->toMechanicPortValue();
       if (npv) {
         apply(nodeInstance.getNode().getPort(i), mpv);
         continue;

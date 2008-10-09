@@ -11,11 +11,15 @@
 
 namespace OpenFDM {
 
+class NumericPortValue;
+class MechanicPortValue;
+
 class PortValue : public Referenced {
 public:
-  //virtual NumericPortValue* toNumericPortValue() { return 0; }
-  //virtual MechanicPortValue* toMechanicPortValue() { return 0; }
-  //virtual FluidPortValue* toFluidPortValue() { return 0; }
+  virtual NumericPortValue* toNumericPortValue() { return 0; }
+  virtual const NumericPortValue* toNumericPortValue() const { return 0; }
+  virtual MechanicPortValue* toMechanicPortValue() { return 0; }
+  virtual const MechanicPortValue* toMechanicPortValue() const { return 0; }
 
   static void destroy(const PortValue* portValue)
   { delete portValue; }

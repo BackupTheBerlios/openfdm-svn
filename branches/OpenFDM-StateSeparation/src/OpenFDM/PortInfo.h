@@ -91,7 +91,7 @@ public:
   virtual bool acceptPortValue(const PortValue* portValue) const
   {
     const NumericPortValue* numericPortValue;
-    numericPortValue = dynamic_cast<const NumericPortValue*>(portValue);
+    numericPortValue = portValue->toNumericPortValue();
     if (!numericPortValue)
       return false;
     // May be do a size check here???
@@ -174,7 +174,7 @@ public:
   { return portInfo.toMechanicLinkInfo(); }
 
   virtual bool acceptPortValue(const PortValue* portValue) const
-  { return dynamic_cast<const MechanicPortValue*>(portValue); }
+  { return portValue->toMechanicPortValue(); }
 
 protected:
   virtual MechanicPortValue* newValueImplementation() const

@@ -15,6 +15,9 @@ public:
   NumericPortValue(const Size& size);
   virtual ~NumericPortValue();
 
+  virtual NumericPortValue* toNumericPortValue() { return this; }
+  virtual const NumericPortValue* toNumericPortValue() const { return this; }
+
   const Matrix& getValue() const
   { return mMatrix; }
   Matrix& getValue()

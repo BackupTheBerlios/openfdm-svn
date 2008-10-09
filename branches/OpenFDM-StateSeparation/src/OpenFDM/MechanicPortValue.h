@@ -16,6 +16,9 @@ class MechanicPortValue : public PortValue {
 public:
   virtual ~MechanicPortValue();
 
+  virtual MechanicPortValue* toMechanicPortValue() { return this; }
+  virtual const MechanicPortValue* toMechanicPortValue() const { return this; }
+
 // protected:
   // FIXME:
   // Since the interact side is the provider port, an interact might provide

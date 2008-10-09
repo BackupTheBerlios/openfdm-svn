@@ -20,7 +20,7 @@ public:
   {
     PortValue* portValue = mPort->getPortValue(portValueVector);
     OpenFDMAssert(portValue);
-    OpenFDMAssert(dynamic_cast<NumericPortValue*>(portValue));
+    OpenFDMAssert(portValue->toNumericPortValue());
     return static_cast<NumericPortValue*>(portValue);
   }
   unsigned getPortIndex() const

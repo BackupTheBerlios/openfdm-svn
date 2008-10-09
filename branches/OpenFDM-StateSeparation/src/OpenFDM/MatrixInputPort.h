@@ -23,7 +23,7 @@ public:
     OpenFDMAssert(mPort);
     PortValue* portValue = mPort->getPortValue(portValueVector);
     OpenFDMAssert(portValue);
-    OpenFDMAssert(dynamic_cast<NumericPortValue*>(portValue));
+    OpenFDMAssert(portValue->toNumericPortValue());
     return static_cast<NumericPortValue*>(portValue);
   }
   bool empty() const
