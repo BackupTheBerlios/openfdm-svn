@@ -11,7 +11,7 @@
 #include "WeakPtr.h"
 #include "WeakReferenced.h"
 
-#include "MechanicPortValue.h"
+#include "MechanicLinkValue.h"
 #include "NumericPortValue.h"
 
 namespace OpenFDM {
@@ -25,6 +25,7 @@ namespace OpenFDM {
 
 class Node;
 
+class NumericPortInfo;
 class InputPortInfo;
 class OutputPortInfo;
 class MechanicLinkInfo;
@@ -39,6 +40,7 @@ public:
 
   unsigned getIndex() const { return mIndex; }
 
+  virtual const NumericPortInfo* toNumericPortInfo() const { return 0; }
   virtual const InputPortInfo* toInputPortInfo() const { return 0; }
   virtual const OutputPortInfo* toOutputPortInfo() const { return 0; }
   virtual const MechanicLinkInfo* toMechanicLinkInfo() const { return 0; }
@@ -87,6 +89,9 @@ public:
   { }
   virtual ~NumericPortInfo()
   { }
+
+  virtual const NumericPortInfo* toNumericPortInfo() const
+  { return this; }
 
   virtual bool acceptPortValue(const PortValue* portValue) const
   {
@@ -174,11 +179,11 @@ public:
   { return portInfo.toMechanicLinkInfo(); }
 
   virtual bool acceptPortValue(const PortValue* portValue) const
-  { return portValue->toMechanicPortValue(); }
+  { return portValue->toMechanicLinkValue(); }
 
 protected:
-  virtual MechanicPortValue* newValueImplementation() const
-  { return new MechanicPortValue; }
+  virtual MechanicLinkValue* newValueImplementation() const
+  { return new MechanicLinkValue; }
 };
 
 } // namespace OpenFDM

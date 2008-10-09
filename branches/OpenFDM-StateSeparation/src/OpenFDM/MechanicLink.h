@@ -5,7 +5,7 @@
 #ifndef OpenFDM_MechanicLink_H
 #define OpenFDM_MechanicLink_H
 
-#include "MechanicPortValue.h"
+#include "MechanicLinkValue.h"
 #include "PortInfo.h"
 #include "SharedPtr.h"
 
@@ -16,12 +16,12 @@ public:
   MechanicLink(Node* node, const std::string& name) :
     mPort(new MechanicLinkInfo(node, name))
   {}
-  MechanicPortValue* getPortValue(const PortValueVector& portValueVector) const
+  MechanicLinkValue* getPortValue(const PortValueVector& portValueVector) const
   {
     PortValue* portValue = mPort->getPortValue(portValueVector);
     OpenFDMAssert(portValue);
-    OpenFDMAssert(portValue->toMechanicPortValue());
-    return static_cast<MechanicPortValue*>(portValue);
+    OpenFDMAssert(portValue->toMechanicLinkValue());
+    return static_cast<MechanicLinkValue*>(portValue);
   }
   unsigned getPortIndex() const
   { return mPort->getIndex(); }

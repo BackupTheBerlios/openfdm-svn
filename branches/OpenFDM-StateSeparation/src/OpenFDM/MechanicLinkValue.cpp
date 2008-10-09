@@ -2,11 +2,11 @@
  *
  */
 
-#include "MechanicPortValue.h"
+#include "MechanicLinkValue.h"
 
 namespace OpenFDM {
 
-MechanicPortValue::~MechanicPortValue()
+MechanicLinkValue::~MechanicLinkValue()
 {
 }
 

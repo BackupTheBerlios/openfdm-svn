@@ -56,7 +56,7 @@ public:
   { return port.getPortValue(mPortValueVector); }
 
   // FIXME Implement access control for the port value
-  MechanicPortValue& operator[](const MechanicLink& port) const
+  MechanicLinkValue& operator[](const MechanicLink& port) const
   { return *port.getPortValue(mPortValueVector); }
 
 
@@ -100,6 +100,27 @@ public:
     if (mPortValueVector.size() <= idx)
       return 0;
     return mPortValueVector[idx];
+  }
+
+  /// Save but partially expensive Accessor for numeric ports
+  const NumericPortValue* getPortValue(const NumericPortInfo* portInfo) const
+  {
+    if (!portInfo)
+      return 0;
+    const PortValue* portValue = getPortValue(portInfo->getIndex());
+    if (!portValue)
+      return 0;
+    return portValue->toNumericPortValue();
+  }
+  /// Save but partially expensive Accessor for numeric ports
+  const MechanicLinkValue* getPortValue(const MechanicLinkInfo* portInfo) const
+  {
+    if (!portInfo)
+      return 0;
+    const PortValue* portValue = getPortValue(portInfo->getIndex());
+    if (!portValue)
+      return 0;
+    return portValue->toMechanicLinkValue();
   }
 
 protected:

@@ -31,7 +31,7 @@ public:
                      const NumericPortValue* numericPortValue)
   { apply(portInfo, static_cast<const PortValue*>(numericPortValue)); }
   virtual void apply(const PortInfo* portInfo,
-                     const MechanicPortValue* mechanicPortValue)
+                     const MechanicLinkValue* mechanicPortValue)
   { apply(portInfo, static_cast<const PortValue*>(mechanicPortValue)); }
 
 protected:
@@ -61,7 +61,7 @@ protected:
         continue;
       }
 
-      const MechanicPortValue* mpv = portValue->toMechanicPortValue();
+      const MechanicLinkValue* mpv = portValue->toMechanicLinkValue();
       if (npv) {
         apply(nodeInstance.getNode().getPort(i), mpv);
         continue;

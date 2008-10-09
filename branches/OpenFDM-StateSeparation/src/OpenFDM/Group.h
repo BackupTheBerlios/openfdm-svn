@@ -21,7 +21,7 @@ namespace OpenFDM {
 /// Port structure:
 /// InputPort (NumericPortValue, size constraint?)
 /// OutputPort (NumericPortValue, size constraint?)
-/// MechanicLink (MechanicPortValue ...)
+/// MechanicLink (MechanicLinkValue ...)
 
 class GroupAcceptorNode : public Node {
 public:

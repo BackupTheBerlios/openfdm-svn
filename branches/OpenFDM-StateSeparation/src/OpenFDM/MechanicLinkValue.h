@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_MechanicPortValue_H
-#define OpenFDM_MechanicPortValue_H
+#ifndef OpenFDM_MechanicLinkValue_H
+#define OpenFDM_MechanicLinkValue_H
 
 #include "Inertia.h"
 #include "PortValue.h"
@@ -12,12 +12,12 @@
 
 namespace OpenFDM {
 
-class MechanicPortValue : public PortValue {
+class MechanicLinkValue : public PortValue {
 public:
-  virtual ~MechanicPortValue();
+  virtual ~MechanicLinkValue();
 
-  virtual MechanicPortValue* toMechanicPortValue() { return this; }
-  virtual const MechanicPortValue* toMechanicPortValue() const { return this; }
+  virtual MechanicLinkValue* toMechanicLinkValue() { return this; }
+  virtual const MechanicLinkValue* toMechanicLinkValue() const { return this; }
 
 // protected:
   // FIXME:

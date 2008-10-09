@@ -58,8 +58,8 @@ OpenFDMCoreHEADERS = \
   MechanicContext.h \
   MechanicInstance.h \
   MechanicLink.h \
+  MechanicLinkValue.h \
   MechanicNode.h \
-  MechanicPortValue.h \
   Model.h \
   ModelContext.h \
   ModelInstance.h \
@@ -138,8 +138,8 @@ OpenFDMCoreSOURCES = \
   Logger.cpp \
   MechanicContext.cpp \
   MechanicInstance.cpp \
+  MechanicLinkValue.cpp \
   MechanicNode.cpp \
-  MechanicPortValue.cpp \
   MidpointRule.cpp \
   Model.cpp \
   ModelContext.cpp \
