@@ -354,16 +354,22 @@ public:
     return portDataList;
   }
 
-  // Aussen acceptor, innen provider
-  virtual void apply(const GroupAcceptorNode& leaf)
+  /// FIXME: may be collapse them into one class with a type argument?
+  virtual void apply(const GroupInput& leaf)
   {
     PortDataList* portDataList = buildNodeContext(leaf);
     OpenFDMAssert(leaf.getPort(0));
     PortData* portData = portDataList->newPortData(leaf.getPort(0));
     _groupPortDataMap[leaf.getExternalPortIndex()] = portData;
   }
-  // Aussen provider, innen acceptor
-  virtual void apply(const GroupProviderNode& leaf)
+  virtual void apply(const GroupOutput& leaf)
+  {
+    PortDataList* portDataList = buildNodeContext(leaf);
+    OpenFDMAssert(leaf.getPort(0));
+    PortData* portData = portDataList->newPortData(leaf.getPort(0));
+    _groupPortDataMap[leaf.getExternalPortIndex()] = portData;
+  }
+  virtual void apply(const GroupMechanicLink& leaf)
   {
     PortDataList* portDataList = buildNodeContext(leaf);
     OpenFDMAssert(leaf.getPort(0));

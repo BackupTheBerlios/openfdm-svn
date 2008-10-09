@@ -23,9 +23,9 @@ namespace OpenFDM {
 /// OutputPort (NumericPortValue, size constraint?)
 /// MechanicLink (MechanicLinkValue ...)
 
-class GroupAcceptorNode : public Node {
+class GroupInput : public Node {
 public:
-  GroupAcceptorNode(const std::string& name = std::string());
+  GroupInput(const std::string& name = std::string());
   virtual void accept(NodeVisitor& visitor)
   { visitor.apply(*this); }
   virtual void accept(ConstNodeVisitor& visitor) const
@@ -33,13 +33,13 @@ public:
   unsigned getExternalPortIndex() const
   { return mExternalPortInfo->getIndex(); }
 
-  SharedPtr<OutputPortInfo> _groupInternalPort;
+  SharedPtr<OutputPortInfo> mGroupInternalPort;
   SharedPtr<const PortInfo> mExternalPortInfo;
 };
 
-class GroupProviderNode : public Node {
+class GroupOutput : public Node {
 public:
-  GroupProviderNode(const std::string& name = std::string());
+  GroupOutput(const std::string& name = std::string());
   virtual void accept(NodeVisitor& visitor)
   { visitor.apply(*this); }
   virtual void accept(ConstNodeVisitor& visitor) const
@@ -47,7 +47,21 @@ public:
   unsigned getExternalPortIndex() const
   { return mExternalPortInfo->getIndex(); }
 
-  SharedPtr<InputPortInfo> _groupInternalPort;
+  SharedPtr<InputPortInfo> mGroupInternalPort;
+  SharedPtr<const PortInfo> mExternalPortInfo;
+};
+
+class GroupMechanicLink : public Node {
+public:
+  GroupMechanicLink(const std::string& name = std::string());
+  virtual void accept(NodeVisitor& visitor)
+  { visitor.apply(*this); }
+  virtual void accept(ConstNodeVisitor& visitor) const
+  { visitor.apply(*this); }
+  unsigned getExternalPortIndex() const
+  { return mExternalPortInfo->getIndex(); }
+
+  SharedPtr<MechanicLinkInfo> mGroupInternalPort;
   SharedPtr<const PortInfo> mExternalPortInfo;
 };
 
@@ -71,21 +85,30 @@ public:
   SharedPtr<const Node> getChild(unsigned i) const;
 
   // add a new group port to the group
-  NodeId addAcceptorPort()
+  NodeId addGroupInput()
   {
-    GroupAcceptorNode *groupAcceptorNode = new GroupAcceptorNode;
+    GroupInput *groupAcceptorNode = new GroupInput;
     NodeId nodeId = addChild(groupAcceptorNode);
     InputPortInfo* inputPortInfo;
     inputPortInfo = new InputPortInfo(this, "input", Size(0, 0), false);
     groupAcceptorNode->mExternalPortInfo = inputPortInfo;
     return nodeId;
   }
-  NodeId addProviderPort()
+  NodeId addGroupOutput()
   {
-    GroupProviderNode *groupProviderNode = new GroupProviderNode;
+    GroupOutput *groupProviderNode = new GroupOutput;
     NodeId nodeId = addChild(groupProviderNode);
     OutputPortInfo* outputPortInfo;
     outputPortInfo = new OutputPortInfo(this, "output", Size(0, 0));
+    groupProviderNode->mExternalPortInfo = outputPortInfo;
+    return nodeId;
+  }
+  NodeId addGroupMechanicLink()
+  {
+    GroupMechanicLink *groupProviderNode = new GroupMechanicLink;
+    NodeId nodeId = addChild(groupProviderNode);
+    MechanicLinkInfo* outputPortInfo;
+    outputPortInfo = new MechanicLinkInfo(this, "link");
     groupProviderNode->mExternalPortInfo = outputPortInfo;
     return nodeId;
   }

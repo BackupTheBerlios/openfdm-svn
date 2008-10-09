@@ -33,13 +33,19 @@ ConstNodeVisitor::apply(const Group& node)
 }
 
 void
-ConstNodeVisitor::apply(const GroupAcceptorNode& node)
+ConstNodeVisitor::apply(const GroupInput& node)
 {
   apply(static_cast<const Node&>(node));
 }
 
 void
-ConstNodeVisitor::apply(const GroupProviderNode& node)
+ConstNodeVisitor::apply(const GroupOutput& node)
+{
+  apply(static_cast<const Node&>(node));
+}
+
+void
+ConstNodeVisitor::apply(const GroupMechanicLink& node)
 {
   apply(static_cast<const Node&>(node));
 }

@@ -8,15 +8,21 @@
 
 namespace OpenFDM {
 
-GroupAcceptorNode::GroupAcceptorNode(const std::string& name) :
+GroupInput::GroupInput(const std::string& name) :
   Node(name),
-  _groupInternalPort(new OutputPortInfo(this, "output", Size(0, 0)))
+  mGroupInternalPort(new OutputPortInfo(this, "output", Size(0, 0)))
 {
 }
 
-GroupProviderNode::GroupProviderNode(const std::string& name) :
+GroupOutput::GroupOutput(const std::string& name) :
   Node(name),
-  _groupInternalPort(new InputPortInfo(this, "input", Size(0, 0), false))
+  mGroupInternalPort(new InputPortInfo(this, "input", Size(0, 0), false))
+{
+}
+
+GroupMechanicLink::GroupMechanicLink(const std::string& name) :
+  Node(name),
+  mGroupInternalPort(new MechanicLinkInfo(this, "link"))
 {
 }
 

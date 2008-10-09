@@ -51,7 +51,7 @@ Node* buildContinousExample()
   group->connect(gain, "output", delay, "input");
   group->connect(delay, "output", outputDelay, "input");
 
-  Group::NodeId groupOutputNode = group->addProviderPort();
+  Group::NodeId groupOutputNode = group->addGroupOutput();
   group->connect(integrator2, "output", groupOutputNode, "input");
 
   SharedPtr<Group> topGroup = new Group("G1");
