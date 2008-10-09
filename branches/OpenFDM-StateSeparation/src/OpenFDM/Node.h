@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include "Fraction.h"
 #include "Object.h"
 #include "PortId.h"
 #include "PortInfo.h"
@@ -47,6 +48,11 @@ public:
   unsigned getPortIndex(const PortId& portId) const;
   bool checkPort(const PortId& portId) const;
 
+  const Fraction& getSampleTime() const
+  { return mSampleTime; }
+  void setSampleTime(const Fraction& sampleTime)
+  { mSampleTime = sampleTime; }
+
 protected:
 
   void addParent(Node* parent);
@@ -56,16 +62,22 @@ private:
   Node(const Node&);
   Node& operator=(const Node&);
 
+  /// Methods and variables for port handling.
+  friend class PortInfo;
+
   void addPort(PortInfo* port);
   void removePort(PortInfo* port);
 
   typedef std::vector<SharedPtr<PortInfo> > PortList;
   PortList mPortList;
 
-  friend class PortInfo;
-
+  /// Parents.
   typedef std::vector<WeakPtr<Node> > ParentList;
   ParentList mParentList;
+
+  /// Sample time handling.
+  /// FIXME Should that be something like the old sample time set??
+  Fraction mSampleTime;
 };
 
 } // namespace OpenFDM

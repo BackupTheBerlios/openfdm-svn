@@ -10,6 +10,7 @@
 
 #include "Types.h"
 #include "Assert.h"
+#include "Fraction.h"
 
 namespace OpenFDM {
 
@@ -23,10 +24,13 @@ namespace OpenFDM {
 /// animations
 class SampleTime {
 public:
-  /// Default constructor, defaults to discrete sample time
-  SampleTime(void) : mSampleTime(0) {}
+  /// Default constructor, defaults to continous sample time
+  SampleTime(const SampleTime& sampleTime = getInherited()) :
+    mSampleTime(sampleTime.mSampleTime) {}
   /// Constructor with given sample time
-  SampleTime(real_type sampleTime) : mSampleTime(sampleTime) {}
+  SampleTime(const Fraction& sampleTime) :
+    mSampleTime(sampleTime) {}
+  /// Constructor with given sample time
   /// Returns true if the sample time is a continous sample time
   bool isContinous(void) const
   { return mSampleTime == 0; }
@@ -41,7 +45,7 @@ public:
   bool isPerTimestep(void) const
   { return mSampleTime == -2; }
   /// Returns the actual sample time
-  real_type getSampleTime(void) const
+  const Fraction& getSampleTime(void) const
   { return mSampleTime; }
 
   /// Returns true if th sample time is valid
@@ -53,12 +57,13 @@ public:
   bool operator!=(const SampleTime& st) const
   { return mSampleTime != st.mSampleTime; }
 
-  static const SampleTime PerTimestep;
-  static const SampleTime Inherited;
-  static const SampleTime Continous;
+  static SampleTime getPerBasicStepSize() { return Fraction(-3); }
+  static SampleTime getPerTimestep() { return Fraction(-2); }
+  static SampleTime getInherited() { return Fraction(-1); }
+  static SampleTime getContinous() { return Fraction(0); }
 
 private:
-  real_type mSampleTime;
+  Fraction mSampleTime;
 };
 
 class SampleTimeSet {

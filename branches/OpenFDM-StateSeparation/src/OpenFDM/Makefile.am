@@ -27,6 +27,7 @@ OpenFDMCoreHEADERS = \
   EnvironmentObject.h \
   ExplicitAdams.h \
   ExplicitEuler.h \
+  Fraction.h \
   Frame.h \
   FrameVisitor.h \
   Function.h \
@@ -156,7 +157,6 @@ OpenFDMCoreSOURCES = \
   PortValue.cpp \
   RigidBody.cpp \
   RootJoint.cpp \
-  SampleTime.cpp \
   StateValue.cpp \
   System.cpp \
   Time.cpp \
