@@ -15,6 +15,7 @@
 
 namespace OpenFDM {
 
+class Group;
 class Node;
 class NodeVisitor;
 class ConstNodeVisitor;
@@ -55,8 +56,9 @@ public:
 
 protected:
 
-  void addParent(Node* parent);
-  void removeParent(Node* parent);
+  friend class Group;
+  virtual bool addParent(Node* parent);
+  virtual void removeParent(Node* parent);
 
 private:
   Node(const Node&);

@@ -354,22 +354,7 @@ public:
     return portDataList;
   }
 
-  /// FIXME: may be collapse them into one class with a type argument?
-  virtual void apply(const GroupInput& leaf)
-  {
-    PortDataList* portDataList = buildNodeContext(leaf);
-    OpenFDMAssert(leaf.getPort(0));
-    PortData* portData = portDataList->newPortData(leaf.getPort(0));
-    _groupPortDataMap[leaf.getExternalPortIndex()] = portData;
-  }
-  virtual void apply(const GroupOutput& leaf)
-  {
-    PortDataList* portDataList = buildNodeContext(leaf);
-    OpenFDMAssert(leaf.getPort(0));
-    PortData* portData = portDataList->newPortData(leaf.getPort(0));
-    _groupPortDataMap[leaf.getExternalPortIndex()] = portData;
-  }
-  virtual void apply(const GroupMechanicLink& leaf)
+  virtual void apply(const GroupInterfaceNode& leaf)
   {
     PortDataList* portDataList = buildNodeContext(leaf);
     OpenFDMAssert(leaf.getPort(0));

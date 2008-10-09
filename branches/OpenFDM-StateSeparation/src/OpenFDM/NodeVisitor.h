@@ -13,9 +13,7 @@ namespace OpenFDM {
 
 class Node;
 class Group;
-class GroupInput;
-class GroupOutput;
-class GroupMechanicLink;
+class GroupInterfaceNode;
 class LibraryNode;
 class LeafNode;
 class Model;
@@ -32,9 +30,7 @@ public:
   virtual void apply(Node&);
 
   virtual void apply(Group&);
-  virtual void apply(GroupInput&);
-  virtual void apply(GroupOutput&);
-  virtual void apply(GroupMechanicLink&);
+  virtual void apply(GroupInterfaceNode&);
 
   virtual void apply(LibraryNode&);
 

@@ -8,24 +8,6 @@
 
 namespace OpenFDM {
 
-GroupInput::GroupInput(const std::string& name) :
-  Node(name),
-  mGroupInternalPort(new OutputPortInfo(this, "output", Size(0, 0)))
-{
-}
-
-GroupOutput::GroupOutput(const std::string& name) :
-  Node(name),
-  mGroupInternalPort(new InputPortInfo(this, "input", Size(0, 0), false))
-{
-}
-
-GroupMechanicLink::GroupMechanicLink(const std::string& name) :
-  Node(name),
-  mGroupInternalPort(new MechanicLinkInfo(this, "link"))
-{
-}
-
 BEGIN_OPENFDM_OBJECT_DEF(Group, Node)
   END_OPENFDM_OBJECT_DEF
 
@@ -67,6 +49,10 @@ void Group::traverse(ConstNodeVisitor& visitor) const
 Group::NodeId
 Group::addChild(const SharedPtr<Node>& node)
 {
+  if (!node)
+    return NodeId();
+  if (!node->addParent(this))
+    return NodeId();
   _childList.push_back(new Child(this, node));
   return NodeId(_childList.back());
 }

@@ -18,51 +18,97 @@
 
 namespace OpenFDM {
 
-/// Port structure:
-/// InputPort (NumericPortValue, size constraint?)
-/// OutputPort (NumericPortValue, size constraint?)
-/// MechanicLink (MechanicLinkValue ...)
-
-class GroupInput : public Node {
+class GroupInterfaceNode : public Node {
 public:
-  GroupInput(const std::string& name = std::string());
+  GroupInterfaceNode(const std::string& name) : Node(name) {}
   virtual void accept(NodeVisitor& visitor)
-  { visitor.apply(*this); }
+  {
+    visitor.handleNodePathAndApply(this);
+  }
   virtual void accept(ConstNodeVisitor& visitor) const
-  { visitor.apply(*this); }
+  {
+    visitor.handleNodePathAndApply(this);
+  }
+
   unsigned getExternalPortIndex() const
   { return mExternalPortInfo->getIndex(); }
+protected:
+  virtual bool addParent(Node* parent)
+  {
+    if (getNumParents()) {
+      Log(Model,Warning) << "Group Interface Nodes cannot have more than "
+        "one parent!" << std::endl;
+      return false;
+    }
+    
+    return Node::addParent(parent);
+  }
+  virtual void removeParent(Node* parent)
+  {
+    Node::removeParent(parent);
+  }
 
+  void setExternalPortInfo(PortInfo* portInfo)
+  {
+    mExternalPortInfo = portInfo;
+  }
+
+private:
+  SharedPtr<PortInfo> mExternalPortInfo;
+};
+
+class GroupInput : public GroupInterfaceNode {
+public:
+  GroupInput(const std::string& name) :
+    GroupInterfaceNode(name),
+    mGroupInternalPort(new OutputPortInfo(this, "output", Size(0, 0)))
+  { }
+protected:
+  virtual bool addParent(Node* parent)
+  {
+    if (!GroupInterfaceNode::addParent(parent))
+      return false;
+    setExternalPortInfo(new InputPortInfo(parent, "input", Size(0, 0), false));
+    return true;
+  }
+private:
   SharedPtr<OutputPortInfo> mGroupInternalPort;
-  SharedPtr<const PortInfo> mExternalPortInfo;
 };
 
-class GroupOutput : public Node {
+class GroupOutput : public GroupInterfaceNode {
 public:
-  GroupOutput(const std::string& name = std::string());
-  virtual void accept(NodeVisitor& visitor)
-  { visitor.apply(*this); }
-  virtual void accept(ConstNodeVisitor& visitor) const
-  { visitor.apply(*this); }
-  unsigned getExternalPortIndex() const
-  { return mExternalPortInfo->getIndex(); }
-
+  GroupOutput(const std::string& name) :
+    GroupInterfaceNode(name),
+    mGroupInternalPort(new InputPortInfo(this, "input", Size(0, 0), false))
+  { }
+protected:
+  virtual bool addParent(Node* parent)
+  {
+    if (!GroupInterfaceNode::addParent(parent))
+      return false;
+    setExternalPortInfo(new OutputPortInfo(parent, "output", Size(0, 0)));
+    return true;
+  }
+private:
   SharedPtr<InputPortInfo> mGroupInternalPort;
-  SharedPtr<const PortInfo> mExternalPortInfo;
 };
 
-class GroupMechanicLink : public Node {
+class GroupMechanicLink : public GroupInterfaceNode {
 public:
-  GroupMechanicLink(const std::string& name = std::string());
-  virtual void accept(NodeVisitor& visitor)
-  { visitor.apply(*this); }
-  virtual void accept(ConstNodeVisitor& visitor) const
-  { visitor.apply(*this); }
-  unsigned getExternalPortIndex() const
-  { return mExternalPortInfo->getIndex(); }
-
+  GroupMechanicLink(const std::string& name) :
+    GroupInterfaceNode(name),
+    mGroupInternalPort(new MechanicLinkInfo(this, "link"))
+  { }
+protected:
+  virtual bool addParent(Node* parent)
+  {
+    if (!GroupInterfaceNode::addParent(parent))
+      return false;
+    setExternalPortInfo(new MechanicLinkInfo(parent, "link"));
+    return true;
+  }
+private:
   SharedPtr<MechanicLinkInfo> mGroupInternalPort;
-  SharedPtr<const PortInfo> mExternalPortInfo;
 };
 
 class Group : public Node {
@@ -84,35 +130,6 @@ public:
   SharedPtr<Node> getChild(unsigned i);
   SharedPtr<const Node> getChild(unsigned i) const;
 
-  // add a new group port to the group
-  NodeId addGroupInput()
-  {
-    GroupInput *groupAcceptorNode = new GroupInput;
-    NodeId nodeId = addChild(groupAcceptorNode);
-    InputPortInfo* inputPortInfo;
-    inputPortInfo = new InputPortInfo(this, "input", Size(0, 0), false);
-    groupAcceptorNode->mExternalPortInfo = inputPortInfo;
-    return nodeId;
-  }
-  NodeId addGroupOutput()
-  {
-    GroupOutput *groupProviderNode = new GroupOutput;
-    NodeId nodeId = addChild(groupProviderNode);
-    OutputPortInfo* outputPortInfo;
-    outputPortInfo = new OutputPortInfo(this, "output", Size(0, 0));
-    groupProviderNode->mExternalPortInfo = outputPortInfo;
-    return nodeId;
-  }
-  NodeId addGroupMechanicLink()
-  {
-    GroupMechanicLink *groupProviderNode = new GroupMechanicLink;
-    NodeId nodeId = addChild(groupProviderNode);
-    MechanicLinkInfo* outputPortInfo;
-    outputPortInfo = new MechanicLinkInfo(this, "link");
-    groupProviderNode->mExternalPortInfo = outputPortInfo;
-    return nodeId;
-  }
-
   bool connect(const NodeId& nodeId0, const std::string& portName0,
                const NodeId& nodeId1, const std::string& portName1)
   { return connect(nodeId0, nodeId0.getPortId(portName0),
@@ -126,15 +143,17 @@ public:
                const NodeId& nodeId1, const PortId& portId1)
   {
     // Make sure the models belong to this group
-    if (!getChild(nodeId0))
+    SharedPtr<Node> child0 = getChild(nodeId0);
+    if (!child0)
       return false;
-    if (!getChild(nodeId1))
+    SharedPtr<Node> child1 = getChild(nodeId1);
+    if (!child1)
       return false;
 
-    SharedPtr<const PortInfo> port0 = nodeId0.getPortPtr(portId0);
+    SharedPtr<const PortInfo> port0 = child0->getPort(portId0);
     if (!port0)
       return false;
-    SharedPtr<const PortInfo> port1 = nodeId1.getPortPtr(portId1);
+    SharedPtr<const PortInfo> port1 = child1->getPort(portId1);
     if (!port1)
       return false;
 
@@ -222,17 +241,6 @@ public:
       if (!node)
         return PortId();
       return node->getPortId(name);
-    }
-
-    const PortInfo* getPortPtr(const PortId& portId) const // FIXME??
-    {
-      SharedPtr<Child> child = _child.lock();
-      if (!child)
-        return 0;
-      SharedPtr<Node> node = child->node;
-      if (!node)
-        return 0;
-      return node->getPort(portId);
     }
 
   private:

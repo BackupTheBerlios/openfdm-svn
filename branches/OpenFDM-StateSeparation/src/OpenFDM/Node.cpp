@@ -140,12 +140,13 @@ Node::checkPort(const PortId& portId) const
   return i != mPortList.end();
 }
 
-void
+bool
 Node::addParent(Node* parent)
 {
   if (!parent)
-    return;
+    return false;
   mParentList.push_back(parent);
+  return true;
 }
 
 void
