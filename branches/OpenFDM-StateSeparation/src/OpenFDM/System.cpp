@@ -210,7 +210,6 @@ private:
 
 ////////////////////////////////////////////////////////////////////
 
-// Just here so that I do not care for intationation order for now ...
 class System::NodeInstanceCollector : public ConstNodeVisitor {
 public:
 
@@ -337,7 +336,6 @@ public:
     SharedPtr<AbstractNodeInstance> mNodeInstance;
   };
 
-
   virtual void apply(const Node& node)
   { Log(Schedule, Error) << __PRETTY_FUNCTION__ << std::endl; }
   virtual void apply(const LeafNode& leaf)
@@ -424,14 +422,18 @@ public:
     ExternalGroupPortDataMap parentGroupPortDataMap(group.getNumPorts());
     parentGroupPortDataMap.swap(_groupPortDataMap);
 
-    // Walk the children
+    // End pushing external connection data
+
+    // Now walk the children
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
+      // Push the right per node port information struct
       SharedPtr<PortDataList> parentNodePortDataList;
       parentNodePortDataList.swap(mCurrentNodePortDataList);
       mCurrentNodePortDataList = _portDataMap[i];
 
       group.getChild(i)->accept(*this);
 
+      // Pop the per node port information struct
       parentNodePortDataList.swap(mCurrentNodePortDataList);
     }
 
@@ -468,30 +470,31 @@ public:
       unsigned portInfoIndex1 = portInfo1->getIndex();
       if (!_portDataMap[nodeIndex1]->mPortDataVector[portInfoIndex1]->
           connect(_portDataMap[nodeIndex0]->mPortDataVector[portInfoIndex0]))
-        Log(Schedule, Error) << "Cannot connect????" << std::endl;
+        Log(Schedule, Error) << "Internal Error: Cannot connect ports that"
+          " appeared to be compatible before." << std::endl;
     }
 
     SharedPtr<PortDataList> portDataList = buildNodeContext(group);
-
-    parentPortDataMap.swap(_portDataMap);
-    // Ok, some nameing niceness
-    PortDataMap childrenPortDataMap;
-    childrenPortDataMap.swap(parentPortDataMap);
 
     // add group connect routings
     // merge child list into the global list of instances
     for (unsigned i = 0; i < group.getNumPorts(); ++i) {
       PortData* portData = _groupPortDataMap[i];
+      if (!portData) {
+        Log(Schedule, Error) << "Internal Error: Cannot find internal port "
+          "data for group external port!" << std::endl;
+        continue;
+      }
 
-      PortData* parentPortData;
-      parentPortData = portDataList->newPortData(group.getPort(i));
-
+      // Allocate a new port data struct in the parent.
+      PortData* parentPortData = portDataList->newPortData(group.getPort(i));
       parentPortData->setProxyPortData(portData);
       portData->setProxyPortData(parentPortData);
     }
 
-    // Swap the PortDataList by external port index map back
+    // Pop the per group port connect info
     parentGroupPortDataMap.swap(_groupPortDataMap);
+    parentPortDataMap.swap(_portDataMap);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -515,9 +518,11 @@ public:
   // Holds the PortDataList pointer indexed by parent groups port index
   typedef std::vector<SharedPtr<PortData> > ExternalGroupPortDataMap;
   ExternalGroupPortDataMap _groupPortDataMap;
-  // Just to hold references to all mort data lists we have in the
+  // Just to hold references to all port data lists we have in the
   // simulation system. They are just needed during traversal for connect
-  // information and to distribute port value pointers.
+  // information and to distribute port value pointers. If this list is not
+  // built up the PortData values are deleted befor the PortValues are
+  // distributed.
   typedef std::list<SharedPtr<PortDataList> > PortDataListList;
   PortDataListList _portDataListList;
 
