@@ -249,6 +249,9 @@ public:
         return false;
       if (!mNodeInstance)
         return false;
+      Log(Schedule, Debug3)
+        << "setLocalPortValue for port \"" << getPortInfo()->getName()
+        << "\" is at: " << portValue << endl;
       // FIXME: move the set port value and accept port value into one call
       if (!getPortInfo()->acceptPortValue(portValue))
         return false;
@@ -259,6 +262,9 @@ public:
 
     bool setConnectedPortValues(PortValue* portValue)
     {
+      Log(Schedule, Debug3)
+        << "setConnectedPortValues for port \"" << getPortInfo()->getName()
+        << "\" is at: " << portValue << endl;
       for (unsigned i = 0; i < mConnectedPorts.size(); ++i) {
         SharedPtr<PortData> portData = mConnectedPorts[i].lock();
         if (!portData)
@@ -271,6 +277,9 @@ public:
 
     bool setProxyPortValue(PortValue* portValue)
     {
+      Log(Schedule, Debug3)
+        << "setProxyPortValues for port \"" << getPortInfo()->getName()
+        << "\" is at: " << portValue << endl;
       SharedPtr<PortData> portData = mProxyPortData.lock();
       if (portData) {
         if (!portData->setConnectedPortValues(portValue))
@@ -321,8 +330,18 @@ public:
     bool allocAndConnectProviderPortValues()
     {
       for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
-        if (!mPortDataVector[i]->createPortValue())
+        Log(Schedule, Debug3) << "Try to to allocate port value \""
+                               << mPortDataVector[i]->getPortInfo()->getName()
+                               << "\" of \"" << mNodeInstance->getNodeNamePath()
+                               << "\"" << endl;
+        if (!mPortDataVector[i]->createPortValue()) {
+          Log(Schedule, Error) << "Failed to allocate port value \""
+                               << mPortDataVector[i]->getPortInfo()->getName()
+                               << "\" of \"" << mNodeInstance->getNodeNamePath()
+                               << "\".\nAborting!" << endl;
+
           return false;
+        }
       }
       return true;
     }
@@ -605,10 +624,8 @@ protected:
   {
     PortDataListList::const_iterator i;
     for (i = _portDataListList.begin(); i != _portDataListList.end(); ++i) {
-      if (!(*i)->allocAndConnectProviderPortValues()) {
-        Log(Schedule, Error) << "Could not alloc for model ... FIXME" << endl;
+      if (!(*i)->allocAndConnectProviderPortValues())
         return false;
-      }
     }
     return true;
   }

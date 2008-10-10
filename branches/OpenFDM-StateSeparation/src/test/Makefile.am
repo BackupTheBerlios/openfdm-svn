@@ -6,7 +6,7 @@ bin_PROGRAMS = structure
 
 # define some unit tests
 #check_PROGRAMS = quattest unitstest structure simulationtime constintegral harmonic limit
-check_PROGRAMS = quattest unitstest limit
+check_PROGRAMS = quattest unitstest simulationtime limit
 TESTS          = $(check_PROGRAMS)
 
 # tiretestrig_SOURCES = tiretestrig.cpp
@@ -21,8 +21,8 @@ quattest_LDADD = ../OpenFDM/libOpenFDM.la
 structure_SOURCES = structure.cpp
 structure_LDADD = ../OpenFDM/libOpenFDM.la -lhdf5
 
-# simulationtime_SOURCES = simulationtime.cpp
-# simulationtime_LDADD = ../OpenFDM/libOpenFDM.la
+simulationtime_SOURCES = simulationtime.cpp
+simulationtime_LDADD = ../OpenFDM/libOpenFDM.la
 
 # constintegral_SOURCES = constintegral.cpp
 # constintegral_LDADD = ../OpenFDM/libOpenFDM.la

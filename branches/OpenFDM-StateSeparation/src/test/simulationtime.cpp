@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <OpenFDM/Output.h>
+#include <OpenFDM/Group.h>
 #include <OpenFDM/SimulationTime.h>
 #include <OpenFDM/System.h>
 
@@ -27,21 +28,25 @@ public:
 int
 main(int argc, char *argv[])
 {
-  real_type rate = 0.1;
+  Fraction rate(1, 10);
 
   SharedPtr<System> system = new System("Simulation Time System");
+  Group* group = new Group("Simulation Time Group");
+  system->setNode(group);
   
   SimulationTime* simulationTime = new SimulationTime("Simulation Time");
-  system->addModel(simulationTime);
+  Group::NodeId simTimeId = group->addChild(simulationTime);
 
   Output* output = new Output("Simulation Time Output");
-  system->addModel(output);
+  Group::NodeId outputId = group->addChild(output);
   SharedPtr<CollectOutputCallback> simTimeCallback = new CollectOutputCallback;
   output->setCallback(simTimeCallback);
-  output->addSampleTime(rate);
-  Connection::connect(output->getInputPort(0),
-                      simulationTime->getOutputPort(0));
-
+  output->setSampleTime(rate);
+  if (!group->connect(simTimeId, "output", outputId, "input")) {
+    std::cout << "Could not connect ports" << std::endl;
+    return EXIT_FAILURE;
+  }
+  
   if (!system->init()) {
     std::cout << "Could not initialize the system" << std::endl;
     return EXIT_FAILURE;
@@ -51,11 +56,11 @@ main(int argc, char *argv[])
 
   Vector errors(simTimeCallback->values.size());
   for (unsigned i = 0; i < simTimeCallback->values.size(); ++i) {
-    errors(i) = simTimeCallback->values[i] - i*rate;
+    errors(i) = simTimeCallback->values[i] - i*rate.getRealValue();
   }
 
   real_type expectedRoundoff;
-  expectedRoundoff = Limits<real_type>::epsilon()*system->getTime()/rate;
+  expectedRoundoff = Limits<real_type>::epsilon()/rate.getRealValue();
   real_type error = normInf(errors);
   if (expectedRoundoff < error) {
     std::cerr << "Maximum simulation time error " << error
