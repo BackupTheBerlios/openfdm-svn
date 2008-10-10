@@ -235,7 +235,8 @@ OpenFDMModelsSOURCES = \
   DiscreteIntegrator.cpp \
   Gain.cpp \
   Integrator.cpp \
-  Output.cpp
+  Output.cpp \
+  SimulationTime.cpp
 
 #   AeroForce.cpp \
 #   AirSpring.cpp \
@@ -273,7 +274,6 @@ OpenFDMModelsSOURCES = \
 #   Saturation.cpp \
 #   SimpleContact.cpp \
 #   SimpleGear.cpp \
-#   SimulationTime.cpp \
 #   Summer.cpp \
 #   Table.cpp \
 #   Tailhook.cpp \

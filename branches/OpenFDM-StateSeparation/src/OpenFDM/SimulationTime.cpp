@@ -3,7 +3,7 @@
  */
 
 #include "SimulationTime.h"
-#include "ModelVisitor.h"
+#include "Task.h"
 
 namespace OpenFDM {
 
@@ -11,10 +11,9 @@ BEGIN_OPENFDM_OBJECT_DEF(SimulationTime, Model)
   END_OPENFDM_OBJECT_DEF
 
 SimulationTime::SimulationTime(const std::string& name) :
-  Model(name)
+  Model(name),
+  mOutputPort(newRealOutputPort("output"))
 {
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &SimulationTime::getOutputValue);
 }
 
 SimulationTime::~SimulationTime(void)
@@ -22,27 +21,11 @@ SimulationTime::~SimulationTime(void)
 }
 
 void
-SimulationTime::accept(ModelVisitor& visitor)
+SimulationTime::output(const Task& task, const DiscreteStateValueVector&,
+                       const ContinousStateValueVector&,
+                       PortValueList& portValues) const
 {
-  visitor.handleNodePathAndApply(*this);
-}
-
-bool
-SimulationTime::init()
-{
-  return Model::init();
-}
-
-void
-SimulationTime::output(const TaskInfo& taskInfo)
-{
-  mOutputValue = taskInfo.getTime();
-}
-
-const real_type&
-SimulationTime::getOutputValue(void) const
-{
-  return mOutputValue;
+  portValues[mOutputPort] = task.getTime();
 }
 
 } // namespace OpenFDM

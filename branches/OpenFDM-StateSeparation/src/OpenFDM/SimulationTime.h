@@ -6,6 +6,7 @@
 #define OpenFDM_SimulationTime_H
 
 #include "Model.h"
+#include "RealOutputPort.h"
 
 namespace OpenFDM {
 
@@ -15,18 +16,11 @@ public:
   SimulationTime(const std::string& name);
   virtual ~SimulationTime(void);
 
-  /// Double dispatch helper for the system visitor
-  virtual void accept(ModelVisitor& visitor);
-  /// Double dispatch helper for the system visitor
-//   virtual void accept(ConstModelVisitor& visitor) const;
-
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-
-  const real_type& getOutputValue(void) const;
-
+  virtual void output(const Task& task, const DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
 private:
-  real_type mOutputValue;
+  RealOutputPort mOutputPort;
 };
 
 } // namespace OpenFDM

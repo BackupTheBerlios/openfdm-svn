@@ -11,8 +11,9 @@
 
 namespace OpenFDM {
 
-class PortValueList;
 class DiscreteTask;
+class PortValueList;
+class Task;
 
 class MechanicNode : public LeafNode {
   OPENFDM_OBJECT(MechanicNode, LeafNode);
@@ -29,6 +30,7 @@ public:
   virtual void articulation(const Task&, const ContinousStateValueVector&,
                             PortValueList&) const
   { }
+  // hmm, may be this should be output???
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
                             PortValueList&) const
   { }
