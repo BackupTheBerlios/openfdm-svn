@@ -231,6 +231,7 @@ OpenFDMModelsHEADERS = \
   Wind.h
 
 OpenFDMModelsSOURCES = \
+  ConstModel.cpp \
   Delay.cpp \
   DiscreteIntegrator.cpp \
   Gain.cpp \
@@ -244,7 +245,6 @@ OpenFDMModelsSOURCES = \
 #   AtmosphereSTD1976.cpp \
 #   Bias.cpp \
 #   BinaryFunctionModel.cpp \
-#   ConstModel.cpp \
 #   Contact.cpp \
 #   DeadBand.cpp \
 #   DefaultGravity.cpp \

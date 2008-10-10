@@ -14,15 +14,21 @@ class ConstModel : public Model {
   OPENFDM_OBJECT(ConstModel, Model);
 public:
   ConstModel(const std::string& name, const Matrix& value = Matrix());
+  ConstModel(const std::string& name, const real_type& value);
   virtual ~ConstModel(void);
+
+  virtual void output(const Task&,const DiscreteStateValueVector&,
+                      const ContinousStateValueVector& continousState,
+                      PortValueList& portValues) const;
 
   const Matrix& getValue(void) const;
   void setValue(const Matrix& value);
 
   // For conveninence
-  void setScalarValue(real_type value);
+  void setScalarValue(const real_type& value);
 
 private:
+  MatrixOutputPort mOutputPort;
   Matrix mValue;
 };
 

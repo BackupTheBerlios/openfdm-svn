@@ -4,6 +4,8 @@
 
 #include "ConstModel.h"
 
+#include "PortValueList.h"
+
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(ConstModel, Model)
@@ -11,14 +13,29 @@ BEGIN_OPENFDM_OBJECT_DEF(ConstModel, Model)
   END_OPENFDM_OBJECT_DEF
 
 ConstModel::ConstModel(const std::string& name, const Matrix& value) :
-  Model(name), mValue(value)
+  Model(name),
+  mOutputPort(newMatrixOutputPort("output")),
+  mValue(value)
 {
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &ConstModel::getValue);
+}
+
+ConstModel::ConstModel(const std::string& name, const real_type& value) :
+  Model(name),
+  mOutputPort(newMatrixOutputPort("output"))
+{
+  setScalarValue(value);
 }
 
 ConstModel::~ConstModel(void)
 {
+}
+
+void
+ConstModel::output(const Task& ,const DiscreteStateValueVector&,
+                   const ContinousStateValueVector&,
+                   PortValueList& portValues) const
+{
+  portValues[mOutputPort] = mValue;
 }
 
 const Matrix&
@@ -34,7 +51,7 @@ ConstModel::setValue(const Matrix& value)
 }
 
 void
-ConstModel::setScalarValue(real_type value)
+ConstModel::setScalarValue(const real_type& value)
 {
   mValue.resize(1, 1);
   mValue(0, 0) = value;
