@@ -11,6 +11,7 @@
 #include "AbstractNodeContext.h"
 #include "Assert.h"
 #include "Node.h"
+#include "SampleTime.h"
 #include "SharedPtr.h"
 #include "WeakReferenced.h"
 
@@ -21,7 +22,7 @@ namespace OpenFDM {
 /// This class is meant to show up in the user interface of this simulation.
 class AbstractNodeInstance : public WeakReferenced {
 public:
-  AbstractNodeInstance(const NodePath& nodePath);
+  AbstractNodeInstance(const NodePath& nodePath, const SampleTime& sampleTime);
   virtual ~AbstractNodeInstance();
 
   /// The actual Node this AbstractNodeInstance stems from
@@ -30,12 +31,12 @@ public:
 
   const NodePath& getNodePath() const { return mNodePath; }
 
-//   /// Set the sample times this node will run on
-//   void setSampleTimeSet(const SampleTimeSet& sampleTimeSet)
-//   { mSampleTimeSet = sampleTimeSet; }
-//   /// Get the sample times this node will run on
-//   const SampleTimeSet& getSampleTimeSet() const
-//   { return mSampleTimeSet; }
+  /// Set the sample time this node will run on
+  void setSampleTime(const SampleTime& sampleTime)
+  { mSampleTime = sampleTime; }
+  /// Get the sample time this node will run on
+  const SampleTime& getSampleTime() const
+  { return mSampleTime; }
 
   PortValueList& getPortValueList()
   { return getNodeContext().getPortValueList(); }
@@ -53,8 +54,8 @@ private:
   AbstractNodeInstance(const AbstractNodeInstance&);
   AbstractNodeInstance& operator=(const AbstractNodeInstance&);
 
-//   /// The sample times this node will run on
-//   SampleTimeSet mSampleTimeSet;
+  /// The sample times this node will run on
+  SampleTime mSampleTime;
 
   NodePath mNodePath;
 };

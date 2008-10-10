@@ -6,8 +6,9 @@
 
 namespace OpenFDM {
 
-NodeInstance::NodeInstance(const NodePath& nodePath, const Node* node) :
-  AbstractNodeInstance(nodePath),
+NodeInstance::NodeInstance(const NodePath& nodePath,
+                           const SampleTime& sampleTime, const Node* node) :
+  AbstractNodeInstance(nodePath, sampleTime),
   mNodeContext(new NodeContext(node))
 {
 }

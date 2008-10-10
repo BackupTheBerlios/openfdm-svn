@@ -14,7 +14,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Node, Object)
 
 Node::Node(const std::string& name) :
   Object(name),
-  mSampleTime(0, 1)
+  mSampleTime(SampleTime::getInherited())
 {
 }
 

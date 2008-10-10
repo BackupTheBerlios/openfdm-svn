@@ -7,10 +7,10 @@
 
 #include <string>
 #include <vector>
-#include "Fraction.h"
 #include "Object.h"
 #include "PortId.h"
 #include "PortInfo.h"
+#include "SampleTime.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
@@ -49,9 +49,9 @@ public:
   unsigned getPortIndex(const PortId& portId) const;
   bool checkPort(const PortId& portId) const;
 
-  const Fraction& getSampleTime() const
+  const SampleTime& getSampleTime() const
   { return mSampleTime; }
-  void setSampleTime(const Fraction& sampleTime)
+  void setSampleTime(const SampleTime& sampleTime)
   { mSampleTime = sampleTime; }
 
 protected:
@@ -79,7 +79,7 @@ private:
 
   /// Sample time handling.
   /// FIXME Should that be something like the old sample time set??
-  Fraction mSampleTime;
+  SampleTime mSampleTime;
 };
 
 } // namespace OpenFDM

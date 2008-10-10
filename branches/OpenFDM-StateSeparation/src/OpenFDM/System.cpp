@@ -365,7 +365,7 @@ public:
   PortDataList* buildNodeContext(const Node& node)
   {
     NodeInstance* nodeInstance;
-    nodeInstance = new NodeInstance(getNodePath(), &node);
+    nodeInstance = new NodeInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(nodeInstance);
     PortDataList* portDataList;
     portDataList = getCurrentNodePortDataList();
@@ -395,7 +395,7 @@ public:
   {
     // Need to stor the root nodes to build up the spanning tree for the
     // mechanical system here.
-    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), &node);
+    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
 //     _mechanicInstanceList.push_back(mechanicInstance);
     _rootJointInstanceList.push_back(mechanicInstance);
@@ -403,14 +403,14 @@ public:
   }
   virtual void apply(const MechanicNode& node)
   {
-    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), &node);
+    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     _mechanicInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
   }
   virtual void apply(const Model& node)
   {
-    ModelInstance* modelInstance = new ModelInstance(getNodePath(), &node);
+    ModelInstance* modelInstance = new ModelInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(modelInstance);
     _modelInstanceList.push_back(modelInstance);
     allocPortData(modelInstance, node);
@@ -441,7 +441,15 @@ public:
       parentNodePortDataList.swap(mCurrentNodePortDataList);
       mCurrentNodePortDataList = _portDataMap[i];
 
-      group.getChild(i)->accept(*this);
+      SharedPtr<const Node> node = group.getChild(i);
+
+      SampleTime sampleTime = mSampleTime;
+      if (node->getSampleTime().isInherited())
+        mSampleTime = node->getSampleTime();
+
+      node->accept(*this);
+
+      mSampleTime = sampleTime;
 
       // Pop the per node port information struct
       parentNodePortDataList.swap(mCurrentNodePortDataList);
@@ -535,6 +543,9 @@ public:
   // distributed.
   typedef std::list<SharedPtr<PortDataList> > PortDataListList;
   PortDataListList _portDataListList;
+
+  // Current nodes sample time
+  SampleTime mSampleTime;
 
   // Here the miracle occurs.
   // The collected simulation nodes are packed into something that can be used

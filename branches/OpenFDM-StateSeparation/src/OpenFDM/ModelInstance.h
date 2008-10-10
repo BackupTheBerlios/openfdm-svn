@@ -14,7 +14,8 @@ namespace OpenFDM {
 
 class ModelInstance : public AbstractNodeInstance {
 public:
-  ModelInstance(const NodePath& nodePath, const Model* model);
+  ModelInstance(const NodePath& nodePath, const SampleTime& sampleTime,
+                const Model* model);
   virtual ~ModelInstance();
 
   // Return true if this leaf directly depends on one of leafInstance outputs

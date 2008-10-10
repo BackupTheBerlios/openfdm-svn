@@ -11,8 +11,10 @@
 
 namespace OpenFDM {
 
-AbstractNodeInstance::AbstractNodeInstance(const NodePath& nodePath) :
-  mNodePath(nodePath)
+AbstractNodeInstance::AbstractNodeInstance(const NodePath& nodePath,
+                                           const SampleTime& sampleTime) :
+  mNodePath(nodePath),
+  mSampleTime(sampleTime)
 {
   OpenFDMAssert(!nodePath.empty());
 }

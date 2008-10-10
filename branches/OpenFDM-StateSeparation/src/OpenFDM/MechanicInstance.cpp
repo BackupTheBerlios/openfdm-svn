@@ -7,8 +7,9 @@
 namespace OpenFDM {
 
 MechanicInstance::MechanicInstance(const NodePath& nodePath,
+                                   const SampleTime& sampleTime,
                                    const MechanicNode* mechanicNode) :
-  AbstractNodeInstance(nodePath),
+  AbstractNodeInstance(nodePath, sampleTime),
   mMechanicContext(new MechanicContext(mechanicNode))
 {
 }

@@ -12,7 +12,8 @@ namespace OpenFDM {
 
 class NodeInstance : public AbstractNodeInstance {
 public:
-  NodeInstance(const NodePath& nodePath, const Node* node);
+  NodeInstance(const NodePath& nodePath, const SampleTime& sampleTime,
+               const Node* node);
   virtual ~NodeInstance();
 
 protected:
