@@ -57,7 +57,7 @@ public:
 
   virtual unsigned getMaxConnects() const = 0;
   virtual bool canConnect(const PortInfo& portInfo) const = 0;
-  virtual bool acceptPortValue(const PortValue*) const = 0;
+  virtual bool acceptPortValue(PortValue*) const = 0;
 
   /// Public interface to instantiate a new port value
   PortValue* newValue() const
@@ -93,14 +93,19 @@ public:
   virtual const NumericPortInfo* toNumericPortInfo() const
   { return this; }
 
-  virtual bool acceptPortValue(const PortValue* portValue) const
+  virtual bool acceptPortValue(PortValue* portValue) const
   {
-    const NumericPortValue* numericPortValue;
+    NumericPortValue* numericPortValue;
     numericPortValue = portValue->toNumericPortValue();
     if (!numericPortValue)
       return false;
-    // May be do a size check here???
-    return true;
+    if (mSize == Size(0, 0))
+      return true;
+    if (size(numericPortValue->getValue()) == Size(0, 0)) {
+      numericPortValue->getValue().resize(mSize(0), mSize(1));
+      return true;
+    }
+    return size(numericPortValue->getValue()) == mSize;
   }
 
 protected:
@@ -178,7 +183,7 @@ public:
   virtual bool canConnect(const PortInfo& portInfo) const
   { return portInfo.toMechanicLinkInfo(); }
 
-  virtual bool acceptPortValue(const PortValue* portValue) const
+  virtual bool acceptPortValue(PortValue* portValue) const
   { return portValue->toMechanicLinkValue(); }
 
 protected:
