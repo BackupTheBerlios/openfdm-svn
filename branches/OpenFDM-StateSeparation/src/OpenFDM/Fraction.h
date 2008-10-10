@@ -43,12 +43,12 @@ public:
     numerator_type n = getNumerator();
     while (n != 0 && (n&1) == 0) {
       ++exp2;
-      n >> 1;
+      n >>= 1;
     }
     denominator_type d = getDenominator();
     while (d != 0 && (d&1) == 0) {
       --exp2;
-      d >> 1;
+      d >>= 1;
     }
     
     return ldexp(real_type(n)/real_type(d), exp2);
