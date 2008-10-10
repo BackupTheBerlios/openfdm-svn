@@ -29,12 +29,12 @@ public:
   void init(const /*Init*/Task& task)
   { mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList); }
 
-  void velocities(const Task&)
-  { mMechanicNode->velocity(mContinousState, mPortValueList); }
-  void articulation(const Task&)
-  { mMechanicNode->articulation(mContinousState, mPortValueList); }
-  void accelerations(const Task&)
-  { }
+  void velocities(const Task& task)
+  { mMechanicNode->velocity(task, mContinousState, mPortValueList); }
+  void articulation(const Task& task)
+  { mMechanicNode->articulation(task, mContinousState, mPortValueList); }
+  void accelerations(const Task& task)
+  { mMechanicNode->acceleration(task, mContinousState, mPortValueList); }
 
   void derivative(const Task&)
   { mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,

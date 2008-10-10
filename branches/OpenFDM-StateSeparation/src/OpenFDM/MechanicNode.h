@@ -23,10 +23,13 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual void velocity(const ContinousStateValueVector&,
+  virtual void velocity(const Task&, const ContinousStateValueVector&,
                         PortValueList&) const
   { }
-  virtual void articulation(const ContinousStateValueVector&,
+  virtual void articulation(const Task&, const ContinousStateValueVector&,
+                            PortValueList&) const
+  { }
+  virtual void acceleration(const Task&, const ContinousStateValueVector&,
                             PortValueList&) const
   { }
   virtual void derivative(const DiscreteStateValueVector&,
