@@ -22,7 +22,7 @@ public:
                     ContinousStateValueVector& continousState,
                     const PortValueList& portValueList) const;
 
-  virtual void output(const DiscreteStateValueVector&, const ContinousStateValueVector& continousState, PortValueList& portValues) const;
+  virtual void output(const Task&,const DiscreteStateValueVector&, const ContinousStateValueVector& continousState, PortValueList& portValues) const;
   virtual void derivative(const DiscreteStateValueVector&, const ContinousStateValueVector& state, const PortValueList& portValues, ContinousStateValueVector& deriv) const;
 
   void setInitialValue(const Matrix& initialValue);

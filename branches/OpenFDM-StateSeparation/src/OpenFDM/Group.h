@@ -257,6 +257,7 @@ private:
     { }
     WeakPtr<Group> group;
     SharedPtr<Node> node;
+    // name extension to make name uniqe?
   };
 
   struct Connect : public WeakReferenced {

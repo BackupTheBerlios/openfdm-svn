@@ -47,7 +47,8 @@ Gain::alloc(LeafContext& leafContext) const
 }
 
 void
-Gain::output(const DiscreteStateValueVector&, const ContinousStateValueVector&,
+Gain::output(const Task&,const DiscreteStateValueVector&,
+             const ContinousStateValueVector&,
              PortValueList& portValues) const
 {
   portValues[mOutputPort] = mGain*portValues[mInputPort];

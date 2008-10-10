@@ -73,7 +73,8 @@ DiscreteIntegrator::init(DiscreteStateValueVector& discreteState,
 }
 
 void
-DiscreteIntegrator::output(const DiscreteStateValueVector& discreteState,
+DiscreteIntegrator::output(const Task&,
+                           const DiscreteStateValueVector& discreteState,
                            const ContinousStateValueVector&,
                            PortValueList& portValues) const
 {

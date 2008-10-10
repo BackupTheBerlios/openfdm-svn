@@ -23,6 +23,7 @@ class DiscreteStateValueVector;
 class ContinousStateValueVector;
 class PortValueList;
 class ContinousStateValueVector;
+class Task;
 
 class Model : public LeafNode {
   OPENFDM_OBJECT(Model, LeafNode);
@@ -40,7 +41,7 @@ public:
   virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       const PortValueList&) const { }
-  virtual void output(const DiscreteStateValueVector&,
+  virtual void output(const Task&,const DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       PortValueList&) const { }
   virtual void derivative(const DiscreteStateValueVector&,

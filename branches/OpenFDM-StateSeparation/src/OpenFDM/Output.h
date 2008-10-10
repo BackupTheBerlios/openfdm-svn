@@ -25,7 +25,7 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual void output(const DiscreteStateValueVector&,
+  virtual void output(const Task&,const DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       PortValueList& portValues) const;
 

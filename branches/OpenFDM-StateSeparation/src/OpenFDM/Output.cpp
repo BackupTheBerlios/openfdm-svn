@@ -43,7 +43,7 @@ Output::accept(ConstNodeVisitor& visitor) const
 }
 
 void
-Output::output(const DiscreteStateValueVector&,
+Output::output(const Task&,const DiscreteStateValueVector&,
                const ContinousStateValueVector&,
                PortValueList& portValues) const
 {

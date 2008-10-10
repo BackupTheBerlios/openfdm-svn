@@ -21,7 +21,7 @@ public:
   virtual bool alloc(LeafContext& leafContext) const;
   virtual void init(DiscreteStateValueVector& discreteState,
                     ContinousStateValueVector&, const PortValueList&) const;
-  virtual void output(const DiscreteStateValueVector& discreteState,
+  virtual void output(const Task&,const DiscreteStateValueVector& discreteState,
                       const ContinousStateValueVector&,
                       PortValueList& portValues) const;
   virtual void update(const DiscreteTask&, DiscreteStateValueVector&,

@@ -18,7 +18,7 @@ public:
   virtual ~Gain(void);
 
   virtual bool alloc(LeafContext& leafContext) const;
-  virtual void output(const DiscreteStateValueVector&,
+  virtual void output(const Task&,const DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       PortValueList& portValues) const;
 
