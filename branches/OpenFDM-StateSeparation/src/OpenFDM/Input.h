@@ -15,16 +15,9 @@ public:
   Input(const std::string& name);
   virtual ~Input(void);
 
-  /// Double dispatch helper for the system visitor
-  virtual void accept(ModelVisitor& visitor);
-  /// Double dispatch helper for the system visitor
-//   virtual void accept(ConstModelVisitor& visitor) const;
-
-  virtual const Input* toInput(void) const;
-  virtual Input* toInput(void);
-
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  virtual void output(const Task&,const DiscreteStateValueVector&,
+                      const ContinousStateValueVector& continousState,
+                      PortValueList& portValues) const;
 
   class Callback : public WeakReferenced {
   public:
@@ -41,11 +34,9 @@ public:
   const std::string& getInputName(void) const;
   void setInputName(const std::string& inputName);
 
-  const real_type& getOutputValue(void) const;
-
 private:
+  RealOutputPort mOutputPort;
   SharedPtr<Callback> mCallback;
-  real_type mOutputValue;
   real_type mInputGain;
   std::string mInputName;
 };

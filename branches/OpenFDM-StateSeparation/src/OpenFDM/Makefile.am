@@ -235,6 +235,7 @@ OpenFDMModelsSOURCES = \
   Delay.cpp \
   DiscreteIntegrator.cpp \
   Gain.cpp \
+  Input.cpp \
   Integrator.cpp \
   Output.cpp \
   SimulationTime.cpp
@@ -256,7 +257,6 @@ OpenFDMModelsSOURCES = \
 #   Force.cpp \
 #   Gravity.cpp \
 #   Ground.cpp \
-#   Input.cpp \
 #   Joint.cpp \
 #   Launchbar.cpp \
 #   LinearSpringDamper.cpp \

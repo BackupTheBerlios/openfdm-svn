@@ -3,7 +3,7 @@
  */
 
 #include "Input.h"
-#include "ModelVisitor.h"
+#include "PortValueList.h"
 
 namespace OpenFDM {
 
@@ -18,10 +18,9 @@ Input::Callback::~Callback()
 
 Input::Input(const std::string& name) :
   Model(name),
+  mOutputPort(newRealOutputPort("output")),
   mInputGain(1)
 {
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &Input::getOutputValue);
 }
 
 Input::~Input(void)
@@ -29,39 +28,11 @@ Input::~Input(void)
 }
 
 void
-Input::accept(ModelVisitor& visitor)
+Input::output(const Task& ,const DiscreteStateValueVector&,
+              const ContinousStateValueVector&,
+              PortValueList& portValues) const
 {
-  visitor.handleNodePathAndApply(*this);
-}
-
-const Input*
-Input::toInput(void) const
-{
-  return this;
-}
-
-Input*
-Input::toInput(void)
-{
-  return this;
-}
-
-bool
-Input::init(void)
-{
-  if (!mCallback) {
-    Log(Model, Error) << "Initialization of Input model \"" << getName()
-                      << "\" failed: Input Callback not set!" << endl;
-    return false;
-  }
-
-  return Model::init();
-}
-
-void
-Input::output(const TaskInfo&)
-{
-  mOutputValue = mInputGain*mCallback->getValue();
+  portValues[mOutputPort] = mInputGain*mCallback->getValue();
 }
 
 Input::Callback*
@@ -98,12 +69,6 @@ void
 Input::setInputName(const std::string& inputName)
 {
   mInputName = inputName;
-}
-
-const real_type&
-Input::getOutputValue(void) const
-{
-  return mOutputValue;
 }
 
 } // namespace OpenFDM
