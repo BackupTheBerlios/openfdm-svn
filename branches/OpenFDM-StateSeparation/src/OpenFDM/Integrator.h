@@ -18,12 +18,17 @@ public:
   virtual ~Integrator(void);
 
   virtual bool alloc(LeafContext& leafContext) const;
-  virtual void init(DiscreteStateValueVector& discreteState,
+  virtual void init(const Task&, DiscreteStateValueVector& discreteState,
                     ContinousStateValueVector& continousState,
                     const PortValueList& portValueList) const;
 
-  virtual void output(const Task&,const DiscreteStateValueVector&, const ContinousStateValueVector& continousState, PortValueList& portValues) const;
-  virtual void derivative(const DiscreteStateValueVector&, const ContinousStateValueVector& state, const PortValueList& portValues, ContinousStateValueVector& deriv) const;
+  virtual void output(const Task&,const DiscreteStateValueVector&,
+                      const ContinousStateValueVector& continousState,
+                      PortValueList& portValues) const;
+  virtual void derivative(const DiscreteStateValueVector&,
+                          const ContinousStateValueVector& state,
+                          const PortValueList& portValues,
+                          ContinousStateValueVector& deriv) const;
 
   void setInitialValue(const Matrix& initialValue);
   const Matrix& getInitialValue() const;

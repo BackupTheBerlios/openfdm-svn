@@ -27,8 +27,8 @@ public:
 
   bool alloc()
   { return mModel->alloc(*this); }
-  void init(const /*Init*/Task&)
-  { mModel->init(mDiscreteState, mContinousState, mPortValueList); }
+  void init(const /*Init*/Task& task)
+  { mModel->init(task, mDiscreteState, mContinousState, mPortValueList); }
   void output(const Task& task)
   { mModel->output(task, mDiscreteState, mContinousState, mPortValueList); }
   void update(const DiscreteTask& discreteTask)

@@ -26,8 +26,8 @@ public:
 
   bool alloc()
   { return mMechanicNode->alloc(*this); }
-  void init(const /*Init*/Task&)
-  { mMechanicNode->init(mDiscreteState, mContinousState, mPortValueList); }
+  void init(const /*Init*/Task& task)
+  { mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList); }
 
   void velocities(const Task&)
   { mMechanicNode->velocity(mContinousState, mPortValueList); }

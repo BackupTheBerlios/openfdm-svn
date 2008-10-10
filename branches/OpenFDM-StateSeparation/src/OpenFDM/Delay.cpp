@@ -56,7 +56,7 @@ Delay::alloc(LeafContext& leafContext) const
 }
 
 void
-Delay::init(DiscreteStateValueVector& discreteState,
+Delay::init(const Task&,DiscreteStateValueVector& discreteState,
             ContinousStateValueVector&,const PortValueList&) const
 {
   discreteState[*mMatrixStateInfo].clear();

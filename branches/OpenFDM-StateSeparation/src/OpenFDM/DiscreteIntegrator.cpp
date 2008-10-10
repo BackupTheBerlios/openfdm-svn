@@ -59,7 +59,7 @@ DiscreteIntegrator::alloc(LeafContext& leafContext) const
 }
 
 void
-DiscreteIntegrator::init(DiscreteStateValueVector& discreteState,
+DiscreteIntegrator::init(const Task&, DiscreteStateValueVector& discreteState,
                          ContinousStateValueVector&,
                          const PortValueList& portValues) const
 {

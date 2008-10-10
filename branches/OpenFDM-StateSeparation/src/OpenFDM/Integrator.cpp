@@ -58,7 +58,7 @@ Integrator::alloc(LeafContext& leafContext) const
 }
 
 void
-Integrator::init(DiscreteStateValueVector& discreteState,
+Integrator::init(const Task&, DiscreteStateValueVector& discreteState,
                  ContinousStateValueVector& continousState,
                  const PortValueList& portValues) const
 {

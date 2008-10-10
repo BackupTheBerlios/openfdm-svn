@@ -18,7 +18,7 @@ public:
   virtual ~DiscreteIntegrator(void);
 
   virtual bool alloc(LeafContext& leafContext) const;
-  virtual void init(DiscreteStateValueVector& discreteState,
+  virtual void init(const Task&,DiscreteStateValueVector& discreteState,
                     ContinousStateValueVector&, const PortValueList&) const;
   virtual void output(const Task&,const DiscreteStateValueVector& discreteState,
                       const ContinousStateValueVector&,
