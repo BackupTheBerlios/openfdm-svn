@@ -10,7 +10,8 @@ namespace OpenFDM {
 PortInfo::PortInfo(Node* node, const std::string& name) :
   mNode(node),
   mName(name),
-  mIndex(~0u)
+  mIndex(~0u),
+  mOptional(false)
 {
   OpenFDMAssert(node);
   node->addPort(this);

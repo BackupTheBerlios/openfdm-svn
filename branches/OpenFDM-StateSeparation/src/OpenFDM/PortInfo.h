@@ -38,6 +38,9 @@ public:
   const std::string& getName() const { return mName; }
   void setName(const std::string& name);
 
+  bool getOptional() const { return mOptional; }
+  void setOptional(bool optional) { mOptional = optional; }
+
   unsigned getIndex() const { return mIndex; }
 
   virtual const NumericPortInfo* toNumericPortInfo() const { return 0; }
@@ -76,6 +79,7 @@ private:
   WeakPtr<Node> mNode;
   std::string mName;
   unsigned mIndex;
+  bool mOptional;
 
   // FIXME: Hmm, can I avoid this??
   friend class Node;

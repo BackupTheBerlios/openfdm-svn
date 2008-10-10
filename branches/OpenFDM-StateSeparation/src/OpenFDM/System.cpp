@@ -622,10 +622,28 @@ protected:
   bool
   allocPortValues()
   {
+    // alloc port values
     PortDataListList::const_iterator i;
     for (i = _portDataListList.begin(); i != _portDataListList.end(); ++i) {
       if (!(*i)->allocAndConnectProviderPortValues())
         return false;
+    }
+    // check port values and report unconnected mandatory values.
+    ModelInstanceList::const_iterator j;
+    for (j = _modelInstanceList.begin(); j != _modelInstanceList.end(); ++j) {
+      const Node& node = (*j)->getNode();
+      for (unsigned k = 0; k < node.getNumPorts(); ++k) {
+        SharedPtr<const PortInfo> portInfo = node.getPort(k);
+        if (portInfo->getOptional())
+          continue;
+        if (!(*j)->getPortValueList().getPortValue(k)) {
+          Log(Schedule, Error) << "Mandatory port value for port \""
+                               << portInfo->getName() << "\" for model \""
+                               << (*j)->getNodeNamePath()
+                               << "\" is not connected!" << endl;
+          return false;
+        }
+      }
     }
     return true;
   }
