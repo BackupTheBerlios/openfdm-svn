@@ -44,13 +44,28 @@ public:
   /// Returns true if the task is a per timestep task
   bool isPerTimestep(void) const
   { return mSampleTime == -2; }
+  /// Returns true if the task is a per basic sample time task
+  bool isPerBasicSampleTime(void) const
+  { return mSampleTime == -3; }
   /// Returns the actual sample time
   const Fraction& getSampleTime(void) const
   { return mSampleTime; }
 
-  /// Returns true if th sample time is valid
+  /// Returns true if the sample time is valid
   bool isValid(void) const
-  { return isContinous() || isDiscrete() || isInherited() || isPerTimestep(); }
+  {
+    if (isContinous())
+      return true;
+    if (isDiscrete())
+      return true;
+    if (isInherited())
+      return true;
+    if (isPerTimestep())
+      return true;
+    if (isPerBasicSampleTime())
+      return true;
+    return false;
+  }
 
   bool operator==(const SampleTime& st) const
   { return mSampleTime == st.mSampleTime; }

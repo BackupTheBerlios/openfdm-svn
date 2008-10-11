@@ -10,6 +10,7 @@
 #include "AbstractNodeInstance.h"
 #include "Node.h"
 #include "Object.h"
+#include "SampleTime.h"
 
 namespace OpenFDM {
 
@@ -28,6 +29,12 @@ public:
   SharedPtr<Node> getNode() { return mNode; }
   SharedPtr<const Node> getNode() const { return mNode; }
   void setNode(Node* node);
+
+  /// The toplevel sample time of the system. Defaults to continous.
+  /// Allowed values are dontinous and discrete sample times.
+  /// Attemps to set an invalid value are ignored.
+  const SampleTime& getSampleTime(void) const { return mSampleTime; }
+  bool setSampleTime(const SampleTime& sampleTime);
 
   bool init();
   void clear();
@@ -56,6 +63,7 @@ private:
   class NodeInstanceCollector;
 
   SharedPtr<Node> mNode;
+  SampleTime mSampleTime;
 
   SharedPtr<AbstractSystem> mAbstractSystem;
   ConstNodeInstanceList mNodeInstanceList;

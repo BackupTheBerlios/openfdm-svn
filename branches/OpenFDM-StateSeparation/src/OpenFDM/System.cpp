@@ -212,6 +212,10 @@ private:
 
 class System::NodeInstanceCollector : public ConstNodeVisitor {
 public:
+  NodeInstanceCollector(const SampleTime& sampleTime) :
+    mSampleTime(sampleTime),
+    mBasicSampleTime(SampleTime::getContinous())
+  { }
 
   struct PortData : public WeakReferenced {
   public:
@@ -444,8 +448,20 @@ public:
       SharedPtr<const Node> node = group.getChild(i);
 
       SampleTime sampleTime = mSampleTime;
-      if (node->getSampleTime().isInherited())
-        mSampleTime = node->getSampleTime();
+
+      mSampleTime = node->getSampleTime();
+      if (mSampleTime.isInherited())
+        mSampleTime = sampleTime;
+      else if (mSampleTime.isDiscrete()) {
+        if (!mBasicSampleTime.isDiscrete())
+          mBasicSampleTime = mSampleTime;
+        else {
+          Fraction a = mBasicSampleTime.getSampleTime();
+          Fraction b = mSampleTime.getSampleTime();
+          mBasicSampleTime = SampleTime(greatestCommonDivisor(a, b));
+          OpenFDMAssert(mBasicSampleTime.isDiscrete());
+        }
+      }
 
       node->accept(*this);
 
@@ -546,6 +562,10 @@ public:
 
   // Current nodes sample time
   SampleTime mSampleTime;
+  // past all the traversal, this contains the basic sample time of the
+  // whole system. It is built up during traversal and has almost no meaning
+  // until all models have be traversed.
+  SampleTime mBasicSampleTime;
 
   // Here the miracle occurs.
   // The collected simulation nodes are packed into something that can be used
@@ -564,12 +584,18 @@ public:
     if (!allocModels())
       return 0;
 
+    real_type basicSampleTime = 0.01; // FIXME in this case just continous
+    if (mBasicSampleTime.isDiscrete())
+      basicSampleTime = mBasicSampleTime.getSampleTime().getRealValue();
+
+    Log(Model, Info) << "Basic sample time is " << basicSampleTime << std::endl;
+
     // Now the system is ready for state initialization and execution
     // Build up te abstract system and return that
 
     // For the first cut, assume many things like basic step size and such ...
     SharedPtr<DiscreteSystem> discreteSystem;
-    discreteSystem = new DiscreteSystem(0.01, 1);
+    discreteSystem = new DiscreteSystem(basicSampleTime, 1);
 
     ModelInstanceList::const_iterator i;
     for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
@@ -689,7 +715,8 @@ BEGIN_OPENFDM_OBJECT_DEF(System, Object)
 
 System::System(const std::string& name, Node* node) :
   Object(name),
-  mNode(node)
+  mNode(node),
+  mSampleTime(SampleTime::getContinous())
 {
 }
 
@@ -705,13 +732,24 @@ System::setNode(Node* node)
 }
 
 bool
+System::setSampleTime(const SampleTime& sampleTime)
+{
+  if (!sampleTime.isContinous() && !sampleTime.isDiscrete()) {
+    Log(Model, Warning) << "Ignoring attemp to set invalid sample time for "
+                        << " System \"" << getName() << "\"" << std::endl;
+    return false;
+  }
+  mSampleTime = sampleTime;
+}
+
+bool
 System::init()
 {
   if (!mNode)
     return false;
   
   // Build up the lists required to run the model.
-  NodeInstanceCollector nodeInstanceCollector;
+  NodeInstanceCollector nodeInstanceCollector(mSampleTime);
   mNode->accept(nodeInstanceCollector);
   
   mAbstractSystem = nodeInstanceCollector.buildSystem();
