@@ -51,7 +51,29 @@ bool testCyclicDependency()
 }
 
 // build up a cyclic direct input loop involving more than one model
-bool testCyclicDependencyWithGroup()
+bool testCyclicDependencyWithGroup1()
+{
+  SharedPtr<Group> group1 = new Group("Group 1");
+  Group::NodeId groupInput1 = group1->addChild(new GroupInput("Input 1"));
+  Group::NodeId groupOutput1 = group1->addChild(new GroupOutput("Output 1"));
+  group1->connect(groupInput1, "output", groupOutput1, "input");
+
+  SharedPtr<Group> group = new Group("Group");
+  Group::NodeId groupId1 = group->addChild(group1);
+  group->connect(groupId1, "output", groupId1, "input");
+
+  SharedPtr<System> system = new System("Cyclic loop through groups");
+  system->setNode(group);
+
+  if (system->init()) {
+    std::cerr << "Detection of direct input loops failed!"
+              << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool testCyclicDependencyWithGroup2()
 {
   SharedPtr<Group> group1 = new Group("Group 1");
   Group::NodeId groupInput1 = group1->addChild(new GroupInput("Input 1"));
@@ -83,7 +105,6 @@ bool testCyclicDependencyWithGroup()
   }
   return true;
 }
-
 
 Node* buildContinousExample()
 {
@@ -173,7 +194,9 @@ int main()
 
   // Check for cyclic loop analysis through groups.
   // Als kind of checks if connections through groups work
-  if (!testCyclicDependencyWithGroup())
+  if (!testCyclicDependencyWithGroup1())
+    return EXIT_FAILURE;
+  if (!testCyclicDependencyWithGroup2())
     return EXIT_FAILURE;
 
 

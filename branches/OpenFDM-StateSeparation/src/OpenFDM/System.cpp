@@ -678,8 +678,8 @@ protected:
         return false;
     }
     // check port values and report unconnected mandatory values.
-    ModelInstanceList::const_iterator j;
-    for (j = _modelInstanceList.begin(); j != _modelInstanceList.end(); ++j) {
+    NodeInstanceList::const_iterator j;
+    for (j = _nodeInstanceList.begin(); j != _nodeInstanceList.end(); ++j) {
       const Node& node = (*j)->getNode();
       for (unsigned k = 0; k < node.getNumPorts(); ++k) {
         SharedPtr<const PortInfo> portInfo = node.getPort(k);
