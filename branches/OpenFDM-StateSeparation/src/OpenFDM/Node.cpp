@@ -162,6 +162,27 @@ Node::removeParent(Node* parent)
   }
 }
 
+class Node::NodePathListCollectVisitor : public ConstNodeVisitor {
+public:
+  virtual void apply(const Node& node)
+  {
+    if (node.getNumParents()) {
+      node.ascend(*this);
+    } else {
+      mNodePathList.push_back(getNodePath());
+    }
+  }
+
+  NodePathList mNodePathList;
+};
+
+NodePathList
+Node::getNodePathList() const
+{
+  NodePathListCollectVisitor visitor;
+  return visitor.mNodePathList;
+}
+
 void
 Node::addPort(PortInfo* port)
 {

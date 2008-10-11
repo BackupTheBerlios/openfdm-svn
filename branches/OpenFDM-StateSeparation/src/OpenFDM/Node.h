@@ -21,6 +21,7 @@ class NodeVisitor;
 class ConstNodeVisitor;
 
 typedef std::vector<SharedPtr<const Node> > NodePath;
+typedef std::vector<NodePath> NodePathList;
 
 class Node : public Object {
   OPENFDM_OBJECT(Node, Object);
@@ -54,6 +55,9 @@ public:
   void setSampleTime(const SampleTime& sampleTime)
   { mSampleTime = sampleTime; }
 
+  /// Return all node paths this Node is currently attached to.
+  NodePathList getNodePathList() const;
+
 protected:
 
   friend class Group;
@@ -76,6 +80,8 @@ private:
   /// Parents.
   typedef std::vector<WeakPtr<Node> > ParentList;
   ParentList mParentList;
+
+  class NodePathListCollectVisitor;
 
   /// Sample time handling.
   /// FIXME Should that be something like the old sample time set??
