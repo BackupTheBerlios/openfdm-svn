@@ -209,10 +209,7 @@ int main()
   if (!system->init())
     return 1;
 
-  double h = 0.01;
-  while (system->getTime() < 10) {
-    system->simulate(system->getTime() + h);
-  }
+  system->simulate(10);
 
   return 0;
 }

@@ -32,6 +32,7 @@ main(int argc, char *argv[])
 
   SharedPtr<System> system = new System("Simulation Time System");
   Group* group = new Group("Simulation Time Group");
+  group->setSampleTime(rate);
   system->setNode(group);
   
   SimulationTime* simulationTime = new SimulationTime("Simulation Time");
@@ -41,7 +42,6 @@ main(int argc, char *argv[])
   Group::NodeId outputId = group->addChild(output);
   SharedPtr<CollectOutputCallback> simTimeCallback = new CollectOutputCallback;
   output->setCallback(simTimeCallback);
-  output->setSampleTime(rate);
   if (!group->connect(simTimeId, "output", outputId, "input")) {
     std::cout << "Could not connect ports" << std::endl;
     return EXIT_FAILURE;

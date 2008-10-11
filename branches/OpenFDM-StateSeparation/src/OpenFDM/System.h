@@ -36,7 +36,7 @@ public:
   const SampleTime& getSampleTime(void) const { return mSampleTime; }
   bool setSampleTime(const SampleTime& sampleTime);
 
-  bool init();
+  bool init(const real_type& t0 = real_type(0));
   void clear();
 
   /// Simulate the system until the time tEnd

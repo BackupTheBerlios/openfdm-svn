@@ -91,14 +91,29 @@ public:
     mODESolver->setFunction(mContinousSystemFunction);
   }
 
-  void appendModelContext(unsigned stride, ModelContext* modelContext)
+  void appendModelInstance(ModelInstance* modelInstance)
   {
+    ModelContext* modelContext = &modelInstance->getNodeContext();
+    SampleTime sampleTime = modelInstance->getSampleTime();
+
     // The init task contains them all
     mInitTask->mModelContextList[0].push_back(modelContext);
-    // FIXME: decide which ones where ...
-    mDiscreteTaskList[0]->mModelContextList.push_back(modelContext);
-    mContinousTask->mModelContextList[0].push_back(modelContext);
+    
+    // for now continous tasks take also all of them
     mContinousTask->appendStateValuesFromLeafContext(*modelContext);
+    if (sampleTime.isContinous())
+      mContinousTask->mModelContextList[0].push_back(modelContext);
+
+    // Discrete tasks need special treatment
+    if (sampleTime.isDiscrete()) {
+      real_type realSampleTime = sampleTime.getSampleTime().getRealValue();
+      for (unsigned i = 0; i < mDiscreteTaskList.size(); ++i) {
+        if (!equal(mDiscreteTaskList[i]->getStepsize(), realSampleTime))
+          continue;
+        mDiscreteTaskList[i]->mModelContextList.push_back(modelContext);
+        break;
+      }
+    }
   }
 
 protected:
@@ -106,17 +121,16 @@ protected:
   {
     mInitTask->init(t);
 
-    if (mList.empty())
-      return;
-
-    mList.front().mSampleHit = t;
-    discreteOutput(mList.front());
-
     // Set the state into the ode solver
     Vector v;
     mContinousTask->getStateValue(v);
     mODESolver->setState(v);
     mODESolver->setTime(t);
+
+    if (mList.empty())
+      return;
+
+    mList.front().mSampleHit = t;
   }
 
   virtual void discreteUpdateImplementation()
@@ -155,19 +169,9 @@ protected:
   virtual void continousUpdateImplementation(const real_type& tEnd)
   {
     mODESolver->integrate(tEnd);
+    mContinousTask->setStateValue(mODESolver->getState());
+    output(mODESolver->getTime());
   }
-  real_type getNextDiscreteSampleHit() const
-  {
-    OpenFDMAssert(getNextDiscreteSampleHitAlternate() == getValidityInterval().getEnd());
-    return getValidityInterval().getEnd();
-  }
-  real_type getNextDiscreteSampleHitAlternate() const
-  {
-    if (mList.empty())
-      return Limits<real_type>::max_value();
-    return mList.front().mSampleHit;
-  }
-
   virtual void outputImplementation(const real_type& t)
   {
     if (mContinousTask)
@@ -604,7 +608,7 @@ public:
 
     ModelInstanceList::const_iterator i;
     for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
-      discreteSystem->appendModelContext(1, &(*i)->getNodeContext());
+      discreteSystem->appendModelInstance(*i);
     }
 
     return discreteSystem.release();
@@ -755,7 +759,7 @@ System::setSampleTime(const SampleTime& sampleTime)
 }
 
 bool
-System::init()
+System::init(const real_type& t0)
 {
   if (!mNode)
     return false;
@@ -782,7 +786,7 @@ System::init()
     (*j)->attachTo(this);
   
   // Hmm, really here???
-  mAbstractSystem->init(0);
+  mAbstractSystem->init(t0);
 
   return true;
 }
@@ -805,11 +809,14 @@ System::simulate(const real_type& t)
 {
   if (!mAbstractSystem)
     return false;
-  mAbstractSystem->outputAt(t);
 
-  SystemLogList::const_iterator i;
-  for (i = mSystemLogList.begin(); i != mSystemLogList.end(); ++i)
-    (*i)->output(t);
+  while (mAbstractSystem->getTime() < t) {
+    mAbstractSystem->advance(t);
+
+    SystemLogList::const_iterator i;
+    for (i = mSystemLogList.begin(); i != mSystemLogList.end(); ++i)
+      (*i)->output(mAbstractSystem->getTime());
+  }
 
   return true;
 }

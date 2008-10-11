@@ -24,23 +24,14 @@ public:
   const real_type& getTime() const
   { return mTime; }
 
-  void outputAt(const real_type& t)
+  void advance(const real_type& tMax)
   {
     // Cry if we cannot do anything!
     OpenFDMAssert(!getValidityInterval().empty());
 
-//     if (equal(getTime(), getValidityInterval().getEnd())
-//     continousUpdate(tEnd);
-
-    // update until our requested end time is in the current interval.
-    while (needUpdate(t)) {
-      discreteUpdate();
-
-      real_type tEnd = min(getValidityInterval().getEnd(), t);
-      continousUpdate(tEnd);
-    }
-    if (t != mTime)
-      output(t);
+    // update a single step at most to time tMax
+    discreteUpdate();
+    continousUpdate(min(getValidityInterval().getEnd(), tMax));
   }
 
   // Not sure yet who is responsible for calling them at the right times ...
@@ -56,17 +47,18 @@ public:
 
   void discreteUpdate()
   {
+    if (getTime() < mValidityInterval.getEnd())
+      return;
     discreteUpdateImplementation();
-    Log(Schedule,Info) << "Updated to time Interval from t = "
+    Log(Schedule,Info) << "Updated discrete systems to time Interval from t = "
                        << mValidityInterval.getBegin() << " to t = "
                        << mValidityInterval.getEnd() << std::endl;
   }
   void continousUpdate(const real_type& tEnd)
   {
+    Log(Schedule,Info) << "Update continous systems from time t = "
+                       << mTime << " to t = " << tEnd << std::endl;
     continousUpdateImplementation(tEnd);
-    Log(Schedule,Info) << "Updated to time Interval from t = "
-                       << mValidityInterval.getBegin() << " to t = "
-                       << mValidityInterval.getEnd() << std::endl;
   }
   void output(const real_type& t)
   {
@@ -75,15 +67,6 @@ public:
     outputImplementation(mTime);
     Log(Schedule,Info) << "Output for time t =  " << t << std::endl;
   }
-
-  /// FIXME: make that non virtual, but keep that up to date in the
-  /// implementation.
-  /// Hmm that interval concept is better????
-//   virtual real_type getNextDiscreteSampleHit() const
-//   {
-//     // Hmm, is this not enough for the sample hits??
-//     return mValidityInterval.getEnd();
-//   }
 
 protected:
 
