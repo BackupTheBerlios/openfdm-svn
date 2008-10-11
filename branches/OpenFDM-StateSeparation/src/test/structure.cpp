@@ -15,8 +15,8 @@ using namespace OpenFDM;
 // Build a system with a single gain component referencing itself
 bool testSelfReferencingDirectInput()
 {
-  SharedPtr<Group> group = new Group("group");
-  Group::NodeId gain = group->addChild(new Gain("gain"));
+  SharedPtr<Group> group = new Group("Group");
+  Group::NodeId gain = group->addChild(new Gain("Gain"));
   group->connect(gain, "output", gain, "input");
 
   SharedPtr<System> system = new System("Self referencing Gain");
@@ -29,6 +29,61 @@ bool testSelfReferencingDirectInput()
   }
   return true;
 }
+
+// build up a cyclic direct input loop involving more than one model
+bool testCyclicDependency()
+{
+  SharedPtr<Group> group = new Group("Group");
+  Group::NodeId gain1 = group->addChild(new Gain("Gain 1"));
+  Group::NodeId gain2 = group->addChild(new Gain("Gain 2"));
+  group->connect(gain1, "output", gain2, "input");
+  group->connect(gain2, "output", gain1, "input");
+
+  SharedPtr<System> system = new System("Cyclic loop");
+  system->setNode(group);
+
+  if (system->init()) {
+    std::cerr << "Detection of direct input loops failed!"
+              << std::endl;
+    return false;
+  }
+  return true;
+}
+
+// build up a cyclic direct input loop involving more than one model
+bool testCyclicDependencyWithGroup()
+{
+  SharedPtr<Group> group1 = new Group("Group 1");
+  Group::NodeId groupInput1 = group1->addChild(new GroupInput("Input 1"));
+  Group::NodeId gain1 = group1->addChild(new Gain("Gain 1"));
+  Group::NodeId groupOutput1 = group1->addChild(new GroupOutput("Output 1"));
+  group1->connect(groupInput1, "output", gain1, "input");
+  group1->connect(gain1, "output", groupOutput1, "input");
+
+  SharedPtr<Group> group2 = new Group("Group 2");
+  Group::NodeId groupInput2 = group2->addChild(new GroupInput("Input 2"));
+  Group::NodeId gain2 = group2->addChild(new Gain("Gain 2"));
+  Group::NodeId groupOutput2 = group2->addChild(new GroupOutput("Output 2"));
+  group2->connect(groupInput2, "output", gain2, "input");
+  group2->connect(gain2, "output", groupOutput2, "input");
+
+  SharedPtr<Group> group = new Group("Group");
+  Group::NodeId groupId1 = group->addChild(group1);
+  Group::NodeId groupId2 = group->addChild(group2);
+  group->connect(groupId1, "output", groupId2, "input");
+  group->connect(groupId2, "output", groupId1, "input");
+
+  SharedPtr<System> system = new System("Cyclic loop through groups");
+  system->setNode(group);
+
+  if (system->init()) {
+    std::cerr << "Detection of direct input loops failed!"
+              << std::endl;
+    return false;
+  }
+  return true;
+}
+
 
 Node* buildContinousExample()
 {
@@ -110,6 +165,15 @@ int main()
   // Check a self referencing gain model, to see if cyclic loops
   // are properly detected
   if (!testSelfReferencingDirectInput())
+    return EXIT_FAILURE;
+
+  // Check for cyclic loop analysis
+  if (!testCyclicDependency())
+    return EXIT_FAILURE;
+
+  // Check for cyclic loop analysis through groups.
+  // Als kind of checks if connections through groups work
+  if (!testCyclicDependencyWithGroup())
     return EXIT_FAILURE;
 
 
