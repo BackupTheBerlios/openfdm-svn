@@ -3,6 +3,9 @@
  */
 
 #include "Input.h"
+
+#include "ConstNodeVisitor.h"
+#include "NodeVisitor.h"
 #include "PortValueList.h"
 
 namespace OpenFDM {
@@ -25,6 +28,18 @@ Input::Input(const std::string& name) :
 
 Input::~Input(void)
 {
+}
+
+void
+Input::accept(NodeVisitor& visitor)
+{
+  visitor.handleNodePathAndApply(this);
+}
+
+void
+Input::accept(ConstNodeVisitor& visitor) const
+{
+  visitor.handleNodePathAndApply(this);
 }
 
 void

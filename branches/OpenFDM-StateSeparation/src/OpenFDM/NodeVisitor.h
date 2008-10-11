@@ -17,6 +17,7 @@ class GroupInterfaceNode;
 class LibraryNode;
 class LeafNode;
 class Model;
+class Input;
 class Output;
 class MechanicNode;
 class RigidBody;
@@ -36,6 +37,7 @@ public:
 
   virtual void apply(LeafNode&);
   virtual void apply(Model&);
+  virtual void apply(Input&);
   virtual void apply(Output&);
 
   virtual void apply(MechanicNode&);

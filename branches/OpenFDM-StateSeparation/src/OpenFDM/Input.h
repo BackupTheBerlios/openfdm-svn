@@ -15,6 +15,10 @@ public:
   Input(const std::string& name);
   virtual ~Input(void);
 
+  /// Double dispatch helper for the system visitor
+  virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
+
   virtual void output(const Task&,const DiscreteStateValueVector&,
                       const ContinousStateValueVector& continousState,
                       PortValueList& portValues) const;
