@@ -619,6 +619,13 @@ protected:
       SharedPtr<ModelInstance> modelInstance = _modelInstanceList.front();
       _modelInstanceList.pop_front();
 
+      if (modelInstance->dependsOn(*modelInstance)) {
+        Log(Schedule, Error)
+          << "Self referencing direct dependency for Model \""
+          << modelInstance->getNodeNamePath() << "\" detected!" << std::endl;
+        return false;
+      }
+
       ModelInstanceList::iterator i;
       for (i = sortedModelInstanceList.begin();
            i != sortedModelInstanceList.end();

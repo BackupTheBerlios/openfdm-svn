@@ -15,7 +15,7 @@ using namespace OpenFDM;
 // Build a system with a single gain component referencing itself
 bool testSelfReferencingDirectInput()
 {
-  Group* group = new Group("group");
+  SharedPtr<Group> group = new Group("group");
   Group::NodeId gain = group->addChild(new Gain("gain"));
   group->connect(gain, "output", gain, "input");
 
@@ -107,6 +107,12 @@ Node* buildLibraryNodeExample()
 
 int main()
 {
+  // Check a self referencing gain model, to see if cyclic loops
+  // are properly detected
+  if (!testSelfReferencingDirectInput())
+    return EXIT_FAILURE;
+
+
   SharedPtr<System> system = new System("System", buildContinousExample());
 //   SharedPtr<System> system = new System("System", buildDiscreteExample());
 //   SharedPtr<System> system = new System("System", buildLibraryNodeExample());
