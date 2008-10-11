@@ -31,7 +31,7 @@ public:
   void setNode(Node* node);
 
   /// The toplevel sample time of the system. Defaults to continous.
-  /// Allowed values are dontinous and discrete sample times.
+  /// Allowed values are continous and discrete sample times.
   /// Attemps to set an invalid value are ignored.
   const SampleTime& getSampleTime(void) const { return mSampleTime; }
   bool setSampleTime(const SampleTime& sampleTime);

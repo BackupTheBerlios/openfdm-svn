@@ -445,10 +445,13 @@ public:
       parentNodePortDataList.swap(mCurrentNodePortDataList);
       mCurrentNodePortDataList = _portDataMap[i];
 
-      SharedPtr<const Node> node = group.getChild(i);
-
+      // push the sample time
       SampleTime sampleTime = mSampleTime;
 
+      // our next node to traverse
+      SharedPtr<const Node> node = group.getChild(i);
+
+      // check what to do with sample times
       mSampleTime = node->getSampleTime();
       if (mSampleTime.isInherited())
         mSampleTime = sampleTime;
@@ -463,8 +466,10 @@ public:
         }
       }
 
+      // now traverse the child ...
       node->accept(*this);
 
+      // restore old group sample time
       mSampleTime = sampleTime;
 
       // Pop the per node port information struct
