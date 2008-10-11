@@ -38,21 +38,7 @@ public:
   { return mDenominator; }
 
   real_type getRealValue() const
-  {
-    int exp2 = 0;
-    numerator_type n = getNumerator();
-    while (n != 0 && (n&1) == 0) {
-      ++exp2;
-      n >>= 1;
-    }
-    denominator_type d = getDenominator();
-    while (d != 0 && (d&1) == 0) {
-      --exp2;
-      d >>= 1;
-    }
-    
-    return ldexp(real_type(n)/real_type(d), exp2);
-  }
+  { return real_type(getNumerator())/real_type(getDenominator()); }
 
   denominator_type reductionFactor() const
   { return gcd(std::abs(mNumerator), mDenominator); }
@@ -71,14 +57,14 @@ public:
   {
     // Just in case that the argument is *this
     numerator_type numerator = fraction.mNumerator;
-    denominator_type denumerator = fraction.mDenominator;
+    denominator_type denominator = fraction.mDenominator;
 
-    denominator_type g = gcd(mDenominator, denumerator);
+    denominator_type g = gcd(mDenominator, denominator);
     mDenominator /= g;
-    mNumerator = mNumerator*(denumerator/g) + numerator*mDenominator;
+    mNumerator = mNumerator*(denominator/g) + numerator*mDenominator;
     g = gcd(std::abs(mNumerator), g);
     mNumerator /= g;
-    mDenominator *= denumerator/g;
+    mDenominator *= denominator/g;
 
     return *this;
   }
@@ -86,14 +72,14 @@ public:
   {
     // Just in case that the argument is *this
     numerator_type numerator = fraction.mNumerator;
-    denominator_type denumerator = fraction.mDenominator;
+    denominator_type denominator = fraction.mDenominator;
 
-    denominator_type g = gcd(mDenominator, denumerator);
+    denominator_type g = gcd(mDenominator, denominator);
     mDenominator /= g;
-    mNumerator = mNumerator*(denumerator/g) - numerator*mDenominator;
+    mNumerator = mNumerator*(denominator/g) - numerator*mDenominator;
     g = gcd(std::abs(mNumerator), g);
     mNumerator /= g;
-    mDenominator *= denumerator/g;
+    mDenominator *= denominator/g;
 
     return *this;
   }
@@ -102,28 +88,28 @@ public:
   {
     // Just in case that the argument is *this
     numerator_type numerator = fraction.mNumerator;
-    denominator_type denumerator = fraction.mDenominator;
+    denominator_type denominator = fraction.mDenominator;
 
-    denominator_type g0 = gcd(std::abs(mNumerator), denumerator);
+    denominator_type g0 = gcd(std::abs(mNumerator), denominator);
     denominator_type g1 = gcd(std::abs(numerator), mDenominator);
 
     mNumerator /= g0;
     mNumerator *= numerator/g1;
     mDenominator /= g1;
-    mDenominator *= denumerator/g0;
+    mDenominator *= denominator/g0;
     return *this;
   }
   Fraction& operator/=(const Fraction& fraction)
   {
     // Just in case that the argument is *this
     numerator_type numerator = fraction.mNumerator;
-    denominator_type denumerator = fraction.mDenominator;
+    denominator_type denominator = fraction.mDenominator;
 
-    denominator_type g0 = gcd(mDenominator, denumerator);
+    denominator_type g0 = gcd(mDenominator, denominator);
     denominator_type g1 = gcd(std::abs(mNumerator), std::abs(numerator));
 
     mNumerator /= g1;
-    mNumerator *= denumerator/g0;
+    mNumerator *= denominator/g0;
     mDenominator /= g0;
     mDenominator *= numerator/g1;
     return *this;
