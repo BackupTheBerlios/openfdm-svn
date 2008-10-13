@@ -5,6 +5,7 @@
 #include "MobileRootJoint.h"
 
 #include "Assert.h"
+#include "LeafContext.h"
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
@@ -29,6 +30,16 @@ MobileRootJoint::MobileRootJoint(const std::string& name) :
 
 MobileRootJoint::~MobileRootJoint()
 {
+}
+
+void
+MobileRootJoint::init(const Task&, DiscreteStateValueVector&,
+                      ContinousStateValueVector& continousState,
+                      const PortValueList& portValues) const
+{
+  continousState[*mPositionStateInfo] = Vector3::zeros();
+  continousState[*mOrientationStateInfo] = Quaternion::unit();
+  continousState[*mVelocityStateInfo] = Vector6::zeros();
 }
 
 void

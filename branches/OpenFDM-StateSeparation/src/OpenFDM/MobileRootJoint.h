@@ -9,6 +9,7 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
+#include "MatrixStateInfo.h"
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "RootJoint.h"
@@ -21,6 +22,9 @@ public:
   MobileRootJoint(const std::string& name);
   virtual ~MobileRootJoint();
 
+  virtual void init(const Task&, DiscreteStateValueVector&,
+                    ContinousStateValueVector&,
+                    const PortValueList&) const;
   virtual void velocity(const Task&, const ContinousStateValueVector& states,
                         PortValueList& portValues) const;
   virtual void articulation(const Task&, const ContinousStateValueVector&,
@@ -34,9 +38,9 @@ public:
 private:
   MechanicLink mMechanicLink;
 
-  SharedPtr<MatrixStateInfo> mPositionStateInfo;
-  SharedPtr<MatrixStateInfo> mOrientationStateInfo;
-  SharedPtr<MatrixStateInfo> mVelocityStateInfo;
+  SharedPtr<Vector3StateInfo> mPositionStateInfo;
+  SharedPtr<Vector4StateInfo> mOrientationStateInfo;
+  SharedPtr<Vector6StateInfo> mVelocityStateInfo;
 };
 
 } // namespace OpenFDM
