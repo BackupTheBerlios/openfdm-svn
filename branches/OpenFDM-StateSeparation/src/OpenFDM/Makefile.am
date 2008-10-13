@@ -240,6 +240,10 @@ OpenFDMModelsSOURCES = \
   Output.cpp \
   SimulationTime.cpp
 
+OpenFDMMechanicSOURCES = \
+  MobileRootJoint.cpp
+
+
 #   AeroForce.cpp \
 #   AirSpring.cpp \
 #   Atmosphere.cpp \
@@ -263,7 +267,6 @@ OpenFDMModelsSOURCES = \
 #   Mass.cpp \
 #   MaxModel.cpp \
 #   MinModel.cpp \
-#   MobileRootJoint.cpp \
 #   Output.cpp \
 #   Product.cpp \
 #   PrismaticJoint.cpp \
@@ -285,4 +288,4 @@ OpenFDMModelsSOURCES = \
 #   WheelContact.cpp
 
 nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
-libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES)
+libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES) $(OpenFDMMecihanicSOURCES)
