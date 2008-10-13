@@ -850,6 +850,37 @@ public:
 };
 
 template<typename T>
+class Vector1
+  : public Vector<T,1> {
+public:
+  OpenFDM_FORCE_INLINE
+  Vector1(void)
+  { }
+  OpenFDM_FORCE_INLINE
+  Vector1(T v1)
+  { (*this)(0) = v1; }
+  OpenFDM_FORCE_INLINE
+  Vector1(const Vector1& v)
+    : Vector<T,1>(v)
+  { }
+  template<typename Impl, size_type m, size_type n>
+  OpenFDM_FORCE_INLINE
+  Vector1(const MatrixRValue<Impl,m,n>& A)
+    : Vector<T,1>(A)
+  { }
+  OpenFDM_FORCE_INLINE
+  ~Vector1(void)
+  { }
+
+  OpenFDM_FORCE_INLINE
+  const real_type& x(void) const
+  { return Vector<T,1>::operator()(0); }
+  OpenFDM_FORCE_INLINE
+  real_type& x(void)
+  { return Vector<T,1>::operator()(0); }
+};
+
+template<typename T>
 class Vector2
   : public Vector<T,2> {
 public:

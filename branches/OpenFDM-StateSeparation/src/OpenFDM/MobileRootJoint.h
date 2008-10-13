@@ -31,6 +31,12 @@ public:
                           const ContinousStateValueVector&,
                           const PortValueList& portValues,
                           ContinousStateValueVector&) const;
+private:
+  MechanicLink mMechanicLink;
+
+  SharedPtr<MatrixStateInfo> mPositionStateInfo;
+  SharedPtr<MatrixStateInfo> mOrientationStateInfo;
+  SharedPtr<MatrixStateInfo> mVelocityStateInfo;
 };
 
 } // namespace OpenFDM

@@ -16,8 +16,15 @@
 namespace OpenFDM {
 
 MobileRootJoint::MobileRootJoint(const std::string& name) :
-  RootJoint(name)
+  RootJoint(name),
+  mMechanicLink(newMechanicLink("link")),
+  mPositionStateInfo(new Vector3StateInfo),
+  mOrientationStateInfo(new Vector4StateInfo),
+  mVelocityStateInfo(new Vector6StateInfo)
 {
+  addContinousStateInfo(mPositionStateInfo);
+  addContinousStateInfo(mOrientationStateInfo);
+  addContinousStateInfo(mVelocityStateInfo);
 }
 
 MobileRootJoint::~MobileRootJoint()

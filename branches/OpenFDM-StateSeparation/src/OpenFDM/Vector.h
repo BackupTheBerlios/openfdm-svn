@@ -23,6 +23,7 @@ using LinAlg::Zeros;
 using LinAlg::Range;
 using LinAlg::trans;
 
+typedef LinAlg::Vector1<real_type> Vector1;
 typedef LinAlg::Vector2<real_type> Vector2;
 typedef LinAlg::Vector3<real_type> Vector3;
 typedef LinAlg::Vector4<real_type> Vector4;
