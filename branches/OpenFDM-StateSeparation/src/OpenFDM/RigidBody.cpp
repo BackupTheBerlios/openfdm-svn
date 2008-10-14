@@ -37,7 +37,7 @@ RigidBody::accept(ConstNodeVisitor& visitor) const
 
 void
 RigidBody::velocity(const Task&, const ContinousStateValueVector&,
-                    PortValueList& portValues) const
+                    PortValueList& portValues, MechanicContext&) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
 
@@ -54,11 +54,11 @@ RigidBody::velocity(const Task&, const ContinousStateValueVector&,
 
 void
 RigidBody::articulation(const Task&, const ContinousStateValueVector&,
-                        PortValueList& portValues) const
+                        PortValueList& portValues, MechanicContext&) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
 
-  SpatialInertia inertia = SpatialInertia::zeros();
+  SpatialInertia inertia(InertiaMatrix(1, 0, 0, 1, 0, 1), 1);
   Vector6 force = Vector6::zeros();
 
   for (unsigned i = 1; i < numLinkValues; ++i) {
@@ -72,7 +72,7 @@ RigidBody::articulation(const Task&, const ContinousStateValueVector&,
 
 void
 RigidBody::acceleration(const Task&, const ContinousStateValueVector&,
-                        PortValueList& portValues) const
+                        PortValueList& portValues, MechanicContext&) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
   Vector6 accel = portValues[mMechanicLinks.front()].mSpatialAcceleration;

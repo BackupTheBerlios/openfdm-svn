@@ -6,9 +6,10 @@
 #define OpenFDM_MechanicContext_H
 
 #include <list>
-#include "SharedPtr.h"
 #include "LeafContext.h"
 #include "MechanicNode.h"
+#include "SharedPtr.h"
+#include "Transform.h"
 
 namespace OpenFDM {
 
@@ -30,21 +31,16 @@ public:
   { mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList); }
 
   void velocities(const Task& task)
-  { mMechanicNode->velocity(task, mContinousState, mPortValueList); }
+  { mMechanicNode->velocity(task, mContinousState, mPortValueList, *this); }
   void articulation(const Task& task)
-  { mMechanicNode->articulation(task, mContinousState, mPortValueList); }
+  { mMechanicNode->articulation(task, mContinousState, mPortValueList, *this); }
   void accelerations(const Task& task)
-  { mMechanicNode->acceleration(task, mContinousState, mPortValueList); }
+  { mMechanicNode->acceleration(task, mContinousState, mPortValueList, *this); }
 
   void derivative(const Task&)
   { mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,
-                              mContinousStateDerivative); }
+                              *this, mContinousStateDerivative); }
  
-//   void outputVelocities()
-//   { }
-//   void outputAcceperation()
-//   { }
-
   void update(const DiscreteTask& discreteTask)
   {
     mMechanicNode->update(discreteTask, mDiscreteState,
@@ -52,6 +48,13 @@ public:
   }
 
   bool isConnectedTo(const MechanicContext& mechanicContext) const;
+
+  // Stores some values persistent accross velocity/articulation/acceleration
+  unsigned mParentLinkIndex;
+  Vector6 mParentSpVel;
+  Vector6 mParentSpAccel;
+  Vector6 mHDot;
+  Vector6 mRelVelDot;
 
 private:
   SharedPtr<const MechanicNode> mMechanicNode;

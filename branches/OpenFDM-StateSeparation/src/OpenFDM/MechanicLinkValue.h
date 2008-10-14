@@ -28,18 +28,11 @@ public:
   // and outputs a rigid body can have.
   // Example: force port, force and inertia, frame port, velocity port
   Vector3 mPosition;
-  Rotation mOrientation;
+  Quaternion mOrientation;
   Vector6 mSpatialVelocity;
   Vector6 mSpatialAcceleration;
   Vector6 mArticulatedForce;
   SpatialInertia mArticulatedInertia;
-  // Frame????
-  // FIXME: how to show who is responsible for setting the values???
-  // Solution:
-  // Ok, if set the joint is responsible for filling the velocities
-  // and accelerations, the body is responsible for the inertia -
-  // if unset it is the other way round ...
-  bool mDownStream;
 };
 
 } // namespace OpenFDM

@@ -26,14 +26,14 @@ public:
                     ContinousStateValueVector&,
                     const PortValueList&) const;
   virtual void velocity(const Task&, const ContinousStateValueVector& states,
-                        PortValueList& portValues) const;
+                        PortValueList& portValues, MechanicContext&) const;
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList& portValues) const;
+                            PortValueList& portValues, MechanicContext&) const;
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList& portValues) const;
+                            PortValueList& portValues, MechanicContext&) const;
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
-                          const PortValueList& portValues,
+                          const PortValueList& portValues, MechanicContext&,
                           ContinousStateValueVector&) const;
 private:
   MechanicLink mMechanicLink;

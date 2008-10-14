@@ -14,6 +14,7 @@ namespace OpenFDM {
 class DiscreteTask;
 class PortValueList;
 class Task;
+class MechanicContext;
 
 class MechanicNode : public LeafNode {
   OPENFDM_OBJECT(MechanicNode, LeafNode);
@@ -25,18 +26,18 @@ public:
   virtual void accept(ConstNodeVisitor& visitor) const;
 
   virtual void velocity(const Task&, const ContinousStateValueVector&,
-                        PortValueList&) const
+                        PortValueList&, MechanicContext&) const
   { }
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&) const
+                            PortValueList&, MechanicContext&) const
   { }
   // hmm, may be this should be output???
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList&) const
+                            PortValueList&, MechanicContext&) const
   { }
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
-                          const PortValueList&,
+                          const PortValueList&, MechanicContext&,
                           ContinousStateValueVector&) const
   { }
   virtual void update(const DiscreteTask&, DiscreteStateValueVector&,

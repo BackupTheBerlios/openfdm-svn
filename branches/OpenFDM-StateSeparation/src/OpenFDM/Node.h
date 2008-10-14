@@ -58,6 +58,10 @@ public:
   /// Return all node paths this Node is currently attached to.
   NodePathList getNodePathList() const;
 
+  /// Hmm, here or in the leaf stuff:
+  /// AbstractNodeInstance* newNodeInstance() ??
+  /// AbstractNodeContext* newNodeContext() ??
+
 protected:
 
   friend class Group;
