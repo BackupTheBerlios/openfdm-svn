@@ -10,6 +10,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RootJoint, Interact)
+  DEF_OPENFDM_PROPERTY(Matrix, AngularBaseVelocity, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RootJoint::RootJoint(const std::string& name) :

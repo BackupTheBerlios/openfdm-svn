@@ -18,6 +18,14 @@ public:
 
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
+
+  const Vector3& getAngularBaseVelocity() const
+  { return mAngularBaseVelocity; }
+  void setAngularBaseVelocity(const Vector3& angularBaseVelocity)
+  { mAngularBaseVelocity = angularBaseVelocity; }
+
+private:
+  Vector3 mAngularBaseVelocity;
 };
 
 } // namespace OpenFDM

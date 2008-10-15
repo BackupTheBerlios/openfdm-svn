@@ -52,11 +52,8 @@ MobileRootJoint::velocity(const Task&,
   Quaternion orientation = continousState[*mOrientationStateInfo];
   Vector6 velocity = continousState[*mVelocityStateInfo];
 
-  /// FIXME, plug in the earths rotation here ...
-  Vector6 mBaseFrameVelocity = Vector6::zeros();
-
-  Vector6 parentSpatialVelocity = motionTo(position, orientation,
-                                           mBaseFrameVelocity);
+  Vector6 parentSpatialVelocity = angularMotionTo(position, orientation,
+                                                  getAngularBaseVelocity());
 
   context.mParentSpVel = parentSpatialVelocity;
   context.mParentSpAccel = Vector6::zeros();
