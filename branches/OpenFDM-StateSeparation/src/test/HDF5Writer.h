@@ -289,6 +289,14 @@ public:
     name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
     mDumperList.push_back(new MatrixDumper(numericPortValue, mCurrentPortValuesGroup, name));
   }
+  virtual void apply(const PortInfo* portInfo,
+                     const MechanicLinkValue* mechanicLinkValue)
+  {
+    OpenFDMAssert(mCurrentPortValuesGroup.valid());
+    std::string name = portInfo->getName();
+    name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
+    mDumperList.push_back(new MechanicDumper(mechanicLinkValue, mCurrentPortValuesGroup, name));
+  }
 
   void appendPortValues(const Node& node)
   {
@@ -365,20 +373,60 @@ public:
 //   typedef std::map<const PortValue*, SharedPtr<HDF5Object> > PortValueMap;
 //   PortValueMap mPortValueMap;
 
-  struct MatrixDumper : public Referenced {
+  struct Dumper : public Referenced {
+    virtual ~Dumper() {}
+    virtual void append() = 0;
+  };
+
+  struct MatrixDumper : public Dumper {
     MatrixDumper(const NumericPortValue* numericPortValue,
                  const HDF5Object& parent, const std::string& name) :
       mNumericPortValue(numericPortValue),
       _stream(parent, name, size(mNumericPortValue->getValue()))
     { OpenFDMAssert(numericPortValue); }
-    void append()
+    virtual void append()
     { _stream.append(mNumericPortValue->getValue()); }
 
     SharedPtr<const NumericPortValue> mNumericPortValue;
     HDFMatrixStream _stream;
   };
 
-  typedef std::list<SharedPtr<MatrixDumper> > DumperList;
+  struct MechanicDumper : public Dumper {
+    MechanicDumper(const MechanicLinkValue* mechanicLinkValue,
+                   const HDF5Object& parent, const std::string& name) :
+      mMechanicLinkValue(mechanicLinkValue),
+      _group(parent, name),
+      _position(_group, "position", Size(3, 1)),
+      _orientation(_group, "orientation", Size(4, 1)),
+      _eulerAngle(_group, "eulerAngles", Size(3, 1)),
+      _velocity(_group, "velocity", Size(6, 1)),
+      _acceleration(_group, "acceleration", Size(6, 1)),
+      _force(_group, "force", Size(6, 1)),
+      _inertia(_group, "inertia", Size(6, 6))
+    { }
+    virtual void append()
+    {
+      _position.append(mMechanicLinkValue->mPosition);
+      _orientation.append(mMechanicLinkValue->mOrientation);
+      _eulerAngle.append(mMechanicLinkValue->mOrientation.getEuler());
+      _velocity.append(mMechanicLinkValue->mSpatialVelocity);
+      _acceleration.append(mMechanicLinkValue->mSpatialAcceleration);
+      _force.append(mMechanicLinkValue->mArticulatedForce);
+      _inertia.append(mMechanicLinkValue->mArticulatedInertia);
+    }
+
+    SharedPtr<const MechanicLinkValue> mMechanicLinkValue;
+    HDF5Group _group;
+    HDFMatrixStream _position;
+    HDFMatrixStream _orientation;
+    HDFMatrixStream _eulerAngle;
+    HDFMatrixStream _velocity;
+    HDFMatrixStream _acceleration;
+    HDFMatrixStream _force;
+    HDFMatrixStream _inertia;
+  };
+
+  typedef std::list<SharedPtr<Dumper> > DumperList;
   DumperList mDumperList;
 };
 

@@ -62,7 +62,7 @@ protected:
       }
 
       const MechanicLinkValue* mpv = portValue->toMechanicLinkValue();
-      if (npv) {
+      if (mpv) {
         apply(nodeInstance.getNode().getPort(i), mpv);
         continue;
       }
