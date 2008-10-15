@@ -29,11 +29,12 @@ public:
   const Node& getNode() const
   { return getNodeContext().getNode(); }
 
-  const NodePath& getNodePath() const { return mNodePath; }
+  /// The node path leading to this instance.
+  const NodePath& getNodePath() const
+  { return mNodePath; }
+  /// String representation of the node path.
+  std::string getNodeNamePath() const;
 
-  /// Set the sample time this node will run on
-  void setSampleTime(const SampleTime& sampleTime)
-  { mSampleTime = sampleTime; }
   /// Get the sample time this node will run on
   const SampleTime& getSampleTime() const
   { return mSampleTime; }
@@ -42,8 +43,6 @@ public:
   { return getNodeContext().getPortValueList(); }
   const PortValueList& getPortValueList() const
   { return getNodeContext().getPortValueList(); }
-
-  std::string getNodeNamePath() const;
 
 protected:
   /// The node context that belongs to this instance.
@@ -55,9 +54,9 @@ private:
   AbstractNodeInstance& operator=(const AbstractNodeInstance&);
 
   /// The sample times this node will run on
-  SampleTime mSampleTime;
+  const SampleTime mSampleTime;
 
-  NodePath mNodePath;
+  const NodePath mNodePath;
 };
 
 typedef std::list<SharedPtr<AbstractNodeInstance> > NodeInstanceList;
