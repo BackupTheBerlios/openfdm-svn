@@ -15,8 +15,13 @@ public:
   AbstractNodeContext();
   virtual ~AbstractNodeContext();
 
+  /// Returns the Node it belongs to.
   virtual const Node& getNode() const = 0;
 
+  /// Port value accessors for System external usage.
+  virtual const PortValue* getPortValue(const PortInfo& portInfo) const;
+
+  /// might vanish???
   PortValueList& getPortValueList()
   { return mPortValueList; }
   const PortValueList& getPortValueList() const
