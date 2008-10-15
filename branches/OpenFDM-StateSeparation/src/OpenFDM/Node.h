@@ -15,6 +15,7 @@
 
 namespace OpenFDM {
 
+class AbstractNodeContext;
 class Group;
 class Node;
 class NodeVisitor;
@@ -59,8 +60,7 @@ public:
   NodePathList getNodePathList() const;
 
   /// Hmm, here or in the leaf stuff:
-  /// AbstractNodeInstance* newNodeInstance() ??
-  /// AbstractNodeContext* newNodeContext() ??
+  virtual AbstractNodeContext* newNodeContext() const = 0;
 
 protected:
 

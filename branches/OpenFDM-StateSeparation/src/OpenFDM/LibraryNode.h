@@ -21,6 +21,9 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
+  virtual AbstractNodeContext* newNodeContext() const
+  { OpenFDMAssert(false); return 0; }
+
   // FIXME: Hmm, how do we map ports??
   // May be the Node just gets virtuals for ports???
   // May be changing ports means informing the parent about that???

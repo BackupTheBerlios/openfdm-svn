@@ -9,7 +9,7 @@ namespace OpenFDM {
 ModelInstance::ModelInstance(const NodePath& nodePath,
                              const SampleTime& sampleTime, const Model* model) :
   AbstractNodeInstance(nodePath, sampleTime),
-  mModelContext(new ModelContext(model))
+  mModelContext(model->newModelContext())
 {
 }
 

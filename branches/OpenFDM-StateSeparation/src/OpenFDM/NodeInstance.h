@@ -18,11 +18,11 @@ public:
 
 protected:
   /// The node context that belongs to this instance.
-  virtual NodeContext& getNodeContext();
-  virtual const NodeContext& getNodeContext() const;
+  virtual AbstractNodeContext& getNodeContext();
+  virtual const AbstractNodeContext& getNodeContext() const;
 
 private:
-  SharedPtr<NodeContext> mNodeContext;
+  SharedPtr<AbstractNodeContext> mNodeContext;
 };
 
 } // namespace OpenFDM

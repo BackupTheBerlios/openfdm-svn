@@ -24,6 +24,7 @@ class ContinousStateValueVector;
 class PortValueList;
 class ContinousStateValueVector;
 class Task;
+class ModelContext;
 
 class Model : public LeafNode {
   OPENFDM_OBJECT(Model, LeafNode);
@@ -33,6 +34,9 @@ public:
 
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
+
+  virtual AbstractNodeContext* newNodeContext() const;
+  virtual ModelContext* newModelContext() const;
 
   // FIXME: May be we want to collapse all state values in one
   // argument? May be it is sufficient to have a const and non const version??

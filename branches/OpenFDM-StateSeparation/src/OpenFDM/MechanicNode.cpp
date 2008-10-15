@@ -5,6 +5,7 @@
 #include "MechanicNode.h"
 
 #include "ConstNodeVisitor.h"
+#include "MechanicContext.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {
@@ -31,6 +32,18 @@ void
 MechanicNode::accept(ConstNodeVisitor& visitor) const
 {
   visitor.handleNodePathAndApply(this);
+}
+
+AbstractNodeContext*
+MechanicNode::newNodeContext() const
+{
+  return newMechanicContext();
+}
+
+MechanicContext*
+MechanicNode::newMechanicContext() const
+{
+  return new MechanicContext(this);
 }
 
 } // namespace OpenFDM

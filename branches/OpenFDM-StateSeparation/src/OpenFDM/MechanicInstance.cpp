@@ -10,7 +10,7 @@ MechanicInstance::MechanicInstance(const NodePath& nodePath,
                                    const SampleTime& sampleTime,
                                    const MechanicNode* mechanicNode) :
   AbstractNodeInstance(nodePath, sampleTime),
-  mMechanicContext(new MechanicContext(mechanicNode))
+  mMechanicContext(mechanicNode->newMechanicContext())
 {
 }
 

@@ -6,6 +6,7 @@
 
 #include "ConstNodeVisitor.h"
 #include "LogStream.h"
+#include "ModelContext.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {
@@ -32,6 +33,18 @@ void
 Model::accept(ConstNodeVisitor& visitor) const
 {
   visitor.handleNodePathAndApply(this);
+}
+
+AbstractNodeContext*
+Model::newNodeContext() const
+{
+  return newModelContext();
+}
+
+ModelContext*
+Model::newModelContext() const
+{
+  return new ModelContext(this);
 }
 
 } // namespace OpenFDM
