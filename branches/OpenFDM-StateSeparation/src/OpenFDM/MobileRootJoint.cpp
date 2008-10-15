@@ -17,6 +17,9 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(MobileRootJoint, RootJoint)
+  END_OPENFDM_OBJECT_DEF
+
 MobileRootJoint::MobileRootJoint(const std::string& name) :
   RootJoint(name),
   mMechanicLink(newMechanicLink("link")),
@@ -95,7 +98,6 @@ MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
 //   mRelVelDot = grav - solve(inertia, force) - getParentSpAccel() - getHdot();
   Vector6 acceleration = grav - solve(inertia, force) - context.mParentSpAccel - context.mHDot;
   context.mRelVelDot = acceleration;
-  
 
   portValues[mMechanicLink].mSpatialAcceleration = acceleration;
 }
