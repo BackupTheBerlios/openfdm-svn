@@ -20,7 +20,7 @@ public:
 
   bool isConnectedTo(const MechanicInstance& mechanicInstance) const;
 
-protected:
+// protected:
   virtual MechanicContext& getNodeContext();
   virtual const MechanicContext& getNodeContext() const;
 

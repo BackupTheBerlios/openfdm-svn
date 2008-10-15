@@ -116,6 +116,20 @@ public:
     }
   }
 
+  void appendMechanicInstance(MechanicInstance* mechanicInstance)
+  {
+    MechanicContext* mechanicContext = &mechanicInstance->getNodeContext();
+    // FIXME???
+//     SampleTime sampleTime = modelInstance->getSampleTime();
+
+    // The init task contains them all
+    mInitTask->mMechanicContextList.push_back(mechanicContext);
+    
+    // for now continous tasks take also all of them
+    mContinousTask->appendStateValuesFromLeafContext(*mechanicContext);
+    mContinousTask->mMechanicContextList.push_back(mechanicContext);
+  }
+
 protected:
   virtual void initImplementation(const real_type& t)
   {
@@ -405,8 +419,10 @@ public:
     // mechanical system here.
     MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
-//     _mechanicInstanceList.push_back(mechanicInstance);
-    _rootJointInstanceList.push_back(mechanicInstance);
+    if (node.getNumPorts() == 1)
+      _rootJointInstanceList.push_back(mechanicInstance);
+    else
+      _mechanicInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
   }
   virtual void apply(const MechanicNode& node)
@@ -585,6 +601,9 @@ public:
     // steps below
     if (!allocPortValues())
       return 0;
+    // The MechanicNode instances are sorted to match the direct input property
+    if (!sortMechanicList())
+      return 0;
     // The model instances are sorted to match the direct input property
     if (!sortModelList())
       return 0;
@@ -611,10 +630,89 @@ public:
       discreteSystem->appendModelInstance(*i);
     }
 
+    MechanicInstanceList::const_iterator j;
+    for (j = _mechanicInstanceList.begin();
+         j != _mechanicInstanceList.end(); ++j) {
+      discreteSystem->appendMechanicInstance(*j);
+    }
+
     return discreteSystem.release();
   }
 
 protected:
+  // method to sort the leafs according to their dependency
+  bool sortMechanicList()
+  {
+    MechanicInstanceList sortedMechanicInstanceList;
+    // Start with all the roots in front of the list ...
+    // FIXME: ensure that there is no loop here?
+    sortedMechanicInstanceList.swap(_rootJointInstanceList);
+
+    // Not the best algorithm, but for a first cut ...
+    while (!_mechanicInstanceList.empty()) {
+      MechanicInstanceList nextLevelList;
+
+      MechanicInstanceList::iterator j;
+      for (j = sortedMechanicInstanceList.begin();
+           j != sortedMechanicInstanceList.end(); ++j) {
+        MechanicInstanceList::iterator i;
+        for (i = _mechanicInstanceList.begin();
+             i != _mechanicInstanceList.end();) {
+        
+          if ((*j)->isConnectedTo(*(*i))) {
+            nextLevelList.push_back(*i);
+            i = _mechanicInstanceList.erase(i);
+
+            // Check if this current mechanic node does not reference
+            // back into the already sorted models
+            MechanicInstanceList::iterator k;
+            for (k = sortedMechanicInstanceList.begin();
+                 k != sortedMechanicInstanceList.end(); ++k) {
+              if (*k == *j)
+                continue;
+              if ((*i)->isConnectedTo(*(*k))) {
+                Log(Schedule,Error)
+                  << "Detected closed kinematic loop: MechanicNode \""
+                  << (*i)->getNodeNamePath()
+                  << "\" is linked to MechanicNode \""
+                  << (*k)->getNodeNamePath() << "\"" << std::endl;
+                return false;
+              }
+            }
+          } else {
+            ++i;
+          }
+        }
+      }
+
+      // Check if we have connects in this next level.
+      // Since every mechanic node in this list already has a parent,
+      // if we have a connection in between them, there must be a
+      // closed kinematic loop.
+      for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
+        MechanicInstanceList::iterator i = j;
+        for (++i; i != nextLevelList.end(); ++i) {
+          if ((*j)->isConnectedTo(*(*i))) {
+            Log(Schedule,Error)
+              << "Detected closed kinematic loop: MechanicNode \""
+              << (*j)->getNodeNamePath()
+              << "\" is linked to MechanicNode \""
+              << (*i)->getNodeNamePath() << "\"" << std::endl;
+            return false;
+          }
+        }
+      }
+      
+
+      for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
+        sortedMechanicInstanceList.push_back(*j);
+      }
+    }
+    
+    _mechanicInstanceList.swap(sortedMechanicInstanceList);
+    return true;
+  }
+
   // method to sort the leafs according to their dependency
   bool sortModelList()
   {
@@ -708,6 +806,24 @@ protected:
       if (!(*i)->getNodeContext().alloc()) {
         Log(Schedule, Error) << "Could not alloc for model \""
                              << (*i)->getNodeNamePath() << "\"" << endl;
+        return false;
+      }
+    }
+
+    MechanicInstanceList::const_iterator j;
+    for (j = _rootJointInstanceList.begin();
+         j != _rootJointInstanceList.end(); ++j) {
+      if (!(*j)->getNodeContext().alloc()) {
+        Log(Schedule, Error) << "Could not alloc for MechanicNode \""
+                             << (*j)->getNodeNamePath() << "\"" << endl;
+        return false;
+      }
+    }
+    for (j = _mechanicInstanceList.begin();
+         j != _mechanicInstanceList.end(); ++j) {
+      if (!(*j)->getNodeContext().alloc()) {
+        Log(Schedule, Error) << "Could not alloc for MechanicNode \""
+                             << (*j)->getNodeNamePath() << "\"" << endl;
         return false;
       }
     }
