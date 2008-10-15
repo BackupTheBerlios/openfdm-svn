@@ -26,7 +26,7 @@ public:
   virtual const Model& getNode() const;
 
   bool alloc()
-  { return mModel->alloc(*this); }
+  { if (!allocStates()) return false; return mModel->alloc(*this); }
   void init(const /*Init*/Task& task)
   { mModel->init(task, mDiscreteState, mContinousState, mPortValueList); }
   void output(const Task& task)

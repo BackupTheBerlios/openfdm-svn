@@ -26,7 +26,7 @@ public:
   virtual const MechanicNode& getNode() const;
 
   bool alloc()
-  { return mMechanicNode->alloc(*this); }
+  { if (!allocStates()) return false; return mMechanicNode->alloc(*this); }
   void init(const /*Init*/Task& task)
   { mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList); }
 

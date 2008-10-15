@@ -21,12 +21,27 @@ public:
   void setContinousStateSize(const MatrixStateInfo& stateInfo,
                              const Size& sz)
   {
-    mContinousState.setValue(stateInfo, *this);
     mContinousState[stateInfo].resize(sz(0), sz(1));
-    mContinousStateDerivative.setValue(stateInfo, *this);
     mContinousStateDerivative[stateInfo].resize(sz(0), sz(1));
   }
 
+  bool allocStates()
+  {
+    unsigned numContinousStates = getNode().getNumContinousStateValues();
+    for (unsigned i = 0; i < numContinousStates; ++i) {
+      const ContinousStateInfo* continousStateInfo;
+      continousStateInfo = getNode().getContinousStateInfo(i);
+      mContinousState.setValue(*continousStateInfo, *this);
+      mContinousStateDerivative.setValue(*continousStateInfo, *this);
+    }
+    unsigned numDiscreteStates = getNode().getNumDiscreteStateValues();
+    for (unsigned i = 0; i < numDiscreteStates; ++i) {
+      const StateInfo* stateInfo;
+      stateInfo = getNode().getDiscreteStateInfo(i);
+      mDiscreteState.setValue(*stateInfo, *this);
+    }
+    return true;
+  }
 // protected:
   // Continous States
   ContinousStateValueVector mContinousState;
