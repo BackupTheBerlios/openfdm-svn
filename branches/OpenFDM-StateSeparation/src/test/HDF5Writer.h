@@ -108,16 +108,16 @@ public:
     return 0 <= id;
   }
 
-//   bool link(const HDF5Object& object, const std::string& name)
-//   {
-//     if (!valid())
-//       return false;
-//     if (!object.valid())
-//       return false;
-//     int status = H5Olink(object.getId(), getId(), name.c_str(),
-//                          H5P_DEFAULT, H5P_DEFAULT);
-//     return 0 <= status;
-//   }
+  bool link(const HDF5Object& object, const std::string& name)
+  {
+    if (!valid())
+      return false;
+    if (!object.valid())
+      return false;
+    herr_t status = H5Glink2(object.getId(), ".", H5G_LINK_HARD,
+                             getId(), name.c_str());
+    return 0 <= status;
+  }
 };
 
 class HDF5File : public HDF5Object {
@@ -287,7 +287,16 @@ public:
     OpenFDMAssert(mCurrentPortValuesGroup.valid());
     std::string name = portInfo->getName();
     name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
-    mDumperList.push_back(new MatrixDumper(numericPortValue, mCurrentPortValuesGroup, name));
+
+    if (mPortValueMap.find(numericPortValue) == mPortValueMap.end()) {
+      MatrixDumper* dumper;
+      dumper = new MatrixDumper(numericPortValue,
+                                mCurrentPortValuesGroup, name);
+      mPortValueMap[numericPortValue] = dumper;
+      mDumperList.push_back(dumper);
+    } else {
+      mCurrentPortValuesGroup.link(mPortValueMap.find(numericPortValue)->second->getObject(), name);
+    }
   }
   virtual void apply(const PortInfo* portInfo,
                      const MechanicLinkValue* mechanicLinkValue)
@@ -295,7 +304,16 @@ public:
     OpenFDMAssert(mCurrentPortValuesGroup.valid());
     std::string name = portInfo->getName();
     name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
-    mDumperList.push_back(new MechanicDumper(mechanicLinkValue, mCurrentPortValuesGroup, name));
+
+    if (mPortValueMap.find(mechanicLinkValue) == mPortValueMap.end()) {
+      MechanicDumper* dumper;
+      dumper = new MechanicDumper(mechanicLinkValue,
+                                  mCurrentPortValuesGroup, name);
+      mPortValueMap[mechanicLinkValue] = dumper;
+      mDumperList.push_back(dumper);
+    } else {
+      mCurrentPortValuesGroup.link(mPortValueMap.find(mechanicLinkValue)->second->getObject(), name);
+    }
   }
 
   void appendPortValues(const Node& node)
@@ -369,13 +387,10 @@ public:
 
   HDF5Group mCurrentPortValuesGroup;
 
-  // Only hdf5 version >= 1.8 can do hard links
-//   typedef std::map<const PortValue*, SharedPtr<HDF5Object> > PortValueMap;
-//   PortValueMap mPortValueMap;
-
   struct Dumper : public Referenced {
     virtual ~Dumper() {}
     virtual void append() = 0;
+    virtual HDF5Object getObject() = 0;
   };
 
   struct MatrixDumper : public Dumper {
@@ -386,6 +401,8 @@ public:
     { OpenFDMAssert(numericPortValue); }
     virtual void append()
     { _stream.append(mNumericPortValue->getValue()); }
+    virtual HDF5Object getObject()
+    { return _stream; }
 
     SharedPtr<const NumericPortValue> mNumericPortValue;
     HDFMatrixStream _stream;
@@ -414,6 +431,8 @@ public:
       _force.append(mMechanicLinkValue->mArticulatedForce);
       _inertia.append(mMechanicLinkValue->mArticulatedInertia);
     }
+    virtual HDF5Object getObject()
+    { return _group; }
 
     SharedPtr<const MechanicLinkValue> mMechanicLinkValue;
     HDF5Group _group;
@@ -425,6 +444,9 @@ public:
     HDFMatrixStream _force;
     HDFMatrixStream _inertia;
   };
+
+  typedef std::map<const PortValue*,SharedPtr<Dumper> > PortValueMap;
+  PortValueMap mPortValueMap;
 
   typedef std::list<SharedPtr<Dumper> > DumperList;
   DumperList mDumperList;
