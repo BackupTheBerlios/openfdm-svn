@@ -161,7 +161,7 @@ public:
       return false;
 
     hsize_t rank = 2;
-    hsize_t dims[2] = { rows(matrix), cols(matrix) };
+    hsize_t dims[2] = { cols(matrix), rows(matrix) };
 
 //     HDF5Object dataspace(H5Screate(H5S_NULL));
 //     HDF5Object dataspace(H5Screate(H5S_SIMPLE));
@@ -203,8 +203,8 @@ public:
         rank = 1;
     }
     _dims[0] = 1;
-    _dims[1] = size(0);
-    _dims[2] = size(1);
+    _dims[1] = size(1);
+    _dims[2] = size(0);
     hsize_t maxdims[3] = { H5S_UNLIMITED, _dims[1], _dims[2] };
     _dataspace = HDF5Object(H5Screate_simple(rank, _dims, maxdims), true);
     if (!_dataspace.valid())
