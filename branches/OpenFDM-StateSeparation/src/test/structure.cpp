@@ -6,6 +6,8 @@
 #include <OpenFDM/Group.h>
 #include <OpenFDM/LibraryNode.h>
 #include <OpenFDM/LibraryModel.h>
+#include <OpenFDM/MobileRootJoint.h>
+#include <OpenFDM/RigidBody.h>
 #include <OpenFDM/System.h>
 
 #include "HDF5Writer.h"
@@ -181,6 +183,17 @@ Node* buildLibraryNodeExample()
   return group.release();
 }
 
+Node* buildSimpleMechanicExample()
+{
+  SharedPtr<Group> group = new Group("G");
+  Group::NodeId rootJoint = group->addChild(new MobileRootJoint("Root Joint"));
+  Group::NodeId rigidBody = group->addChild(new RigidBody("Rigid Body"));
+
+  group->connect(rootJoint, "link", rigidBody, "link");
+
+  return group.release();
+}
+
 int main()
 {
   // Check a self referencing gain model, to see if cyclic loops
@@ -200,9 +213,10 @@ int main()
     return EXIT_FAILURE;
 
 
-  SharedPtr<System> system = new System("System", buildContinousExample());
+//   SharedPtr<System> system = new System("System", buildContinousExample());
 //   SharedPtr<System> system = new System("System", buildDiscreteExample());
 //   SharedPtr<System> system = new System("System", buildLibraryNodeExample());
+  SharedPtr<System> system = new System("System", buildSimpleMechanicExample());
 
   system->attach(new HDF5Log("system.h5"));
 
