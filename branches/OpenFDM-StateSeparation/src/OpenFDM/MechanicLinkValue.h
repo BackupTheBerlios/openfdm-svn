@@ -19,6 +19,16 @@ public:
   virtual MechanicLinkValue* toMechanicLinkValue() { return this; }
   virtual const MechanicLinkValue* toMechanicLinkValue() const { return this; }
 
+  void applyForce(const Vector6& force)
+  { mArticulatedForce = force; }
+  void applyForce(const Vector3& force)
+  { applyForce(Vector6(Vector3::zeros(), force)); }
+  void applyTorque(const Vector3& torque)
+  { applyForce(Vector6(torque, Vector3::zeros())); }
+
+  void addInertia(const SpatialInertia& inertia)
+  { mArticulatedInertia = inertia; }
+
 // protected:
   // FIXME:
   // Since the interact side is the provider port, an interact might provide
