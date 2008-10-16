@@ -241,6 +241,7 @@ OpenFDMModelsSOURCES = \
   SimulationTime.cpp
 
 OpenFDMMechanicSOURCES = \
+  Mass.cpp \
   MobileRootJoint.cpp
 
 
@@ -264,7 +265,6 @@ OpenFDMMechanicSOURCES = \
 #   Joint.cpp \
 #   Launchbar.cpp \
 #   LinearSpringDamper.cpp \
-#   Mass.cpp \
 #   MaxModel.cpp \
 #   MinModel.cpp \
 #   Output.cpp \

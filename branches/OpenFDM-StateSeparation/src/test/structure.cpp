@@ -6,6 +6,7 @@
 #include <OpenFDM/Group.h>
 #include <OpenFDM/LibraryNode.h>
 #include <OpenFDM/LibraryModel.h>
+#include <OpenFDM/Mass.h>
 #include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/RigidBody.h>
 #include <OpenFDM/System.h>
@@ -188,8 +189,10 @@ Node* buildSimpleMechanicExample()
   SharedPtr<Group> group = new Group("G");
   Group::NodeId rootJoint = group->addChild(new MobileRootJoint("Root Joint"));
   Group::NodeId rigidBody = group->addChild(new RigidBody("Rigid Body"));
+  Group::NodeId mass = group->addChild(new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1)));
 
   group->connect(rootJoint, "link", rigidBody, "link");
+  group->connect(rigidBody, "link2", mass, "link");
 
   return group.release();
 }

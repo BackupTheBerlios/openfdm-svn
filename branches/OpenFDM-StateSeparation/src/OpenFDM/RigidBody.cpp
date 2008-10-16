@@ -17,6 +17,7 @@ RigidBody::RigidBody(const std::string& name) :
   MechanicNode(name)
 {
   mMechanicLinks.push_back(newMechanicLink("link"));
+  mMechanicLinks.push_back(newMechanicLink("link2"));
 }
 
 RigidBody::~RigidBody()
@@ -56,18 +57,11 @@ void
 RigidBody::articulation(const Task&, const ContinousStateValueVector&,
                         PortValueList& portValues, MechanicContext&) const
 {
+  MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
+
   unsigned numLinkValues = mMechanicLinks.size();
-
-  SpatialInertia inertia(InertiaMatrix(1, 0, 0, 1, 0, 1), 1);
-  Vector6 force = Vector6::zeros();
-
-  for (unsigned i = 1; i < numLinkValues; ++i) {
-    inertia += portValues[mMechanicLinks[i]].mArticulatedInertia;
-    force += portValues[mMechanicLinks[i]].mArticulatedForce;
-  }
-
-  portValues[mMechanicLinks.front()].mArticulatedInertia = inertia;
-  portValues[mMechanicLinks.front()].mArticulatedForce = force;
+  for (unsigned i = 1; i < numLinkValues; ++i)
+    parentLink.applyArticulation(portValues[mMechanicLinks[i]]);
 }
 
 void

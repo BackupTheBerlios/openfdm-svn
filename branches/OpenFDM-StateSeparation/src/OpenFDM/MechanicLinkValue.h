@@ -29,6 +29,12 @@ public:
   void addInertia(const SpatialInertia& inertia)
   { mArticulatedInertia = inertia; }
 
+  void applyArticulation(const MechanicLinkValue& linkValue)
+  {
+    applyForce(linkValue.mArticulatedForce);
+    addInertia(linkValue.mArticulatedInertia);
+  }
+
 // protected:
   // FIXME:
   // Since the interact side is the provider port, an interact might provide
