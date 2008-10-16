@@ -660,20 +660,21 @@ protected:
              i != _mechanicInstanceList.end();) {
         
           if ((*j)->isConnectedTo(*(*i))) {
-            nextLevelList.push_back(*i);
+            SharedPtr<MechanicInstance> mechanicInstance = *i;
+            nextLevelList.push_back(mechanicInstance);
             i = _mechanicInstanceList.erase(i);
 
             // Check if this current mechanic node does not reference
             // back into the already sorted models
-            MechanicInstanceList::iterator k;
+            MechanicInstanceList::const_iterator k;
             for (k = sortedMechanicInstanceList.begin();
                  k != sortedMechanicInstanceList.end(); ++k) {
               if (*k == *j)
                 continue;
-              if ((*i)->isConnectedTo(*(*k))) {
+              if (mechanicInstance->isConnectedTo(*(*k))) {
                 Log(Schedule,Error)
                   << "Detected closed kinematic loop: MechanicNode \""
-                  << (*i)->getNodeNamePath()
+                  << mechanicInstance->getNodeNamePath()
                   << "\" is linked to MechanicNode \""
                   << (*k)->getNodeNamePath() << "\"" << std::endl;
                 return false;
