@@ -39,7 +39,7 @@ Mass::articulation(const Task&, const ContinousStateValueVector&,
   // Vectro3 position = portValues[mMechanicLink].mPosition;
   Vector3 gravity = Vector3::zeros();
 
-  portValues[mMechanicLink].addInertia(mSpatialInertia);
+  portValues[mMechanicLink].applyInertia(mSpatialInertia);
   portValues[mMechanicLink].applyForce(gravity);
 }
 

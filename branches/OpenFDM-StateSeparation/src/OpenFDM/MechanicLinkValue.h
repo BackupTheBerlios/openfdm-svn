@@ -26,13 +26,13 @@ public:
   void applyTorque(const Vector3& torque)
   { applyForce(Vector6(torque, Vector3::zeros())); }
 
-  void addInertia(const SpatialInertia& inertia)
+  void applyInertia(const SpatialInertia& inertia)
   { mArticulatedInertia = inertia; }
 
   void applyArticulation(const MechanicLinkValue& linkValue)
   {
     applyForce(linkValue.mArticulatedForce);
-    addInertia(linkValue.mArticulatedInertia);
+    applyInertia(linkValue.mArticulatedInertia);
   }
 
 // protected:
