@@ -24,6 +24,10 @@ class RigidBody;
 class RootJoint;
 class Interact;
 
+class PortInfo;
+class NumericPortInfo;
+class MechanicLinkInfo;
+
 class ConstNodeVisitor : public Referenced {
 public:
   virtual ~ConstNodeVisitor();
@@ -46,6 +50,10 @@ public:
 
   virtual void apply(const Interact&);
   virtual void apply(const RootJoint&);
+
+  virtual void apply(const PortInfo&);
+  virtual void apply(const NumericPortInfo&);
+  virtual void apply(const MechanicLinkInfo&);
 
   const NodePath& getNodePath() const { return mNodePath; }
 

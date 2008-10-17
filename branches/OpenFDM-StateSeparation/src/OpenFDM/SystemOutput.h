@@ -25,14 +25,14 @@ public:
     system->getNode()->accept(*this);
   }
 
-  virtual void apply(const PortInfo* portInfo, const PortValue* portValue)
+  virtual void apply(const PortInfo& portInfo, const PortValue* portValue)
   { }
-  virtual void apply(const PortInfo* portInfo,
+  virtual void apply(const NumericPortInfo& portInfo,
                      const NumericPortValue* numericPortValue)
-  { apply(portInfo, static_cast<const PortValue*>(numericPortValue)); }
-  virtual void apply(const PortInfo* portInfo,
+  { apply(static_cast<const PortInfo&>(portInfo), static_cast<const PortValue*>(numericPortValue)); }
+  virtual void apply(const MechanicLinkInfo& portInfo,
                      const MechanicLinkValue* mechanicPortValue)
-  { apply(portInfo, static_cast<const PortValue*>(mechanicPortValue)); }
+  { apply(static_cast<const PortInfo&>(portInfo), static_cast<const PortValue*>(mechanicPortValue)); }
 
   static SystemOutput* newDefaultSystemOutput(const std::string& filename);
 
@@ -44,33 +44,27 @@ protected:
       return 0;
     return system->getNodeInstance(nodePath);
   }
-  void appendPortValues(const Node&)
+  virtual void apply(const NumericPortInfo& portInfo)
   {
     const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
     if (!nodeInstance)
       return;
-    appendPortValues(*nodeInstance);
+    apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
   }
-  void appendPortValues(const AbstractNodeInstance& nodeInstance)
+  virtual void apply(const MechanicLinkInfo& portInfo)
   {
-    unsigned numPorts = nodeInstance.getNode().getNumPorts();
-    for (unsigned i = 0; i < numPorts; ++i) {
-      const PortValue* portValue;
-      portValue = nodeInstance.getPortValueList().getPortValue(i);
-      const NumericPortValue* npv = portValue->toNumericPortValue();
-      if (npv) {
-        apply(nodeInstance.getNode().getPort(i), npv);
-        continue;
-      }
-
-      const MechanicLinkValue* mpv = portValue->toMechanicLinkValue();
-      if (mpv) {
-        apply(nodeInstance.getNode().getPort(i), mpv);
-        continue;
-      }
-
-      apply(nodeInstance.getNode().getPort(i), portValue);
-    }
+    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
+    if (!nodeInstance)
+      return;
+    apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
+  }
+  virtual void apply(const PortInfo& portInfo)
+  {
+    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
+    if (!nodeInstance)
+      return;
+    unsigned i = portInfo.getIndex();
+    apply(portInfo, nodeInstance->getPortValueList().getPortValue(i));
   }
 
 private:

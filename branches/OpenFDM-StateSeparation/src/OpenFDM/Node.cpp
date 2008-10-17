@@ -58,6 +58,22 @@ Node::ascend(ConstNodeVisitor& visitor) const
   }
 }
 
+void
+Node::traversePorts(NodeVisitor& visitor) const
+{
+  PortList::const_iterator i;
+  for (i = mPortList.begin(); i != mPortList.end(); ++i)
+    (*i)->accept(visitor);
+}
+
+void
+Node::traversePorts(ConstNodeVisitor& visitor) const
+{
+  PortList::const_iterator i;
+  for (i = mPortList.begin(); i != mPortList.end(); ++i)
+    (*i)->accept(visitor);
+}
+
 WeakPtr<const Node>
 Node::getParent(unsigned i) const
 {

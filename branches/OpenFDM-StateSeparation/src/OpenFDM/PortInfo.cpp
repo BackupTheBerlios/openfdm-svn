@@ -3,7 +3,10 @@
  */
 
 #include "PortInfo.h"
+
+#include "ConstNodeVisitor.h"
 #include "Node.h"
+#include "NodeVisitor.h"
 
 namespace OpenFDM {
 
@@ -23,6 +26,18 @@ PortInfo::~PortInfo()
 }
 
 void
+PortInfo::accept(NodeVisitor& visitor) const
+{
+  visitor.apply(*this);
+}
+
+void
+PortInfo::accept(ConstNodeVisitor& visitor) const
+{
+  visitor.apply(*this);
+}
+
+void
 PortInfo::setName(const std::string& name)
 {
   mName = name;
@@ -35,6 +50,32 @@ PortInfo::clear()
   if (!node)
     return;
   node->removePort(this);
+}
+
+
+
+void
+NumericPortInfo::accept(NodeVisitor& visitor) const
+{
+  visitor.apply(*this);
+}
+
+void
+NumericPortInfo::accept(ConstNodeVisitor& visitor) const
+{
+  visitor.apply(*this);
+}
+
+void
+MechanicLinkInfo::accept(NodeVisitor& visitor) const
+{
+  visitor.apply(*this);
+}
+
+void
+MechanicLinkInfo::accept(ConstNodeVisitor& visitor) const
+{
+  visitor.apply(*this);
 }
 
 } // namespace OpenFDM

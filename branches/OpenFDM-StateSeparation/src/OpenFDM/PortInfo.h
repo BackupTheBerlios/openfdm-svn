@@ -23,7 +23,9 @@ namespace OpenFDM {
 // PortHandle?? Hmmm??
 // Port : NodeId, PortId ???
 
+class ConstNodeVisitor;
 class Node;
+class NodeVisitor;
 
 class NumericPortInfo;
 class InputPortInfo;
@@ -37,6 +39,11 @@ public:
 
   const std::string& getName() const { return mName; }
   void setName(const std::string& name);
+
+  // Note that both are const methods.
+  // That is only the owner nodes can modify them.
+  virtual void accept(NodeVisitor& visitor) const;
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   bool getOptional() const { return mOptional; }
   void setOptional(bool optional) { mOptional = optional; }
@@ -93,6 +100,9 @@ public:
   { }
   virtual ~NumericPortInfo()
   { }
+
+  virtual void accept(NodeVisitor& visitor) const;
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   virtual const NumericPortInfo* toNumericPortInfo() const
   { return this; }
@@ -177,6 +187,9 @@ public:
   { }
   virtual ~MechanicLinkInfo()
   { }
+
+  virtual void accept(NodeVisitor& visitor) const;
+  virtual void accept(ConstNodeVisitor& visitor) const;
 
   virtual const MechanicLinkInfo* toMechanicLinkInfo() const
   { return this; }

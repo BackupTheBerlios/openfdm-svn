@@ -34,6 +34,9 @@ public:
   virtual void accept(ConstNodeVisitor& visitor) const;
   void ascend(NodeVisitor& visitor);
   void ascend(ConstNodeVisitor& visitor) const;
+  // Note the const in this method. only the nodes can change them
+  void traversePorts(NodeVisitor& visitor) const;
+  void traversePorts(ConstNodeVisitor& visitor) const;
 
   unsigned getNumParents() const
   { return mParentList.size(); }

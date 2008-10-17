@@ -107,7 +107,11 @@ public:
   {
     if (!portInfo)
       return 0;
-    const PortValue* portValue = getPortValue(portInfo->getIndex());
+    return getPortValue(*portInfo);
+  }
+  const NumericPortValue* getPortValue(const NumericPortInfo& portInfo) const
+  {
+    const PortValue* portValue = getPortValue(portInfo.getIndex());
     if (!portValue)
       return 0;
     return portValue->toNumericPortValue();
@@ -117,7 +121,11 @@ public:
   {
     if (!portInfo)
       return 0;
-    const PortValue* portValue = getPortValue(portInfo->getIndex());
+    return getPortValue(*portInfo);
+  }
+  const MechanicLinkValue* getPortValue(const MechanicLinkInfo& portInfo) const
+  {
+    const PortValue* portValue = getPortValue(portInfo.getIndex());
     if (!portValue)
       return 0;
     return portValue->toMechanicLinkValue();

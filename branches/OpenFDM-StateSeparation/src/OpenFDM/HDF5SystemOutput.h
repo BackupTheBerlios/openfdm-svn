@@ -282,11 +282,11 @@ public:
       (*i)->append();
   }
 
-  virtual void apply(const PortInfo* portInfo,
+  virtual void apply(const NumericPortInfo& portInfo,
                      const NumericPortValue* numericPortValue)
   {
     OpenFDMAssert(mCurrentPortValuesGroup.valid());
-    std::string name = portInfo->getName();
+    std::string name = portInfo.getName();
     name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
 
     if (mPortValueMap.find(numericPortValue) == mPortValueMap.end()) {
@@ -299,11 +299,11 @@ public:
       mCurrentPortValuesGroup.link(mPortValueMap.find(numericPortValue)->second->getObject(), name);
     }
   }
-  virtual void apply(const PortInfo* portInfo,
+  virtual void apply(const MechanicLinkInfo& portInfo,
                      const MechanicLinkValue* mechanicLinkValue)
   {
     OpenFDMAssert(mCurrentPortValuesGroup.valid());
-    std::string name = portInfo->getName();
+    std::string name = portInfo.getName();
     name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
 
     if (mPortValueMap.find(mechanicLinkValue) == mPortValueMap.end()) {
@@ -319,9 +319,11 @@ public:
 
   void appendPortValues(const Node& node)
   {
+    if (!node.getNumPorts())
+      return;
     OpenFDMAssert(mCurrentGroup.valid());
     mCurrentPortValuesGroup = HDF5Group(mCurrentGroup, "portValues");
-    SystemOutput::appendPortValues(node);
+    node.traversePorts(*this);
     mCurrentPortValuesGroup = HDF5Group();
     mCurrentPortValuesUniqueStringSet = UniqueStringSet();
   }
