@@ -10,6 +10,8 @@
 #include <hdf5.h>
 #include "Group.h"
 #include "SystemOutput.h"
+#include "ConstNodeVisitor.h"
+#include "NodeInstance.h"
 
 namespace OpenFDM {
 
@@ -263,7 +265,7 @@ private:
   HDF5Object _dataspace;
 };
 
-class HDF5SystemOutput : public SystemOutput {
+class HDF5SystemOutput : public SystemOutput, public ConstNodeVisitor {
 public:
   HDF5SystemOutput(const std::string& filename) :
     mHDF5File(filename),
@@ -280,6 +282,36 @@ public:
     DumperList::iterator i;
     for (i = mDumperList.begin(); i != mDumperList.end(); ++i)
       (*i)->append();
+  }
+
+  virtual void attachTo(const System* system)
+  {
+    if (!system)
+      return;
+    system->getNode()->accept(*this);
+  }
+
+  const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const
+  {
+    SharedPtr<const System> system = getSystem();
+    if (!system)
+      return 0;
+    return system->getNodeInstance(nodePath);
+  }
+
+  virtual void apply(const NumericPortInfo& portInfo)
+  {
+    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
+    if (!nodeInstance)
+      return;
+    apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
+  }
+  virtual void apply(const MechanicLinkInfo& portInfo)
+  {
+    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
+    if (!nodeInstance)
+      return;
+    apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
   }
 
   virtual void apply(const NumericPortInfo& portInfo,

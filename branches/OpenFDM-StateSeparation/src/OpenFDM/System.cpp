@@ -900,7 +900,7 @@ System::init(const real_type& t0)
 
   SystemOutputList::const_iterator j;
   for (j = mSystemOutputList.begin(); j != mSystemOutputList.end(); ++j)
-    (*j)->attachTo(this);
+    (*j)->setSystem(this);
   
   // Hmm, really here???
   mAbstractSystem->init(t0);
@@ -917,7 +917,7 @@ System::clear()
 
   SystemOutputList::const_iterator i;
   for (i = mSystemOutputList.begin(); i != mSystemOutputList.end(); ++i)
-    (*i)->attachTo(0);
+    (*i)->setSystem(0);
 }
 
 /// Simulate the system until the time tEnd
@@ -978,7 +978,7 @@ System::attach(SystemOutput* systemLog)
   mSystemOutputList.push_back(systemLog);
   if (!mAbstractSystem)
     return;
-  systemLog->attachTo(this);
+  systemLog->setSystem(this);
 }
 
 void
@@ -989,7 +989,7 @@ System::detach(SystemOutput* systemLog)
     if (*i == systemLog) {
       i = mSystemOutputList.erase(i);
       if (mAbstractSystem)
-        systemLog->attachTo(0);
+        systemLog->setSystem(0);
     } else
       ++i;
   }

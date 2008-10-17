@@ -18,6 +18,12 @@ SystemOutput::~SystemOutput()
 {
 }
 
+void SystemOutput::setSystem(const System* system)
+{
+  mSystem = system;
+  attachTo(system);
+}
+
 SystemOutput*
 SystemOutput::newDefaultSystemOutput(const std::string& filename)
 {
