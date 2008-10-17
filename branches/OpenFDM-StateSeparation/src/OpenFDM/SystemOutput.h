@@ -5,9 +5,9 @@
 #ifndef OpenFDM_SystemOutput_H
 #define OpenFDM_SystemOutput_H
 
-#include <OpenFDM/System.h>
-#include <OpenFDM/ConstNodeVisitor.h>
-#include <OpenFDM/NodeInstance.h>
+#include "System.h"
+#include "ConstNodeVisitor.h"
+#include "NodeInstance.h"
 
 namespace OpenFDM {
 
