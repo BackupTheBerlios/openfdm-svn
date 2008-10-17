@@ -265,17 +265,16 @@ private:
   HDF5Object _dataspace;
 };
 
-class HDF5SystemOutput : public SystemOutput, public ConstNodeVisitor {
+class HDF5SystemOutput : public SystemOutput {
 public:
   HDF5SystemOutput(const std::string& filename) :
     mHDF5File(filename),
-    mCurrentGroup(mHDF5File, "System"),
-    mTimeStream(mCurrentGroup, "t", Size(1, 1))
+    mToplevelGroup(mHDF5File, "System"),
+    mTimeStream(mToplevelGroup, "t", Size(1, 1))
   { }
-  ~HDF5SystemOutput()
+  virtual ~HDF5SystemOutput()
   { }
 
-// private:
   void output(const real_type& t)
   {
     mTimeStream.append(t);
@@ -286,141 +285,18 @@ public:
 
   virtual void attachTo(const System* system)
   {
+    mDumperList.clear();
     if (!system)
       return;
-    system->getNode()->accept(*this);
+    Visitor visitor(mToplevelGroup, system);
+    system->getNode()->accept(visitor);
+    mDumperList = visitor.mDumperList;
   }
 
-  const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const
-  {
-    SharedPtr<const System> system = getSystem();
-    if (!system)
-      return 0;
-    return system->getNodeInstance(nodePath);
-  }
-
-  virtual void apply(const NumericPortInfo& portInfo)
-  {
-    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
-    if (!nodeInstance)
-      return;
-    apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
-  }
-  virtual void apply(const MechanicLinkInfo& portInfo)
-  {
-    const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
-    if (!nodeInstance)
-      return;
-    apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
-  }
-
-  virtual void apply(const NumericPortInfo& portInfo,
-                     const NumericPortValue* numericPortValue)
-  {
-    OpenFDMAssert(mCurrentPortValuesGroup.valid());
-    std::string name = portInfo.getName();
-    name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
-
-    if (mPortValueMap.find(numericPortValue) == mPortValueMap.end()) {
-      MatrixDumper* dumper;
-      dumper = new MatrixDumper(numericPortValue,
-                                mCurrentPortValuesGroup, name);
-      mPortValueMap[numericPortValue] = dumper;
-      mDumperList.push_back(dumper);
-    } else {
-      mCurrentPortValuesGroup.link(mPortValueMap.find(numericPortValue)->second->getObject(), name);
-    }
-  }
-  virtual void apply(const MechanicLinkInfo& portInfo,
-                     const MechanicLinkValue* mechanicLinkValue)
-  {
-    OpenFDMAssert(mCurrentPortValuesGroup.valid());
-    std::string name = portInfo.getName();
-    name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
-
-    if (mPortValueMap.find(mechanicLinkValue) == mPortValueMap.end()) {
-      MechanicDumper* dumper;
-      dumper = new MechanicDumper(mechanicLinkValue,
-                                  mCurrentPortValuesGroup, name);
-      mPortValueMap[mechanicLinkValue] = dumper;
-      mDumperList.push_back(dumper);
-    } else {
-      mCurrentPortValuesGroup.link(mPortValueMap.find(mechanicLinkValue)->second->getObject(), name);
-    }
-  }
-
-  void appendPortValues(const Node& node)
-  {
-    if (!node.getNumPorts())
-      return;
-    OpenFDMAssert(mCurrentGroup.valid());
-    mCurrentPortValuesGroup = HDF5Group(mCurrentGroup, "portValues");
-    node.traversePorts(*this);
-    mCurrentPortValuesGroup = HDF5Group();
-    mCurrentPortValuesUniqueStringSet = UniqueStringSet();
-  }
-
-  virtual void apply(const Node& node)
-  {
-    HDF5Group parentGroup = mCurrentGroup;
-    OpenFDMAssert(mCurrentGroup.valid());
-    std::string name = node.getName();
-    name = mCurrentGroupUniqueStringSet.makeUnique(name);
-    mCurrentGroup = HDF5Group(parentGroup, name);
-    appendPortValues(node);
-    mCurrentGroup = parentGroup;
-  }
-  virtual void apply(const Group& group)
-  {
-    HDF5Group parentGroup = mCurrentGroup;
-    OpenFDMAssert(mCurrentGroup.valid());
-    std::string name = group.getName();
-    name = mCurrentGroupUniqueStringSet.makeUnique(name);
-    mCurrentGroup = HDF5Group(parentGroup, name);
-
-    appendPortValues(group);
-
-    UniqueStringSet parentUniqueStringSet;
-    parentUniqueStringSet.swap(mCurrentGroupUniqueStringSet);
-    group.traverse(*this);
-    parentUniqueStringSet.swap(mCurrentGroupUniqueStringSet);
-
-    mCurrentGroup = parentGroup;
-  }
-
-  // Helper class that makes names unique ...
-  struct UniqueStringSet {
-    UniqueStringSet()
-    { _strings.insert(""); }
-    std::string makeUnique(const std::string& s)
-    {
-      if (_strings.find(s) == _strings.end()) {
-        _strings.insert(s);
-        return s;
-      }
-      std::string unique;
-      unsigned id = 0;
-      do {
-        std::stringstream ss;
-        ss << s << ++id;
-        unique = ss.str();
-      } while (_strings.find(unique) != _strings.end());
-      return unique;
-    }
-    void swap(UniqueStringSet& other)
-    { _strings.swap(other._strings); }
-  private:
-    std::set<std::string> _strings;
-  };
-
+private:
   HDF5File mHDF5File;
-  HDF5Group mCurrentGroup;
+  HDF5Group mToplevelGroup;
   HDFMatrixStream mTimeStream;
-
-  UniqueStringSet mCurrentPortValuesUniqueStringSet;
-  UniqueStringSet mCurrentGroupUniqueStringSet;
-
-  HDF5Group mCurrentPortValuesGroup;
 
   struct Dumper : public Referenced {
     virtual ~Dumper() {}
@@ -480,11 +356,152 @@ public:
     HDFMatrixStream _inertia;
   };
 
-  typedef std::map<const PortValue*,SharedPtr<Dumper> > PortValueMap;
-  PortValueMap mPortValueMap;
-
   typedef std::list<SharedPtr<Dumper> > DumperList;
   DumperList mDumperList;
+
+  class Visitor : public ConstNodeVisitor {
+  public:
+    Visitor(const HDF5Group& group, const System* system) :
+      mSystem(system),
+      mCurrentGroup(group)
+    { }
+    
+    SharedPtr<const System> mSystem;
+    
+    const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const
+    {
+      if (!mSystem)
+        return 0;
+      return mSystem->getNodeInstance(nodePath);
+    }
+    
+    virtual void apply(const NumericPortInfo& portInfo)
+    {
+      const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
+      if (!nodeInstance)
+        return;
+      apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
+    }
+    virtual void apply(const MechanicLinkInfo& portInfo)
+    {
+      const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
+      if (!nodeInstance)
+        return;
+      apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
+    }
+    
+    virtual void apply(const NumericPortInfo& portInfo,
+                       const NumericPortValue* numericPortValue)
+    {
+      OpenFDMAssert(mCurrentPortValuesGroup.valid());
+      std::string name = portInfo.getName();
+      name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
+      
+      if (mPortValueMap.find(numericPortValue) == mPortValueMap.end()) {
+        MatrixDumper* dumper;
+        dumper = new MatrixDumper(numericPortValue,
+                                  mCurrentPortValuesGroup, name);
+        mPortValueMap[numericPortValue] = dumper;
+        mDumperList.push_back(dumper);
+      } else {
+        mCurrentPortValuesGroup.link(mPortValueMap.find(numericPortValue)->second->getObject(), name);
+      }
+    }
+    virtual void apply(const MechanicLinkInfo& portInfo,
+                       const MechanicLinkValue* mechanicLinkValue)
+    {
+      OpenFDMAssert(mCurrentPortValuesGroup.valid());
+      std::string name = portInfo.getName();
+      name = mCurrentPortValuesUniqueStringSet.makeUnique(name);
+      
+      if (mPortValueMap.find(mechanicLinkValue) == mPortValueMap.end()) {
+        MechanicDumper* dumper;
+        dumper = new MechanicDumper(mechanicLinkValue,
+                                    mCurrentPortValuesGroup, name);
+        mPortValueMap[mechanicLinkValue] = dumper;
+        mDumperList.push_back(dumper);
+      } else {
+        mCurrentPortValuesGroup.link(mPortValueMap.find(mechanicLinkValue)->second->getObject(), name);
+      }
+    }
+    
+    void appendPortValues(const Node& node)
+    {
+      if (!node.getNumPorts())
+        return;
+      OpenFDMAssert(mCurrentGroup.valid());
+      mCurrentPortValuesGroup = HDF5Group(mCurrentGroup, "portValues");
+      node.traversePorts(*this);
+      mCurrentPortValuesGroup = HDF5Group();
+      mCurrentPortValuesUniqueStringSet = UniqueStringSet();
+    }
+    
+    virtual void apply(const Node& node)
+    {
+      HDF5Group parentGroup = mCurrentGroup;
+      OpenFDMAssert(mCurrentGroup.valid());
+      std::string name = node.getName();
+      name = mCurrentGroupUniqueStringSet.makeUnique(name);
+      mCurrentGroup = HDF5Group(parentGroup, name);
+      appendPortValues(node);
+      mCurrentGroup = parentGroup;
+    }
+    virtual void apply(const Group& group)
+    {
+      HDF5Group parentGroup = mCurrentGroup;
+      OpenFDMAssert(mCurrentGroup.valid());
+      std::string name = group.getName();
+      name = mCurrentGroupUniqueStringSet.makeUnique(name);
+      mCurrentGroup = HDF5Group(parentGroup, name);
+      
+      appendPortValues(group);
+      
+      UniqueStringSet parentUniqueStringSet;
+      parentUniqueStringSet.swap(mCurrentGroupUniqueStringSet);
+      group.traverse(*this);
+      parentUniqueStringSet.swap(mCurrentGroupUniqueStringSet);
+      
+      mCurrentGroup = parentGroup;
+    }
+    
+    // Helper class that makes names unique ...
+    struct UniqueStringSet {
+      UniqueStringSet()
+      { _strings.insert(""); }
+      std::string makeUnique(const std::string& s)
+      {
+        if (_strings.find(s) == _strings.end()) {
+          _strings.insert(s);
+          return s;
+        }
+        std::string unique;
+        unsigned id = 0;
+        do {
+          std::stringstream ss;
+          ss << s << ++id;
+          unique = ss.str();
+        } while (_strings.find(unique) != _strings.end());
+        return unique;
+      }
+      void swap(UniqueStringSet& other)
+      { _strings.swap(other._strings); }
+    private:
+      std::set<std::string> _strings;
+    };
+    
+    HDF5Group mCurrentGroup;
+    
+    UniqueStringSet mCurrentPortValuesUniqueStringSet;
+    UniqueStringSet mCurrentGroupUniqueStringSet;
+    
+    HDF5Group mCurrentPortValuesGroup;
+    
+    typedef std::map<const PortValue*,SharedPtr<Dumper> > PortValueMap;
+    PortValueMap mPortValueMap;
+    
+    typedef std::list<SharedPtr<Dumper> > DumperList;
+    DumperList mDumperList;
+  };
 };
 
 } // namespace OpenFDM
