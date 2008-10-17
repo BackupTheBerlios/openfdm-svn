@@ -973,23 +973,27 @@ System::getNodeInstance(const NodePath& nodePath)
 }
 
 void
-System::attach(SystemOutput* systemLog)
+System::attach(SystemOutput* systemOutput)
 {
-  mSystemOutputList.push_back(systemLog);
+  if (!systemOutput)
+    return;
+  mSystemOutputList.push_back(systemOutput);
   if (!mAbstractSystem)
     return;
-  systemLog->setSystem(this);
+  systemOutput->setSystem(this);
 }
 
 void
-System::detach(SystemOutput* systemLog)
+System::detach(SystemOutput* systemOutput)
 {
+  if (!systemOutput)
+    return;
   SystemOutputList::iterator i = mSystemOutputList.begin();
   while (i != mSystemOutputList.end()) {
-    if (*i == systemLog) {
+    if (*i == systemOutput) {
       i = mSystemOutputList.erase(i);
       if (mAbstractSystem)
-        systemLog->setSystem(0);
+        systemOutput->setSystem(0);
     } else
       ++i;
   }

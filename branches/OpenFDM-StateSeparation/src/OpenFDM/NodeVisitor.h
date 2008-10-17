@@ -7,7 +7,6 @@
 
 #include "Assert.h"
 #include "Node.h"
-#include "Referenced.h"
 
 namespace OpenFDM {
 
@@ -28,7 +27,7 @@ class PortInfo;
 class NumericPortInfo;
 class MechanicLinkInfo;
 
-class NodeVisitor : public Referenced {
+class NodeVisitor {
 public:
   virtual ~NodeVisitor();
 

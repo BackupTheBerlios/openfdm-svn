@@ -56,8 +56,8 @@ public:
   const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const;
   AbstractNodeInstance* getNodeInstance(const NodePath& nodePath);
 
-  void attach(SystemOutput* systemLog);
-  void detach(SystemOutput* systemLog);
+  void attach(SystemOutput* systemOutput);
+  void detach(SystemOutput* systemOutput);
 
 private:
   class NodeInstanceCollector;
