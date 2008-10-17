@@ -10,8 +10,7 @@
 #include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/RigidBody.h>
 #include <OpenFDM/System.h>
-
-#include "HDF5Writer.h"
+#include <OpenFDM/SystemOutput.h>
 
 using namespace OpenFDM;
 
@@ -186,6 +185,14 @@ Node* buildLibraryNodeExample()
 
 Node* buildSimpleMechanicExample()
 {
+  /// sensible test cases:
+  /// drop: gravity
+  /// throw: just this test with a different start condition
+  /// harmonic oszilator: compare with 2nd order linear system
+  /// arrow: see if the tip stays in front
+  /// satellit: coriolis
+  /// paris pendulum: coriolis
+
   SharedPtr<Group> group = new Group("G");
   Group::NodeId rootJoint = group->addChild(new MobileRootJoint("Root Joint"));
   Group::NodeId rigidBody = group->addChild(new RigidBody("Rigid Body"));
@@ -221,7 +228,7 @@ int main()
 //   SharedPtr<System> system = new System("System", buildLibraryNodeExample());
   SharedPtr<System> system = new System("System", buildSimpleMechanicExample());
 
-  system->attach(new HDF5Log("system.h5"));
+  system->attach(SystemOutput::newDefaultSystemOutput("system.h5"));
 
   if (!system->init())
     return 1;

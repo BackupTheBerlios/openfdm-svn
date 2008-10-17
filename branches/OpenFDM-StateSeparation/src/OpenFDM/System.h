@@ -18,7 +18,7 @@ namespace OpenFDM {
 /// Provides algorithms to simulate and trim the whole system.
 
 class AbstractSystem;
-class SystemLog;
+class SystemOutput;
 
 class System : public Object {
   OPENFDM_OBJECT(System, Object);
@@ -56,8 +56,8 @@ public:
   const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const;
   AbstractNodeInstance* getNodeInstance(const NodePath& nodePath);
 
-  void attach(SystemLog* systemLog);
-  void detach(SystemLog* systemLog);
+  void attach(SystemOutput* systemLog);
+  void detach(SystemOutput* systemLog);
 
 private:
   class NodeInstanceCollector;
@@ -69,8 +69,8 @@ private:
   ConstNodeInstanceList mNodeInstanceList;
   NodeInstanceMap mNodeInstanceMap;
 
-  typedef std::list<SharedPtr<SystemLog> > SystemLogList;
-  SystemLogList mSystemLogList;
+  typedef std::list<SharedPtr<SystemOutput> > SystemOutputList;
+  SystemOutputList mSystemOutputList;
 };
 
 } // namespace OpenFDM

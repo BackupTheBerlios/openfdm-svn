@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_SystemLog_H
-#define OpenFDM_SystemLog_H
+#ifndef OpenFDM_SystemOutput_H
+#define OpenFDM_SystemOutput_H
 
 #include <OpenFDM/System.h>
 #include <OpenFDM/ConstNodeVisitor.h>
@@ -11,9 +11,9 @@
 
 namespace OpenFDM {
 
-class SystemLog : public ConstNodeVisitor {
+class SystemOutput : public ConstNodeVisitor {
 public:
-  virtual ~SystemLog() {}
+  virtual ~SystemOutput();
 
   virtual void output(const real_type& t) = 0;
 
@@ -33,6 +33,8 @@ public:
   virtual void apply(const PortInfo* portInfo,
                      const MechanicLinkValue* mechanicPortValue)
   { apply(portInfo, static_cast<const PortValue*>(mechanicPortValue)); }
+
+  static SystemOutput* newDefaultSystemOutput(const std::string& filename);
 
 protected:
   const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const

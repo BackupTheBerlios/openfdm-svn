@@ -124,6 +124,17 @@ else
 fi
 AM_CONDITIONAL([ENABLE_BUILDER], [test "x$openfdm_builder_enabled" = "xyes"])
 
+dnl check for HDF5 libs
+AC_CHECK_HEADERS([hdf5.h], [openfdm_hdf5_enabled="yes"])
+AM_CONDITIONAL([ENABLE_HDF5], [test "x$openfdm_hdf5_enabled" = "xyes"])
+if test "x$openfdm_hdf5_enabled" = "xyes"
+then
+  OpenFDM_HAVE_HDF5=1
+else
+  OpenFDM_HAVE_HDF5=0
+fi
+AC_SUBST(OpenFDM_HAVE_HDF5)
+
 dnl write makefiles and config.h
 AM_CONFIG_HEADER([src/OpenFDM/config.h])
 AC_CONFIG_FILES([src/OpenFDM/OpenFDMConfig.h])

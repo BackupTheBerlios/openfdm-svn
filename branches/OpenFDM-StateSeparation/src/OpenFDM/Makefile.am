@@ -7,6 +7,10 @@ OpenFDMincludedir = $(includedir)/OpenFDM
 lib_LTLIBRARIES = libOpenFDM.la
 libOpenFDM_la_LIBADD = -lrt
 
+if ENABLE_HDF5
+libOpenFDM_la_LIBADD += -lhdf5
+endif
+
 OpenFDMCoreHEADERS = \
   AbstractNodeContext.h \
   AbstractNodeInstance.h \
@@ -32,6 +36,7 @@ OpenFDMCoreHEADERS = \
   FrameVisitor.h \
   Function.h \
   Group.h \
+  HDF5SystemOutput.h \
   ImplicitEuler.h \
   Inertia.h \
   Interval.h \
@@ -99,7 +104,7 @@ OpenFDMCoreHEADERS = \
   StateInfoVector.h \
   StateValue.h \
   System.h \
-  SystemLog.h \
+  SystemOutput.h \
   TableData.h \
   Task.h \
   TemplateContinousStateInfo.h \
@@ -159,6 +164,7 @@ OpenFDMCoreSOURCES = \
   RootJoint.cpp \
   StateValue.cpp \
   System.cpp \
+  SystemOutput.cpp \
   Time.cpp \
   Unit.cpp \
   Variant.cpp

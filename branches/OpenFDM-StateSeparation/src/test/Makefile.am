@@ -10,7 +10,7 @@ check_PROGRAMS = quattest unitstest simulationtime limit
 TESTS          = $(check_PROGRAMS)
 
 # tiretestrig_SOURCES = tiretestrig.cpp
-# tiretestrig_LDADD = ../OpenFDM/libOpenFDM.la -lhdf5
+# tiretestrig_LDADD = ../OpenFDM/libOpenFDM.la
 
 unitstest_SOURCES = unitstest.cpp
 unitstest_LDADD = ../OpenFDM/libOpenFDM.la
@@ -19,7 +19,7 @@ quattest_SOURCES = quattest.cpp
 quattest_LDADD = ../OpenFDM/libOpenFDM.la
 
 structure_SOURCES = structure.cpp
-structure_LDADD = ../OpenFDM/libOpenFDM.la -lhdf5
+structure_LDADD = ../OpenFDM/libOpenFDM.la
 
 simulationtime_SOURCES = simulationtime.cpp
 simulationtime_LDADD = ../OpenFDM/libOpenFDM.la

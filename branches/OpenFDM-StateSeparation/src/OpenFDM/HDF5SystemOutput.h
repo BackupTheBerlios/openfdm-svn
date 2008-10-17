@@ -8,7 +8,8 @@
 #include <sstream>
 #include <set>
 #include <hdf5.h>
-#include <OpenFDM/SystemLog.h>
+#include "Group.h"
+#include "SystemOutput.h"
 
 namespace OpenFDM {
 
@@ -262,14 +263,14 @@ private:
   HDF5Object _dataspace;
 };
 
-class HDF5Log : public SystemLog {
+class HDF5SystemOutput : public SystemOutput {
 public:
-  HDF5Log(const std::string& filename) :
+  HDF5SystemOutput(const std::string& filename) :
     mHDF5File(filename),
     mCurrentGroup(mHDF5File, "System"),
     mTimeStream(mCurrentGroup, "t", Size(1, 1))
   { }
-  ~HDF5Log()
+  ~HDF5SystemOutput()
   { }
 
 // private:
@@ -320,7 +321,7 @@ public:
   {
     OpenFDMAssert(mCurrentGroup.valid());
     mCurrentPortValuesGroup = HDF5Group(mCurrentGroup, "portValues");
-    SystemLog::appendPortValues(node);
+    SystemOutput::appendPortValues(node);
     mCurrentPortValuesGroup = HDF5Group();
     mCurrentPortValuesUniqueStringSet = UniqueStringSet();
   }

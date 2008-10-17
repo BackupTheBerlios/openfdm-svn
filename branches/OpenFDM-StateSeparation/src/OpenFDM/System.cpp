@@ -12,7 +12,7 @@
 #include "NodeInstance.h"
 #include "Object.h"
 #include "RootJoint.h"
-#include "SystemLog.h"
+#include "SystemOutput.h"
 #include "Task.h"
 
 #include "Function.h"
@@ -898,8 +898,8 @@ System::init(const real_type& t0)
     mNodeInstanceList.push_back(*i);
   }
 
-  SystemLogList::const_iterator j;
-  for (j = mSystemLogList.begin(); j != mSystemLogList.end(); ++j)
+  SystemOutputList::const_iterator j;
+  for (j = mSystemOutputList.begin(); j != mSystemOutputList.end(); ++j)
     (*j)->attachTo(this);
   
   // Hmm, really here???
@@ -915,8 +915,8 @@ System::clear()
   mNodeInstanceList.clear();
   mNodeInstanceMap.clear();
 
-  SystemLogList::const_iterator i;
-  for (i = mSystemLogList.begin(); i != mSystemLogList.end(); ++i)
+  SystemOutputList::const_iterator i;
+  for (i = mSystemOutputList.begin(); i != mSystemOutputList.end(); ++i)
     (*i)->attachTo(0);
 }
 
@@ -930,8 +930,8 @@ System::simulate(const real_type& t)
   while (mAbstractSystem->getTime() < t) {
     mAbstractSystem->advance(t);
 
-    SystemLogList::const_iterator i;
-    for (i = mSystemLogList.begin(); i != mSystemLogList.end(); ++i)
+    SystemOutputList::const_iterator i;
+    for (i = mSystemOutputList.begin(); i != mSystemOutputList.end(); ++i)
       (*i)->output(mAbstractSystem->getTime());
   }
 
@@ -973,21 +973,21 @@ System::getNodeInstance(const NodePath& nodePath)
 }
 
 void
-System::attach(SystemLog* systemLog)
+System::attach(SystemOutput* systemLog)
 {
-  mSystemLogList.push_back(systemLog);
+  mSystemOutputList.push_back(systemLog);
   if (!mAbstractSystem)
     return;
   systemLog->attachTo(this);
 }
 
 void
-System::detach(SystemLog* systemLog)
+System::detach(SystemOutput* systemLog)
 {
-  SystemLogList::iterator i = mSystemLogList.begin();
-  while (i != mSystemLogList.end()) {
+  SystemOutputList::iterator i = mSystemOutputList.begin();
+  while (i != mSystemOutputList.end()) {
     if (*i == systemLog) {
-      i = mSystemLogList.erase(i);
+      i = mSystemOutputList.erase(i);
       if (mAbstractSystem)
         systemLog->attachTo(0);
     } else
