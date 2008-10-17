@@ -26,7 +26,6 @@ public:
     Frame(name),
 //     mJointMatrix(Matrix6N::zeros()), /// ??? ... see LinAlg checkout ...
     mOutboardInertia(SpatialInertia::zeros()),
-    mOutboardForce(Vector6::zeros()),
     mPAlpha(Vector6::zeros()),
     mJointForce(VectorN::zeros()),
     mArticulationDirty(true),
@@ -82,7 +81,6 @@ public:
     // Store the outboard values since we will need them later in velocity
     // derivative computations
     mOutboardInertia = outI;
-    mOutboardForce = outF;
     mJointForce = jointForce;
     // Make sure we have the correct internal state
     mJointVelDotDirty = true;
@@ -92,7 +90,7 @@ public:
     Matrix6N Ih = outI*mJointMatrix;
     hIh = trans(mJointMatrix)*Ih;
 
-    mPAlpha = mOutboardForce + mOutboardInertia*getHdot();
+    mPAlpha = outF + mOutboardInertia*getHdot();
     artF = mPAlpha;
     artI = outI;
 
@@ -108,14 +106,6 @@ public:
     artI -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
 
     return true;
-  }
-
-  VectorN forceForAccel(const Vector6& outF, const SpatialInertia& outI,
-                        const VectorN& jointAccel)
-  {
-    Vector6 pAlpha = outF + outI*getHdot();
-    Vector6 Ih = outI*mJointMatrix;
-    return trans(mJointMatrix)*(Ih*jointAccel + pAlpha);
   }
 
 protected:
@@ -150,8 +140,6 @@ private:
 
   /// The articulated intertia of the outboard frame, 
   SpatialInertia mOutboardInertia;
-  /// The articulated force of the outboard frame, 
-  Vector6 mOutboardForce;
   /// The joint internal force in joint generalized coordinates
   VectorN mJointForce;
   /// Some intermediate value we will need later
