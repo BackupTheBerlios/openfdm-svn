@@ -18,6 +18,13 @@ class ContinousTask;
 class DiscreteTask;
 class InitTask;
 
+struct FrameData {
+  // Stores some values persistent accross velocity/articulation/acceleration
+  Vector6 mParentSpVel;
+  Vector6 mHDot;
+  Vector6 mRelVelDot;
+};
+
 class MechanicContext : public LeafContext {
 public:
   MechanicContext(const MechanicNode* mechanicNode);
@@ -31,15 +38,15 @@ public:
   { mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList); }
 
   void velocities(const Task& task)
-  { mMechanicNode->velocity(task, mContinousState, mPortValueList, *this); }
+  { mMechanicNode->velocity(task, mContinousState, mPortValueList, mFrameData); }
   void articulation(const Task& task)
-  { mMechanicNode->articulation(task, mContinousState, mPortValueList, *this); }
+  { mMechanicNode->articulation(task, mContinousState, mPortValueList, mFrameData); }
   void accelerations(const Task& task)
-  { mMechanicNode->acceleration(task, mContinousState, mPortValueList, *this); }
+  { mMechanicNode->acceleration(task, mContinousState, mPortValueList, mFrameData); }
 
   void derivative(const Task&)
   { mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,
-                              *this, mContinousStateDerivative); }
+                              mFrameData, mContinousStateDerivative); }
  
   void update(const DiscreteTask& discreteTask)
   {
@@ -50,9 +57,7 @@ public:
   bool isConnectedTo(const MechanicContext& mechanicContext) const;
 
   // Stores some values persistent accross velocity/articulation/acceleration
-  Vector6 mParentSpVel;
-  Vector6 mHDot;
-  Vector6 mRelVelDot;
+  FrameData mFrameData;
 
 private:
   SharedPtr<const MechanicNode> mMechanicNode;
