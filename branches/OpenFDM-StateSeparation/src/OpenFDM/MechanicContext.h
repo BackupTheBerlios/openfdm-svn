@@ -50,9 +50,7 @@ public:
   bool isConnectedTo(const MechanicContext& mechanicContext) const;
 
   // Stores some values persistent accross velocity/articulation/acceleration
-  unsigned mParentLinkIndex;
   Vector6 mParentSpVel;
-  Vector6 mParentSpAccel;
   Vector6 mHDot;
   Vector6 mRelVelDot;
 

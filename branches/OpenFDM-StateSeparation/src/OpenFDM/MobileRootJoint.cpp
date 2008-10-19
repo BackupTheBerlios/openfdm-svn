@@ -59,7 +59,6 @@ MobileRootJoint::velocity(const Task&,
                                                   getAngularBaseVelocity());
 
   context.mParentSpVel = parentSpatialVelocity;
-  context.mParentSpAccel = Vector6::zeros();
   Vector6 pivel = parentSpatialVelocity;
   context.mHDot = Vector6(cross(pivel.getAngular(), velocity.getAngular()),
                           cross(pivel.getAngular(), velocity.getLinear()) + 
@@ -94,9 +93,11 @@ MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
   SpatialInertia inertia = portValues[mMechanicLink].mArticulatedInertia;
   Vector6 force = portValues[mMechanicLink].mArticulatedForce;
 
+  Vector6 parentSpAccel = Vector6::zeros();
+
   // FIXME
 //   mRelVelDot = grav - solve(inertia, force) - getParentSpAccel() - getHdot();
-  Vector6 acceleration = grav - solve(inertia, force) - context.mParentSpAccel - context.mHDot;
+  Vector6 acceleration = grav - solve(inertia, force) - parentSpAccel - context.mHDot;
   context.mRelVelDot = acceleration;
 
   portValues[mMechanicLink].mSpatialAcceleration = acceleration;
