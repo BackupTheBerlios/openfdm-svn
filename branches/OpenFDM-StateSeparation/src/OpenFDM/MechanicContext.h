@@ -20,9 +20,46 @@ class InitTask;
 
 struct FrameData {
   // Stores some values persistent accross velocity/articulation/acceleration
+  // The relative position of the joint wrt the parent frame.
+  Vector3 mRelPosition;
+  // The relative orientation of the joint wrt the parent frame.
+  Rotation mRelOrientation;
+  // The relative velocity of the joint wrt the parent frame.
+  Vector6 mRelVelocity;
+  // The derivative of the relative velosity in the current frame
+  Vector6 mRelVelocityDot;
+
+  // The parents spatial velocity in this frames coordinates
   Vector6 mParentSpVel;
+  // The derivative of the joint axis function?? See Featherstone ...
   Vector6 mHDot;
-  Vector6 mRelVelDot;
+
+
+  void setVelocity(const MechanicLinkValue& parentLink,
+                   const Vector3& relPos, const Quaternion& relOr,
+                   const Vector6& relVel)
+  {
+    mRelPosition = relPos;
+    mRelOrientation = relOr;
+    mRelVelocity = relVel;
+    mParentSpVel = motionTo(mRelPosition, mRelOrientation,
+                            parentLink.mSpatialVelocity);
+    mHDot = Vector6(cross(mParentSpVel.getAngular(), relVel.getAngular()),
+                    cross(mParentSpVel.getAngular(), relVel.getLinear()) +
+                    cross(mParentSpVel.getLinear(), relVel.getAngular()));
+  }
+  void setVelocity(const Vector3& parentAngularVel,
+                   const Vector3& relPos, const Quaternion& relOr,
+                   const Vector6& relVel)
+  {
+    mRelPosition = relPos;
+    mRelOrientation = relOr;
+    mRelVelocity = relVel;
+    mParentSpVel = angularMotionTo(relPos, mRelOrientation, parentAngularVel);
+    mHDot = Vector6(cross(mParentSpVel.getAngular(), relVel.getAngular()),
+                    cross(mParentSpVel.getAngular(), relVel.getLinear()) +
+                    cross(mParentSpVel.getLinear(), relVel.getAngular()));
+  }
 };
 
 class MechanicContext : public LeafContext {

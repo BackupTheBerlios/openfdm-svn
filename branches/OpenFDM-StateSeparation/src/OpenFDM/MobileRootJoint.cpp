@@ -49,24 +49,18 @@ MobileRootJoint::init(const Task&, DiscreteStateValueVector&,
 void
 MobileRootJoint::velocity(const Task&,
                           const ContinousStateValueVector& continousState,
-                          PortValueList& portValues, FrameData& context) const
+                          PortValueList& portValues, FrameData& frameData) const
 {
   Vector3 position = continousState[*mPositionStateInfo];
   Quaternion orientation = continousState[*mOrientationStateInfo];
   Vector6 velocity = continousState[*mVelocityStateInfo];
 
-  Vector6 parentSpatialVelocity = angularMotionTo(position, orientation,
-                                                  getAngularBaseVelocity());
-
-  context.mParentSpVel = parentSpatialVelocity;
-  Vector6 pivel = parentSpatialVelocity;
-  context.mHDot = Vector6(cross(pivel.getAngular(), velocity.getAngular()),
-                          cross(pivel.getAngular(), velocity.getLinear()) + 
-                          cross(pivel.getLinear(), velocity.getAngular()));
+  frameData.setVelocity(getAngularBaseVelocity(),
+                        position, orientation, velocity);
 
   portValues[mMechanicLink].mPosition = position;
   portValues[mMechanicLink].mOrientation = orientation;
-  portValues[mMechanicLink].mSpatialVelocity = velocity + parentSpatialVelocity;
+  portValues[mMechanicLink].mSpatialVelocity = velocity + frameData.mParentSpVel;
 }
 
 void
@@ -78,7 +72,8 @@ MobileRootJoint::articulation(const Task&, const ContinousStateValueVector&,
 
 void
 MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
-                              PortValueList& portValues, FrameData& context) const
+                              PortValueList& portValues,
+                              FrameData& frameData) const
 {
   // Assumption: body is small compared to the distance to the planets
   // center of mass. That means gravity could be considered equal for the
@@ -97,8 +92,8 @@ MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
 
   // FIXME
 //   mRelVelDot = grav - solve(inertia, force) - getParentSpAccel() - getHdot();
-  Vector6 acceleration = grav - solve(inertia, force) - parentSpAccel - context.mHDot;
-  context.mRelVelDot = acceleration;
+  Vector6 acceleration = grav - solve(inertia, force) - parentSpAccel - frameData.mHDot;
+  frameData.mRelVelocityDot = acceleration;
 
   portValues[mMechanicLink].mSpatialAcceleration = acceleration;
 }
@@ -123,9 +118,9 @@ MobileRootJoint::derivative(const DiscreteStateValueVector&,
   Vector3 angVel = velocity.getAngular();
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
-  derivatives[*mPositionStateInfo] = pDot; 
+  derivatives[*mPositionStateInfo] = pDot;
   derivatives[*mOrientationStateInfo] = qderiv;
-  derivatives[*mVelocityStateInfo] = context.mRelVelDot;
+  derivatives[*mVelocityStateInfo] = context.mRelVelocityDot;
 }
 
 } // namespace OpenFDM
