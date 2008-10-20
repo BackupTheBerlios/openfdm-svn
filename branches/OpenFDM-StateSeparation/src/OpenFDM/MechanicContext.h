@@ -31,8 +31,6 @@ struct FrameData {
 
   // The parents spatial velocity in this frames coordinates
   Vector6 mParentSpVel;
-  // The derivative of the joint axis function?? See Featherstone ...
-  Vector6 mHDot;
 
 
   void setVelocity(const MechanicLinkValue& parentLink,
@@ -44,9 +42,6 @@ struct FrameData {
     mRelVelocity = relVel;
     mParentSpVel = motionTo(mRelPosition, mRelOrientation,
                             parentLink.getFrame().getSpVel());
-    mHDot = Vector6(cross(mParentSpVel.getAngular(), relVel.getAngular()),
-                    cross(mParentSpVel.getAngular(), relVel.getLinear()) +
-                    cross(mParentSpVel.getLinear(), relVel.getAngular()));
   }
   void setVelocity(const Vector3& parentAngularVel,
                    const Vector3& relPos, const Quaternion& relOr,
@@ -56,9 +51,6 @@ struct FrameData {
     mRelOrientation = relOr;
     mRelVelocity = relVel;
     mParentSpVel = angularMotionTo(relPos, mRelOrientation, parentAngularVel);
-    mHDot = Vector6(cross(mParentSpVel.getAngular(), relVel.getAngular()),
-                    cross(mParentSpVel.getAngular(), relVel.getLinear()) +
-                    cross(mParentSpVel.getLinear(), relVel.getAngular()));
   }
 };
 
@@ -93,10 +85,10 @@ public:
 
   bool isConnectedTo(const MechanicContext& mechanicContext) const;
 
+private:
   // Stores some values persistent accross velocity/articulation/acceleration
   FrameData mFrameData;
 
-private:
   SharedPtr<const MechanicNode> mMechanicNode;
 
 private:
