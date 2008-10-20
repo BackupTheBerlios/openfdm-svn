@@ -87,6 +87,18 @@ public:
     mParentSpAccel = Vector6::zeros();
   }
 
+  void setSpAccel(const Vector6& spatialAcceleration)
+  {
+    mParentSpAccel = Vector6::zeros();
+    mRelVelDot = spatialAcceleration - mParentSpAccel - getHdot();
+  }
+  void setSpAccel(const Frame& parent, const Vector6& spatialAcceleration)
+  {
+    mParentSpAccel = parent.getSpAccel();
+    mRelVelDot = spatialAcceleration - mParentSpAccel - getHdot();
+  }
+
+
   // FIXME: they do not yet update the dependent values inside ...
 //   void setRefOrientation(const Frame& parent, const Quaternion& o)
 //   { setOrientation(inverse(parent.getRefOrientation())*o); }

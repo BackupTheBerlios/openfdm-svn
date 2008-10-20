@@ -49,14 +49,11 @@ MobileRootJoint::init(const Task&, DiscreteStateValueVector&,
 void
 MobileRootJoint::velocity(const Task&,
                           const ContinousStateValueVector& continousState,
-                          PortValueList& portValues, FrameData& frameData) const
+                          PortValueList& portValues, FrameData&) const
 {
   Vector3 position = continousState[*mPositionStateInfo];
   Quaternion orientation = continousState[*mOrientationStateInfo];
   Vector6 velocity = continousState[*mVelocityStateInfo];
-
-  frameData.setVelocity(getAngularBaseVelocity(),
-                        position, orientation, velocity);
 
   portValues[mMechanicLink].getFrame().setPosAndVel(getAngularBaseVelocity(),
                                                     position, orientation,
@@ -73,7 +70,7 @@ MobileRootJoint::articulation(const Task&, const ContinousStateValueVector&,
 void
 MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
                               PortValueList& portValues,
-                              FrameData& frameData) const
+                              FrameData&) const
 {
   // Assumption: body is small compared to the distance to the planets
   // center of mass. That means gravity could be considered equal for the
@@ -88,14 +85,8 @@ MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
   SpatialInertia inertia = portValues[mMechanicLink].getInertia();
   Vector6 force = portValues[mMechanicLink].getForce();
 
-  Vector6 parentSpAccel = Vector6::zeros();
-
-  // FIXME
-//   mRelVelDot = grav - solve(inertia, force) - getParentSpAccel() - getHdot();
-  Vector6 acceleration = grav - solve(inertia, force) - parentSpAccel - frameData.mHDot;
-  frameData.mRelVelocityDot = acceleration;
-
-  portValues[mMechanicLink].getFrame().setAccel(acceleration);
+  Vector6 spatialAcceleration = grav - solve(inertia, force);
+  portValues[mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
 }
 
 void
@@ -118,9 +109,11 @@ MobileRootJoint::derivative(const DiscreteStateValueVector&,
   Vector3 angVel = velocity.getAngular();
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
+  Vector6 velDeriv = portValues[mMechanicLink].getFrame().getRelVelDot();
+
   derivatives[*mPositionStateInfo] = pDot;
   derivatives[*mOrientationStateInfo] = qderiv;
-  derivatives[*mVelocityStateInfo] = context.mRelVelocityDot;
+  derivatives[*mVelocityStateInfo] = velDeriv;
 }
 
 } // namespace OpenFDM
