@@ -18,7 +18,6 @@ OpenFDMCoreHEADERS = \
   Assert.h \
   Atomic.h \
   BoolStateInfo.h \
-  ConstFrameVisitor.h \
   ConstNodeVisitor.h \
   ContinousStateInfo.h \
   ContinousStateInfoVector.h \
@@ -33,7 +32,6 @@ OpenFDMCoreHEADERS = \
   ExplicitEuler.h \
   Fraction.h \
   Frame.h \
-  FrameVisitor.h \
   Function.h \
   Group.h \
   HDF5SystemOutput.h \
