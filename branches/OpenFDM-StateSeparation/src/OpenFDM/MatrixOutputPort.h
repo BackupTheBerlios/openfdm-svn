@@ -22,6 +22,10 @@ public:
     OpenFDMAssert(portValue->toNumericPortValue());
     return static_cast<NumericPortValue*>(portValue);
   }
+  bool empty() const
+  { return mPort; }
+  void clear()
+  { if (!mPort) return; mPort->clear(); mPort = 0; }
   unsigned getPortIndex() const
   { return mPort->getIndex(); }
 private:
