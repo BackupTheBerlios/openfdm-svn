@@ -58,9 +58,9 @@ MobileRootJoint::velocity(const Task&,
   frameData.setVelocity(getAngularBaseVelocity(),
                         position, orientation, velocity);
 
-  portValues[mMechanicLink].mPosition = position;
-  portValues[mMechanicLink].mOrientation = orientation;
-  portValues[mMechanicLink].mSpatialVelocity = velocity + frameData.mParentSpVel;
+  portValues[mMechanicLink].getFrame().setPosAndVel(getAngularBaseVelocity(),
+                                                    position, orientation,
+                                                    velocity);
 }
 
 void
@@ -85,8 +85,8 @@ MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
   // FIXME
   Vector6 grav = Vector6(Vector3::zeros(), Vector3(0, 0, 9.81));
 
-  SpatialInertia inertia = portValues[mMechanicLink].mArticulatedInertia;
-  Vector6 force = portValues[mMechanicLink].mArticulatedForce;
+  SpatialInertia inertia = portValues[mMechanicLink].getInertia();
+  Vector6 force = portValues[mMechanicLink].getForce();
 
   Vector6 parentSpAccel = Vector6::zeros();
 
@@ -95,7 +95,7 @@ MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
   Vector6 acceleration = grav - solve(inertia, force) - parentSpAccel - frameData.mHDot;
   frameData.mRelVelocityDot = acceleration;
 
-  portValues[mMechanicLink].mSpatialAcceleration = acceleration;
+  portValues[mMechanicLink].getFrame().setAccel(acceleration);
 }
 
 void

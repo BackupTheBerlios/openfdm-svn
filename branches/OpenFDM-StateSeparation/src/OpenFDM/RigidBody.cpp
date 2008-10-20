@@ -42,15 +42,9 @@ RigidBody::velocity(const Task&, const ContinousStateValueVector&,
 {
   unsigned numLinkValues = mMechanicLinks.size();
 
-  Vector3 position = portValues[mMechanicLinks.front()].mPosition;
-  Quaternion orientation = portValues[mMechanicLinks.front()].mOrientation;
-  Vector6 velocity = portValues[mMechanicLinks.front()].mSpatialVelocity;
-
-  for (unsigned i = 1; i < numLinkValues; ++i) {
-    portValues[mMechanicLinks[i]].mPosition = position;
-    portValues[mMechanicLinks[i]].mOrientation = orientation;
-    portValues[mMechanicLinks[i]].mSpatialVelocity = velocity;
-  }
+  const Frame& frame = portValues[mMechanicLinks.front()].getFrame();
+  for (unsigned i = 1; i < numLinkValues; ++i)
+    portValues[mMechanicLinks[i]].getFrame().setPosAndVel(frame);
 }
 
 void
@@ -69,9 +63,9 @@ RigidBody::acceleration(const Task&, const ContinousStateValueVector&,
                         PortValueList& portValues, MechanicContext&) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
-  Vector6 accel = portValues[mMechanicLinks.front()].mSpatialAcceleration;
+  const Frame& frame = portValues[mMechanicLinks.front()].getFrame();
   for (unsigned i = 1; i < numLinkValues; ++i)
-    portValues[mMechanicLinks[i]].mSpatialAcceleration = accel;
+    portValues[mMechanicLinks[i]].getFrame().setAccel(frame);
 }
 
 } // namespace OpenFDM

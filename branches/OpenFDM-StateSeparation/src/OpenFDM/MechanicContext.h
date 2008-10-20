@@ -43,7 +43,7 @@ struct FrameData {
     mRelOrientation = relOr;
     mRelVelocity = relVel;
     mParentSpVel = motionTo(mRelPosition, mRelOrientation,
-                            parentLink.mSpatialVelocity);
+                            parentLink.getFrame().getSpVel());
     mHDot = Vector6(cross(mParentSpVel.getAngular(), relVel.getAngular()),
                     cross(mParentSpVel.getAngular(), relVel.getLinear()) +
                     cross(mParentSpVel.getLinear(), relVel.getAngular()));

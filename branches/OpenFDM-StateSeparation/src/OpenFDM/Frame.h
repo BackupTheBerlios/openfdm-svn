@@ -26,6 +26,25 @@ public:
   Frame();
   ~Frame(void);
 
+  void setPosAndVel(const Frame& parent)
+  {
+    mPosition = Vector3::zeros();
+    mOrientation = Quaternion::unit();
+    mRelVel = Vector6::zeros();
+
+    mRefOrient = parent.getRefOrientation();
+    mRefPos = parent.getRefPosition();
+
+    mParentSpVel = parent.getSpVel();
+    mRefVel = parent.getRefVel();
+  }
+
+  void setAccel(const Frame& parent)
+  {
+    mRelVelDot = Vector6::zeros();
+    mParentSpAccel = parent.getSpAccel();
+  }
+
   void setPosAndVel(const Frame& parent, const Vector3& position,
                     const Quaternion& orientation, const Vector6& velocity)
   {
@@ -367,7 +386,7 @@ public:
    * this frame is attached to.
    * It is measured in the topmost frames coordinates.
    */
-  const Rotation& getRefOrientation(void) const
+  const Quaternion& getRefOrientation(void) const
   { return mRefOrient; }
 
   /** Reference position.
@@ -402,7 +421,7 @@ private:
   Vector6 mParentSpVel;
   Vector6 mParentSpAccel;
 
-  Rotation mRefOrient;
+  Quaternion mRefOrient;
   Vector3 mRefPos;
   Vector6 mRefVel;
 };

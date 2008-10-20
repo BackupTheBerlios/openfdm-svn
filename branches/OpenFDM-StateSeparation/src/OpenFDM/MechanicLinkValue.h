@@ -7,8 +7,7 @@
 
 #include "Inertia.h"
 #include "PortValue.h"
-#include "Rotation.h"
-#include "Vector.h"
+#include "Frame.h"
 
 namespace OpenFDM {
 
@@ -18,6 +17,21 @@ public:
 
   virtual MechanicLinkValue* toMechanicLinkValue() { return this; }
   virtual const MechanicLinkValue* toMechanicLinkValue() const { return this; }
+
+  const Frame& getFrame() const
+  { return mFrame; }
+  Frame& getFrame()
+  { return mFrame; }
+
+  const SpatialInertia& getInertia() const
+  { return mArticulatedInertia; }
+  void setInertia(const SpatialInertia& inertia)
+  { mArticulatedInertia = inertia; }
+
+  const Vector6& getForce() const
+  { return mArticulatedForce; }
+  void setForce(const Vector6& force)
+  { mArticulatedForce = force; }
 
   void applyForce(const Vector6& force)
   { mArticulatedForce = force; }
@@ -29,24 +43,28 @@ public:
   void applyInertia(const SpatialInertia& inertia)
   { mArticulatedInertia = inertia; }
 
+
+  void setPosAndVel(const MechanicLinkValue& linkValue)
+  {
+    mFrame.setPosAndVel(linkValue.getFrame());
+  }
+  void setPosAndVel(const MechanicLinkValue& linkValue, const Vector3& position,
+                    const Quaternion& orientation, const Vector6& velocity)
+  {
+    mFrame.setPosAndVel(linkValue.getFrame(), position, orientation, velocity);
+  }
+
   void applyArticulation(const MechanicLinkValue& linkValue)
   {
     applyForce(linkValue.mArticulatedForce);
     applyInertia(linkValue.mArticulatedInertia);
   }
 
-// protected:
-  // FIXME:
-  // Since the interact side is the provider port, an interact might provide
-  // different typed ports, the Rigid body can test for at init time and
-  // avoid inertia computations for ports not contributing that ...
+protected:
   // May be build a class hierarchy that accounts for different inputs
   // and outputs a rigid body can have.
   // Example: force port, force and inertia, frame port, velocity port
-  Vector3 mPosition;
-  Quaternion mOrientation;
-  Vector6 mSpatialVelocity;
-  Vector6 mSpatialAcceleration;
+  Frame mFrame;
   Vector6 mArticulatedForce;
   SpatialInertia mArticulatedInertia;
 };

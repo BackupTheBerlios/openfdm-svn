@@ -334,13 +334,13 @@ private:
     { }
     virtual void append()
     {
-      _position.append(mMechanicLinkValue->mPosition);
-      _orientation.append(mMechanicLinkValue->mOrientation);
-      _eulerAngle.append(mMechanicLinkValue->mOrientation.getEuler());
-      _velocity.append(mMechanicLinkValue->mSpatialVelocity);
-      _acceleration.append(mMechanicLinkValue->mSpatialAcceleration);
-      _force.append(mMechanicLinkValue->mArticulatedForce);
-      _inertia.append(mMechanicLinkValue->mArticulatedInertia);
+      _position.append(mMechanicLinkValue->getFrame().getPosition());
+      _orientation.append(mMechanicLinkValue->getFrame().getOrientation());
+      _eulerAngle.append(mMechanicLinkValue->getFrame().getOrientation().getEuler());
+      _velocity.append(mMechanicLinkValue->getFrame().getSpVel());
+      _acceleration.append(mMechanicLinkValue->getFrame().getSpAccel());
+      _force.append(mMechanicLinkValue->getForce());
+      _inertia.append(mMechanicLinkValue->getInertia());
     }
     virtual HDF5Object getObject()
     { return _group; }
