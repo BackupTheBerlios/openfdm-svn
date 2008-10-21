@@ -2,7 +2,7 @@ INCLUDES = -I$(srcdir)/..
 
 # define some util programs
 # bin_PROGRAMS = tiretestrig
-bin_PROGRAMS = structure
+bin_PROGRAMS = structure mechanic
 
 # define some unit tests
 #check_PROGRAMS = quattest unitstest structure simulationtime constintegral harmonic limit
@@ -17,6 +17,9 @@ unitstest_LDADD = ../OpenFDM/libOpenFDM.la
 
 quattest_SOURCES = quattest.cpp
 quattest_LDADD = ../OpenFDM/libOpenFDM.la
+
+mechanic_SOURCES = mechanic.cpp
+mechanic_LDADD = ../OpenFDM/libOpenFDM.la
 
 structure_SOURCES = structure.cpp
 structure_LDADD = ../OpenFDM/libOpenFDM.la
