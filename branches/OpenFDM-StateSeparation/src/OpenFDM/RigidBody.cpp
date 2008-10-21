@@ -16,8 +16,8 @@ BEGIN_OPENFDM_OBJECT_DEF(RigidBody, MechanicNode)
 RigidBody::RigidBody(const std::string& name) :
   MechanicNode(name)
 {
-  mMechanicLinks.push_back(newMechanicLink("link"));
-  mMechanicLinks.push_back(newMechanicLink("link2"));
+  addLink("link0");
+  addLink("link1");
 }
 
 RigidBody::~RigidBody()
@@ -34,6 +34,27 @@ void
 RigidBody::accept(ConstNodeVisitor& visitor) const
 {
   visitor.handleNodePathAndApply(this);
+}
+
+PortId
+RigidBody::addLink(const std::string& name)
+{
+  MechanicLink mechanicLink = newMechanicLink(name);
+  mMechanicLinks.push_back(mechanicLink);
+  return getPortId(mechanicLink.getPortIndex());
+}
+
+void
+RigidBody::removeLink(const PortId& portId)
+{
+  MechanicLinkVector::iterator i = mMechanicLinks.begin();
+  while (i != mMechanicLinks.end()) {
+    if (getPortIndex(portId) == i->getPortIndex()) {
+      i->clear();
+      i = mMechanicLinks.erase(i);
+    } else
+      ++i;
+  }
 }
 
 void

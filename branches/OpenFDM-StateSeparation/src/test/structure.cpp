@@ -198,8 +198,8 @@ Node* buildSimpleMechanicExample()
   Group::NodeId rigidBody = group->addChild(new RigidBody("Rigid Body"));
   Group::NodeId mass = group->addChild(new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1)));
 
-  group->connect(rootJoint, "link", rigidBody, "link");
-  group->connect(rigidBody, "link2", mass, "link");
+  group->connect(rootJoint, "link", rigidBody, "link0");
+  group->connect(rigidBody, "link1", mass, "link");
 
   return group.release();
 }

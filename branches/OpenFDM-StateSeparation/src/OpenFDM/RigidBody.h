@@ -19,6 +19,9 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
+  PortId addLink(const std::string& name);
+  void removeLink(const PortId& portId);
+
   /// Simple node distributing the positions, velocities and accelerations
   /// from the parent link to the child links. Forces and inertias are summed
   /// over the children and written into the parent link.
@@ -33,9 +36,9 @@ public:
                             PortValueList& portValues, MechanicContext&) const;
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
                             PortValueList& portValues, MechanicContext&) const;
-
 private:
-  std::vector<MechanicLink> mMechanicLinks;
+  typedef std::vector<MechanicLink> MechanicLinkVector;
+  MechanicLinkVector mMechanicLinks;
 };
 
 } // namespace OpenFDM

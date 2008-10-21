@@ -23,8 +23,12 @@ public:
     OpenFDMAssert(portValue->toMechanicLinkValue());
     return static_cast<MechanicLinkValue*>(portValue);
   }
+  bool empty() const
+  { return mPort; }
+  void clear()
+  { if (!mPort) return; mPort->clear(); mPort = 0; }
   unsigned getPortIndex() const
-  { return mPort->getIndex(); }
+  { OpenFDMAssert(mPort); return mPort->getIndex(); }
 private:
   SharedPtr<MechanicLinkInfo> mPort;
 };
