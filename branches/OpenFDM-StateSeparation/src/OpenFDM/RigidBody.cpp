@@ -62,19 +62,17 @@ RigidBody::velocity(const Task&, const ContinousStateValueVector&,
                     PortValueList& portValues, FrameData&) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
-
-  const Frame& frame = portValues[mMechanicLinks.front()].getFrame();
+  const MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
   for (unsigned i = 1; i < numLinkValues; ++i)
-    portValues[mMechanicLinks[i]].getFrame().setPosAndVel(frame);
+    portValues[mMechanicLinks[i]].setPosAndVel(parentLink);
 }
 
 void
 RigidBody::articulation(const Task&, const ContinousStateValueVector&,
                         PortValueList& portValues, FrameData&) const
 {
-  MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
-
   unsigned numLinkValues = mMechanicLinks.size();
+  MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
   for (unsigned i = 1; i < numLinkValues; ++i)
     parentLink.applyArticulation(portValues[mMechanicLinks[i]]);
 }
@@ -84,9 +82,9 @@ RigidBody::acceleration(const Task&, const ContinousStateValueVector&,
                         PortValueList& portValues, FrameData&) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
-  const Frame& frame = portValues[mMechanicLinks.front()].getFrame();
+  const MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
   for (unsigned i = 1; i < numLinkValues; ++i)
-    portValues[mMechanicLinks[i]].getFrame().setAccel(frame);
+    portValues[mMechanicLinks[i]].setAccel(parentLink);
 }
 
 } // namespace OpenFDM

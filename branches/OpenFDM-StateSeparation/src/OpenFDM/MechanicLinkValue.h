@@ -34,24 +34,39 @@ public:
   { mArticulatedForce = force; }
 
   void applyForce(const Vector6& force)
-  { mArticulatedForce = force; }
+  { mArticulatedForce += force; }
   void applyForce(const Vector3& force)
   { applyForce(Vector6(Vector3::zeros(), force)); }
   void applyTorque(const Vector3& torque)
   { applyForce(Vector6(torque, Vector3::zeros())); }
 
   void applyInertia(const SpatialInertia& inertia)
-  { mArticulatedInertia = inertia; }
+  { mArticulatedInertia += inertia; }
 
 
   void setPosAndVel(const MechanicLinkValue& linkValue)
   {
+    mArticulatedInertia = SpatialInertia::zeros();
+    mArticulatedForce = Vector6::zeros();
     mFrame.setPosAndVel(linkValue.getFrame());
   }
+  void setAccel(const MechanicLinkValue& linkValue)
+  { mFrame.setAccel(linkValue.getFrame()); }
   void setPosAndVel(const MechanicLinkValue& linkValue, const Vector3& position,
                     const Quaternion& orientation, const Vector6& velocity)
   {
+    mArticulatedInertia = SpatialInertia::zeros();
+    mArticulatedForce = Vector6::zeros();
     mFrame.setPosAndVel(linkValue.getFrame(), position, orientation, velocity);
+  }
+  void setAccel(const MechanicLinkValue& linkValue, const Vector6& accel)
+  { mFrame.setAccel(linkValue.getFrame(), accel); }
+  void setPosAndVel(const Vector3& parentAngularVel, const Vector3& position,
+                    const Quaternion& orientation, const Vector6& velocity)
+  {
+    mArticulatedInertia = SpatialInertia::zeros();
+    mArticulatedForce = Vector6::zeros();
+    mFrame.setPosAndVel(parentAngularVel, position, orientation, velocity);
   }
 
   void applyArticulation(const MechanicLinkValue& linkValue)
