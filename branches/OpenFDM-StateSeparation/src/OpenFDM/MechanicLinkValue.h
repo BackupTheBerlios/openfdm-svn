@@ -13,6 +13,7 @@ namespace OpenFDM {
 
 class MechanicLinkValue : public PortValue {
 public:
+  MechanicLinkValue();
   virtual ~MechanicLinkValue();
 
   virtual MechanicLinkValue* toMechanicLinkValue() { return this; }

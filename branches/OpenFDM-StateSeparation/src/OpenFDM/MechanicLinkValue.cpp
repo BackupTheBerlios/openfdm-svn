@@ -6,6 +6,12 @@
 
 namespace OpenFDM {
 
+MechanicLinkValue::MechanicLinkValue() :
+  mArticulatedForce(Vector6::zeros()),
+  mArticulatedInertia(SpatialInertia::zeros())
+{
+}
+
 MechanicLinkValue::~MechanicLinkValue()
 {
 }
