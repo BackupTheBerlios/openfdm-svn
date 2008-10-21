@@ -115,7 +115,7 @@ Integrator::setEnableInitialValuePort(bool enable)
 bool
 Integrator::getEnableInitialValuePort() const
 {
-  return mInitialValuePort.empty();
+  return !mInitialValuePort.empty();
 }
 
 } // namespace OpenFDM

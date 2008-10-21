@@ -119,7 +119,7 @@ DiscreteIntegrator::setInitialValue(const Matrix& value)
 bool
 DiscreteIntegrator::getEnableInitialValuePort() const
 {
-  return mInitialValuePort.empty();
+  return !mInitialValuePort.empty();
 }
 
 void

@@ -24,7 +24,7 @@ public:
     return static_cast<MechanicLinkValue*>(portValue);
   }
   bool empty() const
-  { return mPort; }
+  { return !mPort; }
   void clear()
   { if (!mPort) return; mPort->clear(); mPort = 0; }
   unsigned getPortIndex() const
