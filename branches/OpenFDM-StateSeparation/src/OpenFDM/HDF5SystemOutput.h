@@ -325,9 +325,13 @@ private:
       mMechanicLinkValue(mechanicLinkValue),
       _group(parent, name),
       _position(_group, "position", Size(3, 1)),
+      _refPosition(_group, "refPosition", Size(3, 1)),
       _orientation(_group, "orientation", Size(4, 1)),
       _eulerAngle(_group, "eulerAngles", Size(3, 1)),
+      _refOrientation(_group, "refOrientation", Size(4, 1)),
+      _refEulerAngle(_group, "refEulerAngles", Size(3, 1)),
       _velocity(_group, "velocity", Size(6, 1)),
+      _refVelocity(_group, "refVelocity", Size(6, 1)),
       _acceleration(_group, "acceleration", Size(6, 1)),
       _force(_group, "force", Size(6, 1)),
       _inertia(_group, "inertia", Size(6, 6))
@@ -335,9 +339,13 @@ private:
     virtual void append()
     {
       _position.append(mMechanicLinkValue->getFrame().getPosition());
+      _refPosition.append(mMechanicLinkValue->getFrame().getRefPosition());
       _orientation.append(mMechanicLinkValue->getFrame().getOrientation());
       _eulerAngle.append(mMechanicLinkValue->getFrame().getOrientation().getEuler());
+      _refOrientation.append(mMechanicLinkValue->getFrame().getRefOrientation());
+      _refEulerAngle.append(mMechanicLinkValue->getFrame().getRefOrientation().getEuler());
       _velocity.append(mMechanicLinkValue->getFrame().getSpVel());
+      _refVelocity.append(mMechanicLinkValue->getFrame().getRefVel());
       _acceleration.append(mMechanicLinkValue->getFrame().getSpAccel());
       _force.append(mMechanicLinkValue->getForce());
       _inertia.append(mMechanicLinkValue->getInertia());
@@ -348,9 +356,13 @@ private:
     SharedPtr<const MechanicLinkValue> mMechanicLinkValue;
     HDF5Group _group;
     HDFMatrixStream _position;
+    HDFMatrixStream _refPosition;
     HDFMatrixStream _orientation;
     HDFMatrixStream _eulerAngle;
+    HDFMatrixStream _refOrientation;
+    HDFMatrixStream _refEulerAngle;
     HDFMatrixStream _velocity;
+    HDFMatrixStream _refVelocity;
     HDFMatrixStream _acceleration;
     HDFMatrixStream _force;
     HDFMatrixStream _inertia;
