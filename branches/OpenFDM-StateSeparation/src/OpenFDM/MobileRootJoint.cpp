@@ -79,7 +79,7 @@ MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
 //     Vector6 grav = Vector6(Vector3::zeros(), rotFromRef(ga));
 
   // FIXME
-  Vector6 grav = Vector6(Vector3::zeros(), Vector3(0, 0, 9.81));
+  Vector6 grav = Vector6(Vector3::zeros(), portValues[mMechanicLink].getFrame().rotFromRef(Vector3(0, 0, 9.81)));
 
   SpatialInertia inertia = portValues[mMechanicLink].getInertia();
   Vector6 force = portValues[mMechanicLink].getForce();
