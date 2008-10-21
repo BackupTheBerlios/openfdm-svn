@@ -34,9 +34,9 @@ public:
 
     mRefOrient = parent.getRefOrientation();
     mRefPos = parent.getRefPosition();
+    mRefVel = parent.getRefVel();
 
     mParentSpVel = parent.getSpVel();
-    mRefVel = parent.getRefVel();
   }
 
   void setAccel(const Frame& parent)
@@ -54,15 +54,14 @@ public:
 
     mRefOrient = parent.getRefOrientation()*getOrientation();
     mRefPos = parent.posToRef(getPosition());
+    mRefVel = velocity + motionFromParent(parent.getRefVel());
 
     mParentSpVel = motionFromParent(parent.getSpVel());
-    mRefVel = velocity + motionFromParent(parent.getRefVel());
   }
 
   void setAccel(const Frame& parent, const Vector6& acceleration)
   {
     mRelVelDot = acceleration;
-
     mParentSpAccel = motionFromParent(parent.getSpAccel());
   }
 
@@ -83,7 +82,6 @@ public:
   void setAccel(const Vector6& acceleration)
   {
     mRelVelDot = acceleration;
-
     mParentSpAccel = Vector6::zeros();
   }
 
@@ -94,7 +92,7 @@ public:
   }
   void setSpAccel(const Frame& parent, const Vector6& spatialAcceleration)
   {
-    mParentSpAccel = parent.getSpAccel();
+    mParentSpAccel = motionFromParent(parent.getSpAccel());
     mRelVelDot = spatialAcceleration - mParentSpAccel - getHdot();
   }
 
