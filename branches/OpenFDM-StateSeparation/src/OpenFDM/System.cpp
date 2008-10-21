@@ -711,6 +711,14 @@ protected:
     }
     
     _mechanicInstanceList.swap(sortedMechanicInstanceList);
+
+    Log(Schedule,Info) << "MechanicNode Schedule" << std::endl;
+    MechanicInstanceList::iterator i = _mechanicInstanceList.begin();
+    for (; i != _mechanicInstanceList.end(); ++i) {
+      Log(Schedule,Info)
+        << "  MechanicNode \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
+    }
+
     return true;
   }
 

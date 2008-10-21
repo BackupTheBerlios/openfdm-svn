@@ -59,7 +59,7 @@ RigidBody::removeLink(const PortId& portId)
 
 void
 RigidBody::velocity(const Task&, const ContinousStateValueVector&,
-                    PortValueList& portValues, MechanicContext&) const
+                    PortValueList& portValues, FrameData&) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
 
@@ -70,7 +70,7 @@ RigidBody::velocity(const Task&, const ContinousStateValueVector&,
 
 void
 RigidBody::articulation(const Task&, const ContinousStateValueVector&,
-                        PortValueList& portValues, MechanicContext&) const
+                        PortValueList& portValues, FrameData&) const
 {
   MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
 
@@ -81,7 +81,7 @@ RigidBody::articulation(const Task&, const ContinousStateValueVector&,
 
 void
 RigidBody::acceleration(const Task&, const ContinousStateValueVector&,
-                        PortValueList& portValues, MechanicContext&) const
+                        PortValueList& portValues, FrameData&) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
   const Frame& frame = portValues[mMechanicLinks.front()].getFrame();

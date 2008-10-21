@@ -33,7 +33,7 @@ Mass::~Mass(void)
 
 void
 Mass::articulation(const Task&, const ContinousStateValueVector&,
-                   PortValueList& portValues, MechanicContext&) const
+                   PortValueList& portValues, FrameData&) const
 {
   // Hardcoding that gravity happens in the roots??
   // Vectro3 position = portValues[mMechanicLink].mPosition;

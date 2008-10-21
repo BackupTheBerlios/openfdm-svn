@@ -31,11 +31,11 @@ public:
   /// parent link???
 
   virtual void velocity(const Task&, const ContinousStateValueVector& states,
-                        PortValueList& portValues, MechanicContext&) const;
+                        PortValueList& portValues, FrameData&) const;
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList& portValues, MechanicContext&) const;
+                            PortValueList& portValues, FrameData&) const;
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList& portValues, MechanicContext&) const;
+                            PortValueList& portValues, FrameData&) const;
 private:
   typedef std::vector<MechanicLink> MechanicLinkVector;
   MechanicLinkVector mMechanicLinks;
