@@ -20,7 +20,10 @@ class InitTask;
 
 struct FrameData {
   // The derivative of the relative velosity in the current frame
-  Vector6 mRelVelocityDot;
+  Matrix Ih;
+  Matrix hIh;
+  Vector6 pAlpha;
+  Vector velDot;
 };
 
 class MechanicContext : public LeafContext {
@@ -79,8 +82,10 @@ public:
   }
   void init(const /*Init*/Task& task) const
   {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
+    for (list_type::const_iterator i = begin(); i != end(); ++i) {
       (*i)->init(task);
+      (*i)->velocities(task);
+    }
   }
   void velocities(const Task& task) const
   {

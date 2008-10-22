@@ -9,15 +9,14 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
+#include "MatrixStateInfo.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Frame.h"
-#include "RigidBody.h"
 #include "Joint.h"
+#include "MatrixInputPort.h"
+#include "MatrixOutputPort.h"
 
 namespace OpenFDM {
-
-class RevoluteJointFrame;
 
 class RevoluteJoint : public Joint {
   OPENFDM_OBJECT(RevoluteJoint, Joint);
@@ -25,57 +24,63 @@ public:
   RevoluteJoint(const std::string& name);
   virtual ~RevoluteJoint(void);
 
-  virtual bool init(void);
-
-  virtual void recheckTopology(void);
-
   /** Sets the joint axis where this joint is allowed to rotate around.
    */
-  void setJointAxis(const Vector3& axis);
-
-  /** Returns the joint position.
-   */
-  const real_type& getJointPos(void) const;
-
-  /** Sets the joint position.
-   */
-  void setJointPos(real_type pos);
-
-  /** Returns the joint velocity.
-   */
-  const real_type& getJointVel(void) const;
-
-  /** Sets the joint velocity.
-   */
-  void setJointVel(real_type vel);
+  const Vector3& getAxis() const;
+  void setAxis(const Vector3& axis);
 
   /** Set the position of the joint.
    */
-  void setPosition(const Vector3& position);
+//   void setPosition(const Vector3& position);
 
   /** Sets the zero orientation of the joint.
    */
-  void setOrientation(const Quaternion& orientation);
+//   void setOrientation(const Quaternion& orientation);
+
+protected:
+
+  enum { n = 1 };
+  typedef LinAlg::Vector<real_type,n> VectorN;
+  typedef LinAlg::Matrix<real_type,6,n> Matrix6N;
+  typedef LinAlg::Matrix<real_type,n,n> MatrixNN;
+  typedef LinAlg::MatrixFactors<real_type,n,n,LinAlg::LUTag> MatrixFactorsNN;
+
+  virtual void init(const Task&, DiscreteStateValueVector&,
+                    ContinousStateValueVector& continousState,
+                    const PortValueList&) const;
+
+  virtual void velocity(const MechanicLinkValue& parentLink,
+                        MechanicLinkValue& childLink,
+                        const ContinousStateValueVector& states,
+                        PortValueList& portValues,
+                        FrameData& frameData) const;
+  virtual void articulation(MechanicLinkValue& parentLink,
+                            const MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            FrameData& frameData) const;
+  virtual void acceleration(const MechanicLinkValue& parentLink,
+                            MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            FrameData& frameData) const;
+
+  virtual void derivative(const DiscreteStateValueVector&,
+                          const ContinousStateValueVector&,
+                          const PortValueList& portValues, FrameData&,
+                          ContinousStateValueVector&) const;
 
 private:
-  /** Computes the inboard articulated inertia and force for
-      this articulated body. It is part of the articulated body algorithm.
-   */
-  virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
-                                 const SpatialInertia& outI,
-                                 const Vector6& outF);
+  MatrixInputPort mForcePort;
+  MatrixOutputPort mPositionPort;
+  MatrixOutputPort mVelocityPort;
 
-  /** Methods for the OpenFDM::Part.
-   */
-  virtual void setState(const StateStream& state);
-  virtual void getState(StateStream& state) const;
-  virtual void getStateDeriv(StateStream& stateDeriv);
+  SharedPtr<Vector1StateInfo> mPositionStateInfo;
+  SharedPtr<Vector1StateInfo> mVelocityStateInfo;
 
-  /// The intput port which might provide some joint internal force
-  RealPortHandle mJointForcePort;
+  Vector3 mAxis;
 
-  /// The frame of the mobile root
-  SharedPtr<RevoluteJointFrame> mRevoluteJointFrame;
+  Matrix6N mJointMatrix;
 };
 
 } // namespace OpenFDM

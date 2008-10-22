@@ -245,8 +245,10 @@ OpenFDMModelsSOURCES = \
   SimulationTime.cpp
 
 OpenFDMMechanicSOURCES = \
+  Joint.cpp \
   Mass.cpp \
-  MobileRootJoint.cpp
+  MobileRootJoint.cpp \
+  RevoluteJoint.cpp
 
 
 #   AeroForce.cpp \
@@ -266,7 +268,6 @@ OpenFDMMechanicSOURCES = \
 #   Force.cpp \
 #   Gravity.cpp \
 #   Ground.cpp \
-#   Joint.cpp \
 #   Launchbar.cpp \
 #   LinearSpringDamper.cpp \
 #   MaxModel.cpp \
@@ -275,7 +276,6 @@ OpenFDMMechanicSOURCES = \
 #   Product.cpp \
 #   PrismaticJoint.cpp \
 #   RevoluteActuator.cpp \
-#   RevoluteJoint.cpp \
 #   RigidBody.cpp \
 #   RootFrame.cpp \
 #   Saturation.cpp \

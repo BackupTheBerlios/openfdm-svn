@@ -21,37 +21,40 @@ namespace OpenFDM {
 /// FIXME: joint's should be lockable, which means trylock == true and
 /// velocity small enough - keep position ...
 
-class ModelVisitor;
-
 class Joint : public Interact {
   OPENFDM_OBJECT(Joint, Interact);
 public:
   Joint(const std::string& name);
   virtual ~Joint(void);
 
-  /// Double dispatch helper for the multibody system visitor
-  virtual void accept(ModelVisitor& visitor);
-  /// Double dispatch helper for the multibody system visitor
-//   virtual void accept(ConstModelVisitor& visitor) const;
+  // Joints cannot do something different than apply forces and inertia to
+  // its parent.
+  virtual void velocity(const MechanicLinkValue& parentLink,
+                        MechanicLinkValue& childLink,
+                        const ContinousStateValueVector& states,
+                        PortValueList& portValues,
+                        FrameData& frameData) const = 0;
+  virtual void articulation(MechanicLinkValue& parentLink,
+                            const MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            FrameData& frameData) const = 0;
+  virtual void acceleration(const MechanicLinkValue& parentLink,
+                            MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            FrameData& frameData) const = 0;
 
-  virtual void output(const TaskInfo& taskInfo);
-
-  virtual bool dependsDirectOn(Model* model);
-
-  RigidBody* getOutboardBody(void)
-  { return getParentRigidBody(0); }
-  RigidBody* getInboardBody(void)
-  { return getParentRigidBody(1); }
-
-  virtual void interactWith(RigidBody* rigidBody);
-
-  // Joint slot ...
-  virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
-                                 const SpatialInertia& outI,
-                                 const Vector6& outF) = 0;
+  /// They implement the mechanic stuff
+  virtual void velocity(const Task&, const ContinousStateValueVector&,
+                        PortValueList&, FrameData&) const;
+  virtual void articulation(const Task&, const ContinousStateValueVector&,
+                            PortValueList&, FrameData&) const;
+  virtual void acceleration(const Task&, const ContinousStateValueVector&,
+                            PortValueList&, FrameData&) const;
 private:
-  SpatialInertia mInboardInertia;
-  Vector6 mInboardForce;
+  MechanicLink mParentLink;
+  MechanicLink mChildLink;
 };
 
 } // namespace OpenFDM

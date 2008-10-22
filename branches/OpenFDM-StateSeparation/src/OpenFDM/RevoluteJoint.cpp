@@ -11,153 +11,166 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Frame.h"
-#include "RigidBody.h"
-#include "RevoluteJointFrame.h"
+#include "PortValueList.h"
+#include "ContinousStateValueVector.h"
+#include "MechanicContext.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteJoint, Joint)
-  END_OPENFDM_OBJECT_DEF
-
-BEGIN_OPENFDM_OBJECT_DEF(RevoluteJointFrame, Frame)
+  DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RevoluteJoint::RevoluteJoint(const std::string& name) :
-  Joint(name)
+  Joint(name),
+  mForcePort(this, "force", Size(1, 1), true),
+  mPositionPort(this, "position", Size(1, 1)),
+  mVelocityPort(this, "velocity", Size(1, 1)),
+  mPositionStateInfo(new Vector1StateInfo),
+  mVelocityStateInfo(new Vector1StateInfo),
+  mAxis(Vector3(1, 0, 0))
 {
-  setNumContinousStates(2);
+  addContinousStateInfo(mPositionStateInfo);
+  addContinousStateInfo(mVelocityStateInfo);
 
-  mRevoluteJointFrame = new RevoluteJointFrame(name);
-
-  setNumInputPorts(1);
-  setInputPortName(0, "jointForce");
-
-  setNumOutputPorts(2);
-  setOutputPort(0, "jointPos", this, &RevoluteJoint::getJointPos);
-  setOutputPort(1, "jointVel", this, &RevoluteJoint::getJointVel);
+  // FIXME
+  setAxis(mAxis);
 }
 
 RevoluteJoint::~RevoluteJoint(void)
 {
 }
 
-bool
-RevoluteJoint::init(void)
+const Vector3&
+RevoluteJoint::getAxis() const
 {
-  /// Check if we have an input port connected to the joint force ...
-  if (getInputPort(0))
-    mJointForcePort = getInputPort(0)->toRealPortHandle();
-  else
-    mJointForcePort = 0;
-
-  recheckTopology();
-  return Joint::init();
+  return mAxis;
 }
 
 void
-RevoluteJoint::recheckTopology(void)
-{
-  if (!getOutboardBody() || !getInboardBody())
-    return;
-  
-  // check for the inboard frame
-  Frame* inFrame = getInboardBody()->getFrame();
-  if (!inFrame)
-    return;
-  
-  Frame* outFrame = getOutboardBody()->getFrame();
-  if (!outFrame) {
-    getOutboardBody()->setFrame(mRevoluteJointFrame);
-  }
-  outFrame = getOutboardBody()->getFrame();
-  if (!outFrame->isDirectChildFrameOf(inFrame)) {
-    inFrame->addChildFrame(mRevoluteJointFrame);
-  }
-}
-
-void
-RevoluteJoint::setJointAxis(const Vector3& axis)
+RevoluteJoint::setAxis(const Vector3& axis)
 {
   real_type nrm = norm(axis);
   if (nrm <= Limits<real_type>::min()) {
     Log(Initialization, Error) << "JointAxis is zero ..." << endl;
     return;
   }
-  mRevoluteJointFrame->setJointAxis((1/nrm)*axis);
-}
-
-const real_type&
-RevoluteJoint::getJointPos(void) const
-{
-  return mRevoluteJointFrame->getJointPos();
+  mAxis = (1/nrm)*axis;
+  mJointMatrix = Vector6(mAxis, Vector3::zeros());
 }
 
 void
-RevoluteJoint::setJointPos(real_type pos)
+RevoluteJoint::init(const Task&, DiscreteStateValueVector&,
+                    ContinousStateValueVector& continousState,
+                    const PortValueList&) const
 {
-  mRevoluteJointFrame->setJointPos(pos);
-}
-
-const real_type&
-RevoluteJoint::getJointVel(void) const
-{
-  return mRevoluteJointFrame->getJointVel();
+  continousState[*mPositionStateInfo] = 0;
+  continousState[*mVelocityStateInfo] = 0;
 }
 
 void
-RevoluteJoint::setJointVel(real_type vel)
+RevoluteJoint::velocity(const MechanicLinkValue& parentLink,
+                        MechanicLinkValue& childLink,
+                        const ContinousStateValueVector& states,
+                        PortValueList& portValues,
+                        FrameData& frameData) const
 {
-  mRevoluteJointFrame->setJointVel(vel);
+  VectorN jointPos = states[*mPositionStateInfo];
+  if (!mPositionPort.empty())
+    portValues[mPositionPort] = jointPos;
+
+  VectorN jointVel = states[*mVelocityStateInfo];
+  if (!mVelocityPort.empty())
+    portValues[mVelocityPort] = jointVel;
+
+  Vector3 position(0, 0, 0);
+  Quaternion orientation(Quaternion::fromAngleAxis(jointPos(0), mAxis));
+  Vector6 velocity(mAxis*jointVel, Vector3::zeros());
+
+  childLink.setPosAndVel(parentLink, position, orientation, velocity);
 }
 
 void
-RevoluteJoint::setPosition(const Vector3& position)
+RevoluteJoint::articulation(MechanicLinkValue& parentLink,
+                            const MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            FrameData& frameData) const
 {
-  mRevoluteJointFrame->setPosition(position);
+  VectorN jointForce;
+  if (mForcePort.empty())
+    jointForce.clear();
+  else
+    jointForce = portValues[mForcePort];
+
+  // The formulas conform to Roy Featherstones book eqn (6.37), (6.38)
+
+  // Store the outboard values since we will need them later in velocity
+  // derivative computations
+  SpatialInertia I = childLink.getInertia();
+
+  // Compute the projection to the joint coordinate space
+  Matrix6N Ih = I*mJointMatrix;
+  frameData.Ih = Ih;
+  frameData.hIh = trans(mJointMatrix)*Ih;
+  MatrixFactorsNN hIh = MatrixNN(frameData.hIh);
+
+  // Note that the momentum of the local mass is already included in the
+  // child links force due the the mass model ...
+  Vector6 mPAlpha = childLink.getForce() + I*childLink.getFrame().getHdot();
+  frameData.pAlpha = mPAlpha;
+  Vector6 force = mPAlpha;
+
+  if (hIh.singular()) {
+    Log(ArtBody,Error) << "Detected singular mass matrix for "
+                       << "CartesianJointFrame \"" << getName()
+                       << "\": Fix your model!" << endl;
+    return;
+  }
+  
+  // Project away the directions handled with this current joint
+  /// FIXME: here in the mPAlpha term we shall not have that locla momentum ...
+  force -= Ih*hIh.solve(trans(mJointMatrix)*mPAlpha - jointForce);
+  I -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
+
+//   frameData.pAlpha = force;
+
+  // Transform to parent link's coordinates and apply to the parent link
+  parentLink.applyForce(childLink.getFrame().forceToParent(force));
+  parentLink.applyInertia(childLink.getFrame().inertiaToParent(I));
 }
 
 void
-RevoluteJoint::setOrientation(const Quaternion& orientation)
+RevoluteJoint::acceleration(const MechanicLinkValue& parentLink,
+                            MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            FrameData& frameData) const
 {
-  mRevoluteJointFrame->setZeroOrientation(orientation);
+  Vector6 parentSpAccel
+    = childLink.getFrame().motionFromParent(parentLink.getFrame().getSpAccel());
+
+  Vector6 f = childLink.getForce();
+  f += childLink.getInertia()*(parentSpAccel + childLink.getFrame().getHdot());
+  MatrixFactorsNN hIh = MatrixNN(frameData.hIh);
+  VectorN jointForce;
+  if (mForcePort.empty())
+    jointForce.clear();
+  else
+    jointForce = portValues[mForcePort];
+  VectorN velDot = hIh.solve(jointForce - trans(mJointMatrix)*f);
+  frameData.velDot = velDot;
+  childLink.setAccel(parentLink, mJointMatrix*velDot);
 }
 
 void
-RevoluteJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
-                                 const SpatialInertia& outI,
-                                 const Vector6& outF)
+RevoluteJoint::derivative(const DiscreteStateValueVector&,
+                          const ContinousStateValueVector& states,
+                          const PortValueList&, FrameData& frameData,
+                          ContinousStateValueVector& derivative) const
 {
-  CartesianJointFrame<1>::VectorN tau;
-  if (mJointForcePort.isConnected()) {
-    tau(0) = mJointForcePort.getRealValue();
-  } else
-    tau.clear();
-  mRevoluteJointFrame->jointArticulation(artI, artF, outF, outI, tau);
-}
-
-void
-RevoluteJoint::setState(const StateStream& state)
-{
-  CartesianJointFrame<1>::VectorN v;
-  state.readSubState(v);
-  mRevoluteJointFrame->setJointPos(v(0));
-  state.readSubState(v);
-  mRevoluteJointFrame->setJointVel(v(0));
-}
-
-void
-RevoluteJoint::getState(StateStream& state) const
-{
-  state.writeSubState(mRevoluteJointFrame->getJointPos());
-  state.writeSubState(mRevoluteJointFrame->getJointVel());
-}
-
-void
-RevoluteJoint::getStateDeriv(StateStream& stateDeriv)
-{
-  stateDeriv.writeSubState(mRevoluteJointFrame->getJointVel());
-  stateDeriv.writeSubState(mRevoluteJointFrame->getJointVelDot());
+  derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];
+  derivative[*mVelocityStateInfo] = frameData.velDot;
 }
 
 } // namespace OpenFDM
