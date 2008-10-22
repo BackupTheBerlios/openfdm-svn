@@ -111,14 +111,12 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
 
   // Compute the projection to the joint coordinate space
   Matrix6N Ih = I*mJointMatrix;
-  frameData.Ih = Ih;
   frameData.hIh = trans(mJointMatrix)*Ih;
   MatrixFactorsNN hIh = MatrixNN(frameData.hIh);
 
   // Note that the momentum of the local mass is already included in the
   // child links force due the the mass model ...
   Vector6 mPAlpha = childLink.getForce() + I*childLink.getFrame().getHdot();
-  frameData.pAlpha = mPAlpha;
   Vector6 force = mPAlpha;
 
   if (hIh.singular()) {
@@ -129,11 +127,8 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
   }
   
   // Project away the directions handled with this current joint
-  /// FIXME: here in the mPAlpha term we shall not have that locla momentum ...
   force -= Ih*hIh.solve(trans(mJointMatrix)*mPAlpha - jointForce);
   I -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
-
-//   frameData.pAlpha = force;
 
   // Transform to parent link's coordinates and apply to the parent link
   parentLink.applyForce(childLink.getFrame().forceToParent(force));

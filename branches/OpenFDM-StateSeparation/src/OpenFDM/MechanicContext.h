@@ -19,10 +19,7 @@ class DiscreteTask;
 class InitTask;
 
 struct FrameData {
-  // The derivative of the relative velosity in the current frame
-  Matrix Ih;
   Matrix hIh;
-  Vector6 pAlpha;
   Vector velDot;
 };
 
