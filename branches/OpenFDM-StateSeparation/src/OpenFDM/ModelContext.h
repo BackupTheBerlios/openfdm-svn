@@ -27,8 +27,11 @@ public:
 
   bool alloc()
   { if (!allocStates()) return false; return mModel->alloc(*this); }
-  void init(const /*Init*/Task& task)
-  { mModel->init(task, mDiscreteState, mContinousState, mPortValueList); }
+  void initOutput(const /*Init*/Task& task)
+  {
+    mModel->init(task, mDiscreteState, mContinousState, mPortValueList);
+    mModel->output(task, mDiscreteState, mContinousState, mPortValueList);
+  }
   void output(const Task& task)
   { mModel->output(task, mDiscreteState, mContinousState, mPortValueList); }
   void update(const DiscreteTask& discreteTask)
@@ -60,12 +63,10 @@ public:
         return false;
     return true;
   }
-  void init(const /*Init*/Task& task) const
+  void initOutput(const /*Init*/Task& task) const
   {
-    for (list_type::const_iterator i = begin(); i != end(); ++i) {
-      (*i)->init(task);
-      (*i)->output(task);
-    }
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->initOutput(task);
   }
   void output(const Task& task) const
   {

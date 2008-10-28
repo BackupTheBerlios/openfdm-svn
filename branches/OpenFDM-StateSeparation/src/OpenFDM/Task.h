@@ -35,19 +35,19 @@ public:
   {
     setTime(t);
     // The model outputs before mechanical state propagation
-    mModelContextList[0].init(*this);
+    mModelContextList[0].initOutput(*this);
     // Now the mechanical state propagation
     mMechanicContextList.init(*this);
     // The model outputs before mechanical force propagation
-    mModelContextList[1].init(*this);
+    mModelContextList[1].initOutput(*this);
     // Now the mechanical force propagation
     mMechanicContextList.articulation(*this);
     // The model outputs before mechanical acceleration propagation
-    mModelContextList[2].init(*this);
+    mModelContextList[2].initOutput(*this);
     // Now the mechanical acceleration propagation
     mMechanicContextList.accelerations(*this);
     // The model outputs past mechanical acceleration propagation
-    mModelContextList[3].init(*this);
+    mModelContextList[3].initOutput(*this);
   }
 
   ModelContextList mModelContextList[4];
