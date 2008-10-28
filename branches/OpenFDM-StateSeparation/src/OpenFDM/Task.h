@@ -37,7 +37,7 @@ public:
     // The model outputs before mechanical state propagation
     mModelContextList[0].initOutput(*this);
     // Now the mechanical state propagation
-    mMechanicContextList.init(*this);
+    mMechanicContextList.initVelocities(*this);
     // The model outputs before mechanical force propagation
     mModelContextList[1].initOutput(*this);
     // Now the mechanical force propagation

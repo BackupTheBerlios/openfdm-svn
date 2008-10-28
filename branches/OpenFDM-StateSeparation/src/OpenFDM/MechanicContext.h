@@ -32,19 +32,30 @@ public:
 
   bool alloc()
   { if (!allocStates()) return false; return mMechanicNode->alloc(*this); }
-  void init(const /*Init*/Task& task)
-  { mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList); }
+  void initVelocities(const /*Init*/Task& task)
+  {
+    mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList);
+    mMechanicNode->velocity(task, mContinousState, mPortValueList, mFrameData);
+  }
 
   void velocities(const Task& task)
-  { mMechanicNode->velocity(task, mContinousState, mPortValueList, mFrameData); }
+  {
+    mMechanicNode->velocity(task, mContinousState, mPortValueList, mFrameData);
+  }
   void articulation(const Task& task)
-  { mMechanicNode->articulation(task, mContinousState, mPortValueList, mFrameData); }
+  {
+    mMechanicNode->articulation(task, mContinousState, mPortValueList, mFrameData);
+  }
   void accelerations(const Task& task)
-  { mMechanicNode->acceleration(task, mContinousState, mPortValueList, mFrameData); }
+  {
+    mMechanicNode->acceleration(task, mContinousState, mPortValueList, mFrameData);
+  }
 
   void derivative(const Task&)
-  { mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,
-                              mFrameData, mContinousStateDerivative); }
+  {
+    mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,
+                              mFrameData, mContinousStateDerivative);
+  }
  
   void update(const DiscreteTask& discreteTask)
   {
@@ -77,12 +88,10 @@ public:
         return false;
     return true;
   }
-  void init(const /*Init*/Task& task) const
+  void initVelocities(const /*Init*/Task& task) const
   {
-    for (list_type::const_iterator i = begin(); i != end(); ++i) {
-      (*i)->init(task);
-      (*i)->velocities(task);
-    }
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->initVelocities(task);
   }
   void velocities(const Task& task) const
   {
