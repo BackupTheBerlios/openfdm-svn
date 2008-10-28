@@ -277,8 +277,7 @@ public:
       // FIXME: move the set port value and accept port value into one call
       if (!getPortInfo()->acceptPortValue(portValue))
         return false;
-      unsigned index = getPortInfo()->getIndex();
-      mNodeInstance->getPortValueList().setPortValue(index, portValue);
+      mNodeInstance->setPortValue(*getPortInfo(), portValue);
       return true;
     }
 

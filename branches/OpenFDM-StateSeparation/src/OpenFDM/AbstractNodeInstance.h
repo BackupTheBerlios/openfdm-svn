@@ -39,10 +39,12 @@ public:
   const SampleTime& getSampleTime() const
   { return mSampleTime; }
 
-  PortValueList& getPortValueList()
-  { return getNodeContext().getPortValueList(); }
   const PortValueList& getPortValueList() const
   { return getNodeContext().getPortValueList(); }
+
+  /// Set port value for the given port.
+  void setPortValue(const PortInfo& portInfo, PortValue* portValue)
+  { getNodeContext().setPortValue(portInfo, portValue); }
 
 protected:
   /// The node context that belongs to this instance.

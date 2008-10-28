@@ -21,6 +21,9 @@ public:
   /// Port value accessors for System external usage.
   virtual const PortValue* getPortValue(const PortInfo& portInfo) const;
 
+  /// Set port value for the given port.
+  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue);
+
   /// might vanish???
   PortValueList& getPortValueList()
   { return mPortValueList; }
