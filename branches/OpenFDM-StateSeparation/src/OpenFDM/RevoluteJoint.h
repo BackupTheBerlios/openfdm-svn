@@ -52,8 +52,7 @@ protected:
   virtual void velocity(const MechanicLinkValue& parentLink,
                         MechanicLinkValue& childLink,
                         const ContinousStateValueVector& states,
-                        PortValueList& portValues,
-                        FrameData& frameData) const;
+                        PortValueList& portValues) const;
   virtual void articulation(MechanicLinkValue& parentLink,
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,

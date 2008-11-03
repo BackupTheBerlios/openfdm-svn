@@ -34,10 +34,10 @@ Joint::~Joint(void)
 void
 Joint::velocity(const Task&,
                 const ContinousStateValueVector& continousState,
-                PortValueList& portValues, FrameData& frameData) const
+                PortValueList& portValues) const
 {
   velocity(portValues[mParentLink], portValues[mChildLink],
-           continousState, portValues, frameData);
+           continousState, portValues);
 }
 
 void

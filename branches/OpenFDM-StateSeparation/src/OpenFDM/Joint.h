@@ -18,9 +18,6 @@
 
 namespace OpenFDM {
 
-/// FIXME: joint's should be lockable, which means trylock == true and
-/// velocity small enough - keep position ...
-
 class Joint : public Interact {
   OPENFDM_OBJECT(Joint, Interact);
 public:
@@ -32,8 +29,7 @@ public:
   virtual void velocity(const MechanicLinkValue& parentLink,
                         MechanicLinkValue& childLink,
                         const ContinousStateValueVector& states,
-                        PortValueList& portValues,
-                        FrameData& frameData) const = 0;
+                        PortValueList& portValues) const = 0;
   virtual void articulation(MechanicLinkValue& parentLink,
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
@@ -47,7 +43,7 @@ public:
 
   /// They implement the mechanic stuff
   virtual void velocity(const Task&, const ContinousStateValueVector&,
-                        PortValueList&, FrameData&) const;
+                        PortValueList&) const;
   virtual void articulation(const Task&, const ContinousStateValueVector&,
                             PortValueList&, FrameData&) const;
   virtual void acceleration(const Task&, const ContinousStateValueVector&,

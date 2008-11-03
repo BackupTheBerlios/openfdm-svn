@@ -30,7 +30,7 @@ public:
   virtual MechanicContext* newMechanicContext() const;
 
   virtual void velocity(const Task&, const ContinousStateValueVector&,
-                        PortValueList&, FrameData&) const
+                        PortValueList&) const
   { }
   virtual void articulation(const Task&, const ContinousStateValueVector&,
                             PortValueList&, FrameData&) const

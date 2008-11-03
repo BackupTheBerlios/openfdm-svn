@@ -35,12 +35,12 @@ public:
   void initVelocities(const /*Init*/Task& task)
   {
     mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mMechanicNode->velocity(task, mContinousState, mPortValueList, mFrameData);
+    mMechanicNode->velocity(task, mContinousState, mPortValueList);
   }
 
   void velocities(const Task& task)
   {
-    mMechanicNode->velocity(task, mContinousState, mPortValueList, mFrameData);
+    mMechanicNode->velocity(task, mContinousState, mPortValueList);
   }
   void articulation(const Task& task)
   {

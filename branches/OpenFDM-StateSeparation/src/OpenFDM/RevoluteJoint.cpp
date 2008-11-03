@@ -72,8 +72,7 @@ void
 RevoluteJoint::velocity(const MechanicLinkValue& parentLink,
                         MechanicLinkValue& childLink,
                         const ContinousStateValueVector& states,
-                        PortValueList& portValues,
-                        FrameData& frameData) const
+                        PortValueList& portValues) const
 {
   VectorN jointPos = states[*mPositionStateInfo];
   if (!mPositionPort.empty())
