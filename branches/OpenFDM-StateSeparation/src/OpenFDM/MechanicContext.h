@@ -18,11 +18,6 @@ class ContinousTask;
 class DiscreteTask;
 class InitTask;
 
-struct FrameData {
-  Matrix hIh;
-  Vector velDot;
-};
-
 class MechanicContext : public LeafContext {
 public:
   MechanicContext(const MechanicNode* mechanicNode);
@@ -44,17 +39,17 @@ public:
   }
   void articulation(const Task& task)
   {
-    mMechanicNode->articulation(task, mContinousState, mPortValueList, mFrameData);
+    mMechanicNode->articulation(task, mContinousState, mPortValueList, hIh);
   }
   void accelerations(const Task& task)
   {
-    mMechanicNode->acceleration(task, mContinousState, mPortValueList, mFrameData);
+    mMechanicNode->acceleration(task, mContinousState, mPortValueList, hIh, velDot);
   }
 
   void derivative(const Task&)
   {
     mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,
-                              mFrameData, mContinousStateDerivative);
+                              velDot, mContinousStateDerivative);
   }
  
   void update(const DiscreteTask& discreteTask)
@@ -67,7 +62,8 @@ public:
 
 private:
   // Stores some values persistent accross velocity/articulation/acceleration
-  FrameData mFrameData;
+  Matrix hIh;
+  Vector velDot;
 
   SharedPtr<const MechanicNode> mMechanicNode;
 

@@ -34,20 +34,21 @@ public:
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            FrameData& frameData) const = 0;
+                            Matrix& hIh) const = 0;
   virtual void acceleration(const MechanicLinkValue& parentLink,
                             MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            FrameData& frameData) const = 0;
+                            const Matrix& hIh, Vector& velDot) const = 0;
 
   /// They implement the mechanic stuff
   virtual void velocity(const Task&, const ContinousStateValueVector&,
                         PortValueList&) const;
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, FrameData&) const;
+                            PortValueList&, Matrix& hIh) const;
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, FrameData&) const;
+                            PortValueList&, const Matrix& hIh,
+                            Vector& velDot) const;
 private:
   MechanicLink mParentLink;
   MechanicLink mChildLink;

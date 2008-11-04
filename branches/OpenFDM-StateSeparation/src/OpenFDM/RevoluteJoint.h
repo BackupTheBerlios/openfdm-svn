@@ -57,16 +57,16 @@ protected:
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            FrameData& frameData) const;
+                            Matrix& hIh) const;
   virtual void acceleration(const MechanicLinkValue& parentLink,
                             MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            FrameData& frameData) const;
+                            const Matrix& hIh, Vector& velDot) const;
 
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
-                          const PortValueList& portValues, FrameData&,
+                          const PortValueList& portValues, const Vector& velDot,
                           ContinousStateValueVector&) const;
 
 private:

@@ -15,7 +15,6 @@ class DiscreteTask;
 class PortValueList;
 class Task;
 class MechanicContext;
-class FrameData;
 
 class MechanicNode : public LeafNode {
   OPENFDM_OBJECT(MechanicNode, LeafNode);
@@ -33,15 +32,15 @@ public:
                         PortValueList&) const
   { }
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, FrameData&) const
+                            PortValueList&, Matrix&) const
   { }
   // hmm, may be this should be output???
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, FrameData&) const
+                            PortValueList&, const Matrix&, Vector&) const
   { }
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
-                          const PortValueList&, FrameData&,
+                          const PortValueList&, const Vector&,
                           ContinousStateValueVector&) const
   { }
   virtual void update(const DiscreteTask&, DiscreteStateValueVector&,

@@ -94,7 +94,7 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            FrameData& frameData) const
+                            Matrix& hIh) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -110,15 +110,15 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
 
   // Compute the projection to the joint coordinate space
   Matrix6N Ih = I*mJointMatrix;
-  frameData.hIh = trans(mJointMatrix)*Ih;
-  MatrixFactorsNN hIh = MatrixNN(frameData.hIh);
+  hIh = trans(mJointMatrix)*Ih;
+  MatrixFactorsNN hIhFac = MatrixNN(hIh);
 
   // Note that the momentum of the local mass is already included in the
   // child links force due the the mass model ...
   Vector6 mPAlpha = childLink.getForce() + I*childLink.getFrame().getHdot();
   Vector6 force = mPAlpha;
 
-  if (hIh.singular()) {
+  if (hIhFac.singular()) {
     Log(ArtBody,Error) << "Detected singular mass matrix for "
                        << "CartesianJointFrame \"" << getName()
                        << "\": Fix your model!" << endl;
@@ -126,8 +126,8 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
   }
   
   // Project away the directions handled with this current joint
-  force -= Ih*hIh.solve(trans(mJointMatrix)*mPAlpha - jointForce);
-  I -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
+  force -= Ih*hIhFac.solve(trans(mJointMatrix)*mPAlpha - jointForce);
+  I -= SpatialInertia(Ih*hIhFac.solve(trans(Ih)));
 
   // Transform to parent link's coordinates and apply to the parent link
   parentLink.applyForce(childLink.getFrame().forceToParent(force));
@@ -139,32 +139,31 @@ RevoluteJoint::acceleration(const MechanicLinkValue& parentLink,
                             MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            FrameData& frameData) const
+                            const Matrix& hIh, Vector& velDot) const
 {
   Vector6 parentSpAccel
     = childLink.getFrame().motionFromParent(parentLink.getFrame().getSpAccel());
 
   Vector6 f = childLink.getForce();
   f += childLink.getInertia()*(parentSpAccel + childLink.getFrame().getHdot());
-  MatrixFactorsNN hIh = MatrixNN(frameData.hIh);
+  MatrixFactorsNN hIhFac = MatrixNN(hIh);
   VectorN jointForce;
   if (mForcePort.empty())
     jointForce.clear();
   else
     jointForce = portValues[mForcePort];
-  VectorN velDot = hIh.solve(jointForce - trans(mJointMatrix)*f);
-  frameData.velDot = velDot;
+  velDot = hIhFac.solve(jointForce - trans(mJointMatrix)*f);
   childLink.setAccel(parentLink, mJointMatrix*velDot);
 }
 
 void
 RevoluteJoint::derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector& states,
-                          const PortValueList&, FrameData& frameData,
+                          const PortValueList&, const Vector& velDot,
                           ContinousStateValueVector& derivative) const
 {
   derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];
-  derivative[*mVelocityStateInfo] = frameData.velDot;
+  derivative[*mVelocityStateInfo] = velDot;
 }
 
 } // namespace OpenFDM

@@ -19,7 +19,7 @@ public:
   virtual ~Mass(void);
 
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, FrameData&) const;
+                            PortValueList&, Matrix&) const;
 
   const InertiaMatrix& getInertia(void) const;
   void setInertia(const InertiaMatrix& inertia);

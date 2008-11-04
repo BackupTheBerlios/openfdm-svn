@@ -43,19 +43,20 @@ Joint::velocity(const Task&,
 void
 Joint::articulation(const Task&,
                     const ContinousStateValueVector& continousState,
-                    PortValueList& portValues, FrameData& frameData) const
+                    PortValueList& portValues, Matrix& hIh) const
 {
   articulation(portValues[mParentLink], portValues[mChildLink],
-               continousState, portValues, frameData);
+               continousState, portValues, hIh);
 }
 
 void
 Joint::acceleration(const Task&,
                     const ContinousStateValueVector& continousState,
-                    PortValueList& portValues, FrameData& frameData) const
+                    PortValueList& portValues, const Matrix& hIh,
+                    Vector& velDot) const
 {
   acceleration(portValues[mParentLink], portValues[mChildLink],
-               continousState, portValues, frameData);
+               continousState, portValues, hIh, velDot);
 }
 
 } // namespace OpenFDM
