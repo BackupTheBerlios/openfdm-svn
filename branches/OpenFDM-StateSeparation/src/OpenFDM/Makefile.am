@@ -194,7 +194,6 @@ OpenFDMModelsHEADERS = \
   DiscreteIntegrator.h \
   ExternalForceModel.h \
   FixedRootJoint.h \
-  FixedRootJointFrame.h \
   Force.h \
   Gain.h \
   Gravity.h \
@@ -208,16 +207,11 @@ OpenFDMModelsHEADERS = \
   MaxModel.h \
   MinModel.h \
   MobileRootJoint.h \
-  MobileRootJointFrame.h \
   Output.h \
   Product.h \
   PrismaticJoint.h \
-  PrismaticJointFrame.h \
   RevoluteActuator.h \
-  RevoluteActuatorFrame.h \
   RevoluteJoint.h \
-  RevoluteJointFrame.h \
-  RootFrame.h \
   Saturation.h \
   Sensor.h \
   SimpleContact.h \
@@ -278,7 +272,6 @@ OpenFDMMechanicSOURCES = \
 #   Product.cpp \
 #   PrismaticJoint.cpp \
 #   RigidBody.cpp \
-#   RootFrame.cpp \
 #   Saturation.cpp \
 #   SimpleContact.cpp \
 #   SimpleGear.cpp \
