@@ -96,7 +96,32 @@ RevoluteActuator::articulation(MechanicLinkValue& parentLink,
                             Matrix&) const
 {
   VectorN velDot;
-  velDot.clear();
+
+  // This is a simple second order system with velocity limits.
+  // the joints accelerations, velocities and positions must fit together
+  // otherwise the articulated body dynamics get fooled ...
+
+  if (mPositionControl) {
+    // The desired position input
+    VectorN desiredPos = portValues[mInputPort];
+    // Compute the error ...
+    VectorN posErr = desiredPos - states[*mPositionStateInfo];
+    // ... and compute a desired velocity within the given limits from that.
+    VectorN desiredVel;
+    desiredVel(0) = smoothSaturate(mVelGain*posErr(0), mMaxVel);
+    // The usual control loops: there we get a velocity error
+    VectorN velErr = desiredVel - states[*mVelocityStateInfo];
+    // and accelerate that proportional to that error ...
+    velDot = mVelDotGain*velErr;
+  } else {
+    // The desired velocity input
+    VectorN desiredVel = portValues[mInputPort];
+    // The usual control loops: there we get a velocity error
+    VectorN velErr = desiredVel - states[*mVelocityStateInfo];
+    // and accelerate that proportional to that error ...
+    velDot = mVelDotGain*velErr;
+  }
+
   articulation(parentLink, childLink, velDot);
 }
 
@@ -105,12 +130,36 @@ RevoluteActuator::acceleration(const MechanicLinkValue& parentLink,
                                MechanicLinkValue& childLink,
                                const ContinousStateValueVector& states,
                                PortValueList& portValues,
-                               const Matrix&, Vector& _velDot) const
+                               const Matrix&, Vector& velDot) const
 {
-  VectorN velDot;
-  velDot.clear();
-  _velDot = velDot;
-  acceleration(parentLink, childLink, velDot);
+  // This is a simple second order system with velocity limits.
+  // the joints accelerations, velocities and positions must fit together
+  // otherwise the articulated body dynamics get fooled ...
+
+  if (mPositionControl) {
+    // The desired position input
+    VectorN desiredPos = portValues[mInputPort];
+    // Compute the error ...
+    VectorN posErr = desiredPos - states[*mPositionStateInfo];
+    // ... and compute a desired velocity within the given limits from that.
+    VectorN desiredVel;
+    desiredVel(0) = smoothSaturate(mVelGain*posErr(0), mMaxVel);
+    // The usual control loops: there we get a velocity error
+    VectorN velErr = desiredVel - states[*mVelocityStateInfo];
+    // and accelerate that proportional to that error ...
+    velDot = mVelDotGain*velErr;
+  } else {
+    // The desired velocity input
+    VectorN desiredVel = portValues[mInputPort];
+    // The usual control loops: there we get a velocity error
+    VectorN velErr = desiredVel - states[*mVelocityStateInfo];
+    // and accelerate that proportional to that error ...
+    velDot = mVelDotGain*velErr;
+  }
+  // FIXME
+  VectorN _velDot = velDot;
+
+  acceleration(parentLink, childLink, _velDot);
 }
 
 void

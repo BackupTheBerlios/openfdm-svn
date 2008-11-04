@@ -72,6 +72,10 @@ private:
   SharedPtr<Vector1StateInfo> mVelocityStateInfo;
 
   Vector3 mAxis;
+  bool mPositionControl;
+  real_type mVelGain;
+  real_type mVelDotGain;
+  real_type mMaxVel;
 };
 
 } // namespace OpenFDM
