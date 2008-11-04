@@ -15,10 +15,14 @@
 #include "Joint.h"
 #include "MatrixInputPort.h"
 #include "MatrixOutputPort.h"
+#include "ContinousStateValueVector.h"
+#include "PortValueList.h"
+#include "MechanicContext.h"
+#include "CartesianJoint.h"
 
 namespace OpenFDM {
 
-class RevoluteJoint : public Joint {
+class RevoluteJoint : public CartesianJoint<1> {
   OPENFDM_OBJECT(RevoluteJoint, Joint);
 public:
   RevoluteJoint(const std::string& name);
@@ -29,21 +33,7 @@ public:
   const Vector3& getAxis() const;
   void setAxis(const Vector3& axis);
 
-  /** Set the position of the joint.
-   */
-//   void setPosition(const Vector3& position);
-
-  /** Sets the zero orientation of the joint.
-   */
-//   void setOrientation(const Quaternion& orientation);
-
 protected:
-
-  enum { n = 1 };
-  typedef LinAlg::Vector<real_type,n> VectorN;
-  typedef LinAlg::Matrix<real_type,6,n> Matrix6N;
-  typedef LinAlg::Matrix<real_type,n,n> MatrixNN;
-  typedef LinAlg::MatrixFactors<real_type,n,n,LinAlg::LUTag> MatrixFactorsNN;
 
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector& continousState,
@@ -69,6 +59,10 @@ protected:
                           const PortValueList& portValues, const Vector& velDot,
                           ContinousStateValueVector&) const;
 
+  using CartesianJoint<1>::velocity;
+  using CartesianJoint<1>::articulation;
+  using CartesianJoint<1>::acceleration;
+
 private:
   MatrixInputPort mForcePort;
   MatrixOutputPort mPositionPort;
@@ -78,8 +72,6 @@ private:
   SharedPtr<Vector1StateInfo> mVelocityStateInfo;
 
   Vector3 mAxis;
-
-  Matrix6N mJointMatrix;
 };
 
 } // namespace OpenFDM

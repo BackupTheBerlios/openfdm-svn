@@ -182,6 +182,7 @@ OpenFDMModelsHEADERS = \
   AtmosphereSTD1976.h \
   Bias.h \
   BinaryFunctionModel.h \
+  CartesianJoint.h \
   ConstModel.h \
   Contact.h \
   DeadBand.h \

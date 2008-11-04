@@ -11,6 +11,46 @@
 
 namespace OpenFDM {
 
+// Ok, types of mechanic nodes:
+// Joints, mostly two ports need ordered execution
+// RigidBody, no own logic, just moving ports from parent to children.
+//   should not show up in computations at all
+// Interact, forces internal, external, mass, sensor, no ordering required,
+//   could execute parallel
+
+// For contexts:
+// JointContext has internal data for the AB algorithm
+// No RigidBody context at all
+// Interact, something similar we have now for the mechanic context??
+
+// Current inheritence tree:
+// Leaf - Model ...
+//      |
+//      |- MechanicNode -- RigidBody
+//                      |- Interact  -- Mass
+//                                   |- Force
+//                                   |- Joint
+//                                   |- RootJoint
+
+// Desired inheritence tree:
+// Leaf?- Model ...
+//      |
+//      |- MechanicNode?-- RigidBody
+//                      |
+//                      |- Interact  -- Mass
+//                      |            |- Sensor
+//                      |            |- Force
+//                      |
+//                      |- Joint ------ RootJoint
+//                                   |- CartesianJoint -- RevoluteJoint
+//                                                     | ...
+
+
+// TODO:
+// * Remove AbstractNodeContext ...
+// * Make Inheritance for mechanics like that ...
+// * allocate contexts later ...
+
 class DiscreteTask;
 class PortValueList;
 class Task;

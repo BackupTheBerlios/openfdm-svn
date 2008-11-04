@@ -22,7 +22,7 @@ BEGIN_OPENFDM_OBJECT_DEF(RevoluteJoint, Joint)
   END_OPENFDM_OBJECT_DEF
 
 RevoluteJoint::RevoluteJoint(const std::string& name) :
-  Joint(name),
+  CartesianJoint<1>(name, Vector6(Vector3(1, 0, 0), Vector3::zeros())),
   mForcePort(this, "force", Size(1, 1), true),
   mPositionPort(this, "position", Size(1, 1)),
   mVelocityPort(this, "velocity", Size(1, 1)),
@@ -56,7 +56,7 @@ RevoluteJoint::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-  mJointMatrix = Vector6(mAxis, Vector3::zeros());
+  setJointMatrix(Vector6(mAxis, Vector3::zeros()));
 }
 
 void
@@ -77,16 +77,15 @@ RevoluteJoint::velocity(const MechanicLinkValue& parentLink,
   VectorN jointPos = states[*mPositionStateInfo];
   if (!mPositionPort.empty())
     portValues[mPositionPort] = jointPos;
-
+  
   VectorN jointVel = states[*mVelocityStateInfo];
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
-
+  
   Vector3 position(0, 0, 0);
   Quaternion orientation(Quaternion::fromAngleAxis(jointPos(0), mAxis));
-  Vector6 velocity(mAxis*jointVel, Vector3::zeros());
 
-  childLink.setPosAndVel(parentLink, position, orientation, velocity);
+  velocity(parentLink, childLink, position, orientation, getJointMatrix()*jointVel);
 }
 
 void
@@ -101,37 +100,8 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
     jointForce.clear();
   else
     jointForce = portValues[mForcePort];
-
-  // The formulas conform to Roy Featherstones book eqn (6.37), (6.38)
-
-  // Store the outboard values since we will need them later in velocity
-  // derivative computations
-  SpatialInertia I = childLink.getInertia();
-
-  // Compute the projection to the joint coordinate space
-  Matrix6N Ih = I*mJointMatrix;
-  hIh = trans(mJointMatrix)*Ih;
-  MatrixFactorsNN hIhFac = MatrixNN(hIh);
-
-  // Note that the momentum of the local mass is already included in the
-  // child links force due the the mass model ...
-  Vector6 mPAlpha = childLink.getForce() + I*childLink.getFrame().getHdot();
-  Vector6 force = mPAlpha;
-
-  if (hIhFac.singular()) {
-    Log(ArtBody,Error) << "Detected singular mass matrix for "
-                       << "CartesianJointFrame \"" << getName()
-                       << "\": Fix your model!" << endl;
-    return;
-  }
   
-  // Project away the directions handled with this current joint
-  force -= Ih*hIhFac.solve(trans(mJointMatrix)*mPAlpha - jointForce);
-  I -= SpatialInertia(Ih*hIhFac.solve(trans(Ih)));
-
-  // Transform to parent link's coordinates and apply to the parent link
-  parentLink.applyForce(childLink.getFrame().forceToParent(force));
-  parentLink.applyInertia(childLink.getFrame().inertiaToParent(I));
+  articulation(parentLink, childLink, jointForce, hIh);
 }
 
 void
@@ -141,19 +111,13 @@ RevoluteJoint::acceleration(const MechanicLinkValue& parentLink,
                             PortValueList& portValues,
                             const Matrix& hIh, Vector& velDot) const
 {
-  Vector6 parentSpAccel
-    = childLink.getFrame().motionFromParent(parentLink.getFrame().getSpAccel());
-
-  Vector6 f = childLink.getForce();
-  f += childLink.getInertia()*(parentSpAccel + childLink.getFrame().getHdot());
-  MatrixFactorsNN hIhFac = MatrixNN(hIh);
   VectorN jointForce;
   if (mForcePort.empty())
     jointForce.clear();
   else
     jointForce = portValues[mForcePort];
-  velDot = hIhFac.solve(jointForce - trans(mJointMatrix)*f);
-  childLink.setAccel(parentLink, mJointMatrix*velDot);
+  
+  acceleration(parentLink, childLink, jointForce, hIh, velDot);
 }
 
 void

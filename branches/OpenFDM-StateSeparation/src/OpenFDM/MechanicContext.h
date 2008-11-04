@@ -25,40 +25,40 @@ public:
 
   virtual const MechanicNode& getNode() const;
 
-  bool alloc()
+  virtual bool alloc()
   { if (!allocStates()) return false; return mMechanicNode->alloc(*this); }
-  void initVelocities(const /*Init*/Task& task)
+  virtual void initVelocities(const /*Init*/Task& task)
   {
     mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList);
     mMechanicNode->velocity(task, mContinousState, mPortValueList);
   }
 
-  void velocities(const Task& task)
+  virtual void velocities(const Task& task)
   {
     mMechanicNode->velocity(task, mContinousState, mPortValueList);
   }
-  void articulation(const Task& task)
+  virtual void articulation(const Task& task)
   {
     mMechanicNode->articulation(task, mContinousState, mPortValueList, hIh);
   }
-  void accelerations(const Task& task)
+  virtual void accelerations(const Task& task)
   {
     mMechanicNode->acceleration(task, mContinousState, mPortValueList, hIh, velDot);
   }
 
-  void derivative(const Task&)
+  virtual void derivative(const Task&)
   {
     mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,
                               velDot, mContinousStateDerivative);
   }
  
-  void update(const DiscreteTask& discreteTask)
+  virtual void update(const DiscreteTask& discreteTask)
   {
     mMechanicNode->update(discreteTask, mDiscreteState,
                           mContinousState, mPortValueList);
   }
 
-  bool isConnectedTo(const MechanicContext& mechanicContext) const;
+  virtual bool isConnectedTo(const MechanicContext& mechanicContext) const;
 
 private:
   // Stores some values persistent accross velocity/articulation/acceleration
