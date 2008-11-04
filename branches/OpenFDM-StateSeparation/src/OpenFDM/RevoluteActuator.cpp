@@ -11,174 +11,116 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Frame.h"
-#include "RigidBody.h"
-#include "RevoluteActuatorFrame.h"
+#include "PortValueList.h"
+#include "ContinousStateValueVector.h"
+#include "MechanicContext.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuator, Joint)
-  DEF_OPENFDM_PROPERTY(Real, MaxVel, Serialized)
-  DEF_OPENFDM_PROPERTY(Real, VelGain, Serialized)
-  DEF_OPENFDM_PROPERTY(Real, VelDotGain, Serialized)
-  END_OPENFDM_OBJECT_DEF
-
-BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuatorFrame, Frame)
+  DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RevoluteActuator::RevoluteActuator(const std::string& name) :
-  Joint(name),
-  mMaxVel(10),
-  mVelGain(1e2),
-  mVelDotGain(1e2)
+  CartesianJoint<1>(name, Vector6(Vector3(1, 0, 0), Vector3::zeros())),
+  mInputPort(this, "input", Size(1, 1), true),
+  mPositionPort(this, "position", Size(1, 1)),
+  mVelocityPort(this, "velocity", Size(1, 1)),
+  mPositionStateInfo(new Vector1StateInfo),
+  mVelocityStateInfo(new Vector1StateInfo),
+  mAxis(Vector3(1, 0, 0))
 {
-  setNumContinousStates(2);
+  addContinousStateInfo(mPositionStateInfo);
+  addContinousStateInfo(mVelocityStateInfo);
 
-  mRevoluteActuatorFrame = new RevoluteActuatorFrame(name);
-
-  setNumInputPorts(1);
-  setInputPortName(0, "position");
-
-  setNumOutputPorts(2);
-  setOutputPort(0, "jointPos", this, &RevoluteActuator::getJointPos);
-  setOutputPort(1, "jointVel", this, &RevoluteActuator::getJointVel);
+  // FIXME
+  setAxis(mAxis);
 }
 
 RevoluteActuator::~RevoluteActuator(void)
 {
 }
 
-bool
-RevoluteActuator::init(void)
+const Vector3&
+RevoluteActuator::getAxis() const
 {
-  mDesiredPositionPort = getInputPort(0)->toRealPortHandle();
-  if (!mDesiredPositionPort.isConnected()) {
-    Log(Model, Error) << "Initialization of RevoluteActuator model \""
-                      << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
-  recheckTopology();
-  return Joint::init();
+  return mAxis;
 }
 
 void
-RevoluteActuator::recheckTopology(void)
-{
-  if (!getOutboardBody() || !getInboardBody())
-    return;
-  
-  // check for the inboard frame
-  Frame* inFrame = getInboardBody()->getFrame();
-  if (!inFrame)
-    return;
-  
-  Frame* outFrame = getOutboardBody()->getFrame();
-  if (!outFrame) {
-    getOutboardBody()->setFrame(mRevoluteActuatorFrame);
-  }
-  outFrame = getOutboardBody()->getFrame();
-  if (!outFrame->isDirectChildFrameOf(inFrame)) {
-    inFrame->addChildFrame(mRevoluteActuatorFrame);
-  }
-}
-
-void
-RevoluteActuator::setJointAxis(const Vector3& axis)
+RevoluteActuator::setAxis(const Vector3& axis)
 {
   real_type nrm = norm(axis);
   if (nrm <= Limits<real_type>::min()) {
     Log(Initialization, Error) << "JointAxis is zero ..." << endl;
     return;
   }
-  mRevoluteActuatorFrame->setJointAxis((1/nrm)*axis);
-}
-
-const real_type&
-RevoluteActuator::getJointPos(void) const
-{
-  return mRevoluteActuatorFrame->getJointPos();
+  mAxis = (1/nrm)*axis;
+  setJointMatrix(Vector6(mAxis, Vector3::zeros()));
 }
 
 void
-RevoluteActuator::setJointPos(real_type pos)
+RevoluteActuator::init(const Task&, DiscreteStateValueVector&,
+                       ContinousStateValueVector& continousState,
+                       const PortValueList&) const
 {
-  mRevoluteActuatorFrame->setJointPos(pos);
-}
-
-const real_type&
-RevoluteActuator::getJointVel(void) const
-{
-  return mRevoluteActuatorFrame->getJointVel();
+  continousState[*mPositionStateInfo] = 0;
+  continousState[*mVelocityStateInfo] = 0;
 }
 
 void
-RevoluteActuator::setJointVel(real_type vel)
+RevoluteActuator::velocity(const MechanicLinkValue& parentLink,
+                           MechanicLinkValue& childLink,
+                           const ContinousStateValueVector& states,
+                           PortValueList& portValues) const
 {
-  mRevoluteActuatorFrame->setJointVel(vel);
+  VectorN jointPos = states[*mPositionStateInfo];
+  if (!mPositionPort.empty())
+    portValues[mPositionPort] = jointPos;
+  
+  VectorN jointVel = states[*mVelocityStateInfo];
+  if (!mVelocityPort.empty())
+    portValues[mVelocityPort] = jointVel;
+  
+  Vector3 position(0, 0, 0);
+  Quaternion orientation(Quaternion::fromAngleAxis(jointPos(0), mAxis));
+
+  velocity(parentLink, childLink, position, orientation, getJointMatrix()*jointVel);
 }
 
 void
-RevoluteActuator::setPosition(const Vector3& position)
+RevoluteActuator::articulation(MechanicLinkValue& parentLink,
+                            const MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            Matrix&) const
 {
-  mRevoluteActuatorFrame->setPosition(position);
+  VectorN velDot;
+  velDot.clear();
+  articulation(parentLink, childLink, velDot);
 }
 
 void
-RevoluteActuator::setOrientation(const Quaternion& orientation)
+RevoluteActuator::acceleration(const MechanicLinkValue& parentLink,
+                               MechanicLinkValue& childLink,
+                               const ContinousStateValueVector& states,
+                               PortValueList& portValues,
+                               const Matrix&, Vector& _velDot) const
 {
-  mRevoluteActuatorFrame->setZeroOrientation(orientation);
+  VectorN velDot;
+  velDot.clear();
+  _velDot = velDot;
+  acceleration(parentLink, childLink, velDot);
 }
 
 void
-RevoluteActuator::jointArticulation(SpatialInertia& artI, Vector6& artF,
-                                 const SpatialInertia& outI,
-                                 const Vector6& outF)
+RevoluteActuator::derivative(const DiscreteStateValueVector&,
+                             const ContinousStateValueVector& states,
+                             const PortValueList&, const Vector& velDot,
+                             ContinousStateValueVector& derivative) const
 {
-  // This is a simple second order system with velocity limits.
-  // the joints accelerations, velocities and positions must fit together
-  // otherwise the articulated body dynamics get fooled ...
-
-  // The desired position input
-  real_type desiredPos = mDesiredPositionPort.getRealValue();
-  // Compute the error ...
-  real_type posErr = desiredPos - mRevoluteActuatorFrame->getJointPos();
-  // ... and compute a desired velocity within the given limits from that.
-  real_type desiredVel = smoothSaturate(mVelGain*posErr, mMaxVel);
-  // The usual control loops: there we get a velocity error
-  real_type velErr = desiredVel - mRevoluteActuatorFrame->getJointVel();
-  // and accelerate that proportional to that error ...
-  mRevoluteActuatorFrame->setJointVelDot(mVelDotGain*velErr);
-
-  // now that the joints acceleration is known, compute the articulated
-  // body force and inertia ...
-  mRevoluteActuatorFrame->jointArticulation(artI, artF, outF, outI);
-}
-
-void
-RevoluteActuator::setState(const StateStream& state)
-{
-  CartesianActuatorFrame<1>::VectorN v;
-  state.readSubState(v);
-  mRevoluteActuatorFrame->setJointPos(v(0));
-  state.readSubState(v);
-  mRevoluteActuatorFrame->setJointVel(v(0));
-}
-
-void
-RevoluteActuator::getState(StateStream& state) const
-{
-  state.writeSubState(mRevoluteActuatorFrame->getJointPos());
-  state.writeSubState(mRevoluteActuatorFrame->getJointVel());
-}
-
-void
-RevoluteActuator::getStateDeriv(StateStream& stateDeriv)
-{
-  stateDeriv.writeSubState(mRevoluteActuatorFrame->getJointVel());
-  stateDeriv.writeSubState(mRevoluteActuatorFrame->getJointVelDot());
+  derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];
+  derivative[*mVelocityStateInfo] = velDot;
 }
 
 } // namespace OpenFDM

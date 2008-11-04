@@ -38,7 +38,6 @@ protected:
   void setJointMatrix(const Matrix6N& jointMatrix)
   { mJointMatrix = jointMatrix; }
 
-  // Minimal implementation, factored out all unneeded
   void velocity(const MechanicLinkValue& parentLink,
                 MechanicLinkValue& childLink, const Vector3& position,
                 const Quaternion& orientation, const Vector6& vel) const
@@ -46,8 +45,9 @@ protected:
     childLink.setPosAndVel(parentLink, position, orientation, vel);
   }
 
-  
-  // Minimal implementation, factored out all unneeded
+  /** Compute the articulation step for a given joint force.
+   *  Use this for usual joints.
+   */
   void articulation(MechanicLinkValue& parentLink,
                     const MechanicLinkValue& childLink,
                     const VectorN& jointForce,
@@ -85,6 +85,9 @@ protected:
     parentLink.applyInertia(childLink.getFrame().inertiaToParent(I));
   }
 
+  /** Compute the acceleration step for a given joint force.
+   *  Use this for usual joints.
+   */
   void acceleration(const MechanicLinkValue& parentLink,
                     MechanicLinkValue& childLink, const VectorN& jointForce,
                     const Matrix& hIh, Vector& velDot) const
@@ -99,6 +102,36 @@ protected:
     childLink.setAccel(parentLink, mJointMatrix*velDot);
   }
   
+  /** Compute the articulation step for a given velocity derivative.
+   *  Use this for actuators.
+   */
+  void articulation(MechanicLinkValue& parentLink,
+                    const MechanicLinkValue& childLink,
+                    const VectorN& velDot) const
+  {
+    // The formulas conform to Roy Featherstones book eqn (7.36), (7.37)
+
+    // Compute the articulated force and inertia.
+    // This Since there is no projection step with the joint axis, it is clear
+    // that this is just a rigid connection ...
+    SpatialInertia I = childLink.getInertia();
+    Vector6 force = childLink.getForce();
+    force += I*(childLink.getFrame().getHdot() + mJointMatrix*velDot);
+    
+    // Transform to parent link's coordinates and apply to the parent link
+    parentLink.applyForce(childLink.getFrame().forceToParent(force));
+    parentLink.applyInertia(childLink.getFrame().inertiaToParent(I));
+  }
+
+  /** Compute the acceleration step for a given velocity derivative.
+   *  Use this for actuators.
+   */
+  void acceleration(const MechanicLinkValue& parentLink,
+                    MechanicLinkValue& childLink, VectorN& velDot) const
+  {
+    childLink.setAccel(parentLink, mJointMatrix*velDot);
+  }
+
 private:
   Matrix6N mJointMatrix;
 };

@@ -9,95 +9,69 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
+#include "MatrixStateInfo.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Frame.h"
-#include "RigidBody.h"
 #include "Joint.h"
+#include "MatrixInputPort.h"
+#include "MatrixOutputPort.h"
+#include "ContinousStateValueVector.h"
+#include "PortValueList.h"
+#include "MechanicContext.h"
+#include "CartesianJoint.h"
 
 namespace OpenFDM {
 
-class RevoluteActuatorFrame;
-
-class RevoluteActuator : public Joint {
+class RevoluteActuator : public CartesianJoint<1> {
   OPENFDM_OBJECT(RevoluteActuator, Joint);
 public:
   RevoluteActuator(const std::string& name);
   virtual ~RevoluteActuator(void);
 
-  virtual bool init(void);
-
-  virtual void recheckTopology(void);
-
   /** Sets the joint axis where this joint is allowed to rotate around.
    */
-  void setJointAxis(const Vector3& axis);
+  const Vector3& getAxis() const;
+  void setAxis(const Vector3& axis);
 
-  /** Returns the joint position.
-   */
-  const real_type& getJointPos(void) const;
+protected:
 
-  /** Sets the joint position.
-   */
-  void setJointPos(real_type pos);
+  virtual void init(const Task&, DiscreteStateValueVector&,
+                    ContinousStateValueVector& continousState,
+                    const PortValueList&) const;
 
-  /** Returns the joint velocity.
-   */
-  const real_type& getJointVel(void) const;
+  virtual void velocity(const MechanicLinkValue& parentLink,
+                        MechanicLinkValue& childLink,
+                        const ContinousStateValueVector& states,
+                        PortValueList& portValues) const;
+  virtual void articulation(MechanicLinkValue& parentLink,
+                            const MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            Matrix& hIh) const;
+  virtual void acceleration(const MechanicLinkValue& parentLink,
+                            MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            const Matrix& hIh, Vector& velDot) const;
 
-  /** Sets the joint velocity.
-   */
-  void setJointVel(real_type vel);
+  virtual void derivative(const DiscreteStateValueVector&,
+                          const ContinousStateValueVector&,
+                          const PortValueList& portValues, const Vector& velDot,
+                          ContinousStateValueVector&) const;
 
-  /** Set the position of the joint.
-   */
-  void setPosition(const Vector3& position);
-
-  /** Sets the zero orientation of the joint.
-   */
-  void setOrientation(const Quaternion& orientation);
-
-  const real_type& getMaxVel(void) const
-  { return mMaxVel; }
-  void setMaxVel(const real_type& maxVel)
-  { mMaxVel = maxVel; }
-
-  const real_type& getVelGain(void) const
-  { return mVelGain; }
-  void setVelGain(const real_type& velGain)
-  { mVelGain = velGain; }
-
-  const real_type& getVelDotGain(void) const
-  { return mVelDotGain; }
-  void setVelDotGain(const real_type& velDotGain)
-  { mVelDotGain = velDotGain; }
+  using CartesianJoint<1>::velocity;
+  using CartesianJoint<1>::articulation;
+  using CartesianJoint<1>::acceleration;
 
 private:
-  /** Computes the inboard articulated inertia and force for
-      this articulated body. It is part of the articulated body algorithm.
-   */
-  virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
-                                 const SpatialInertia& outI,
-                                 const Vector6& outF);
+  MatrixInputPort mInputPort;
+  MatrixOutputPort mPositionPort;
+  MatrixOutputPort mVelocityPort;
 
-  /** Methods for the OpenFDM::Part.
-   */
-  virtual void setState(const StateStream& state);
-  virtual void getState(StateStream& state) const;
-  virtual void getStateDeriv(StateStream& state);
+  SharedPtr<Vector1StateInfo> mPositionStateInfo;
+  SharedPtr<Vector1StateInfo> mVelocityStateInfo;
 
-  /// The maximum movement of the controler
-  real_type mMaxVel;
-  /// The velocity p gain
-  real_type mVelGain;
-  /// The velocity derivative p gain
-  real_type mVelDotGain;
-
-  /// The frame of the mobile root
-  SharedPtr<RevoluteActuatorFrame> mRevoluteActuatorFrame;
-
-  /// Input port for the desired position
-  RealPortHandle mDesiredPositionPort;
+  Vector3 mAxis;
 };
 
 } // namespace OpenFDM
