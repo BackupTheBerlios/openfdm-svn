@@ -35,23 +35,23 @@ Delay::~Delay()
 }
 
 bool
-Delay::alloc(LeafContext& leafContext) const
+Delay::alloc(LeafContext& context) const
 {
   Size sz = size(mInitialValue);
   Log(Initialization, Debug)
     << "Size for Delay is detemined by the static initial value "
     << "with size: " << trans(sz) << std::endl;
-  if (!leafContext.mPortValueList.setOrCheckPortSize(mInputPort, sz)) {
+  if (!context.mPortValueList.setOrCheckPortSize(mInputPort, sz)) {
     Log(Initialization, Error)
       << "Size for input port does not match!" << std::endl;
     return false;
   }
-  if (!leafContext.mPortValueList.setOrCheckPortSize(mOutputPort, sz)) {
+  if (!context.mPortValueList.setOrCheckPortSize(mOutputPort, sz)) {
     Log(Initialization, Error)
       << "Size for output port does not match!" << std::endl;
     return false;
   }
-  leafContext.mDiscreteState.setValue(*mMatrixStateInfo, leafContext);
+  context.mDiscreteState.setValue(*mMatrixStateInfo, context);
   return true;
 }
 
