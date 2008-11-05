@@ -3,167 +3,129 @@
  */
 
 #include "PrismaticJoint.h"
-
 #include "Assert.h"
 #include "LogStream.h"
-#include "Object.h"
 #include "Limits.h"
+#include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Frame.h"
-#include "RigidBody.h"
-#include "PrismaticJointFrame.h"
+#include "PortValueList.h"
+#include "ContinousStateValueVector.h"
+#include "MechanicContext.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(PrismaticJoint, Joint)
+  DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-BEGIN_OPENFDM_OBJECT_DEF(PrismaticJointFrame, Frame)
-  END_OPENFDM_OBJECT_DEF
-
-PrismaticJoint::PrismaticJoint(const std::string& name)
-  : Joint(name)
+PrismaticJoint::PrismaticJoint(const std::string& name) :
+  CartesianJoint<1>(name, Vector6(Vector3::zeros(), Vector3(1, 0, 0))),
+  mForcePort(this, "force", Size(1, 1), true),
+  mPositionPort(this, "position", Size(1, 1)),
+  mVelocityPort(this, "velocity", Size(1, 1)),
+  mPositionStateInfo(new Vector1StateInfo),
+  mVelocityStateInfo(new Vector1StateInfo),
+  mAxis(Vector3(1, 0, 0))
 {
-  setNumContinousStates(2);
+  addContinousStateInfo(mPositionStateInfo);
+  addContinousStateInfo(mVelocityStateInfo);
 
-  mPrismaticJointFrame = new PrismaticJointFrame(name);
-
-  setNumInputPorts(1);
-  setInputPortName(0, "jointForce");
-
-  // Since these output ports are just fed by the current state of the
-  // multibody system, we do not have a direct feedthrough model
-  setNumOutputPorts(2);
-  setOutputPort(0, "jointPos", this, &PrismaticJoint::getJointPos);
-  setOutputPort(1, "jointVel", this, &PrismaticJoint::getJointVel);
+  // FIXME
+  setAxis(mAxis);
 }
 
 PrismaticJoint::~PrismaticJoint(void)
 {
 }
 
-bool
-PrismaticJoint::init(void)
+const Vector3&
+PrismaticJoint::getAxis() const
 {
-  /// Check if we have an input port connected to the joint force ...
-  if (getInputPort(0))
-    mJointForcePort = getInputPort(0)->toRealPortHandle();
-  else
-    mJointForcePort = 0;
-
-  recheckTopology();
-  return Joint::init();
+  return mAxis;
 }
 
 void
-PrismaticJoint::recheckTopology(void)
-{
-  if (!getOutboardBody() || !getInboardBody())
-    return;
-  
-  // check for the inboard frame
-  Frame* inFrame = getInboardBody()->getFrame();
-  if (!inFrame)
-    return;
-  
-  Frame* outFrame = getOutboardBody()->getFrame();
-  if (!outFrame) {
-    getOutboardBody()->setFrame(mPrismaticJointFrame);
-  }
-  outFrame = getOutboardBody()->getFrame();
-  if (!outFrame->isDirectChildFrameOf(inFrame)) {
-    inFrame->addChildFrame(mPrismaticJointFrame);
-  }
-}
-
-void
-PrismaticJoint::setJointAxis(const Vector3& axis)
+PrismaticJoint::setAxis(const Vector3& axis)
 {
   real_type nrm = norm(axis);
   if (nrm <= Limits<real_type>::min()) {
     Log(Initialization, Error) << "JointAxis is zero ..." << endl;
     return;
   }
-
-  mPrismaticJointFrame->setJointAxis((1/nrm)*axis);
-}
-
-const real_type&
-PrismaticJoint::getJointPos(void) const
-{
-  return mPrismaticJointFrame->getJointPos();
+  mAxis = (1/nrm)*axis;
+  setJointMatrix(Vector6(Vector3::zeros(), mAxis));
 }
 
 void
-PrismaticJoint::setJointPos(real_type pos)
+PrismaticJoint::init(const Task&, DiscreteStateValueVector&,
+                    ContinousStateValueVector& continousState,
+                    const PortValueList&) const
 {
-  mPrismaticJointFrame->setJointPos(pos);
+  continousState[*mPositionStateInfo] = 0;
+  continousState[*mVelocityStateInfo] = 0;
 }
 
 void
-PrismaticJoint::setJointVel(real_type vel)
+PrismaticJoint::velocity(const MechanicLinkValue& parentLink,
+                        MechanicLinkValue& childLink,
+                        const ContinousStateValueVector& states,
+                        PortValueList& portValues) const
 {
-  mPrismaticJointFrame->setJointVel(vel);
-}
-
-const real_type&
-PrismaticJoint::getJointVel(void) const
-{
-  return mPrismaticJointFrame->getJointVel();
-}
-
-void
-PrismaticJoint::setOrientation(const Quaternion& orientation)
-{
-  mPrismaticJointFrame->setOrientation(orientation);
-}
-
-void
-PrismaticJoint::setPosition(const Vector3& position)
-{
-  mPrismaticJointFrame->setZeroPosition(position);
+  VectorN jointPos = states[*mPositionStateInfo];
+  if (!mPositionPort.empty())
+    portValues[mPositionPort] = jointPos;
+  
+  VectorN jointVel = states[*mVelocityStateInfo];
+  if (!mVelocityPort.empty())
+    portValues[mVelocityPort] = jointVel;
+  
+  velocity(parentLink, childLink, mAxis*jointPos, Quaternion::unit(),
+           getJointMatrix()*jointVel);
 }
 
 void
-PrismaticJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
-                                 const SpatialInertia& outI,
-                                 const Vector6& outF)
+PrismaticJoint::articulation(MechanicLinkValue& parentLink,
+                            const MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            MatrixFactorsNN& hIh) const
 {
-  // That projects away tha components where the degrees of freedom
-  // of the joint are.
-  CartesianJointFrame<1>::VectorN tau;
-  if (mJointForcePort.isConnected()) {
-    tau(0) = mJointForcePort.getRealValue();
-  } else
-    tau.clear();
-  mPrismaticJointFrame->jointArticulation(artI, artF, outF, outI, tau);
+  VectorN jointForce;
+  if (mForcePort.empty())
+    jointForce.clear();
+  else
+    jointForce = portValues[mForcePort];
+  
+  articulation(parentLink, childLink, jointForce, hIh);
 }
 
 void
-PrismaticJoint::setState(const StateStream& state)
+PrismaticJoint::acceleration(const MechanicLinkValue& parentLink,
+                            MechanicLinkValue& childLink,
+                            const ContinousStateValueVector& states,
+                            PortValueList& portValues,
+                            const MatrixFactorsNN& hIh, VectorN& velDot) const
 {
-  CartesianJointFrame<1>::VectorN v;
-  state.readSubState(v);
-  mPrismaticJointFrame->setJointPos(v(0));
-  state.readSubState(v);
-  mPrismaticJointFrame->setJointVel(v(0));
+  VectorN jointForce;
+  if (mForcePort.empty())
+    jointForce.clear();
+  else
+    jointForce = portValues[mForcePort];
+  
+  acceleration(parentLink, childLink, jointForce, hIh, velDot);
 }
 
 void
-PrismaticJoint::getState(StateStream& state) const
+PrismaticJoint::derivative(const DiscreteStateValueVector&,
+                          const ContinousStateValueVector& states,
+                          const PortValueList&, const VectorN& velDot,
+                          ContinousStateValueVector& derivative) const
 {
-  state.writeSubState(mPrismaticJointFrame->getJointPos());
-  state.writeSubState(mPrismaticJointFrame->getJointVel());
-}
-
-void
-PrismaticJoint::getStateDeriv(StateStream& stateDeriv)
-{
-  stateDeriv.writeSubState(mPrismaticJointFrame->getJointVel());
-  stateDeriv.writeSubState(mPrismaticJointFrame->getJointVelDot());
+  derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];
+  derivative[*mVelocityStateInfo] = velDot;
 }
 
 } // namespace OpenFDM

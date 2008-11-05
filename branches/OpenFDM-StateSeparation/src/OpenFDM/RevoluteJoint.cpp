@@ -82,10 +82,9 @@ RevoluteJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position(0, 0, 0);
-  Quaternion orientation(Quaternion::fromAngleAxis(jointPos(0), mAxis));
-
-  velocity(parentLink, childLink, position, orientation, getJointMatrix()*jointVel);
+  velocity(parentLink, childLink, Vector3(0, 0, 0),
+           Quaternion::fromAngleAxis(jointPos(0), mAxis),
+           getJointMatrix()*jointVel);
 }
 
 void

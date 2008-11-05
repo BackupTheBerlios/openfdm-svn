@@ -243,6 +243,7 @@ OpenFDMMechanicSOURCES = \
   Joint.cpp \
   Mass.cpp \
   MobileRootJoint.cpp \
+  PrismaticJoint.cpp \
   RevoluteActuator.cpp \
   RevoluteJoint.cpp
 
@@ -270,7 +271,6 @@ OpenFDMMechanicSOURCES = \
 #   MinModel.cpp \
 #   Output.cpp \
 #   Product.cpp \
-#   PrismaticJoint.cpp \
 #   RigidBody.cpp \
 #   Saturation.cpp \
 #   SimpleContact.cpp \
