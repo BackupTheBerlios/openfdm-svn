@@ -40,9 +40,6 @@ namespace OpenFDM {
 // * Remove AbstractNodeContext ...
 // * allocate contexts later ...
 
-class DiscreteTask;
-class PortValueList;
-class Task;
 class MechanicContext;
 
 class MechanicNode : public LeafNode {
