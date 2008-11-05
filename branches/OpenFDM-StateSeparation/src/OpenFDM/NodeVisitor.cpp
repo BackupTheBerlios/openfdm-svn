@@ -7,6 +7,7 @@
 #include "Group.h"
 #include "Input.h"
 #include "Interact.h"
+#include "Joint.h"
 #include "LibraryNode.h"
 #include "LeafNode.h"
 #include "MechanicNode.h"
@@ -84,7 +85,7 @@ NodeVisitor::apply(RigidBody& node)
 }
 
 void
-NodeVisitor::apply(Interact& node)
+NodeVisitor::apply(Joint& node)
 {
   apply(static_cast<MechanicNode&>(node));
 }
@@ -92,7 +93,13 @@ NodeVisitor::apply(Interact& node)
 void
 NodeVisitor::apply(RootJoint& node)
 {
-  apply(static_cast<Interact&>(node));
+  apply(static_cast<Joint&>(node));
+}
+
+void
+NodeVisitor::apply(Interact& node)
+{
+  apply(static_cast<MechanicNode&>(node));
 }
 
 void

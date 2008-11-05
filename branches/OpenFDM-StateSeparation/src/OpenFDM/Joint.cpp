@@ -5,6 +5,7 @@
 #include "Joint.h"
 
 #include "Assert.h"
+#include "ConstNodeVisitor.h"
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
@@ -14,16 +15,15 @@
 #include "LogStream.h"
 #include "PortValueList.h"
 #include "MechanicContext.h"
+#include "NodeVisitor.h"
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Joint, Interact)
+BEGIN_OPENFDM_OBJECT_DEF(Joint, MechanicNode)
   END_OPENFDM_OBJECT_DEF
 
 Joint::Joint(const std::string& name) :
-  Interact(name),
-  mParentLink(newMechanicLink("link0")),
-  mChildLink(newMechanicLink("link1"))
+  MechanicNode(name)
 {
 }
 
@@ -32,31 +32,15 @@ Joint::~Joint(void)
 }
 
 void
-Joint::velocity(const Task&,
-                const ContinousStateValueVector& continousState,
-                PortValueList& portValues) const
+Joint::accept(NodeVisitor& visitor)
 {
-  velocity(portValues[mParentLink], portValues[mChildLink],
-           continousState, portValues);
+  visitor.handleNodePathAndApply(this);
 }
 
 void
-Joint::articulation(const Task&,
-                    const ContinousStateValueVector& continousState,
-                    PortValueList& portValues, Matrix& hIh) const
+Joint::accept(ConstNodeVisitor& visitor) const
 {
-  articulation(portValues[mParentLink], portValues[mChildLink],
-               continousState, portValues, hIh);
-}
-
-void
-Joint::acceleration(const Task&,
-                    const ContinousStateValueVector& continousState,
-                    PortValueList& portValues, const Matrix& hIh,
-                    Vector& velDot) const
-{
-  acceleration(portValues[mParentLink], portValues[mChildLink],
-               continousState, portValues, hIh, velDot);
+  visitor.handleNodePathAndApply(this);
 }
 
 } // namespace OpenFDM

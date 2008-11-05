@@ -11,6 +11,7 @@
 #include "MechanicNode.h"
 #include "Model.h"
 #include "Input.h"
+#include "Joint.h"
 #include "Output.h"
 #include "RigidBody.h"
 #include "RootJoint.h"
@@ -84,7 +85,7 @@ ConstNodeVisitor::apply(const RigidBody& node)
 }
 
 void
-ConstNodeVisitor::apply(const Interact& node)
+ConstNodeVisitor::apply(const Joint& node)
 {
   apply(static_cast<const MechanicNode&>(node));
 }
@@ -92,7 +93,13 @@ ConstNodeVisitor::apply(const Interact& node)
 void
 ConstNodeVisitor::apply(const RootJoint& node)
 {
-  apply(static_cast<const Interact&>(node));
+  apply(static_cast<const Joint&>(node));
+}
+
+void
+ConstNodeVisitor::apply(const Interact& node)
+{
+  apply(static_cast<const MechanicNode&>(node));
 }
 
 void

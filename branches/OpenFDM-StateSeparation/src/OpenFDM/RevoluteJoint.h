@@ -47,16 +47,17 @@ protected:
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            Matrix& hIh) const;
+                            MatrixFactorsNN& hIh) const;
   virtual void acceleration(const MechanicLinkValue& parentLink,
                             MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            const Matrix& hIh, Vector& velDot) const;
+                            const MatrixFactorsNN& hIh, VectorN& velDot) const;
 
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
-                          const PortValueList& portValues, const Vector& velDot,
+                          const PortValueList& portValues,
+                          const VectorN& velDot,
                           ContinousStateValueVector&) const;
 
   using CartesianJoint<1>::velocity;

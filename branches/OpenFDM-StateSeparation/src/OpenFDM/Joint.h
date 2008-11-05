@@ -18,40 +18,14 @@
 
 namespace OpenFDM {
 
-class Joint : public Interact {
-  OPENFDM_OBJECT(Joint, Interact);
+class Joint : public MechanicNode {
+  OPENFDM_OBJECT(Joint, MechanicNode);
 public:
   Joint(const std::string& name);
   virtual ~Joint(void);
 
-  // Joints cannot do something different than apply forces and inertia to
-  // its parent.
-  virtual void velocity(const MechanicLinkValue& parentLink,
-                        MechanicLinkValue& childLink,
-                        const ContinousStateValueVector& states,
-                        PortValueList& portValues) const = 0;
-  virtual void articulation(MechanicLinkValue& parentLink,
-                            const MechanicLinkValue& childLink,
-                            const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            Matrix& hIh) const = 0;
-  virtual void acceleration(const MechanicLinkValue& parentLink,
-                            MechanicLinkValue& childLink,
-                            const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            const Matrix& hIh, Vector& velDot) const = 0;
-
-  /// They implement the mechanic stuff
-  virtual void velocity(const Task&, const ContinousStateValueVector&,
-                        PortValueList&) const;
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, Matrix& hIh) const;
-  virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, const Matrix& hIh,
-                            Vector& velDot) const;
-private:
-  MechanicLink mParentLink;
-  MechanicLink mChildLink;
+  virtual void accept(NodeVisitor& visitor);
+  virtual void accept(ConstNodeVisitor& visitor) const;
 };
 
 } // namespace OpenFDM

@@ -17,6 +17,7 @@ class LibraryNode;
 class LeafNode;
 class Model;
 class Input;
+class Joint;
 class Output;
 class MechanicNode;
 class RigidBody;
@@ -47,8 +48,10 @@ public:
 
   virtual void apply(const RigidBody&);
 
-  virtual void apply(const Interact&);
+  virtual void apply(const Joint&);
   virtual void apply(const RootJoint&);
+
+  virtual void apply(const Interact&);
 
   virtual void apply(const PortInfo&);
   virtual void apply(const NumericPortInfo&);

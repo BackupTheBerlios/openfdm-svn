@@ -7,10 +7,13 @@
 #include "AbstractSystem.h"
 #include "ConstNodeVisitor.h"
 #include "Group.h"
+#include "Interact.h"
+#include "Joint.h"
 #include "ModelInstance.h"
 #include "MechanicInstance.h"
 #include "NodeInstance.h"
 #include "Object.h"
+#include "RigidBody.h"
 #include "RootJoint.h"
 #include "SystemOutput.h"
 #include "Task.h"
@@ -378,6 +381,8 @@ public:
 
   virtual void apply(const Node& node)
   { Log(Schedule, Error) << __PRETTY_FUNCTION__ << std::endl; }
+  virtual void apply(const MechanicNode& node)
+  { Log(Schedule, Error) << __PRETTY_FUNCTION__ << std::endl; }
   virtual void apply(const LeafNode& leaf)
   { Log(Schedule, Error) << __PRETTY_FUNCTION__ << std::endl; }
   virtual void apply(const LibraryNode& libraryNode)
@@ -421,14 +426,28 @@ public:
     if (node.getNumPorts() == 1)
       _rootJointInstanceList.push_back(mechanicInstance);
     else
-      _mechanicInstanceList.push_back(mechanicInstance);
+      _jointInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
   }
-  virtual void apply(const MechanicNode& node)
+  virtual void apply(const Interact& node)
   {
     MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
-    _mechanicInstanceList.push_back(mechanicInstance);
+    _interactInstanceList.push_back(mechanicInstance);
+    allocPortData(mechanicInstance, node);
+  }
+  virtual void apply(const RigidBody& node)
+  {
+    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
+    _nodeInstanceList.push_back(mechanicInstance);
+    _rigidBodyInstanceList.push_back(mechanicInstance);
+    allocPortData(mechanicInstance, node);
+  }
+  virtual void apply(const Joint& node)
+  {
+    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
+    _nodeInstanceList.push_back(mechanicInstance);
+    _jointInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
   }
   virtual void apply(const Model& node)
@@ -564,10 +583,13 @@ public:
   ModelInstanceList _modelInstanceList;
   // The mechanical system list, also for sorting
   MechanicInstanceList _mechanicInstanceList;
+
   // The list of root nodes in the mechanical system. Will be a starting point
   // for sorting the tree of mechanical models downwards
-  typedef MechanicInstanceList RootJointInstanceList;
-  RootJointInstanceList _rootJointInstanceList;
+  MechanicInstanceList _rootJointInstanceList;
+  MechanicInstanceList _interactInstanceList;
+  MechanicInstanceList _jointInstanceList;
+  MechanicInstanceList _rigidBodyInstanceList;
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
@@ -642,32 +664,45 @@ protected:
   // method to sort the leafs according to their dependency
   bool sortMechanicList()
   {
-    MechanicInstanceList sortedMechanicInstanceList;
+    // For now RigidBody nodes still do computations
+    // FIXME
+    _jointInstanceList.splice(_jointInstanceList.end(),
+                              _rigidBodyInstanceList,
+                              _rigidBodyInstanceList.begin(),
+                              _rigidBodyInstanceList.end());
+
+    if (_rootJointInstanceList.empty() &&
+        (!_jointInstanceList.empty() || !_interactInstanceList.empty())) {
+      Log(Schedule,Error)
+        << "No root joint in System with mechanic components" << std::endl;
+      return false;
+    }
+
     // Start with all the roots in front of the list ...
     // FIXME: ensure that there is no loop here?
-    sortedMechanicInstanceList.swap(_rootJointInstanceList);
+    _mechanicInstanceList.swap(_rootJointInstanceList);
 
     // Not the best algorithm, but for a first cut ...
-    while (!_mechanicInstanceList.empty()) {
+    while (!_jointInstanceList.empty()) {
       MechanicInstanceList nextLevelList;
 
       MechanicInstanceList::iterator j;
-      for (j = sortedMechanicInstanceList.begin();
-           j != sortedMechanicInstanceList.end(); ++j) {
+      for (j = _mechanicInstanceList.begin();
+           j != _mechanicInstanceList.end(); ++j) {
         MechanicInstanceList::iterator i;
-        for (i = _mechanicInstanceList.begin();
-             i != _mechanicInstanceList.end();) {
+        for (i = _jointInstanceList.begin();
+             i != _jointInstanceList.end();) {
         
           if ((*j)->isConnectedTo(*(*i))) {
             SharedPtr<MechanicInstance> mechanicInstance = *i;
             nextLevelList.push_back(mechanicInstance);
-            i = _mechanicInstanceList.erase(i);
+            i = _jointInstanceList.erase(i);
 
             // Check if this current mechanic node does not reference
             // back into the already sorted models
             MechanicInstanceList::const_iterator k;
-            for (k = sortedMechanicInstanceList.begin();
-                 k != sortedMechanicInstanceList.end(); ++k) {
+            for (k = _mechanicInstanceList.begin();
+                 k != _mechanicInstanceList.end(); ++k) {
               if (*k == *j)
                 continue;
               if (mechanicInstance->isConnectedTo(*(*k))) {
@@ -705,12 +740,16 @@ protected:
       
 
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
-        sortedMechanicInstanceList.push_back(*j);
+        _mechanicInstanceList.push_back(*j);
       }
     }
-    
-    _mechanicInstanceList.swap(sortedMechanicInstanceList);
 
+    // Interacts are always computed at the end of the list
+    _mechanicInstanceList.splice(_mechanicInstanceList.end(),
+                                      _interactInstanceList,
+                                      _interactInstanceList.begin(),
+                                      _interactInstanceList.end());
+    
     Log(Schedule,Info) << "MechanicNode Schedule" << std::endl;
     MechanicInstanceList::iterator i = _mechanicInstanceList.begin();
     for (; i != _mechanicInstanceList.end(); ++i) {

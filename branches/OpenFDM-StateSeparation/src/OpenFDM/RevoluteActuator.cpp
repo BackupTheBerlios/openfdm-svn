@@ -130,7 +130,7 @@ RevoluteActuator::acceleration(const MechanicLinkValue& parentLink,
                                MechanicLinkValue& childLink,
                                const ContinousStateValueVector& states,
                                PortValueList& portValues,
-                               const Matrix&, Vector& velDot) const
+                               const Matrix&, VectorN& velDot) const
 {
   // This is a simple second order system with velocity limits.
   // the joints accelerations, velocities and positions must fit together
@@ -156,16 +156,14 @@ RevoluteActuator::acceleration(const MechanicLinkValue& parentLink,
     // and accelerate that proportional to that error ...
     velDot = mVelDotGain*velErr;
   }
-  // FIXME
-  VectorN _velDot = velDot;
 
-  acceleration(parentLink, childLink, _velDot);
+  acceleration(parentLink, childLink, velDot);
 }
 
 void
 RevoluteActuator::derivative(const DiscreteStateValueVector&,
                              const ContinousStateValueVector& states,
-                             const PortValueList&, const Vector& velDot,
+                             const PortValueList&, const VectorN& velDot,
                              ContinousStateValueVector& derivative) const
 {
   derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];

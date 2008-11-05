@@ -24,15 +24,6 @@ namespace OpenFDM {
 // Interact, something similar we have now for the mechanic context??
 
 // Current inheritence tree:
-// Leaf - Model ...
-//      |
-//      |- MechanicNode -- RigidBody
-//                      |- Interact  -- Mass
-//                                   |- Force
-//                                   |- Joint
-//                                   |- RootJoint
-
-// Desired inheritence tree:
 // Leaf?- Model ...
 //      |
 //      |- MechanicNode?-- RigidBody
@@ -45,10 +36,8 @@ namespace OpenFDM {
 //                                   |- CartesianJoint -- RevoluteJoint
 //                                                     | ...
 
-
 // TODO:
 // * Remove AbstractNodeContext ...
-// * Make Inheritance for mechanics like that ...
 // * allocate contexts later ...
 
 class DiscreteTask;
