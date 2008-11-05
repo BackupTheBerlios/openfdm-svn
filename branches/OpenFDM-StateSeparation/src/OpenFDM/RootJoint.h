@@ -29,13 +29,12 @@ public:
   virtual void velocity(const Task&, const ContinousStateValueVector&,
                         PortValueList&) const = 0;
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, Matrix& hIh) const = 0;
+                            PortValueList&) const = 0;
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, const Matrix& hIh,
-                            Vector& velDot) const = 0;
+                            PortValueList&) const = 0;
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
-                          const PortValueList& portValues, const Vector&,
+                          const PortValueList& portValues,
                           ContinousStateValueVector&) const = 0;
 
 private:

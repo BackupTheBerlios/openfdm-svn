@@ -61,15 +61,14 @@ MobileRootJoint::velocity(const Task&,
 
 void
 MobileRootJoint::articulation(const Task&, const ContinousStateValueVector&,
-                              PortValueList&, Matrix&) const
+                              PortValueList&) const
 {
   /// In this case a noop.
 }
 
 void
 MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
-                              PortValueList& portValues,
-                              const Matrix&, Vector&) const
+                              PortValueList& portValues) const
 {
   // Assumption: body is small compared to the distance to the planets
   // center of mass. That means gravity could be considered equal for the
@@ -92,7 +91,6 @@ void
 MobileRootJoint::derivative(const DiscreteStateValueVector&,
                             const ContinousStateValueVector& continousState,
                             const PortValueList& portValues,
-                            const Vector& context,
                             ContinousStateValueVector& derivatives) const
 {
   Quaternion orientation = continousState[*mOrientationStateInfo];
