@@ -25,16 +25,16 @@ MechanicContext::getNode() const
 bool
 MechanicContext::isConnectedTo(const MechanicContext& mechanicContext) const
 {
-  unsigned numPorts = mMechanicNode->getNumPorts();
+  unsigned numPorts = getNode().getNumPorts();
   for (unsigned i = 0; i < numPorts; ++i) {
-    SharedPtr<const PortInfo> portInfo = mMechanicNode->getPort(i);
+    SharedPtr<const PortInfo> portInfo = getNode().getPort(i);
     OpenFDMAssert(portInfo);
     const PortValue* portValue = getPortValueList().getPortValue(i);
     if (!portValue)
       continue;
-    unsigned otherNumPorts = mechanicContext.mMechanicNode->getNumPorts();
+    unsigned otherNumPorts = mechanicContext.getNode().getNumPorts();
     for (unsigned j = 0; j < otherNumPorts; ++j) {
-      if (!mechanicContext.mMechanicNode->getPort(j)->toMechanicLinkInfo())
+      if (!mechanicContext.getNode().getPort(j)->toMechanicLinkInfo())
         continue;
       
       const PortValue* otherPortValue;
