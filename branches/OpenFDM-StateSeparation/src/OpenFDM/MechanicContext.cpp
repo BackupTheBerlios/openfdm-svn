@@ -6,20 +6,8 @@
 
 namespace OpenFDM {
 
-MechanicContext::MechanicContext(const MechanicNode* mechanicNode) :
-  mMechanicNode(mechanicNode)
-{
-  OpenFDMAssert(mMechanicNode);
-}
-
 MechanicContext::~MechanicContext()
 {
-}
-
-const MechanicNode&
-MechanicContext::getNode() const
-{
-  return *mMechanicNode;
 }
 
 bool

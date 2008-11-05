@@ -18,6 +18,27 @@ public:
 
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
+
+  virtual MechanicContext* newMechanicContext() const;
+
+  virtual void velocity(const Task&, const ContinousStateValueVector&,
+                        PortValueList&) const
+  { }
+  virtual void articulation(const Task&, const ContinousStateValueVector&,
+                            PortValueList&, Matrix&) const
+  { }
+  // hmm, may be this should be output???
+  virtual void acceleration(const Task&, const ContinousStateValueVector&,
+                            PortValueList&, const Matrix&, Vector&) const
+  { }
+  virtual void derivative(const DiscreteStateValueVector&,
+                          const ContinousStateValueVector&,
+                          const PortValueList&, const Vector&,
+                          ContinousStateValueVector&) const
+  { }
+
+private:
+  class Context;
 };
 
 } // namespace OpenFDM

@@ -66,27 +66,8 @@ public:
   virtual void accept(ConstNodeVisitor& visitor) const;
 
   virtual AbstractNodeContext* newNodeContext() const;
-  virtual MechanicContext* newMechanicContext() const;
+  virtual MechanicContext* newMechanicContext() const = 0;
 
-  virtual void velocity(const Task&, const ContinousStateValueVector&,
-                        PortValueList&) const
-  { }
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, Matrix&) const
-  { }
-  // hmm, may be this should be output???
-  virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, const Matrix&, Vector&) const
-  { }
-  virtual void derivative(const DiscreteStateValueVector&,
-                          const ContinousStateValueVector&,
-                          const PortValueList&, const Vector&,
-                          ContinousStateValueVector&) const
-  { }
-  virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
-                      const ContinousStateValueVector&,
-                      const PortValueList&) const
-  { }
 protected:
   MechanicLink newMechanicLink(const std::string& name)
   { return MechanicLink(this, name); }

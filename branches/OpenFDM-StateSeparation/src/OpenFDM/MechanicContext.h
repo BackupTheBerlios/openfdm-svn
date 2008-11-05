@@ -20,55 +20,22 @@ class InitTask;
 
 class MechanicContext : public LeafContext {
 public:
-  MechanicContext(const MechanicNode* mechanicNode);
+  MechanicContext() {}
   virtual ~MechanicContext();
 
-  virtual const MechanicNode& getNode() const;
+  virtual const MechanicNode& getNode() const = 0;
 
-  virtual bool alloc()
-  { if (!allocStates()) return false; return mMechanicNode->alloc(*this); }
-  virtual void initVelocities(const /*Init*/Task& task)
-  {
-    mMechanicNode->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mMechanicNode->velocity(task, mContinousState, mPortValueList);
-  }
-
-  virtual void velocities(const Task& task)
-  {
-    mMechanicNode->velocity(task, mContinousState, mPortValueList);
-  }
-  virtual void articulation(const Task& task)
-  {
-    mMechanicNode->articulation(task, mContinousState, mPortValueList, hIh);
-  }
-  virtual void accelerations(const Task& task)
-  {
-    mMechanicNode->acceleration(task, mContinousState, mPortValueList, hIh, velDot);
-  }
-
-  virtual void derivative(const Task&)
-  {
-    mMechanicNode->derivative(mDiscreteState, mContinousState, mPortValueList,
-                              velDot, mContinousStateDerivative);
-  }
- 
-  virtual void update(const DiscreteTask& discreteTask)
-  {
-    mMechanicNode->update(discreteTask, mDiscreteState,
-                          mContinousState, mPortValueList);
-  }
+  virtual bool alloc() = 0;
+  virtual void initVelocities(const /*Init*/Task& task) = 0;
+  virtual void velocities(const Task& task) = 0;
+  virtual void articulation(const Task& task) = 0;
+  virtual void accelerations(const Task& task) = 0;
+  virtual void derivative(const Task&) = 0;
+  virtual void update(const DiscreteTask& discreteTask) = 0;
 
   virtual bool isConnectedTo(const MechanicContext& mechanicContext) const;
 
 private:
-  // Stores some values persistent accross velocity/articulation/acceleration
-  Matrix hIh;
-  Vector velDot;
-
-  SharedPtr<const MechanicNode> mMechanicNode;
-
-private:
-  MechanicContext();
   MechanicContext(const MechanicContext&);
   MechanicContext& operator=(const MechanicContext&);
 };

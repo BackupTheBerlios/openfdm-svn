@@ -40,10 +40,4 @@ MechanicNode::newNodeContext() const
   return newMechanicContext();
 }
 
-MechanicContext*
-MechanicNode::newMechanicContext() const
-{
-  return new MechanicContext(this);
-}
-
 } // namespace OpenFDM

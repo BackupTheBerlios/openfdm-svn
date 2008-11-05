@@ -5,10 +5,53 @@
 #include "RigidBody.h"
 
 #include "ConstNodeVisitor.h"
+#include "MechanicContext.h"
 #include "NodeVisitor.h"
 #include "PortValueList.h"
 
 namespace OpenFDM {
+
+class RigidBody::Context : public MechanicContext {
+public:
+  Context(const RigidBody* rigidBody) : mRigidBody(rigidBody) {}
+  virtual ~Context() {}
+
+  virtual const RigidBody& getNode() const
+  { return *mRigidBody; }
+
+  virtual bool alloc()
+  { if (!allocStates()) return false; return mRigidBody->alloc(*this); }
+  virtual void initVelocities(const /*Init*/Task& task)
+  {
+    mRigidBody->init(task, mDiscreteState, mContinousState, mPortValueList);
+    mRigidBody->velocity(task, mContinousState, mPortValueList);
+  }
+
+  virtual void velocities(const Task& task)
+  {
+    mRigidBody->velocity(task, mContinousState, mPortValueList);
+  }
+  virtual void articulation(const Task& task)
+  {
+    mRigidBody->articulation(task, mContinousState, mPortValueList, hIh);
+  }
+  virtual void accelerations(const Task& task)
+  {
+    mRigidBody->acceleration(task, mContinousState, mPortValueList, hIh, velDot);
+  }
+
+  virtual void derivative(const Task&)
+  { }
+  virtual void update(const DiscreteTask&)
+  { }
+
+private:
+  // Stores some values persistent accross velocity/articulation/acceleration
+  Matrix hIh;
+  Vector velDot;
+
+  SharedPtr<const RigidBody> mRigidBody;
+};
 
 BEGIN_OPENFDM_OBJECT_DEF(RigidBody, MechanicNode)
   END_OPENFDM_OBJECT_DEF
@@ -34,6 +77,12 @@ void
 RigidBody::accept(ConstNodeVisitor& visitor) const
 {
   visitor.handleNodePathAndApply(this);
+}
+
+MechanicContext*
+RigidBody::newMechanicContext() const
+{
+  return new Context(this);
 }
 
 PortId

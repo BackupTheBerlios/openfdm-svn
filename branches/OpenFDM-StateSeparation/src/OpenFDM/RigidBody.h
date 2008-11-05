@@ -19,6 +19,8 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
+  virtual MechanicContext* newMechanicContext() const;
+
   PortId addLink(const std::string& name);
   void removeLink(const PortId& portId);
 
@@ -38,6 +40,8 @@ public:
                             PortValueList& portValues, const Matrix&,
                             Vector&) const;
 private:
+  class Context;
+
   typedef std::vector<MechanicLink> MechanicLinkVector;
   MechanicLinkVector mMechanicLinks;
 };
