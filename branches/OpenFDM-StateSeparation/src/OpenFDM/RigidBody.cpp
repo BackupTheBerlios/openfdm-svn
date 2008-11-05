@@ -33,11 +33,11 @@ public:
   }
   virtual void articulation(const Task& task)
   {
-    mRigidBody->articulation(task, mContinousState, mPortValueList, hIh);
+    mRigidBody->articulation(task, mContinousState, mPortValueList);
   }
   virtual void accelerations(const Task& task)
   {
-    mRigidBody->acceleration(task, mContinousState, mPortValueList, hIh, velDot);
+    mRigidBody->acceleration(task, mContinousState, mPortValueList);
   }
 
   virtual void derivative(const Task&)
@@ -46,10 +46,6 @@ public:
   { }
 
 private:
-  // Stores some values persistent accross velocity/articulation/acceleration
-  Matrix hIh;
-  Vector velDot;
-
   SharedPtr<const RigidBody> mRigidBody;
 };
 
@@ -118,7 +114,7 @@ RigidBody::velocity(const Task&, const ContinousStateValueVector&,
 
 void
 RigidBody::articulation(const Task&, const ContinousStateValueVector&,
-                        PortValueList& portValues, Matrix&) const
+                        PortValueList& portValues) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
   MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
@@ -128,7 +124,7 @@ RigidBody::articulation(const Task&, const ContinousStateValueVector&,
 
 void
 RigidBody::acceleration(const Task&, const ContinousStateValueVector&,
-                        PortValueList& portValues, const Matrix&, Vector&) const
+                        PortValueList& portValues) const
 {
   unsigned numLinkValues = mMechanicLinks.size();
   const MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];

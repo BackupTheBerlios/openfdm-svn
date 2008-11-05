@@ -32,13 +32,12 @@ public:
   /// contributeForce/contributeInertia method to add inertia to a
   /// parent link???
 
-  virtual void velocity(const Task&, const ContinousStateValueVector& states,
-                        PortValueList& portValues) const;
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList& portValues, Matrix&) const;
-  virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList& portValues, const Matrix&,
-                            Vector&) const;
+  void velocity(const Task&, const ContinousStateValueVector& states,
+                PortValueList& portValues) const;
+  void articulation(const Task&, const ContinousStateValueVector&,
+                    PortValueList& portValues) const;
+  void acceleration(const Task&, const ContinousStateValueVector&,
+                    PortValueList& portValues) const;
 private:
   class Context;
 
