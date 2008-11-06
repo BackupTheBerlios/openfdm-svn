@@ -29,9 +29,21 @@ public:
   };
   
   enum Priority {
+    /// Non recoverable error, either due to an implementation problem or
+    /// due to a user problem probably ignoring previous error return values.
+    /// Simulation results may not be valid.
     Error            = 0,
+    /// Error Conditions that should be avoided, but could be
+    /// worked around in some way.
+    /// Simulation results may not be valid.
     Warning          = Error + 1,
+    /// Error Conditions that are marked with an error return.
+    /// The exact reason is probably explained in this kind of messages.
+    /// These kind of errors do not lead to immediate problems in the
+    /// simulation code. Anyway, when not handled correctly they might lead to
+    /// Error or Warning conditions.
     Info             = Warning + 1,
+    /// Blubber for debugging ...
     Debug            = Info + 1,
     Debug1           = Debug + 1,
     Debug2           = Debug1 + 1,
