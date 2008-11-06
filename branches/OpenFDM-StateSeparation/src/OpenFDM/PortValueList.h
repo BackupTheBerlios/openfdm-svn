@@ -130,6 +130,17 @@ public:
       return 0;
     return portValue->toMechanicLinkValue();
   }
+  /// Save but partially expensive Accessor for numeric ports
+  const PortValue* getPortValue(const PortInfo* portInfo) const
+  {
+    if (!portInfo)
+      return 0;
+    return getPortValue(portInfo->getIndex());
+  }
+  const PortValue* getPortValue(const PortInfo& portInfo) const
+  {
+    return getPortValue(portInfo.getIndex());
+  }
 
 protected:
   PortValueVector mPortValueVector;

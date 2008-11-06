@@ -39,8 +39,13 @@ public:
   const SampleTime& getSampleTime() const
   { return mSampleTime; }
 
-  const PortValueList& getPortValueList() const
-  { return getNodeContext().getPortValueList(); }
+  /// Access port values by the PortInfo values
+  const PortValue* getPortValue(const PortInfo& portInfo) const
+  { return getNodeContext().getPortValueList().getPortValue(portInfo); }
+  const NumericPortValue* getPortValue(const NumericPortInfo& portInfo) const
+  { return getNodeContext().getPortValueList().getPortValue(portInfo); }
+  const MechanicLinkValue* getPortValue(const MechanicLinkInfo& portInfo) const
+  { return getNodeContext().getPortValueList().getPortValue(portInfo); }
 
   /// Set port value for the given port.
   void setPortValue(const PortInfo& portInfo, PortValue* portValue)

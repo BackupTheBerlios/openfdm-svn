@@ -392,14 +392,14 @@ private:
       const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
       if (!nodeInstance)
         return;
-      apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
+      apply(portInfo, nodeInstance->getPortValue(portInfo));
     }
     virtual void apply(const MechanicLinkInfo& portInfo)
     {
       const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
       if (!nodeInstance)
         return;
-      apply(portInfo, nodeInstance->getPortValueList().getPortValue(portInfo));
+      apply(portInfo, nodeInstance->getPortValue(portInfo));
     }
     
     virtual void apply(const NumericPortInfo& portInfo,

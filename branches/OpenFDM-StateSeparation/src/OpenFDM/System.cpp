@@ -317,7 +317,7 @@ public:
 
     virtual bool createPortValue()
     {
-      if (mNodeInstance->getPortValueList().getPortValue(getPortInfo()->getIndex()))
+      if (mNodeInstance->getPortValue(*getPortInfo()))
         return true;
       if (mProxyPortData.lock())
         return true;
@@ -834,7 +834,7 @@ protected:
         SharedPtr<const PortInfo> portInfo = node.getPort(k);
         if (portInfo->getOptional())
           continue;
-        if (!(*j)->getPortValueList().getPortValue(k)) {
+        if (!(*j)->getPortValue(*portInfo)) {
           Log(Schedule, Error) << "Mandatory port value for port \""
                                << portInfo->getName() << "\" for model \""
                                << (*j)->getNodeNamePath()
