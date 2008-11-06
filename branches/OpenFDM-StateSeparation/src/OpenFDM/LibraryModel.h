@@ -13,6 +13,9 @@
 
 namespace OpenFDM {
 
+// Group |- LibraryNode
+//       |- 
+
 class LibraryNode;
 
 class LibraryModel : public Object {

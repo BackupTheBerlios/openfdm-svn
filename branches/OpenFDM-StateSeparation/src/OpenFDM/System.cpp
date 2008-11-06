@@ -341,15 +341,14 @@ public:
     {
       OpenFDMAssert(!mNodeInstance);
       mNodeInstance = nodeInstance;
-      mPortDataVector.resize(nodeInstance->getNode().getNumPorts());
+      unsigned numPorts = nodeInstance->getNode().getNumPorts();
+      mPortDataVector.resize(numPorts);
+      for (unsigned i = 0; i < numPorts; ++i)
+        mPortDataVector[i] = new PortData(nodeInstance, nodeInstance->getNode().getPort(i));
     }
     
-    PortData* newPortData(const PortInfo* portInfo)
-    {
-      PortData* portData = new PortData(mNodeInstance, portInfo);
-      mPortDataVector[portInfo->getIndex()] = portData;
-      return portData;
-    }
+    PortData* getPortData(const PortInfo& portInfo)
+    { return mPortDataVector[portInfo.getIndex()]; }
     
     bool allocAndConnectProviderPortValues()
     {
@@ -403,7 +402,7 @@ public:
   {
     PortDataList* portDataList = buildNodeContext(leaf);
     OpenFDMAssert(leaf.getPort(0));
-    PortData* portData = portDataList->newPortData(leaf.getPort(0));
+    PortData* portData = portDataList->getPortData(*leaf.getPort(0));
     _groupPortDataMap[leaf.getExternalPortIndex()] = portData;
   }
 
@@ -412,9 +411,6 @@ public:
     PortDataList* portDataList;
     portDataList = getCurrentNodePortDataList();
     portDataList->setNodeInstance(nodeInstance);
-
-    for (unsigned i = 0; i < leaf.getNumPorts(); ++i)
-      portDataList->newPortData(leaf.getPort(i));
   }
 
   virtual void apply(const RootJoint& node)
@@ -462,12 +458,6 @@ public:
   {
     // Prepare a new leaf map for the child group
     PortDataMap parentPortDataMap(group.getNumChildren());
-    for (unsigned i = 0; i < group.getNumChildren(); ++i) {
-      PortDataList* portDataList;
-      portDataList = new PortDataList;
-      parentPortDataMap[i] = portDataList;
-      _portDataListList.push_back(portDataList);
-    }
     parentPortDataMap.swap(_portDataMap);
 
     // Get PortDataList indexed by group port index
@@ -478,11 +468,6 @@ public:
 
     // Now walk the children
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
-      // Push the right per node port information struct
-      SharedPtr<PortDataList> parentNodePortDataList;
-      parentNodePortDataList.swap(mCurrentNodePortDataList);
-      mCurrentNodePortDataList = _portDataMap[i];
-
       // push the sample time
       SampleTime sampleTime = mSampleTime;
 
@@ -504,14 +489,22 @@ public:
         }
       }
 
+      // Push the right per node port information struct
+      SharedPtr<PortDataList> parentNodePortDataList;
+      parentNodePortDataList.swap(mCurrentNodePortDataList);
+
+      mCurrentNodePortDataList = new PortDataList;
+      _portDataMap[i] = mCurrentNodePortDataList;
+      _portDataListList.push_back(mCurrentNodePortDataList);
+
       // now traverse the child ...
       node->accept(*this);
 
-      // restore old group sample time
-      mSampleTime = sampleTime;
-
       // Pop the per node port information struct
       parentNodePortDataList.swap(mCurrentNodePortDataList);
+
+      // restore old group sample time
+      mSampleTime = sampleTime;
     }
 
     // Apply the group internal connections to the instances
@@ -564,7 +557,7 @@ public:
       }
 
       // Allocate a new port data struct in the parent.
-      PortData* parentPortData = portDataList->newPortData(group.getPort(i));
+      PortData* parentPortData = portDataList->getPortData(*group.getPort(i));
       parentPortData->setProxyPortData(portData);
       portData->setProxyPortData(parentPortData);
     }
