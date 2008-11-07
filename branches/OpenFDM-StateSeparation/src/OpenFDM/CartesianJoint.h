@@ -156,65 +156,53 @@ protected:
                           const PortValueList& portValues, const VectorN&,
                           ContinousStateValueVector&) const = 0;
 
-  void velocity(const Task&,
-                const ContinousStateValueVector& continousState,
-                PortValueList& portValues) const
-  {
-    velocity(portValues[mParentLink], portValues[mChildLink],
-             continousState, portValues);
-  }
-
-  void articulation(const Task&,
-                    const ContinousStateValueVector& continousState,
-                    PortValueList& portValues, MatrixFactorsNN& hIh) const
-  {
-    articulation(portValues[mParentLink], portValues[mChildLink],
-                 continousState, portValues, hIh);
-  }
-
-  void acceleration(const Task&,
-                    const ContinousStateValueVector& continousState,
-                    PortValueList& portValues, const MatrixFactorsNN& hIh,
-                    VectorN& velDot) const
-  {
-    acceleration(portValues[mParentLink], portValues[mChildLink],
-                 continousState, portValues, hIh, velDot);
-  }
-  
 private:
   class Context : public MechanicContext {
   public:
-    Context(const CartesianJoint* cartesianJoint) : mCartesianJoint(cartesianJoint) {}
+    Context(const CartesianJoint* cartesianJoint) :
+      mCartesianJoint(cartesianJoint)
+    { }
     virtual ~Context() {}
     
     virtual const CartesianJoint& getNode() const
     { return *mCartesianJoint; }
     
     virtual bool alloc()
-    { if (!allocStates()) return false; return mCartesianJoint->alloc(*this); }
+    {
+      if (!allocStates())
+        return false;
+      mParentLink = &mPortValueList[mCartesianJoint->mParentLink];
+      mChildLink = &mPortValueList[mCartesianJoint->mChildLink];
+      return mCartesianJoint->alloc(*this);
+    }
     virtual void initVelocities(const /*Init*/Task& task)
     {
       mCartesianJoint->init(task, mDiscreteState, mContinousState, mPortValueList);
-      mCartesianJoint->velocity(task, mContinousState, mPortValueList);
+      mCartesianJoint->velocity(*mParentLink, *mChildLink,
+                                mContinousState, mPortValueList);
     }
     
     virtual void velocities(const Task& task)
     {
-      mCartesianJoint->velocity(task, mContinousState, mPortValueList);
+      mCartesianJoint->velocity(*mParentLink, *mChildLink,
+                                mContinousState, mPortValueList);
     }
     virtual void articulation(const Task& task)
     {
-      mCartesianJoint->articulation(task, mContinousState, mPortValueList, hIh);
+      mCartesianJoint->articulation(*mParentLink, *mChildLink,
+                                    mContinousState, mPortValueList, hIh);
     }
     virtual void accelerations(const Task& task)
     {
-      mCartesianJoint->acceleration(task, mContinousState, mPortValueList, hIh, velDot);
+      mCartesianJoint->acceleration(*mParentLink, *mChildLink, mContinousState,
+                                    mPortValueList, hIh, velDot);
     }
     
     virtual void derivative(const Task&)
     {
-      mCartesianJoint->derivative(mDiscreteState, mContinousState, mPortValueList,
-                         velDot, mContinousStateDerivative);
+      mCartesianJoint->derivative(mDiscreteState, mContinousState,
+                                  mPortValueList, velDot,
+                                  mContinousStateDerivative);
     }
     
     virtual void update(const DiscreteTask&)
@@ -224,6 +212,9 @@ private:
     // Stores some values persistent accross velocity/articulation/acceleration
     MatrixFactorsNN hIh;
     VectorN velDot;
+
+    SharedPtr<MechanicLinkValue> mParentLink;
+    SharedPtr<MechanicLinkValue> mChildLink;
     
     SharedPtr<const CartesianJoint> mCartesianJoint;
   };
