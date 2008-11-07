@@ -19,7 +19,7 @@
 #include "Task.h"
 
 #include "Function.h"
-#include "ExplicitEuler.h"
+#include "DoPri5.h"
 
 namespace OpenFDM {
 
@@ -90,7 +90,7 @@ public:
     mContinousSystemFunction = new ContinousSystemFunction;
     mContinousSystemFunction->mContinousTask = mContinousTask;
 
-    mODESolver = new ExplicitEuler;
+    mODESolver = new DoPri5;
     mODESolver->setFunction(mContinousSystemFunction);
   }
 
