@@ -748,6 +748,102 @@ min(const MatrixRValue<Impl1,m1,n1>& A1,
   return ret;
 }
 
+template<typename Impl1, size_type m1, size_type n1,
+         typename Impl2, size_type m2, size_type n2>
+OpenFDM_FORCE_INLINE
+Matrix<typename Impl1::value_type,m1,n1>
+saturate(const MatrixRValue<Impl1,m1,n1>& A1,
+         const MatrixRValue<Impl2,m2,n2>& A2)
+{
+  const Impl1& A1i = A1.asImpl();
+  const Impl2& A2i = A2.asImpl();
+
+  size_type rows = A1i.rows();
+  size_type cols = A1i.cols();
+  SizeCheck<m1,m2>::Equal(rows, A2i.rows());
+  SizeCheck<n1,n2>::Equal(cols, A2i.cols());
+
+  Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
+  size_type i, j;
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
+      ret(i, j) = ::OpenFDM::saturate(A1i(i, j), A2i(i, j));
+
+  return ret;
+}
+
+template<typename Impl1, size_type m1, size_type n1,
+         typename Impl2, size_type m2, size_type n2>
+OpenFDM_FORCE_INLINE
+Matrix<typename Impl1::value_type,m1,n1>
+smoothSaturate(const MatrixRValue<Impl1,m1,n1>& A1,
+               const MatrixRValue<Impl2,m2,n2>& A2)
+{
+  const Impl1& A1i = A1.asImpl();
+  const Impl2& A2i = A2.asImpl();
+
+  size_type rows = A1i.rows();
+  size_type cols = A1i.cols();
+  SizeCheck<m1,m2>::Equal(rows, A2i.rows());
+  SizeCheck<n1,n2>::Equal(cols, A2i.cols());
+
+  Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
+  size_type i, j;
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
+      ret(i, j) = ::OpenFDM::smoothSaturate(A1i(i, j), A2i(i, j));
+
+  return ret;
+}
+
+template<typename Impl1, size_type m1, size_type n1,
+         typename Impl2, size_type m2, size_type n2>
+OpenFDM_FORCE_INLINE
+Matrix<typename Impl1::value_type,m1,n1>
+deadBand(const MatrixRValue<Impl1,m1,n1>& A1,
+         const MatrixRValue<Impl2,m2,n2>& A2)
+{
+  const Impl1& A1i = A1.asImpl();
+  const Impl2& A2i = A2.asImpl();
+
+  size_type rows = A1i.rows();
+  size_type cols = A1i.cols();
+  SizeCheck<m1,m2>::Equal(rows, A2i.rows());
+  SizeCheck<n1,n2>::Equal(cols, A2i.cols());
+
+  Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
+  size_type i, j;
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
+      ret(i, j) = ::OpenFDM::deadBand(A1i(i, j), A2i(i, j));
+
+  return ret;
+}
+
+template<typename Impl1, size_type m1, size_type n1,
+         typename Impl2, size_type m2, size_type n2>
+OpenFDM_FORCE_INLINE
+Matrix<typename Impl1::value_type,m1,n1>
+smoothDeadBand(const MatrixRValue<Impl1,m1,n1>& A1,
+         const MatrixRValue<Impl2,m2,n2>& A2)
+{
+  const Impl1& A1i = A1.asImpl();
+  const Impl2& A2i = A2.asImpl();
+
+  size_type rows = A1i.rows();
+  size_type cols = A1i.cols();
+  SizeCheck<m1,m2>::Equal(rows, A2i.rows());
+  SizeCheck<n1,n2>::Equal(cols, A2i.cols());
+
+  Matrix<typename Impl1::value_type,m1,n1> ret(rows, cols);
+  size_type i, j;
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
+      ret(i, j) = ::OpenFDM::smoothDeadBand(A1i(i, j), A2i(i, j));
+
+  return ret;
+}
+
 #endif
 
 } // namespace LinAlg
