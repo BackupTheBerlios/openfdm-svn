@@ -155,13 +155,15 @@ protected:
   { return 0; }
 
 private:
+  // FIXME Derive??
   bool mDirectInput;
 };
 
 class OutputPortInfo : public NumericPortInfo {
 public:
   OutputPortInfo(Node* node, const std::string& name, const Size& size) :
-    NumericPortInfo(node, name, size)
+    NumericPortInfo(node, name, size),
+    mAccelerationOutput(false)
   { }
   virtual ~OutputPortInfo()
   { }
@@ -175,9 +177,18 @@ public:
   virtual bool canConnect(const PortInfo& portInfo) const
   { return portInfo.toInputPortInfo(); }
 
+  bool getAccelerationOutput() const
+  { return mAccelerationOutput; }
+  void setAccelerationOutput(bool accelerationOutput)
+  { mAccelerationOutput = accelerationOutput; }
+
 protected:
   virtual NumericPortValue* newValueImplementation() const
   { return new NumericPortValue(mSize); }
+
+private:
+  // FIXME Derive??
+  bool mAccelerationOutput;
 };
 
 class MechanicLinkInfo : public PortInfo {
