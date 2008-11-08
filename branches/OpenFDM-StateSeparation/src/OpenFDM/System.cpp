@@ -238,20 +238,69 @@ public:
     mBasicSampleTime(SampleTime::getContinous())
   { }
 
+  struct PortData;
+
+  struct PortConnectSet : public Referenced {
+    bool setPortValue(PortValue* portValue)
+    {
+      while (!mParentPortData.empty()) {
+        SharedPtr<PortData> portData = mParentPortData.back().lock();
+        mParentPortData.pop_back();
+        if (!portData->setPortValue(portValue))
+          return false;
+      }
+      return true;
+    }
+    std::vector<WeakPtr<PortData> > mParentPortData;
+  };
+
   struct PortData : public WeakReferenced {
   public:
     PortData(AbstractNodeInstance* nodeInstance, const PortInfo* portInfo) :
       mNodeInstance(nodeInstance),
+      mPortValueCreator(true),
       mPortInfo(portInfo)
-    { }
-    virtual ~PortData()
-    { }
+    {
+      getOrCreatePortConnectSet();
+    }
+
+    void setPortConnectSet(PortConnectSet* portSet)
+    {
+      OpenFDMAssert(portSet);
+      if (portSet == mPortConnectSet)
+        return;
+      if (!mPortConnectSet) {
+        mPortConnectSet = portSet;
+        mPortConnectSet->mParentPortData.push_back(this);
+        return;
+      }
+      // Merge the port sets together ...
+      while (!mPortConnectSet->mParentPortData.empty()) {
+        SharedPtr<PortData> portData = mPortConnectSet->mParentPortData.back().lock();
+        mPortConnectSet->mParentPortData.pop_back();
+        if (portData == this)
+          continue;
+        portData->mPortConnectSet = portSet;
+        portSet->mParentPortData.push_back(portData);
+      }
+      mPortConnectSet = portSet;
+      mPortConnectSet->mParentPortData.push_back(this);
+    }
+
+    PortConnectSet* getOrCreatePortConnectSet()
+    {
+      if (mPortConnectSet)
+        return mPortConnectSet;
+      setPortConnectSet(new PortConnectSet);
+      return mPortConnectSet;
+    }
 
     bool addPortData(PortData* portData)
     {
       if (getPortInfo()->getMaxConnects() <= mConnectedPorts.size())
         return false;
       mConnectedPorts.push_back(portData);
+      setPortConnectSet(portData->getOrCreatePortConnectSet());
       return true;
     }
 
@@ -262,20 +311,21 @@ public:
       if (!portData->addPortData(this))
         return false;
       mConnectedPorts.push_back(portData);
+      setPortConnectSet(portData->getOrCreatePortConnectSet());
       return true;
     }
 
     const SharedPtr<const PortInfo>& getPortInfo() const
     { return mPortInfo; }
 
-    bool setLocalPortValue(PortValue* portValue)
+    bool setPortValue(PortValue* portValue)
     {
       if (!getPortInfo())
         return false;
       if (!mNodeInstance)
         return false;
       Log(Schedule, Debug3)
-        << "setLocalPortValue for port \"" << getPortInfo()->getName()
+        << "setPortValue for port \"" << getPortInfo()->getName()
         << "\" is at: " << portValue << endl;
       // FIXME: move the set port value and accept port value into one call
       if (!getPortInfo()->acceptPortValue(portValue))
@@ -284,54 +334,32 @@ public:
       return true;
     }
 
-    bool setConnectedPortValues(PortValue* portValue)
-    {
-      Log(Schedule, Debug3)
-        << "setConnectedPortValues for port \"" << getPortInfo()->getName()
-        << "\" is at: " << portValue << endl;
-      for (unsigned i = 0; i < mConnectedPorts.size(); ++i) {
-        SharedPtr<PortData> portData = mConnectedPorts[i].lock();
-        if (!portData)
-          return false;
-        if (!portData->setProxyPortValue(portValue))
-          return false;
-      }
-      return setLocalPortValue(portValue);
-    }
-
-    bool setProxyPortValue(PortValue* portValue)
-    {
-      Log(Schedule, Debug3)
-        << "setProxyPortValues for port \"" << getPortInfo()->getName()
-        << "\" is at: " << portValue << endl;
-      SharedPtr<PortData> portData = mProxyPortData.lock();
-      if (portData) {
-        if (!portData->setConnectedPortValues(portValue))
-          return false;
-      }
-      return setLocalPortValue(portValue);
-    }
-
     void setProxyPortData(PortData* proxyPortData)
-    { mProxyPortData = proxyPortData; }
-
-    virtual bool createPortValue()
     {
-      if (mNodeInstance->getPortValue(*getPortInfo()))
+      mPortValueCreator = false;
+      setPortConnectSet(proxyPortData->getOrCreatePortConnectSet());
+    }
+
+    bool createPortValue()
+    {
+      if (!mPortValueCreator)
         return true;
-      if (mProxyPortData.lock())
+      if (mNodeInstance->getPortValue(*getPortInfo()))
         return true;
       SharedPtr<PortValue> portValue = getPortInfo()->newValue();
       if (!portValue)
         return true; // FIXME
-      return setConnectedPortValues(portValue);
+      if (!mPortConnectSet->setPortValue(portValue))
+        return false;
+      return true;
     }
 
   private:
+    bool mPortValueCreator;
     SharedPtr<AbstractNodeInstance> mNodeInstance;
     SharedPtr<const PortInfo> mPortInfo;
     std::vector<WeakPtr<PortData> > mConnectedPorts;
-    WeakPtr<PortData> mProxyPortData;
+    SharedPtr<PortConnectSet> mPortConnectSet;
   };
 
   // Return true if this leaf directly depends on one of leafInstance outputs
