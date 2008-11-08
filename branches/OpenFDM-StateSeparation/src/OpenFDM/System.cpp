@@ -334,6 +334,11 @@ public:
       return true;
     }
 
+    void disablePortValueCreation()
+    {
+      mPortValueCreator = false;
+    }
+
     void setProxyPortData(PortData* proxyPortData)
     {
       mPortValueCreator = false;
@@ -464,8 +469,19 @@ public:
   {
     MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
-    _rigidBodyInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
+    // Make all rigid mechanic body links use the same link value
+    PortData* portData = 0;
+    for (unsigned i = 0; i < node.getNumPorts(); ++i) {
+      if (!node.getPort(i)->toMechanicLinkInfo())
+        continue;
+      if (portData) {
+        mCurrentNodePortDataList->mPortDataVector[i]->setProxyPortData(portData);
+      } else {
+        portData = mCurrentNodePortDataList->mPortDataVector[i];
+        portData->disablePortValueCreation();
+      }
+    }
   }
   virtual void apply(const Joint& node)
   {
@@ -610,7 +626,6 @@ public:
   MechanicInstanceList _rootJointInstanceList;
   MechanicInstanceList _interactInstanceList;
   MechanicInstanceList _jointInstanceList;
-  MechanicInstanceList _rigidBodyInstanceList;
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
@@ -685,13 +700,6 @@ protected:
   // method to sort the leafs according to their dependency
   bool sortMechanicList()
   {
-    // For now RigidBody nodes still do computations
-    // FIXME
-    _jointInstanceList.splice(_jointInstanceList.end(),
-                              _rigidBodyInstanceList,
-                              _rigidBodyInstanceList.begin(),
-                              _rigidBodyInstanceList.end());
-
     if (_rootJointInstanceList.empty() &&
         (!_jointInstanceList.empty() || !_interactInstanceList.empty())) {
       Log(Schedule,Error)

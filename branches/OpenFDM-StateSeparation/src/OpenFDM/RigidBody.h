@@ -24,20 +24,6 @@ public:
   PortId addLink(const std::string& name);
   void removeLink(const PortId& portId);
 
-  /// Simple node distributing the positions, velocities and accelerations
-  /// from the parent link to the child links. Forces and inertias are summed
-  /// over the children and written into the parent link.
-  ///
-  /// Idea: may be use the same link value for all links and use a
-  /// contributeForce/contributeInertia method to add inertia to a
-  /// parent link???
-
-  void velocity(const Task&, const ContinousStateValueVector& states,
-                PortValueList& portValues) const;
-  void articulation(const Task&, const ContinousStateValueVector&,
-                    PortValueList& portValues) const;
-  void acceleration(const Task&, const ContinousStateValueVector&,
-                    PortValueList& portValues) const;
 private:
   class Context;
 

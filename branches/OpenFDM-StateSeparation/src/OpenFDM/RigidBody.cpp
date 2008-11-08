@@ -24,22 +24,14 @@ public:
   virtual void initVelocities(const /*Init*/Task& task)
   {
     mRigidBody->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mRigidBody->velocity(task, mContinousState, mPortValueList);
   }
 
   virtual void velocities(const Task& task)
-  {
-    mRigidBody->velocity(task, mContinousState, mPortValueList);
-  }
+  { }
   virtual void articulation(const Task& task)
-  {
-    mRigidBody->articulation(task, mContinousState, mPortValueList);
-  }
+  { }
   virtual void accelerations(const Task& task)
-  {
-    mRigidBody->acceleration(task, mContinousState, mPortValueList);
-  }
-
+  { }
   virtual void derivative(const Task&)
   { }
   virtual void update(const DiscreteTask&)
@@ -100,36 +92,6 @@ RigidBody::removeLink(const PortId& portId)
     } else
       ++i;
   }
-}
-
-void
-RigidBody::velocity(const Task&, const ContinousStateValueVector&,
-                    PortValueList& portValues) const
-{
-  unsigned numLinkValues = mMechanicLinks.size();
-  const MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
-  for (unsigned i = 1; i < numLinkValues; ++i)
-    portValues[mMechanicLinks[i]].setPosAndVel(parentLink);
-}
-
-void
-RigidBody::articulation(const Task&, const ContinousStateValueVector&,
-                        PortValueList& portValues) const
-{
-  unsigned numLinkValues = mMechanicLinks.size();
-  MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
-  for (unsigned i = 1; i < numLinkValues; ++i)
-    parentLink.applyArticulation(portValues[mMechanicLinks[i]]);
-}
-
-void
-RigidBody::acceleration(const Task&, const ContinousStateValueVector&,
-                        PortValueList& portValues) const
-{
-  unsigned numLinkValues = mMechanicLinks.size();
-  const MechanicLinkValue& parentLink = portValues[mMechanicLinks.front()];
-  for (unsigned i = 1; i < numLinkValues; ++i)
-    portValues[mMechanicLinks[i]].setAccel(parentLink);
 }
 
 } // namespace OpenFDM
