@@ -574,6 +574,35 @@ cross(const MatrixRValue<Impl1,3,1>& u)
   return ret;
 }
 
+// return any normalized vector perpendicular to v
+// template<typename Impl1, typename Impl2>
+// OpenFDM_FORCE_INLINE
+// Vector<typename Impl1::value_type,3>
+// cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,1>& v)
+template<typename T>
+OpenFDM_FORCE_INLINE
+Vector3<T>
+perpendicular(const Vector3<T>& v)
+{
+  T absv1 = fabs(v(0));
+  T absv2 = fabs(v(1));
+  T absv3 = fabs(v(2));
+
+  if (absv2 < absv1 && absv3 < absv1) {
+    T quot = v(1)/v(0);
+    return (1/sqrt(1+quot*quot))*Vector3<T>(quot, -1, 0);
+  } else if (absv3 < absv2) {
+    T quot = v(2)/v(1);
+    return (1/sqrt(1+quot*quot))*Vector3<T>(0, quot, -1);
+  } else if (Limits<T>::min() < absv3) {
+    T quot = v(0)/v(2);
+    return (1/sqrt(1+quot*quot))*Vector3<T>(-1, 0, quot);
+  } else {
+    // the all zero case ...
+    return Vector3<T>(0, 0, 0);
+  }
+}
+
 template<typename T, size_type dim1>
 OpenFDM_FORCE_INLINE
 void

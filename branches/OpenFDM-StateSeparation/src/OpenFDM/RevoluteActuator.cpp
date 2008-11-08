@@ -22,7 +22,7 @@ BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuator, Joint)
   END_OPENFDM_OBJECT_DEF
 
 RevoluteActuator::RevoluteActuator(const std::string& name) :
-  CartesianJoint<1>(name, Vector6(Vector3(1, 0, 0), Vector3::zeros())),
+  CartesianJoint<1>(name),
   mInputPort(this, "input", Size(1, 1), true),
   mPositionPort(this, "position", Size(1, 1)),
   mVelocityPort(this, "velocity", Size(1, 1)),

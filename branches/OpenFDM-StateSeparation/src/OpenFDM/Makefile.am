@@ -225,6 +225,7 @@ OpenFDMModelsHEADERS = \
   TransferFunction.h \
   Turbulence.h \
   UnaryFunctionModel.h \
+  UniversalJoint.h \
   Vehicle.h \
   WheelContact.h \
   Wind.h
@@ -245,7 +246,8 @@ OpenFDMMechanicSOURCES = \
   MobileRootJoint.cpp \
   PrismaticJoint.cpp \
   RevoluteActuator.cpp \
-  RevoluteJoint.cpp
+  RevoluteJoint.cpp \
+  UniversalJoint.cpp
 
 
 #   AeroForce.cpp \

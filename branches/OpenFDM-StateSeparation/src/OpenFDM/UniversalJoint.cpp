@@ -2,7 +2,7 @@
  *
  */
 
-#include "PrismaticJoint.h"
+#include "UniversalJoint.h"
 #include "Assert.h"
 #include "LogStream.h"
 #include "Limits.h"
@@ -17,17 +17,17 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(PrismaticJoint, Joint)
+BEGIN_OPENFDM_OBJECT_DEF(UniversalJoint, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-PrismaticJoint::PrismaticJoint(const std::string& name) :
-  CartesianJoint<1>(name),
-  mForcePort(this, "force", Size(1, 1), true),
-  mPositionPort(this, "position", Size(1, 1)),
-  mVelocityPort(this, "velocity", Size(1, 1)),
-  mPositionStateInfo(new Vector1StateInfo),
-  mVelocityStateInfo(new Vector1StateInfo),
+UniversalJoint::UniversalJoint(const std::string& name) :
+  CartesianJoint<2>(name),
+  mForcePort(this, "force", Size(2, 1), true),
+  mOrientationPort(this, "orientation", Size(4, 1)),
+  mVelocityPort(this, "velocity", Size(2, 1)),
+  mPositionStateInfo(new Vector3StateInfo),
+  mVelocityStateInfo(new Vector2StateInfo),
   mAxis(Vector3(1, 0, 0))
 {
   addContinousStateInfo(mPositionStateInfo);
@@ -37,18 +37,18 @@ PrismaticJoint::PrismaticJoint(const std::string& name) :
   setAxis(mAxis);
 }
 
-PrismaticJoint::~PrismaticJoint(void)
+UniversalJoint::~UniversalJoint(void)
 {
 }
 
 const Vector3&
-PrismaticJoint::getAxis() const
+UniversalJoint::getAxis() const
 {
   return mAxis;
 }
 
 void
-PrismaticJoint::setAxis(const Vector3& axis)
+UniversalJoint::setAxis(const Vector3& axis)
 {
   real_type nrm = norm(axis);
   if (nrm <= Limits<real_type>::min()) {
@@ -56,38 +56,49 @@ PrismaticJoint::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-  setJointMatrix(Vector6(Vector3::zeros(), mAxis));
+
+  mOrientation = Quaternion::fromRotateTo(Vector3(0, 0, 1), mAxis);
+  
+  Vector3 axis1 = perpendicular(mAxis);
+  Vector3 axis2 = cross(mAxis, axis1);
+  Matrix6N jointMatrix;
+  jointMatrix(Range(0, 6), Range(0)) = Vector6(axis1, Vector3::zeros());
+  jointMatrix(Range(0, 6), Range(1)) = Vector6(axis2, Vector3::zeros());
+  setJointMatrix(jointMatrix);
 }
 
 void
-PrismaticJoint::init(const Task&, DiscreteStateValueVector&,
+UniversalJoint::init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector& continousState,
                     const PortValueList&) const
 {
-  continousState[*mPositionStateInfo] = 0;
-  continousState[*mVelocityStateInfo] = 0;
+  continousState[*mPositionStateInfo] = Vector3(1, 0, 0);
+  continousState[*mVelocityStateInfo] = Vector2(0, 0);
 }
 
 void
-PrismaticJoint::velocity(const MechanicLinkValue& parentLink,
+UniversalJoint::velocity(const MechanicLinkValue& parentLink,
                         MechanicLinkValue& childLink,
                         const ContinousStateValueVector& states,
                         PortValueList& portValues) const
 {
-  VectorN jointPos = states[*mPositionStateInfo];
-  if (!mPositionPort.empty())
-    portValues[mPositionPort] = jointPos;
+  Vector3 jointPos = states[*mPositionStateInfo];
+  Quaternion orientation(jointPos(0), jointPos(1), 0, jointPos(2));
+  orientation *= mOrientation;
+
+  if (!mOrientationPort.empty())
+    portValues[mOrientationPort] = orientation;
   
   VectorN jointVel = states[*mVelocityStateInfo];
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  velocity(parentLink, childLink, mAxis*jointPos, Quaternion::unit(),
-           getJointMatrix()*jointVel);
+  velocity(parentLink, childLink, Vector3(0, 0, 0),
+           orientation, getJointMatrix()*jointVel);
 }
 
 void
-PrismaticJoint::articulation(MechanicLinkValue& parentLink,
+UniversalJoint::articulation(MechanicLinkValue& parentLink,
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
@@ -103,7 +114,7 @@ PrismaticJoint::articulation(MechanicLinkValue& parentLink,
 }
 
 void
-PrismaticJoint::acceleration(const MechanicLinkValue& parentLink,
+UniversalJoint::acceleration(const MechanicLinkValue& parentLink,
                             MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
@@ -119,12 +130,24 @@ PrismaticJoint::acceleration(const MechanicLinkValue& parentLink,
 }
 
 void
-PrismaticJoint::derivative(const DiscreteStateValueVector&,
+UniversalJoint::derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector& states,
                           const PortValueList&, const VectorN& velDot,
                           ContinousStateValueVector& derivative) const
 {
-  derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];
+  Vector3 jointPos = states[*mPositionStateInfo];
+  Quaternion q = Quaternion(jointPos(0), jointPos(1), 0, jointPos(2));
+  q *= mOrientation;
+
+  // Compute the derivative term originating from the angular velocity.
+  // Correction term to keep the quaternion normalized.
+  // That is if |q| < 1 add a little radial component outward,
+  // if |q| > 1 add a little radial component inward
+  Vector3 angVel = getJointMatrix()(Range(0, 2), Range(0, 1))
+    *states[*mVelocityStateInfo];
+  Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
+
+  derivative[*mPositionStateInfo] = Vector3(qderiv(0), qderiv(1), qderiv(3));
   derivative[*mVelocityStateInfo] = velDot;
 }
 

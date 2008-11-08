@@ -30,11 +30,10 @@ public:
   { return new Context(this); }
 
 protected:
-  CartesianJoint(const std::string& name, const Matrix6N& jointMatrix) :
+  CartesianJoint(const std::string& name) :
     Joint(name),
     mParentLink(newMechanicLink("link0")),
-    mChildLink(newMechanicLink("link1")),
-    mJointMatrix(jointMatrix)
+    mChildLink(newMechanicLink("link1"))
   { }
   virtual ~CartesianJoint(void)
   { }
