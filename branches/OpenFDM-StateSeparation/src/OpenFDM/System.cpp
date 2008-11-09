@@ -581,7 +581,6 @@ public:
 
     OpenFDM::NodeInstance* nodeInstance;
     nodeInstance = new OpenFDM::NodeInstance(getNodePath(), mSampleTime, &node);
-    _nodeInstanceList.push_back(nodeInstance);
     instance->mAbstractNodeInstance = nodeInstance;
 
     OpenFDMAssert(node.getPort(0));
@@ -601,7 +600,6 @@ public:
     mRootJointInstanceList.push_back(instance);
 
     OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
-    _nodeInstanceList.push_back(mechanicInstance);
     instance->mAbstractNodeInstance = mechanicInstance;
   }
   virtual void apply(const Interact& node)
@@ -612,7 +610,6 @@ public:
     mInteractInstanceList.push_back(instance);
 
     OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
-    _nodeInstanceList.push_back(mechanicInstance);
     instance->mAbstractNodeInstance = mechanicInstance;
   }
   virtual void apply(const RigidBody& node)
@@ -622,7 +619,6 @@ public:
     addInstance(instance);
 
     OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
-    _nodeInstanceList.push_back(mechanicInstance);
     instance->mAbstractNodeInstance = mechanicInstance;
     // Make all rigid mechanic body links use the same link value
     // FIXME, allocate them in this way!
@@ -647,7 +643,6 @@ public:
     mJointInstanceList.push_back(instance);
 
     OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
-    _nodeInstanceList.push_back(mechanicInstance);
     instance->mAbstractNodeInstance = mechanicInstance;
   }
   virtual void apply(const Model& node)
@@ -658,7 +653,6 @@ public:
     mModelInstanceList.push_back(instance);
 
     OpenFDM::ModelInstance* modelInstance = new OpenFDM::ModelInstance(getNodePath(), mSampleTime, &node);
-    _nodeInstanceList.push_back(modelInstance);
     instance->mAbstractNodeInstance = modelInstance;
   }
 
@@ -670,7 +664,6 @@ public:
 
     OpenFDM::NodeInstance* nodeInstance;
     nodeInstance = new OpenFDM::NodeInstance(getNodePath(), mSampleTime, &group);
-    _nodeInstanceList.push_back(nodeInstance);
     instance->mAbstractNodeInstance = nodeInstance;
 
     // The vector of instances for this group.
@@ -784,11 +777,6 @@ public:
   // All instances in the system indexed by node path.
   typedef std::map<NodePath, SharedPtr<Instance> > InstanceMap;
   InstanceMap mInstanceMap;
-
-  ////////////////////////////////////////////////////////////////////////////
-  // The final list of Nodes we have in the simulation system
-  OpenFDM::NodeInstanceList _nodeInstanceList; // mInstanceMap
-
 
   typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
   typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
@@ -1060,17 +1048,16 @@ protected:
     }
     
     // check port values and report unconnected mandatory values.
-    OpenFDM::NodeInstanceList::const_iterator j;
-    for (j = _nodeInstanceList.begin(); j != _nodeInstanceList.end(); ++j) {
-      const Node& node = (*j)->getNode();
-      for (unsigned k = 0; k < node.getNumPorts(); ++k) {
-        SharedPtr<const PortInfo> portInfo = node.getPort(k);
+    for (i = mInstanceMap.begin(); i != mInstanceMap.end(); ++i) {
+      const Node* node = i->second->getNode();
+      for (unsigned k = 0; k < node->getNumPorts(); ++k) {
+        SharedPtr<const PortInfo> portInfo = node->getPort(k);
         if (portInfo->getOptional())
           continue;
-        if (!(*j)->getPortValue(*portInfo)) {
+        if (!i->second->getPortValue(*portInfo)) {
           Log(Schedule, Error) << "Mandatory port value for port \""
                                << portInfo->getName() << "\" for model \""
-                               << (*j)->getNodeNamePath()
+                               << i->second->getNodeNamePath()
                                << "\" is not connected!" << endl;
           return false;
         }
@@ -1151,11 +1138,11 @@ System::init(const real_type& t0)
 
   // Have something to run in our hands.
   // Not get the information required to reflect the system to the user.
-  OpenFDM::NodeInstanceList::iterator i;
-  for (i = nodeInstanceCollector._nodeInstanceList.begin();
-       i != nodeInstanceCollector._nodeInstanceList.end(); ++i) {
-    mNodeInstanceMap[(*i)->getNodePath()] = *i;
-    mNodeInstanceList.push_back(*i);
+  NodeInstanceCollector::InstanceMap::const_iterator i;
+  for (i = nodeInstanceCollector.mInstanceMap.begin();
+       i != nodeInstanceCollector.mInstanceMap.end(); ++i) {
+    mNodeInstanceMap[i->first] = i->second->mAbstractNodeInstance;
+    mNodeInstanceList.push_back(i->second->mAbstractNodeInstance);
   }
 
   SystemOutputList::const_iterator j;
