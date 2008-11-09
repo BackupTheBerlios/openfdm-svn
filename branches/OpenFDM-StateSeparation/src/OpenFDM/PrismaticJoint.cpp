@@ -23,7 +23,6 @@ BEGIN_OPENFDM_OBJECT_DEF(PrismaticJoint, Joint)
 
 PrismaticJoint::PrismaticJoint(const std::string& name) :
   CartesianJoint<1>(name),
-  mForcePort(this, "force", Size(1, 1), true),
   mPositionPort(this, "position", Size(1, 1)),
   mVelocityPort(this, "velocity", Size(1, 1)),
   mPositionStateInfo(new Vector1StateInfo),
@@ -57,6 +56,23 @@ PrismaticJoint::setAxis(const Vector3& axis)
   }
   mAxis = (1/nrm)*axis;
   setJointMatrix(Vector6(Vector3::zeros(), mAxis));
+}
+
+void
+PrismaticJoint::setEnableExternalForce(bool enable)
+{
+  if (enable == getEnableExternalForce())
+    return;
+  if (enable)
+    mForcePort = MatrixInputPort(this, "force", Size(1, 1), true);
+  else
+    mForcePort.clear();
+}
+
+bool
+PrismaticJoint::getEnableExternalForce() const
+{
+  return !mForcePort.empty();
 }
 
 void

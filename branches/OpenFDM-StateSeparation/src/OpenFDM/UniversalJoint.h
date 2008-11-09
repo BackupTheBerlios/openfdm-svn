@@ -33,6 +33,9 @@ public:
   const Vector3& getAxis() const;
   void setAxis(const Vector3& axis);
 
+  void setEnableExternalForce(bool enable);
+  bool getEnableExternalForce() const;
+
 protected:
 
   virtual void init(const Task&, DiscreteStateValueVector&,

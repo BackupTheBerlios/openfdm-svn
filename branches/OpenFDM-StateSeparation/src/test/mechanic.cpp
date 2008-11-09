@@ -37,10 +37,13 @@ Node* buildSimpleMechanicExample2()
   RigidBody *body = new RigidBody("Rigid Body");
   body->addLink("link2");
   Group::NodeId rigidBody = group->addChild(body);
-  Group::NodeId mass = group->addChild(new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1)));
-  Group::NodeId revolute = group->addChild(new RevoluteJoint("Revolute Joint"));
+  InertiaMatrix inertia(1, 0, 0, 1, 0, 1);
+  Group::NodeId mass = group->addChild(new Mass("Mass", 1, inertia));
+  RevoluteJoint* revoluteJoint = new RevoluteJoint("Revolute Joint");
+  revoluteJoint->setEnableExternalForce(true);
+  Group::NodeId revolute = group->addChild(revoluteJoint);
   Group::NodeId rigidBody2 = group->addChild(new RigidBody("Rigid Body 2"));
-  Group::NodeId mass2 = group->addChild(new Mass("Mass 2", 1, InertiaMatrix(1, 0, 0, 1, 0, 1)));
+  Group::NodeId mass2 = group->addChild(new Mass("Mass 2", 1, inertia));
 
   group->connect(rootJoint, "link", rigidBody, "link0");
   group->connect(rigidBody, "link1", mass, "link");
@@ -49,7 +52,7 @@ Node* buildSimpleMechanicExample2()
   group->connect(rigidBody2, "link1", mass2, "link");
 
   Group::NodeId jointForce = group->addChild(new ConstModel("Joint Force", 1));
-//   Group::NodeId jointForce = group->addChild(new ConstModel("Joint Force", 0));
+
   group->connect(jointForce, "output", revolute, "force");
 
   return group.release();

@@ -23,7 +23,6 @@ BEGIN_OPENFDM_OBJECT_DEF(UniversalJoint, Joint)
 
 UniversalJoint::UniversalJoint(const std::string& name) :
   CartesianJoint<2>(name),
-  mForcePort(this, "force", Size(2, 1), true),
   mOrientationPort(this, "orientation", Size(4, 1)),
   mVelocityPort(this, "velocity", Size(2, 1)),
   mPositionStateInfo(new Vector3StateInfo),
@@ -65,6 +64,23 @@ UniversalJoint::setAxis(const Vector3& axis)
   jointMatrix(Range(0, 6), Range(0)) = Vector6(axis1, Vector3::zeros());
   jointMatrix(Range(0, 6), Range(1)) = Vector6(axis2, Vector3::zeros());
   setJointMatrix(jointMatrix);
+}
+
+void
+UniversalJoint::setEnableExternalForce(bool enable)
+{
+  if (enable == getEnableExternalForce())
+    return;
+  if (enable)
+    mForcePort = MatrixInputPort(this, "force", Size(2, 1), true);
+  else
+    mForcePort.clear();
+}
+
+bool
+UniversalJoint::getEnableExternalForce() const
+{
+  return !mForcePort.empty();
 }
 
 void
