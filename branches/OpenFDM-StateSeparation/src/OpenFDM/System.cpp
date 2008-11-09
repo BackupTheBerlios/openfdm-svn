@@ -479,6 +479,7 @@ public:
       mNode(&node)
     { }
     virtual const Node* getNode() const { return mNode; }
+  private:
     SharedPtr<const Node> mNode;
   };
   struct ModelInstance : public Instance {
@@ -488,7 +489,6 @@ public:
       mModel(&model)
     { }
     virtual const Model* getNode() const { return mModel; }
-
   private:
     SharedPtr<const Model> mModel;
   };
