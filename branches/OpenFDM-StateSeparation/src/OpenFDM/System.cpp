@@ -450,7 +450,7 @@ public:
   {
     // Need to stor the root nodes to build up the spanning tree for the
     // mechanical system here.
-    OpenFDM::MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
+    OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     if (node.getNumPorts() == 1)
       _rootJointInstanceList.push_back(mechanicInstance);
@@ -460,14 +460,14 @@ public:
   }
   virtual void apply(const Interact& node)
   {
-    OpenFDM::MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
+    OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     _interactInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
   }
   virtual void apply(const RigidBody& node)
   {
-    OpenFDM::MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
+    OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
     // Make all rigid mechanic body links use the same link value
@@ -485,7 +485,7 @@ public:
   }
   virtual void apply(const Joint& node)
   {
-    MechanicInstance* mechanicInstance = new MechanicInstance(getNodePath(), mSampleTime, &node);
+    OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     _jointInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
