@@ -33,7 +33,8 @@ public:
   const NodePath& getNodePath() const
   { return mNodePath; }
   /// String representation of the node path.
-  std::string getNodeNamePath() const;
+  std::string getNodeNamePath() const
+  { return Node::toNodePathName(mNodePath); }
 
   /// Get the sample time this node will run on
   const SampleTime& getSampleTime() const

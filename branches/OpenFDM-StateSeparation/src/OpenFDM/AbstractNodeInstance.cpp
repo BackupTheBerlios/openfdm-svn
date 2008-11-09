@@ -23,20 +23,4 @@ AbstractNodeInstance::~AbstractNodeInstance()
 {
 }
 
-std::string
-AbstractNodeInstance::getNodeNamePath() const
-{
-  if (mNodePath.empty())
-    return std::string();
-  std::string path = mNodePath.front()->getName();
-  NodePath::const_iterator i = mNodePath.begin();
-  if (i != mNodePath.end()) {
-    for (++i; i != mNodePath.end(); ++i) {
-      path += '/';
-      path += (*i)->getName();
-    }
-  }
-  return path;
-}
-
 } // namespace OpenFDM
