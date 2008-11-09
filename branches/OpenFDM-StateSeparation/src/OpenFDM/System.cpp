@@ -949,14 +949,6 @@ protected:
         << "  MechanicNode \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
     }
 
-    // FIXME: just for now
-    _mechanicInstanceList.clear();
-    MechanicInstanceList::iterator j;
-    for (j = mMechanicInstanceList.begin(); j != mMechanicInstanceList.end(); ++j) {
-      OpenFDMAssert(dynamic_cast<OpenFDM::MechanicInstance*>((*j)->mAbstractNodeInstance.get()));
-      _mechanicInstanceList.push_back(dynamic_cast<OpenFDM::MechanicInstance*>((*j)->mAbstractNodeInstance.get()));
-    }
-
     return true;
   }
 
@@ -1026,14 +1018,6 @@ protected:
         << "  Model \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
     }
 
-    // FIXME: just for now
-    _modelInstanceList.clear();
-    ModelInstanceList::iterator j;
-    for (j = mModelInstanceList.begin(); j != mModelInstanceList.end(); ++j) {
-      OpenFDMAssert(dynamic_cast<OpenFDM::ModelInstance*>((*j)->mAbstractNodeInstance.get()));
-      _modelInstanceList.push_back(dynamic_cast<OpenFDM::ModelInstance*>((*j)->mAbstractNodeInstance.get()));
-    }
-
     return true;
   }
 
@@ -1068,19 +1052,28 @@ protected:
 
   bool allocModels()
   {
-    OpenFDM::ModelInstanceList::const_iterator i;
-    for (i = _modelInstanceList.begin(); i != _modelInstanceList.end(); ++i) {
-      if (!(*i)->getNodeContext().alloc()) {
+    // FIXME: just for now
+    ModelInstanceList::iterator i;
+    for (i = mModelInstanceList.begin(); i != mModelInstanceList.end(); ++i) {
+      OpenFDM::ModelInstance* instance = 
+       dynamic_cast<OpenFDM::ModelInstance*>((*i)->mAbstractNodeInstance.get());
+      OpenFDMAssert(instance);
+      _modelInstanceList.push_back(instance);
+      if (!instance->getNodeContext().alloc()) {
         Log(Schedule, Error) << "Could not alloc for model \""
                              << (*i)->getNodeNamePath() << "\"" << endl;
         return false;
       }
     }
 
-    OpenFDM::MechanicInstanceList::const_iterator j;
-    for (j = _mechanicInstanceList.begin();
-         j != _mechanicInstanceList.end(); ++j) {
-      if (!(*j)->getNodeContext().alloc()) {
+    MechanicInstanceList::iterator j;
+    for (j = mMechanicInstanceList.begin();
+         j != mMechanicInstanceList.end(); ++j) {
+      OpenFDM::MechanicInstance* instance = 
+       dynamic_cast<OpenFDM::MechanicInstance*>((*j)->mAbstractNodeInstance.get());
+      OpenFDMAssert(instance);
+      _mechanicInstanceList.push_back(instance);
+      if (!instance->getNodeContext().alloc()) {
         Log(Schedule, Error) << "Could not alloc for MechanicNode \""
                              << (*j)->getNodeNamePath() << "\"" << endl;
         return false;
