@@ -829,15 +829,15 @@ public:
   // to simulate the system.
   AbstractSystem* buildSystem()
   {
-    // Allocates and distributes the PortValues, is required for the sort
-    // steps below
-    if (!allocPortValues())
-      return 0;
     // The MechanicNode instances are sorted to match the direct input property
     if (!sortMechanicList())
       return 0;
     // The model instances are sorted to match the direct input property
     if (!sortModelList())
+      return 0;
+    // Allocates and distributes the PortValues, is required for the sort
+    // steps below
+    if (!allocPortValues())
       return 0;
     // Now that they are sorted, allocate the port sizes and with that
     // knowledge the state values.
