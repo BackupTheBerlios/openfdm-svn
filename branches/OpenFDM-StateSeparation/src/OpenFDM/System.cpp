@@ -383,7 +383,7 @@ public:
     }
     virtual ~Instance()
     { }
-    virtual const Node* getNode() = 0;
+    virtual const Node* getNode() const = 0;
 
     PortData* getPortData(unsigned i)
     {
@@ -438,7 +438,7 @@ public:
       Instance(node, nodePath, sampleTime),
       mNode(&node)
     { }
-    virtual const Node* getNode() { return mNode; }
+    virtual const Node* getNode() const { return mNode; }
     SharedPtr<const Node> mNode;
   };
   struct ModelInstance : public Instance {
@@ -447,7 +447,7 @@ public:
       Instance(model, nodePath, sampleTime),
       mModel(&model)
     { }
-    virtual const Model* getNode() { return mModel; }
+    virtual const Model* getNode() const { return mModel; }
     SharedPtr<const Model> mModel;
   };
   struct MechanicInstance : public Instance {
@@ -455,7 +455,7 @@ public:
                      const SampleTime& sampleTime) :
       Instance(mechanicNode, nodePath, sampleTime)
     { }
-    virtual const MechanicNode* getNode() = 0;
+    virtual const MechanicNode* getNode() const = 0;
   };
   // FIXME may be root joints are joints with only one link???
   struct RootJointInstance : public MechanicInstance {
@@ -464,7 +464,7 @@ public:
       MechanicInstance(rootJoint, nodePath, sampleTime),
       mRootJoint(&rootJoint)
     { }
-    virtual const RootJoint* getNode() { return mRootJoint; }
+    virtual const RootJoint* getNode() const { return mRootJoint; }
     SharedPtr<const RootJoint> mRootJoint;
   };
   struct JointInstance : public MechanicInstance {
@@ -473,7 +473,7 @@ public:
       MechanicInstance(joint, nodePath, sampleTime),
       mJoint(&joint)
     { }
-    virtual const Joint* getNode() { return mJoint; }
+    virtual const Joint* getNode() const { return mJoint; }
     SharedPtr<const Joint> mJoint;
   };
   struct InteractInstance : public MechanicInstance {
@@ -482,7 +482,7 @@ public:
       MechanicInstance(interact, nodePath, sampleTime),
       mInteract(&interact)
     { }
-    virtual const Interact* getNode() { return mInteract; }
+    virtual const Interact* getNode() const { return mInteract; }
     SharedPtr<const Interact> mInteract;
   };
 
