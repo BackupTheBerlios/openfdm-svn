@@ -524,17 +524,6 @@ public:
       return false;
     }
   };
-  // FIXME may be root joints are joints with only one link???
-  struct RootJointInstance : public MechanicInstance {
-    RootJointInstance(const RootJoint& rootJoint, const NodePath& nodePath,
-                      const SampleTime& sampleTime) :
-      MechanicInstance(rootJoint, nodePath, sampleTime),
-      mRootJoint(&rootJoint)
-    { }
-    virtual const RootJoint* getNode() const { return mRootJoint; }
-  private:
-    SharedPtr<const RootJoint> mRootJoint;
-  };
   struct JointInstance : public MechanicInstance {
     JointInstance(const Joint& joint, const NodePath& nodePath,
                   const SampleTime& sampleTime) :
@@ -594,8 +583,8 @@ public:
   {
     // Need to store the root nodes to build up the spanning tree for the
     // mechanical system here.
-    SharedPtr<RootJointInstance> instance;
-    instance = new RootJointInstance(node, getNodePath(), mSampleTime);
+    SharedPtr<JointInstance> instance;
+    instance = new JointInstance(node, getNodePath(), mSampleTime);
     addInstance(instance);
     mRootJointInstanceList.push_back(instance);
 
@@ -782,7 +771,6 @@ public:
   typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
   typedef std::list<SharedPtr<InteractInstance> > InteractInstanceList;
   typedef std::list<SharedPtr<JointInstance> > JointInstanceList;
-  typedef std::list<SharedPtr<RootJointInstance> > RootJointInstanceList;
 
   // The Models list, worthwhile for sorting
   OpenFDM::ModelInstanceList _modelInstanceList; // mModelInstanceList
