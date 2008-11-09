@@ -193,7 +193,8 @@ private:
 
 class MechanicLinkInfo : public PortInfo {
 public:
-  MechanicLinkInfo(Node* node, const std::string& name) :
+  // FIXME: mechanic links are special. Just allow them in MechanicNodes ...
+  MechanicLinkInfo(/*Mechanic*/Node* node, const std::string& name) :
     PortInfo(node, name)
   { }
   virtual ~MechanicLinkInfo()
