@@ -26,7 +26,7 @@ public:
   virtual ~AbstractNodeInstance();
 
   /// The actual Node this AbstractNodeInstance stems from
-  const Node& getNode() const
+  virtual const Node& getNode() const
   { return getNodeContext().getNode(); }
 
   /// The node path leading to this instance.
@@ -41,15 +41,15 @@ public:
   { return mSampleTime; }
 
   /// Access port values by the PortInfo values
-  const PortValue* getPortValue(const PortInfo& portInfo) const
+  virtual const PortValue* getPortValue(const PortInfo& portInfo) const
   { return getNodeContext().getPortValueList().getPortValue(portInfo); }
-  const NumericPortValue* getPortValue(const NumericPortInfo& portInfo) const
+  virtual const NumericPortValue* getPortValue(const NumericPortInfo& portInfo) const
   { return getNodeContext().getPortValueList().getPortValue(portInfo); }
-  const MechanicLinkValue* getPortValue(const MechanicLinkInfo& portInfo) const
+  virtual const MechanicLinkValue* getPortValue(const MechanicLinkInfo& portInfo) const
   { return getNodeContext().getPortValueList().getPortValue(portInfo); }
 
   /// Set port value for the given port.
-  void setPortValue(const PortInfo& portInfo, PortValue* portValue)
+  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue)
   { getNodeContext().setPortValue(portInfo, portValue); }
 
 protected:
@@ -66,10 +66,6 @@ private:
 
   const NodePath mNodePath;
 };
-
-typedef std::list<SharedPtr<AbstractNodeInstance> > NodeInstanceList;
-typedef std::list<SharedPtr<const AbstractNodeInstance> > ConstNodeInstanceList;
-typedef std::map<NodePath, SharedPtr<AbstractNodeInstance> > NodeInstanceMap;
 
 } // namespace OpenFDM
 

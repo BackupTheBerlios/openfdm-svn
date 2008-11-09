@@ -50,7 +50,6 @@ public:
 
   /// Get node instances by their path within the system
   const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const;
-  AbstractNodeInstance* getNodeInstance(const NodePath& nodePath);
 
   void attach(SystemOutput* systemOutput);
   void detach(SystemOutput* systemOutput);
@@ -62,7 +61,8 @@ private:
   SampleTime mSampleTime;
 
   SharedPtr<AbstractSystem> mAbstractSystem;
-  ConstNodeInstanceList mNodeInstanceList;
+
+  typedef std::map<NodePath, SharedPtr<AbstractNodeInstance> > NodeInstanceMap;
   NodeInstanceMap mNodeInstanceMap;
 
   typedef std::list<SharedPtr<SystemOutput> > SystemOutputList;

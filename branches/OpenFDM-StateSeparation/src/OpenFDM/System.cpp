@@ -1128,7 +1128,6 @@ System::init(const real_type& t0)
   for (i = nodeInstanceCollector.mInstanceMap.begin();
        i != nodeInstanceCollector.mInstanceMap.end(); ++i) {
     mNodeInstanceMap[i->first] = i->second->mAbstractNodeInstance;
-    mNodeInstanceList.push_back(i->second->mAbstractNodeInstance);
   }
 
   SystemOutputList::const_iterator j;
@@ -1145,7 +1144,6 @@ void
 System::clear()
 {
   mAbstractSystem = 0;
-  mNodeInstanceList.clear();
   mNodeInstanceMap.clear();
 
   SystemOutputList::const_iterator i;
@@ -1189,15 +1187,6 @@ System::getTime(void) const
 
 const AbstractNodeInstance*
 System::getNodeInstance(const NodePath& nodePath) const
-{
-  NodeInstanceMap::const_iterator i = mNodeInstanceMap.find(nodePath);
-  if (i == mNodeInstanceMap.end())
-    return 0;
-  return i->second;
-}
-
-AbstractNodeInstance*
-System::getNodeInstance(const NodePath& nodePath)
 {
   NodeInstanceMap::const_iterator i = mNodeInstanceMap.find(nodePath);
   if (i == mNodeInstanceMap.end())
