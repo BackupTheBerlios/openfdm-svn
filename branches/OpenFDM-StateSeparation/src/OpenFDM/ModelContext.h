@@ -41,9 +41,6 @@ public:
   { mModel->derivative(mDiscreteState, mContinousState, mPortValueList,
                        mContinousStateDerivative); }
 
-  // Return true if this model directly depends on one of models outputs
-  bool dependsOn(const ModelContext& modelContext) const;
-
 private:
   ModelContext();
   ModelContext(const ModelContext&);

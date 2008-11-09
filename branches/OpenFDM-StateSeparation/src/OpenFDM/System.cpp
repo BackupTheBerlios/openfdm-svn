@@ -306,6 +306,11 @@ public:
       return true;
     }
 
+    bool isConnected(const PortData& portData) const
+    {
+      return mPortConnectSet && mPortConnectSet == portData.mPortConnectSet;
+    }
+
     bool connect(PortData* portData)
     {
       if (getPortInfo()->getMaxConnects() <= mConnectedPorts.size())
@@ -401,6 +406,41 @@ public:
       return mAbstractNodeInstance->getPortValue(portInfo);
     }
 
+    bool dependsOn(const Instance& instance, bool acceleration = false) const
+    {
+      unsigned numPorts = getNode()->getNumPorts();
+      for (unsigned i = 0; i < numPorts; ++i) {
+        const InputPortInfo* inputPortInfo;
+        inputPortInfo = getNode()->getPort(i)->toInputPortInfo();
+        if (!inputPortInfo)
+          continue;
+        if (!inputPortInfo->getDirectInput())
+          continue;
+        OpenFDMAssert(i < mPortDataVector.size());
+
+        unsigned otherNumPorts = instance.getNode()->getNumPorts();
+        for (unsigned j = 0; j < otherNumPorts; ++j) {
+          const OutputPortInfo* outputPortInfo;
+          outputPortInfo = instance.getNode()->getPort(j)->toOutputPortInfo();
+          if (!outputPortInfo)
+            continue;
+          if (!acceleration && outputPortInfo->getAccelerationOutput())
+            continue;
+
+          OpenFDMAssert(j < instance.mPortDataVector.size());
+          OpenFDMAssert(instance.mPortDataVector[j]);
+          if (!mPortDataVector[i]->isConnected(*instance.mPortDataVector[j]))
+            continue;
+          
+          return true;
+        }
+      }
+      return false;
+    }
+
+    std::string getNodeNamePath() const
+    { return Node::toNodePathName(mNodePath); }
+
     bool allocPortValues()
     {
       for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
@@ -448,6 +488,8 @@ public:
       mModel(&model)
     { }
     virtual const Model* getNode() const { return mModel; }
+
+  private:
     SharedPtr<const Model> mModel;
   };
   struct MechanicInstance : public Instance {
@@ -456,6 +498,31 @@ public:
       Instance(mechanicNode, nodePath, sampleTime)
     { }
     virtual const MechanicNode* getNode() const = 0;
+
+    bool isLinkedTo(const MechanicInstance& instance) const
+    {
+      unsigned numPorts = getNode()->getNumPorts();
+      for (unsigned i = 0; i < numPorts; ++i) {
+        if (!getNode()->getPort(i)->toMechanicLinkInfo())
+          continue;
+        OpenFDMAssert(i < mPortDataVector.size());
+
+        const Node* otherNode = instance.getNode();
+        unsigned otherNumPorts = otherNode->getNumPorts();
+        for (unsigned j = 0; j < otherNumPorts; ++j) {
+          if (!otherNode->getPort(j)->toMechanicLinkInfo())
+            continue;
+
+          OpenFDMAssert(j < instance.mPortDataVector.size());
+          OpenFDMAssert(instance.mPortDataVector[j]);
+          if (!mPortDataVector[i]->isConnected(*instance.mPortDataVector[j]))
+            continue;
+          
+          return true;
+        }
+      }
+      return false;
+    }
   };
   // FIXME may be root joints are joints with only one link???
   struct RootJointInstance : public MechanicInstance {
@@ -465,6 +532,7 @@ public:
       mRootJoint(&rootJoint)
     { }
     virtual const RootJoint* getNode() const { return mRootJoint; }
+  private:
     SharedPtr<const RootJoint> mRootJoint;
   };
   struct JointInstance : public MechanicInstance {
@@ -474,6 +542,7 @@ public:
       mJoint(&joint)
     { }
     virtual const Joint* getNode() const { return mJoint; }
+  private:
     SharedPtr<const Joint> mJoint;
   };
   struct InteractInstance : public MechanicInstance {
@@ -483,6 +552,7 @@ public:
       mInteract(&interact)
     { }
     virtual const Interact* getNode() const { return mInteract; }
+  private:
     SharedPtr<const Interact> mInteract;
   };
 
@@ -533,10 +603,6 @@ public:
     OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     instance->mAbstractNodeInstance = mechanicInstance;
-    if (node.getNumPorts() == 1)
-      _rootJointInstanceList.push_back(mechanicInstance);
-    else
-      _jointInstanceList.push_back(mechanicInstance);
   }
   virtual void apply(const Interact& node)
   {
@@ -548,7 +614,6 @@ public:
     OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     instance->mAbstractNodeInstance = mechanicInstance;
-    _interactInstanceList.push_back(mechanicInstance);
   }
   virtual void apply(const RigidBody& node)
   {
@@ -584,7 +649,6 @@ public:
     OpenFDM::MechanicInstance* mechanicInstance = new OpenFDM::MechanicInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(mechanicInstance);
     instance->mAbstractNodeInstance = mechanicInstance;
-    _jointInstanceList.push_back(mechanicInstance);
   }
   virtual void apply(const Model& node)
   {
@@ -596,7 +660,6 @@ public:
     OpenFDM::ModelInstance* modelInstance = new OpenFDM::ModelInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(modelInstance);
     instance->mAbstractNodeInstance = modelInstance;
-    _modelInstanceList.push_back(modelInstance);
   }
 
   virtual void apply(const Group& group)
@@ -742,13 +805,9 @@ public:
 
   // The list of root nodes in the mechanical system. Will be a starting point
   // for sorting the tree of mechanical models downwards
-  OpenFDM::MechanicInstanceList _rootJointInstanceList; //mRootJointInstanceList
-  OpenFDM::MechanicInstanceList _interactInstanceList; // mInteractInstanceList
-  OpenFDM::MechanicInstanceList _jointInstanceList; // mJointInstanceList
-
-  RootJointInstanceList mRootJointInstanceList;
-  JointInstanceList mJointInstanceList;
-  InteractInstanceList mInteractInstanceList;
+  MechanicInstanceList mRootJointInstanceList;
+  MechanicInstanceList mJointInstanceList;
+  MechanicInstanceList mInteractInstanceList;
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
@@ -816,8 +875,8 @@ protected:
   // method to sort the leafs according to their dependency
   bool sortMechanicList()
   {
-    if (_rootJointInstanceList.empty() &&
-        (!_jointInstanceList.empty() || !_interactInstanceList.empty())) {
+    if (mRootJointInstanceList.empty() &&
+        (!mJointInstanceList.empty() || !mInteractInstanceList.empty())) {
       Log(Schedule,Error)
         << "No root joint in System with mechanic components" << std::endl;
       return false;
@@ -825,32 +884,32 @@ protected:
 
     // Start with all the roots in front of the list ...
     // FIXME: ensure that there is no loop here?
-    _mechanicInstanceList.swap(_rootJointInstanceList);
+    mMechanicInstanceList.swap(mRootJointInstanceList);
 
     // Not the best algorithm, but for a first cut ...
-    while (!_jointInstanceList.empty()) {
-      OpenFDM::MechanicInstanceList nextLevelList;
+    while (!mJointInstanceList.empty()) {
+      MechanicInstanceList nextLevelList;
 
-      OpenFDM::MechanicInstanceList::iterator j;
-      for (j = _mechanicInstanceList.begin();
-           j != _mechanicInstanceList.end(); ++j) {
-        OpenFDM::MechanicInstanceList::iterator i;
-        for (i = _jointInstanceList.begin();
-             i != _jointInstanceList.end();) {
+      MechanicInstanceList::iterator j;
+      for (j = mMechanicInstanceList.begin();
+           j != mMechanicInstanceList.end(); ++j) {
+        MechanicInstanceList::iterator i;
+        for (i = mJointInstanceList.begin();
+             i != mJointInstanceList.end();) {
         
-          if ((*j)->isConnectedTo(*(*i))) {
-            SharedPtr<OpenFDM::MechanicInstance> mechanicInstance = *i;
+          if ((*j)->isLinkedTo(*(*i))) {
+            SharedPtr<MechanicInstance> mechanicInstance = *i;
             nextLevelList.push_back(mechanicInstance);
-            i = _jointInstanceList.erase(i);
+            i = mJointInstanceList.erase(i);
 
             // Check if this current mechanic node does not reference
             // back into the already sorted models
-            OpenFDM::MechanicInstanceList::const_iterator k;
-            for (k = _mechanicInstanceList.begin();
-                 k != _mechanicInstanceList.end(); ++k) {
+            MechanicInstanceList::const_iterator k;
+            for (k = mMechanicInstanceList.begin();
+                 k != mMechanicInstanceList.end(); ++k) {
               if (*k == *j)
                 continue;
-              if (mechanicInstance->isConnectedTo(*(*k))) {
+              if (mechanicInstance->isLinkedTo(*(*k))) {
                 Log(Schedule,Error)
                   << "Detected closed kinematic loop: MechanicNode \""
                   << mechanicInstance->getNodeNamePath()
@@ -870,9 +929,9 @@ protected:
       // if we have a connection in between them, there must be a
       // closed kinematic loop.
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
-        OpenFDM::MechanicInstanceList::iterator i = j;
+        MechanicInstanceList::iterator i = j;
         for (++i; i != nextLevelList.end(); ++i) {
-          if ((*j)->isConnectedTo(*(*i))) {
+          if ((*j)->isLinkedTo(*(*i))) {
             Log(Schedule,Error)
               << "Detected closed kinematic loop: MechanicNode \""
               << (*j)->getNodeNamePath()
@@ -885,21 +944,29 @@ protected:
       
 
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
-        _mechanicInstanceList.push_back(*j);
+        mMechanicInstanceList.push_back(*j);
       }
     }
 
     // Interacts are always computed at the end of the list
-    _mechanicInstanceList.splice(_mechanicInstanceList.end(),
-                                      _interactInstanceList,
-                                      _interactInstanceList.begin(),
-                                      _interactInstanceList.end());
+    mMechanicInstanceList.splice(mMechanicInstanceList.end(),
+                                 mInteractInstanceList,
+                                 mInteractInstanceList.begin(),
+                                 mInteractInstanceList.end());
     
     Log(Schedule,Info) << "MechanicNode Schedule" << std::endl;
-    OpenFDM::MechanicInstanceList::iterator i = _mechanicInstanceList.begin();
-    for (; i != _mechanicInstanceList.end(); ++i) {
+    MechanicInstanceList::iterator i = mMechanicInstanceList.begin();
+    for (; i != mMechanicInstanceList.end(); ++i) {
       Log(Schedule,Info)
         << "  MechanicNode \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
+    }
+
+    // FIXME: just for now
+    _mechanicInstanceList.clear();
+    MechanicInstanceList::iterator j;
+    for (j = mMechanicInstanceList.begin(); j != mMechanicInstanceList.end(); ++j) {
+      OpenFDMAssert(dynamic_cast<OpenFDM::MechanicInstance*>((*j)->mAbstractNodeInstance.get()));
+      _mechanicInstanceList.push_back(dynamic_cast<OpenFDM::MechanicInstance*>((*j)->mAbstractNodeInstance.get()));
     }
 
     return true;
@@ -908,19 +975,20 @@ protected:
   // method to sort the leafs according to their dependency
   bool sortModelList()
   {
-    OpenFDM::ModelInstanceList sortedModelInstanceList;
-    while (!_modelInstanceList.empty()) {
-      SharedPtr<OpenFDM::ModelInstance> modelInstance = _modelInstanceList.front();
-      _modelInstanceList.pop_front();
+    ModelInstanceList sortedModelInstanceList;
+    while (!mModelInstanceList.empty()) {
+      SharedPtr<ModelInstance> modelInstance = mModelInstanceList.front();
+      mModelInstanceList.pop_front();
 
       if (modelInstance->dependsOn(*modelInstance)) {
         Log(Schedule, Error)
           << "Self referencing direct dependency for Model \""
-          << modelInstance->getNodeNamePath() << "\" detected!" << std::endl;
+          << modelInstance->getNodeNamePath()
+          << "\" detected!" << std::endl;
         return false;
       }
 
-      OpenFDM::ModelInstanceList::iterator i;
+      ModelInstanceList::iterator i;
       for (i = sortedModelInstanceList.begin();
            i != sortedModelInstanceList.end();
            ++i) {
@@ -930,9 +998,10 @@ protected:
         // Something already sorted in depends on modelInstance,
         // so schedule that new thing just before.
         Log(Schedule, Info)
-          << "Inserting Model \"" << modelInstance->getNodeNamePath()
-          << "\" before Model \"" << (*i)->getNodeNamePath()
-          << "\"" << std::endl;
+          << "Inserting Model \""
+          << modelInstance->getNodeNamePath()
+          << "\" before Model \""
+          << (*i)->getNodeNamePath() << "\"" << std::endl;
         i = sortedModelInstanceList.insert(i, modelInstance);
         break;
       }
@@ -940,7 +1009,8 @@ protected:
         // nothing found so far that depends on model instance.
         // So put it at the end.
         Log(Schedule, Info)
-          << "Appending Model \"" << modelInstance->getNodeNamePath()
+          << "Appending Model \""
+          << modelInstance->getNodeNamePath()
           << "\"" << std::endl;
 
         sortedModelInstanceList.push_back(modelInstance);
@@ -952,13 +1022,30 @@ protected:
             continue;
           Log(Schedule,Error)
             << "Detected cyclic loop: Model \""
-            << modelInstance->getNodeNamePath() << "\" depends on Model \""
+            << modelInstance->getNodeNamePath()
+            << "\" depends on Model \""
             << (*i)->getNodeNamePath() << "\"" << std::endl;
           return false;
         }
       }
     }
-    _modelInstanceList.swap(sortedModelInstanceList);
+    mModelInstanceList.swap(sortedModelInstanceList);
+
+    Log(Schedule,Info) << "Model Schedule" << std::endl;
+    ModelInstanceList::iterator i = mModelInstanceList.begin();
+    for (; i != mModelInstanceList.end(); ++i) {
+      Log(Schedule,Info)
+        << "  Model \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
+    }
+
+    // FIXME: just for now
+    _modelInstanceList.clear();
+    ModelInstanceList::iterator j;
+    for (j = mModelInstanceList.begin(); j != mModelInstanceList.end(); ++j) {
+      OpenFDMAssert(dynamic_cast<OpenFDM::ModelInstance*>((*j)->mAbstractNodeInstance.get()));
+      _modelInstanceList.push_back(dynamic_cast<OpenFDM::ModelInstance*>((*j)->mAbstractNodeInstance.get()));
+    }
+
     return true;
   }
 
@@ -1004,14 +1091,6 @@ protected:
     }
 
     OpenFDM::MechanicInstanceList::const_iterator j;
-    for (j = _rootJointInstanceList.begin();
-         j != _rootJointInstanceList.end(); ++j) {
-      if (!(*j)->getNodeContext().alloc()) {
-        Log(Schedule, Error) << "Could not alloc for MechanicNode \""
-                             << (*j)->getNodeNamePath() << "\"" << endl;
-        return false;
-      }
-    }
     for (j = _mechanicInstanceList.begin();
          j != _mechanicInstanceList.end(); ++j) {
       if (!(*j)->getNodeContext().alloc()) {

@@ -18,12 +18,6 @@ MechanicInstance::~MechanicInstance()
 {
 }
 
-bool
-MechanicInstance::isConnectedTo(const MechanicInstance& mechanicInstance) const
-{
-  return mMechanicContext->isConnectedTo(*mechanicInstance.mMechanicContext);
-}
-
 MechanicContext&
 MechanicInstance::getNodeContext()
 {

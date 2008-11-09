@@ -17,12 +17,6 @@ ModelInstance::~ModelInstance()
 {
 }
 
-bool
-ModelInstance::dependsOn(const ModelInstance& modelInstance) const
-{
-  return mModelContext->dependsOn(*modelInstance.mModelContext);
-}
-
 ModelContext&
 ModelInstance::getNodeContext()
 {

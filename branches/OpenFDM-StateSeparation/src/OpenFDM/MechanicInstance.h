@@ -18,8 +18,6 @@ public:
                    const MechanicNode* mechanicNode);
   virtual ~MechanicInstance();
 
-  bool isConnectedTo(const MechanicInstance& mechanicInstance) const;
-
 // protected:
   virtual MechanicContext& getNodeContext();
   virtual const MechanicContext& getNodeContext() const;

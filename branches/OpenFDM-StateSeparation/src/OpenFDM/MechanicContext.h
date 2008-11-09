@@ -33,8 +33,6 @@ public:
   virtual void derivative(const Task&) = 0;
   virtual void update(const DiscreteTask& discreteTask) = 0;
 
-  virtual bool isConnectedTo(const MechanicContext& mechanicContext) const;
-
 private:
   MechanicContext(const MechanicContext&);
   MechanicContext& operator=(const MechanicContext&);

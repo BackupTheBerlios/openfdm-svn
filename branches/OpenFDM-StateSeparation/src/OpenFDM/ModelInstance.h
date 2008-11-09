@@ -18,9 +18,6 @@ public:
                 const Model* model);
   virtual ~ModelInstance();
 
-  // Return true if this leaf directly depends on one of leafInstance outputs
-  bool dependsOn(const ModelInstance& modelInstance) const;
-
 // protected:
   /// The node context that belongs to this instance.
   virtual ModelContext& getNodeContext();
