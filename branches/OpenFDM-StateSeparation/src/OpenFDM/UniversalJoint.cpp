@@ -61,8 +61,8 @@ UniversalJoint::setAxis(const Vector3& axis)
   Vector3 axis1 = perpendicular(mAxis);
   Vector3 axis2 = cross(mAxis, axis1);
   Matrix6N jointMatrix;
-  jointMatrix(Range(0, 6), Range(0)) = Vector6(axis1, Vector3::zeros());
-  jointMatrix(Range(0, 6), Range(1)) = Vector6(axis2, Vector3::zeros());
+  jointMatrix(Range(0, 5), Range(0)) = Vector6(axis1, Vector3::zeros());
+  jointMatrix(Range(0, 5), Range(1)) = Vector6(axis2, Vector3::zeros());
   setJointMatrix(jointMatrix);
 }
 
