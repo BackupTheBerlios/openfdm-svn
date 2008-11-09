@@ -94,7 +94,7 @@ public:
     mODESolver->setFunction(mContinousSystemFunction);
   }
 
-  void appendModelInstance(ModelInstance* modelInstance)
+  void appendModelInstance(OpenFDM::ModelInstance* modelInstance)
   {
     ModelContext* modelContext = &modelInstance->getNodeContext();
     SampleTime sampleTime = modelInstance->getSampleTime();
@@ -238,25 +238,25 @@ public:
     mBasicSampleTime(SampleTime::getContinous())
   { }
 
-  struct PortData;
+  struct _PortData;
 
   struct PortConnectSet : public Referenced {
     bool setPortValue(PortValue* portValue)
     {
       while (!mParentPortData.empty()) {
-        SharedPtr<PortData> portData = mParentPortData.back().lock();
+        SharedPtr<_PortData> portData = mParentPortData.back().lock();
         mParentPortData.pop_back();
         if (!portData->setPortValue(portValue))
           return false;
       }
       return true;
     }
-    std::vector<WeakPtr<PortData> > mParentPortData;
+    std::vector<WeakPtr<_PortData> > mParentPortData;
   };
 
-  struct PortData : public WeakReferenced {
+  struct _PortData : public WeakReferenced {
   public:
-    PortData(AbstractNodeInstance* nodeInstance, const PortInfo* portInfo) :
+    _PortData(AbstractNodeInstance* nodeInstance, const PortInfo* portInfo) :
       mNodeInstance(nodeInstance),
       mPortValueCreator(true),
       mPortInfo(portInfo)
@@ -276,7 +276,7 @@ public:
       }
       // Merge the port sets together ...
       while (!mPortConnectSet->mParentPortData.empty()) {
-        SharedPtr<PortData> portData = mPortConnectSet->mParentPortData.back().lock();
+        SharedPtr<_PortData> portData = mPortConnectSet->mParentPortData.back().lock();
         mPortConnectSet->mParentPortData.pop_back();
         if (portData == this)
           continue;
@@ -295,7 +295,7 @@ public:
       return mPortConnectSet;
     }
 
-    bool addPortData(PortData* portData)
+    bool addPortData(_PortData* portData)
     {
       if (getPortInfo()->getMaxConnects() <= mConnectedPorts.size())
         return false;
@@ -304,7 +304,7 @@ public:
       return true;
     }
 
-    bool connect(PortData* portData)
+    bool connect(_PortData* portData)
     {
       if (getPortInfo()->getMaxConnects() <= mConnectedPorts.size())
         return false;
@@ -339,7 +339,7 @@ public:
       mPortValueCreator = false;
     }
 
-    void setProxyPortData(PortData* proxyPortData)
+    void setProxyPortData(_PortData* proxyPortData)
     {
       mPortValueCreator = false;
       setPortConnectSet(proxyPortData->getOrCreatePortConnectSet());
@@ -363,12 +363,12 @@ public:
     bool mPortValueCreator;
     SharedPtr<AbstractNodeInstance> mNodeInstance;
     SharedPtr<const PortInfo> mPortInfo;
-    std::vector<WeakPtr<PortData> > mConnectedPorts;
+    std::vector<WeakPtr<_PortData> > mConnectedPorts;
     SharedPtr<PortConnectSet> mPortConnectSet;
   };
 
   // Return true if this leaf directly depends on one of leafInstance outputs
-  class PortDataList : public Referenced {
+  class _PortDataList : public Referenced {
   public:
     void setNodeInstance(AbstractNodeInstance* nodeInstance)
     {
@@ -377,10 +377,10 @@ public:
       unsigned numPorts = nodeInstance->getNode().getNumPorts();
       mPortDataVector.resize(numPorts);
       for (unsigned i = 0; i < numPorts; ++i)
-        mPortDataVector[i] = new PortData(nodeInstance, nodeInstance->getNode().getPort(i));
+        mPortDataVector[i] = new _PortData(nodeInstance, nodeInstance->getNode().getPort(i));
     }
     
-    PortData* getPortData(const PortInfo& portInfo)
+    _PortData* getPortData(const PortInfo& portInfo)
     { return mPortDataVector[portInfo.getIndex()]; }
     
     bool allocAndConnectProviderPortValues()
@@ -403,7 +403,7 @@ public:
     }
 
     /// The vector of per port connect information
-    typedef std::vector<SharedPtr<PortData> > PortDataVector;
+    typedef std::vector<SharedPtr<_PortData> > PortDataVector;
     PortDataVector mPortDataVector;
     
     /// The AbstractNodeInstance having some way to reference the
@@ -420,12 +420,12 @@ public:
   virtual void apply(const LibraryNode& libraryNode)
   { Log(Schedule, Error) << __PRETTY_FUNCTION__ << std::endl; }
 
-  PortDataList* buildNodeContext(const Node& node)
+  _PortDataList* buildNodeContext(const Node& node)
   {
-    NodeInstance* nodeInstance;
-    nodeInstance = new NodeInstance(getNodePath(), mSampleTime, &node);
+    OpenFDM::NodeInstance* nodeInstance;
+    nodeInstance = new OpenFDM::NodeInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(nodeInstance);
-    PortDataList* portDataList;
+    _PortDataList* portDataList;
     portDataList = getCurrentNodePortDataList();
     portDataList->setNodeInstance(nodeInstance);
     return portDataList;
@@ -433,15 +433,15 @@ public:
 
   virtual void apply(const GroupInterfaceNode& leaf)
   {
-    PortDataList* portDataList = buildNodeContext(leaf);
+    _PortDataList* portDataList = buildNodeContext(leaf);
     OpenFDMAssert(leaf.getPort(0));
-    PortData* portData = portDataList->getPortData(*leaf.getPort(0));
+    _PortData* portData = portDataList->getPortData(*leaf.getPort(0));
     _groupPortDataMap[leaf.getExternalPortIndex()] = portData;
   }
 
   void allocPortData(AbstractNodeInstance* nodeInstance, const LeafNode& leaf)
   {
-    PortDataList* portDataList;
+    _PortDataList* portDataList;
     portDataList = getCurrentNodePortDataList();
     portDataList->setNodeInstance(nodeInstance);
   }
@@ -471,7 +471,7 @@ public:
     _nodeInstanceList.push_back(mechanicInstance);
     allocPortData(mechanicInstance, node);
     // Make all rigid mechanic body links use the same link value
-    PortData* portData = 0;
+    _PortData* portData = 0;
     for (unsigned i = 0; i < node.getNumPorts(); ++i) {
       if (!node.getPort(i)->toMechanicLinkInfo())
         continue;
@@ -492,7 +492,7 @@ public:
   }
   virtual void apply(const Model& node)
   {
-    ModelInstance* modelInstance = new ModelInstance(getNodePath(), mSampleTime, &node);
+    OpenFDM::ModelInstance* modelInstance = new OpenFDM::ModelInstance(getNodePath(), mSampleTime, &node);
     _nodeInstanceList.push_back(modelInstance);
     _modelInstanceList.push_back(modelInstance);
     allocPortData(modelInstance, node);
@@ -501,11 +501,11 @@ public:
   virtual void apply(const Group& group)
   {
     // Prepare a new leaf map for the child group
-    PortDataMap parentPortDataMap(group.getNumChildren());
+    _PortDataMap parentPortDataMap(group.getNumChildren());
     parentPortDataMap.swap(_portDataMap);
 
     // Get PortDataList indexed by group port index
-    ExternalGroupPortDataMap parentGroupPortDataMap(group.getNumPorts());
+    _ExternalGroupPortDataMap parentGroupPortDataMap(group.getNumPorts());
     parentGroupPortDataMap.swap(_groupPortDataMap);
 
     // End pushing external connection data
@@ -534,10 +534,10 @@ public:
       }
 
       // Push the right per node port information struct
-      SharedPtr<PortDataList> parentNodePortDataList;
+      SharedPtr<_PortDataList> parentNodePortDataList;
       parentNodePortDataList.swap(mCurrentNodePortDataList);
 
-      mCurrentNodePortDataList = new PortDataList;
+      mCurrentNodePortDataList = new _PortDataList;
       _portDataMap[i] = mCurrentNodePortDataList;
       _portDataListList.push_back(mCurrentNodePortDataList);
 
@@ -588,12 +588,12 @@ public:
           " appeared to be compatible before." << std::endl;
     }
 
-    SharedPtr<PortDataList> portDataList = buildNodeContext(group);
+    SharedPtr<_PortDataList> portDataList = buildNodeContext(group);
 
     // add group connect routings
     // merge child list into the global list of instances
     for (unsigned i = 0; i < group.getNumPorts(); ++i) {
-      PortData* portData = _groupPortDataMap[i];
+      _PortData* portData = _groupPortDataMap[i];
       if (!portData) {
         Log(Schedule, Error) << "Internal Error: Cannot find internal port "
           "data for group external port!" << std::endl;
@@ -601,7 +601,7 @@ public:
       }
 
       // Allocate a new port data struct in the parent.
-      PortData* parentPortData = portDataList->getPortData(*group.getPort(i));
+      _PortData* parentPortData = portDataList->getPortData(*group.getPort(i));
       parentPortData->setProxyPortData(portData);
       portData->setProxyPortData(parentPortData);
     }
@@ -629,18 +629,18 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
-  typedef std::vector<SharedPtr<PortDataList> > PortDataMap;
-  PortDataMap _portDataMap;
+  typedef std::vector<SharedPtr<_PortDataList> > _PortDataMap;
+  _PortDataMap _portDataMap;
   // Holds the PortDataList pointer indexed by parent groups port index
-  typedef std::vector<SharedPtr<PortData> > ExternalGroupPortDataMap;
-  ExternalGroupPortDataMap _groupPortDataMap;
+  typedef std::vector<SharedPtr<_PortData> > _ExternalGroupPortDataMap;
+  _ExternalGroupPortDataMap _groupPortDataMap;
   // Just to hold references to all port data lists we have in the
   // simulation system. They are just needed during traversal for connect
   // information and to distribute port value pointers. If this list is not
   // built up the PortData values are deleted befor the PortValues are
   // distributed.
-  typedef std::list<SharedPtr<PortDataList> > PortDataListList;
-  PortDataListList _portDataListList;
+  typedef std::list<SharedPtr<_PortDataList> > _PortDataListList;
+  _PortDataListList _portDataListList;
 
   // Current nodes sample time
   SampleTime mSampleTime;
@@ -794,7 +794,7 @@ protected:
   {
     ModelInstanceList sortedModelInstanceList;
     while (!_modelInstanceList.empty()) {
-      SharedPtr<ModelInstance> modelInstance = _modelInstanceList.front();
+      SharedPtr<OpenFDM::ModelInstance> modelInstance = _modelInstanceList.front();
       _modelInstanceList.pop_front();
 
       if (modelInstance->dependsOn(*modelInstance)) {
@@ -850,7 +850,7 @@ protected:
   allocPortValues()
   {
     // alloc port values
-    PortDataListList::const_iterator i;
+    _PortDataListList::const_iterator i;
     for (i = _portDataListList.begin(); i != _portDataListList.end(); ++i) {
       if (!(*i)->allocAndConnectProviderPortValues())
         return false;
@@ -906,16 +906,16 @@ protected:
     return true;
   }
 
-  PortDataList* getCurrentNodePortDataList()
+  _PortDataList* getCurrentNodePortDataList()
   {
     if (!mCurrentNodePortDataList)
       // will happen for the toplevel group node ..
-      mCurrentNodePortDataList = new PortDataList;
+      mCurrentNodePortDataList = new _PortDataList;
     return mCurrentNodePortDataList;
   }
 
 private:
-  SharedPtr<PortDataList> mCurrentNodePortDataList;
+  SharedPtr<_PortDataList> mCurrentNodePortDataList;
 };
 
 BEGIN_OPENFDM_OBJECT_DEF(System, Object)
