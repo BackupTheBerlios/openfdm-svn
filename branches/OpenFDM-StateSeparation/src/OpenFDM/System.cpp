@@ -240,7 +240,7 @@ public:
 
   struct _PortData;
 
-  struct PortConnectSet : public Referenced {
+  struct _PortConnectSet : public Referenced {
     bool setPortValue(PortValue* portValue)
     {
       while (!mParentPortData.empty()) {
@@ -264,7 +264,7 @@ public:
       getOrCreatePortConnectSet();
     }
 
-    void setPortConnectSet(PortConnectSet* portSet)
+    void setPortConnectSet(_PortConnectSet* portSet)
     {
       OpenFDMAssert(portSet);
       if (portSet == mPortConnectSet)
@@ -287,11 +287,11 @@ public:
       mPortConnectSet->mParentPortData.push_back(this);
     }
 
-    PortConnectSet* getOrCreatePortConnectSet()
+    _PortConnectSet* getOrCreatePortConnectSet()
     {
       if (mPortConnectSet)
         return mPortConnectSet;
-      setPortConnectSet(new PortConnectSet);
+      setPortConnectSet(new _PortConnectSet);
       return mPortConnectSet;
     }
 
@@ -364,7 +364,7 @@ public:
     SharedPtr<AbstractNodeInstance> mNodeInstance;
     SharedPtr<const PortInfo> mPortInfo;
     std::vector<WeakPtr<_PortData> > mConnectedPorts;
-    SharedPtr<PortConnectSet> mPortConnectSet;
+    SharedPtr<_PortConnectSet> mPortConnectSet;
   };
 
   // Return true if this leaf directly depends on one of leafInstance outputs
