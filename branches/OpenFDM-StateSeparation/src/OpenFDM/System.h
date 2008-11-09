@@ -48,10 +48,6 @@ public:
   /// Return the current simulation time, convenience function
   real_type getTime(void) const;
 
-  /// Get the whole NodeInstance list
-  const ConstNodeInstanceList& getNodeInstanceList() const
-  { return mNodeInstanceList; }
-
   /// Get node instances by their path within the system
   const AbstractNodeInstance* getNodeInstance(const NodePath& nodePath) const;
   AbstractNodeInstance* getNodeInstance(const NodePath& nodePath);
