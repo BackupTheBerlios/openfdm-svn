@@ -12,12 +12,16 @@ int main()
 {
   // Model of the paris pendulum or foucault pendulum to test coriolis effects.
 
+  // FIXME, need usable positioning algorithm first ...
   SharedPtr<Group> group = new Group("Foucault");
   Group::NodeId root = group->addChild(new FixedRootJoint("Root"));
-  Group::NodeId universal = group->addChild(new UniversalJoint("Universal"));
+  UniversalJoint* universalJoint = new UniversalJoint("Universal");
+  universalJoint->setAxis(Vector3(0, 0, 1));
+  Group::NodeId universal = group->addChild(universalJoint);
   Group::NodeId rigidBody = group->addChild(new RigidBody("Rigid Body"));
-  InertiaMatrix inertia(1, 0, 0, 1, 0, 1);
-  Group::NodeId mass = group->addChild(new Mass("Mass", 1, inertia));
+  Mass* massModel = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
+  massModel->setPosition(Vector3(1, 1, 1));
+  Group::NodeId mass = group->addChild(massModel);
 
   group->connect(root, 0, universal, 0);
   group->connect(universal, 1, rigidBody, 0);
@@ -30,7 +34,8 @@ int main()
   if (!system->init())
     return 1;
 
-  system->simulate(24*60*60);
+//   system->simulate(24*60*60);
+  system->simulate(60);
 
   return 0;
 }
