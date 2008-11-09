@@ -15,10 +15,11 @@ namespace OpenFDM {
 class MechanicInstance : public AbstractNodeInstance {
 public:
   MechanicInstance(const NodePath& nodePath, const SampleTime& sampleTime,
-                   const MechanicNode* mechanicNode);
+                   const MechanicNode* mechanicNode,
+                   MechanicContext* mechanicContext);
   virtual ~MechanicInstance();
 
-// protected:
+protected:
   virtual MechanicContext& getNodeContext();
   virtual const MechanicContext& getNodeContext() const;
 

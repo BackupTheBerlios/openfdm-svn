@@ -15,10 +15,10 @@ namespace OpenFDM {
 class ModelInstance : public AbstractNodeInstance {
 public:
   ModelInstance(const NodePath& nodePath, const SampleTime& sampleTime,
-                const Model* model);
+                const Model* model, ModelContext* modelContext);
   virtual ~ModelInstance();
 
-// protected:
+protected:
   /// The node context that belongs to this instance.
   virtual ModelContext& getNodeContext();
   virtual const ModelContext& getNodeContext() const;
