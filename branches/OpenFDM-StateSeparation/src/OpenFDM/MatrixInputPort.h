@@ -34,7 +34,7 @@ public:
   { OpenFDMAssert(mPort); return mPort->getIndex(); }
   bool getDirectInput() const
   { OpenFDMAssert(mPort); return mPort->getDirectInput(); }
-  void setDirectInput(bool directInput) const
+  void setDirectInput(bool directInput)
   { OpenFDMAssert(mPort); mPort->setDirectInput(directInput); }
 private:
   SharedPtr<InputPortInfo> mPort;
