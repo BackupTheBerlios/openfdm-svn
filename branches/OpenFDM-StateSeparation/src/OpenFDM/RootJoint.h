@@ -35,8 +35,8 @@ public:
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
                           const PortValueList& portValues,
-                          ContinousStateValueVector&) const = 0;
-
+                          ContinousStateValueVector&) const
+  {}
 private:
   class Context;
 

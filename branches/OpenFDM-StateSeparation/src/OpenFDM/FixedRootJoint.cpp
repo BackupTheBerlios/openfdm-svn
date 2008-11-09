@@ -5,6 +5,7 @@
 #include "FixedRootJoint.h"
 
 #include "Assert.h"
+#include "LeafContext.h"
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
@@ -12,140 +13,64 @@
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "Gravity.h"
-#include "Frame.h"
-#include "RigidBody.h"
-#include "ModelVisitor.h"
-#include "RootFrame.h"
-#include "FixedRootJointFrame.h"
+#include "MechanicContext.h"
 
 namespace OpenFDM {
 
-FixedRootJoint::FixedRootJoint(const std::string& name)
-  : Joint(name),
-    mFrame(new FixedRootJointFrame(name))
+BEGIN_OPENFDM_OBJECT_DEF(FixedRootJoint, RootJoint)
+  END_OPENFDM_OBJECT_DEF
+
+FixedRootJoint::FixedRootJoint(const std::string& name) :
+  RootJoint(name),
+  mMechanicLink(newMechanicLink("link"))
 {
 }
 
-FixedRootJoint::~FixedRootJoint(void)
+FixedRootJoint::~FixedRootJoint()
+{
+}
+
+void
+FixedRootJoint::init(const Task&, DiscreteStateValueVector&,
+                      ContinousStateValueVector& continousState,
+                      const PortValueList& portValues) const
 {
 }
 
 void
-FixedRootJoint::accept(ModelVisitor& visitor)
+FixedRootJoint::velocity(const Task&,
+                          const ContinousStateValueVector& continousState,
+                          PortValueList& portValues) const
 {
-  visitor.handleNodePathAndApply(*this);
-}
+  Vector3 position(0, 0, 0);
+  Quaternion orientation = Quaternion::unit();
+  Vector6 velocity = Vector6::zeros();
 
-bool
-FixedRootJoint::init(void)
-{
-  mGravity = mEnvironment->getGravity();
-  if (!mGravity) {
-    Log(Model,Error) << "Can not get gravity model!" << endl;
-    return false;
-  }
-  const Frame* rootFrame = mEnvironment->getRootFrame();
-  if (!rootFrame) {
-    Log(Model,Error) << "Can not get rootFrame model!" << endl;
-    return false;
-  }
-  recheckTopology();
-
-  return Joint::init();
+  portValues[mMechanicLink].setPosAndVel(getAngularBaseVelocity(),
+                                         position, orientation, velocity);
 }
 
 void
-FixedRootJoint::recheckTopology(void)
+FixedRootJoint::articulation(const Task&, const ContinousStateValueVector&,
+                              PortValueList&) const
 {
-  // Hmm, works for the first cut, but rethink what happens with strange
-  // attach reattach sequences ...
-  RigidBody* rigidBody = getOutboardBody();
-  if (!rigidBody)
-    return;
-  // check if already done
-  if (mFrame != rigidBody->getFrame())
-    rigidBody->setFrame(mFrame);
-
-  // Check if we are attached to some rigid body ...
-  rigidBody = getInboardBody();
-  if (rigidBody) {
-    Frame* frame = rigidBody->getFrame();
-    if (frame && !frame->isDirectParentFrameOf(mFrame))
-      frame->addChildFrame(mFrame);
-  } else {
-    if (mEnvironment) {
-      Frame* rootFrame = mEnvironment->getRootFrame();
-      if (rootFrame && !rootFrame->isDirectParentFrameOf(mFrame))
-        rootFrame->addChildFrame(mFrame);
-    }
-  }
-}
-
-const Vector3&
-FixedRootJoint::getRefPosition(void) const
-{
-  return mFrame->getRefPosition();
+  /// In this case a noop.
 }
 
 void
-FixedRootJoint::setRefPosition(const Vector3& p)
+FixedRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
+                              PortValueList& portValues) const
 {
-  mFrame->setRefPosition(p);
-}
+  // Assumption: body is small compared to the distance to the planets
+  // center of mass. That means gravity could be considered equal for the
+  // whole vehicle.
+  // See Featherstone, Orin: Equations and Algorithms
 
-const Quaternion&
-FixedRootJoint::getRefOrientation(void) const
-{
-  return mFrame->getRefOrientation();
-}
+  // FIXME
+  Vector6 grav = Vector6(Vector3::zeros(), portValues[mMechanicLink].getFrame().rotFromRef(Vector3(0, 0, 9.81)));
 
-void
-FixedRootJoint::setRefOrientation(const Quaternion& o)
-{
-  mFrame->setRefOrientation(o);
-}
-
-Geodetic
-FixedRootJoint::getGeodPosition(void) const
-{
-  if (!mEnvironment)
-    return Geodetic();
-  return mEnvironment->getPlanet()->toGeod(getRefPosition());
-}
-
-void
-FixedRootJoint::setGeodPosition(const Geodetic& geod)
-{
-  if (!mEnvironment)
-    return;
-  setRefPosition(mEnvironment->getPlanet()->toCart(geod));
-}
-
-Quaternion
-FixedRootJoint::getGeodOrientation(void) const
-{
-  if (!mEnvironment)
-    return Quaternion::unit();
-  Quaternion hlOr = mEnvironment->getPlanet()->getGeodHLOrientation(getRefPosition());
-  return inverse(hlOr)*getRefOrientation();
-}
-
-void
-FixedRootJoint::jointArticulation(SpatialInertia& artI, Vector6& artF,
-                             const SpatialInertia& outI,
-                             const Vector6& outF)
-{
-  artI.clear();
-  artF.clear();
-
-  Log(ArtBody, Debug) << "FixedRootJoint::computeRelVelDot():\n" << outI << endl;
-  mFrame->jointArticulation(outF, outI, mGravity);
-}
-
-void
-FixedRootJoint::setEnvironment(Environment* environment)
-{
-  mEnvironment = environment;
+  Vector6 spatialAcceleration = grav;
+  portValues[mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
 }
 
 } // namespace OpenFDM

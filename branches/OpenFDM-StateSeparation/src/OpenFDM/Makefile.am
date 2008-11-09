@@ -242,6 +242,7 @@ OpenFDMModelsSOURCES = \
 
 OpenFDMMechanicSOURCES = \
   Joint.cpp \
+  FixedRootJoint.cpp \
   Mass.cpp \
   MobileRootJoint.cpp \
   PrismaticJoint.cpp \
@@ -263,7 +264,6 @@ OpenFDMMechanicSOURCES = \
 #   DefaultPlanet.cpp \
 #   DiscBrake.cpp \
 #   ExternalForceModel.cpp \
-#   FixedRootJoint.cpp \
 #   Force.cpp \
 #   Gravity.cpp \
 #   Ground.cpp \

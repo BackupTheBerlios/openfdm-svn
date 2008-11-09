@@ -9,71 +9,30 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
+#include "MatrixStateInfo.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Frame.h"
-#include "RigidBody.h"
-#include "Planet.h"
-#include "Joint.h"
-#include "Environment.h"
+#include "RootJoint.h"
 
 namespace OpenFDM {
 
-class ModelVisitor;
-class FixedRootJointFrame;
-
-class FixedRootJoint
-  : public Joint {
+class FixedRootJoint : public RootJoint {
+  OPENFDM_OBJECT(FixedRootJoint, RootJoint);
 public:
   FixedRootJoint(const std::string& name);
-  virtual ~FixedRootJoint(void);
+  virtual ~FixedRootJoint();
 
-  /// Double dispatch helper for the multibody system visitor
-  virtual void accept(ModelVisitor& visitor);
-  /// Double dispatch helper for the multibody system visitor
-//   virtual void accept(ConstModelVisitor& visitor) const;
-
-  virtual bool init(void);
-
-  virtual void recheckTopology(void);
-
-  /// Get the reference position.
-  const Vector3& getRefPosition(void) const;
-  /// Set the reference position.
-  void setRefPosition(const Vector3& p);
-
-  /// Get the reference orientation.
-  const Quaternion& getRefOrientation(void) const;
-  /// Set the reference orientation.
-  void setRefOrientation(const Quaternion& o);
-
-  /// Get the geodetic position.
-  Geodetic getGeodPosition(void) const;
-  /// Set the geodetic position.
-  void setGeodPosition(const Geodetic& geod);
-  /// Get orientation wrt the geodetic hl frame.
-  Quaternion getGeodOrientation(void) const;
-
-  /** Plugin function for the articulated body algorithm.
-   */
-  virtual void jointArticulation(SpatialInertia& artI, Vector6& artF,
-                                 const SpatialInertia& outI,
-                                 const Vector6& outF);
-
-
-protected:
-  virtual void setEnvironment(Environment* environment);
-
+  virtual void init(const Task&, DiscreteStateValueVector&,
+                    ContinousStateValueVector&,
+                    const PortValueList&) const;
+  virtual void velocity(const Task&, const ContinousStateValueVector& states,
+                        PortValueList& portValues) const;
+  virtual void articulation(const Task&, const ContinousStateValueVector&,
+                            PortValueList& portValues) const;
+  virtual void acceleration(const Task&, const ContinousStateValueVector&,
+                            PortValueList& portValues) const;
 private:
-  /// The commonly used gravity model from the environment class
-  /// It is initialized at the init() call
-  SharedPtr<const Gravity> mGravity;
-
-  /// The frame of the mobile root
-  SharedPtr<FixedRootJointFrame> mFrame;
-
-  /// The environment pointer
-  SharedPtr<Environment> mEnvironment;
+  MechanicLink mMechanicLink;
 };
 
 } // namespace OpenFDM
