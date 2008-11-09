@@ -985,7 +985,7 @@ protected:
 
         // Something already sorted in depends on modelInstance,
         // so schedule that new thing just before.
-        Log(Schedule, Info)
+        Log(Schedule, Debug)
           << "Inserting Model \""
           << modelInstance->getNodeNamePath()
           << "\" before Model \""
@@ -996,7 +996,7 @@ protected:
       if (i == sortedModelInstanceList.end()) {
         // nothing found so far that depends on model instance.
         // So put it at the end.
-        Log(Schedule, Info)
+        Log(Schedule, Debug)
           << "Appending Model \""
           << modelInstance->getNodeNamePath()
           << "\"" << std::endl;
