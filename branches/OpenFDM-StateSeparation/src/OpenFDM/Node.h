@@ -65,6 +65,21 @@ public:
   /// Hmm, here or in the leaf stuff:
   virtual AbstractNodeContext* newNodeContext() const = 0;
 
+  static std::string toNodePathName(const NodePath& nodePath)
+  {
+    if (nodePath.empty())
+      return std::string();
+    std::string path = nodePath.front()->getName();
+    NodePath::const_iterator i = nodePath.begin();
+    if (i != nodePath.end()) {
+      for (++i; i != nodePath.end(); ++i) {
+        path += '/';
+        path += (*i)->getName();
+      }
+    }
+    return path;
+  }
+
 protected:
 
   friend class Group;
