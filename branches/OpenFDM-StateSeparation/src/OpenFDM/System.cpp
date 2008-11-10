@@ -1120,7 +1120,7 @@ System::init(const real_type& t0)
     return false;
 
   // Have something to run in our hands.
-  // Not get the information required to reflect the system to the user.
+  // Now get the information required to reflect the system to the user.
   NodeInstanceCollector::InstanceMap::const_iterator i;
   for (i = nodeInstanceCollector.mInstanceMap.begin();
        i != nodeInstanceCollector.mInstanceMap.end(); ++i) {
