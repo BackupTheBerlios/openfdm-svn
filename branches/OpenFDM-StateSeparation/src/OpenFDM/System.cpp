@@ -448,7 +448,7 @@ public:
                               << "\" of \"" << getNodeNamePath()
                               << "\"" << endl;
         if (!mPortDataVector[i]->createPortValue()) {
-          Log(Schedule, Error) << "Failed to allocate port value \""
+          Log(Schedule, Warning) << "Failed to allocate port value \""
                                << mPortDataVector[i]->getPortInfo()->getName()
                                << "\" of \"" << getNodeNamePath()
                                << "\".\nAborting!" << endl;
@@ -845,7 +845,7 @@ protected:
   {
     if (mRootJointInstanceList.empty() &&
         (!mJointInstanceList.empty() || !mInteractInstanceList.empty())) {
-      Log(Schedule,Error)
+      Log(Schedule,Warning)
         << "No root joint in System with mechanic components" << std::endl;
       return false;
     }
@@ -878,7 +878,7 @@ protected:
               if (*k == *j)
                 continue;
               if (mechanicInstance->isLinkedTo(*(*k))) {
-                Log(Schedule,Error)
+                Log(Schedule,Warning)
                   << "Detected closed kinematic loop: MechanicNode \""
                   << mechanicInstance->getNodeNamePath()
                   << "\" is linked to MechanicNode \""
@@ -900,7 +900,7 @@ protected:
         MechanicInstanceList::iterator i = j;
         for (++i; i != nextLevelList.end(); ++i) {
           if ((*j)->isLinkedTo(*(*i))) {
-            Log(Schedule,Error)
+            Log(Schedule,Warning)
               << "Detected closed kinematic loop: MechanicNode \""
               << (*j)->getNodeNamePath()
               << "\" is linked to MechanicNode \""
@@ -941,7 +941,7 @@ protected:
       mModelInstanceList.pop_front();
 
       if (modelInstance->dependsOn(*modelInstance)) {
-        Log(Schedule, Error)
+        Log(Schedule, Warning)
           << "Self referencing direct dependency for Model \""
           << modelInstance->getNodeNamePath()
           << "\" detected!" << std::endl;
@@ -980,7 +980,7 @@ protected:
         for (; i != sortedModelInstanceList.end(); ++i) {
           if (!modelInstance->dependsOn(*(*i)))
             continue;
-          Log(Schedule,Error)
+          Log(Schedule,Warning)
             << "Detected cyclic loop: Model \""
             << modelInstance->getNodeNamePath()
             << "\" depends on Model \""
@@ -1045,7 +1045,7 @@ protected:
         if (portInfo->getOptional())
           continue;
         if (!i->second->getPortValue(*portInfo)) {
-          Log(Schedule, Error) << "Mandatory port value for port \""
+          Log(Schedule, Warning) << "Mandatory port value for port \""
                                << portInfo->getName() << "\" for model \""
                                << i->second->getNodeNamePath()
                                << "\" is not connected!" << endl;
@@ -1061,7 +1061,7 @@ protected:
     ModelInstanceList::const_iterator i;
     for (i = mModelInstanceList.begin(); i != mModelInstanceList.end(); ++i) {
       if (!(*i)->mModelContext->alloc()) {
-        Log(Schedule, Error) << "Could not alloc for model \""
+        Log(Schedule, Warning) << "Could not alloc for model \""
                              << (*i)->getNodeNamePath() << "\"" << endl;
         return false;
       }
@@ -1071,7 +1071,7 @@ protected:
     for (j = mMechanicInstanceList.begin();
          j != mMechanicInstanceList.end(); ++j) {
       if (!(*j)->mMechanicContext->alloc()) {
-        Log(Schedule, Error) << "Could not alloc for MechanicNode \""
+        Log(Schedule, Warning) << "Could not alloc for MechanicNode \""
                              << (*j)->getNodeNamePath() << "\"" << endl;
         return false;
       }
