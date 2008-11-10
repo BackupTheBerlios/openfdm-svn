@@ -39,7 +39,7 @@ public:
   bool init(const real_type& t0 = real_type(0));
   void clear();
 
-  /// Simulate the system until the time tEnd
+  /// Simulate the system until the time t
   bool simulate(const real_type& t);
 
   /// Bring the system in an equilibrum state near the current state ...
