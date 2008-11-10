@@ -323,7 +323,8 @@ public:
     {
       if (!getPortInfo())
         return false;
-      if (!mInstance)
+      SharedPtr<Instance> instance = mInstance.lock();
+      if (!instance)
         return false;
       Log(Schedule, Debug3)
         << "setPortValue for port \"" << getPortInfo()->getName()
@@ -331,7 +332,7 @@ public:
       // FIXME: move the set port value and accept port value into one call
       if (!getPortInfo()->acceptPortValue(portValue))
         return false;
-      mInstance->setPortValue(*getPortInfo(), portValue);
+      instance->setPortValue(*getPortInfo(), portValue);
       return true;
     }
 
@@ -350,8 +351,11 @@ public:
     {
       if (!mPortValueCreator)
         return true;
+      SharedPtr<Instance> instance = mInstance.lock();
+      if (!instance)
+        return false;
       // FIXME
-      if (mInstance->getPortValue(*getPortInfo()))
+      if (instance->getPortValue(*getPortInfo()))
         return true;
       SharedPtr<PortValue> portValue = getPortInfo()->newValue();
       if (!portValue)
@@ -362,7 +366,7 @@ public:
     }
 
   private:
-    SharedPtr<Instance> mInstance;
+    WeakPtr<Instance> mInstance;
     SharedPtr<const PortInfo> mPortInfo;
     std::vector<WeakPtr<PortData> > mConnectedPorts;
     SharedPtr<PortConnectSet> mPortConnectSet;
