@@ -60,18 +60,15 @@ OpenFDMCoreHEADERS = \
   MatrixStateInfo.h \
   MidpointRule.h \
   MechanicContext.h \
-  MechanicInstance.h \
   MechanicLink.h \
   MechanicLinkValue.h \
   MechanicNode.h \
   Model.h \
   ModelContext.h \
-  ModelInstance.h \
   Mutex.h \
   MPFRFloat.h \
   Newton.h \
   Node.h \
-  NodeContext.h \
   NodeInstance.h \
   NodeVisitor.h \
   NumericPortValue.h \
@@ -141,15 +138,12 @@ OpenFDMCoreSOURCES = \
   LibraryNode.cpp \
   Logger.cpp \
   MechanicContext.cpp \
-  MechanicInstance.cpp \
   MechanicLinkValue.cpp \
   MechanicNode.cpp \
   MidpointRule.cpp \
   Model.cpp \
   ModelContext.cpp \
-  ModelInstance.cpp \
   Node.cpp \
-  NodeContext.cpp \
   NodeInstance.cpp \
   NodeVisitor.cpp \
   NumericPortValue.cpp \

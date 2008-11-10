@@ -6,27 +6,14 @@
 
 namespace OpenFDM {
 
-NodeInstance::NodeInstance(const NodePath& nodePath,
-                           const SampleTime& sampleTime, const Node* node) :
-  AbstractNodeInstance(nodePath, sampleTime),
-  mNodeContext(node->newNodeContext())
+NodeInstance::NodeInstance(const SampleTime& sampleTime, const Node* node) :
+  AbstractNodeInstance(sampleTime),
+  mNode(node)
 {
 }
 
 NodeInstance::~NodeInstance()
 {
-}
-
-AbstractNodeContext&
-NodeInstance::getNodeContext()
-{
-  return *mNodeContext;
-}
-
-const AbstractNodeContext&
-NodeInstance::getNodeContext() const
-{
-  return *mNodeContext;
 }
 
 } // namespace OpenFDM

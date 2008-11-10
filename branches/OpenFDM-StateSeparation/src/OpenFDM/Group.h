@@ -10,7 +10,6 @@
 #include <sstream>
 #include "ConstNodeVisitor.h"
 #include "Node.h"
-#include "NodeContext.h"
 #include "NodeVisitor.h"
 #include "Object.h"
 #include "PortId.h"
@@ -32,7 +31,7 @@ public:
   }
 
   virtual AbstractNodeContext* newNodeContext() const
-  { return new NodeContext(this); }
+  { return 0; }
 
   unsigned getExternalPortIndex() const
   { return mExternalPortInfo->getIndex(); }
@@ -130,7 +129,7 @@ public:
   void traverse(ConstNodeVisitor& visitor) const;
 
   virtual AbstractNodeContext* newNodeContext() const
-  { return new NodeContext(this); }
+  { return 0; }
 
   NodeId addChild(const SharedPtr<Node>& node);
   unsigned getNumChildren() const;

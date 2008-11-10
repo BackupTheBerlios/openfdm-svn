@@ -6,23 +6,33 @@
 #define OpenFDM_NodeInstance_H
 
 #include "AbstractNodeInstance.h"
-#include "NodeContext.h"
 
 namespace OpenFDM {
 
 class NodeInstance : public AbstractNodeInstance {
 public:
-  NodeInstance(const NodePath& nodePath, const SampleTime& sampleTime,
+  NodeInstance(const SampleTime& sampleTime,
                const Node* node);
   virtual ~NodeInstance();
 
-protected:
-  /// The node context that belongs to this instance.
-  virtual AbstractNodeContext& getNodeContext();
-  virtual const AbstractNodeContext& getNodeContext() const;
+  virtual const Node& getNode() const
+  { return *mNode; }
+
+  virtual const PortValue* getPortValue(const PortInfo& portInfo) const
+  { return mPortValueList.getPortValue(portInfo); }
+  virtual const NumericPortValue* getPortValue(const NumericPortInfo& portInfo) const
+  { return mPortValueList.getPortValue(portInfo); }
+  virtual const MechanicLinkValue* getPortValue(const MechanicLinkInfo& portInfo) const
+  { return mPortValueList.getPortValue(portInfo); }
+
+  /// Set port value for the given port.
+  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue)
+  { mPortValueList.setPortValue(portInfo.getIndex(), portValue); }
 
 private:
-  SharedPtr<AbstractNodeContext> mNodeContext;
+  SharedPtr<const Node> mNode;
+
+  PortValueList mPortValueList;
 };
 
 } // namespace OpenFDM

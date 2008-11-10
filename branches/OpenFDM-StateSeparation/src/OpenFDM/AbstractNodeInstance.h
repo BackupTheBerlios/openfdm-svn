@@ -22,40 +22,27 @@ namespace OpenFDM {
 /// This class is meant to show up in the user interface of this simulation.
 class AbstractNodeInstance : public WeakReferenced {
 public:
-  AbstractNodeInstance(const NodePath& nodePath, const SampleTime& sampleTime);
+  AbstractNodeInstance(const SampleTime& sampleTime);
   virtual ~AbstractNodeInstance();
 
   /// The actual Node this AbstractNodeInstance stems from
-  virtual const Node& getNode() const
-  { return getNodeContext().getNode(); }
-
-  /// The node path leading to this instance.
-  const NodePath& getNodePath() const
-  { return mNodePath; }
-  /// String representation of the node path.
-  std::string getNodeNamePath() const
-  { return Node::toNodePathName(mNodePath); }
+  virtual const Node& getNode() const = 0;
 
   /// Get the sample time this node will run on
   const SampleTime& getSampleTime() const
   { return mSampleTime; }
 
   /// Access port values by the PortInfo values
-  virtual const PortValue* getPortValue(const PortInfo& portInfo) const
-  { return getNodeContext().getPortValueList().getPortValue(portInfo); }
-  virtual const NumericPortValue* getPortValue(const NumericPortInfo& portInfo) const
-  { return getNodeContext().getPortValueList().getPortValue(portInfo); }
-  virtual const MechanicLinkValue* getPortValue(const MechanicLinkInfo& portInfo) const
-  { return getNodeContext().getPortValueList().getPortValue(portInfo); }
+  virtual const PortValue*
+  getPortValue(const PortInfo& portInfo) const = 0;
+  virtual const NumericPortValue*
+  getPortValue(const NumericPortInfo& portInfo) const = 0;
+  virtual const MechanicLinkValue*
+  getPortValue(const MechanicLinkInfo& portInfo) const = 0;
 
   /// Set port value for the given port.
-  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue)
-  { getNodeContext().setPortValue(portInfo, portValue); }
-
-protected:
-  /// The node context that belongs to this instance.
-  virtual AbstractNodeContext& getNodeContext() = 0;
-  virtual const AbstractNodeContext& getNodeContext() const = 0;
+  // FIXME, must vanish ...
+  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue) = 0;
 
 private:
   AbstractNodeInstance(const AbstractNodeInstance&);
@@ -63,8 +50,40 @@ private:
 
   /// The sample times this node will run on
   const SampleTime mSampleTime;
+};
 
-  const NodePath mNodePath;
+class LeafInstance : public AbstractNodeInstance {
+public:
+  LeafInstance(const SampleTime& sampleTime, AbstractNodeContext* context) :
+    AbstractNodeInstance(sampleTime),
+    mNodeContext(context)
+  { }
+  virtual ~LeafInstance() {}
+
+  /// The actual Node this AbstractLeafInstance stems from
+  virtual const Node& getNode() const
+  { return mNodeContext->getNode(); }
+
+  /// Access port values by the PortInfo values
+  virtual const PortValue*
+  getPortValue(const PortInfo& portInfo) const
+  { return mNodeContext->getPortValueList().getPortValue(portInfo); }
+  virtual const NumericPortValue*
+  getPortValue(const NumericPortInfo& portInfo) const
+  { return mNodeContext->getPortValueList().getPortValue(portInfo); }
+  virtual const MechanicLinkValue*
+  getPortValue(const MechanicLinkInfo& portInfo) const
+  { return mNodeContext->getPortValueList().getPortValue(portInfo); }
+
+  /// Set port value for the given port.
+  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue)
+  { mNodeContext->setPortValue(portInfo, portValue); }
+
+private:
+  LeafInstance(const LeafInstance&);
+  LeafInstance& operator=(const LeafInstance&);
+
+  SharedPtr<AbstractNodeContext> mNodeContext;
 };
 
 } // namespace OpenFDM

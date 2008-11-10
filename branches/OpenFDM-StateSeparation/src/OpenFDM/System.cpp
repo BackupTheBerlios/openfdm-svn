@@ -9,8 +9,6 @@
 #include "Group.h"
 #include "Interact.h"
 #include "Joint.h"
-#include "ModelInstance.h"
-#include "MechanicInstance.h"
 #include "NodeInstance.h"
 #include "Object.h"
 #include "RigidBody.h"
@@ -573,7 +571,7 @@ public:
     addInstance(instance);
 
     OpenFDM::NodeInstance* nodeInstance;
-    nodeInstance = new OpenFDM::NodeInstance(getNodePath(), mSampleTime, &node);
+    nodeInstance = new OpenFDM::NodeInstance(mSampleTime, &node);
     instance->mAbstractNodeInstance = nodeInstance;
 
     OpenFDMAssert(node.getPort(0));
@@ -606,7 +604,7 @@ public:
     addInstance(instance);
 
     OpenFDM::NodeInstance* nodeInstance
-      = new OpenFDM::NodeInstance(getNodePath(), mSampleTime, &node);
+      = new OpenFDM::NodeInstance(mSampleTime, &node);
     instance->mAbstractNodeInstance = nodeInstance;
     // Make all rigid mechanic body links use the same link value
     // FIXME, allocate them in this way!
@@ -645,7 +643,7 @@ public:
     addInstance(instance);
 
     OpenFDM::NodeInstance* nodeInstance;
-    nodeInstance = new OpenFDM::NodeInstance(getNodePath(), mSampleTime, &group);
+    nodeInstance = new OpenFDM::NodeInstance(mSampleTime, &group);
     instance->mAbstractNodeInstance = nodeInstance;
 
     // The vector of instances for this group.
@@ -1008,10 +1006,8 @@ protected:
     ModelInstanceList::const_iterator i;
     for (i = mModelInstanceList.begin(); i != mModelInstanceList.end(); ++i) {
       ModelContext* context = (*i)->getNode()->newModelContext();
-      OpenFDM::ModelInstance* modelInstance;
-      modelInstance = new OpenFDM::ModelInstance((*i)->mNodePath,
-                                                 (*i)->mSampleTime,
-                                                 (*i)->getNode(), context);
+      OpenFDM::LeafInstance* modelInstance;
+      modelInstance = new OpenFDM::LeafInstance((*i)->mSampleTime, context);
       (*i)->mAbstractNodeInstance = modelInstance;
       (*i)->mModelContext = context;
     }
@@ -1020,11 +1016,8 @@ protected:
     for (j = mMechanicInstanceList.begin();
          j != mMechanicInstanceList.end(); ++j) {
       MechanicContext* context = (*j)->getNode()->newMechanicContext();
-      OpenFDM::MechanicInstance* mechanicInstance;
-      mechanicInstance = new OpenFDM::MechanicInstance((*j)->mNodePath,
-                                                       (*j)->mSampleTime,
-                                                       (*j)->getNode(),
-                                                       context);
+      OpenFDM::LeafInstance* mechanicInstance;
+      mechanicInstance = new OpenFDM::LeafInstance((*j)->mSampleTime, context);
       (*j)->mAbstractNodeInstance = mechanicInstance;
       (*j)->mMechanicContext = context;
     }
