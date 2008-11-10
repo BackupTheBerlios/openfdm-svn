@@ -210,6 +210,8 @@ int main()
 
   system->simulate(10);
 
+  std::cout << "PASSED" << std::endl;
+
   return 0;
 }
 
