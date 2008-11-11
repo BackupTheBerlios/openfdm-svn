@@ -15,7 +15,6 @@
 
 namespace OpenFDM {
 
-class AbstractNodeContext;
 class Group;
 class Node;
 class NodeVisitor;
