@@ -22,6 +22,26 @@
 namespace OpenFDM {
 
 
+/// System bootstrap:
+///
+/// The first step is to collect all the structural and leaf nodes in
+/// the whole system. For each instance we have a data struct that
+/// references such a model.
+/// During that traversal, the port connections are assigned and connected
+/// port values get a single data structure assigned, that is used to
+/// distribute port values to the model nodes.
+/// Models and mechanic nodes are sorted according to their direct input
+/// dependencies and parent child relationship for mechanic nodes.
+/// Then the port values itself are allocated.
+/// Models are checkd for unset port values.
+/// Past that, the contexts are allocated. This allocation is delegated to the
+/// leaf model nodes so that they can alloacte contexts dependent of the port
+/// values that are actually attached to the model.
+/// Once this is done, the models are distributed to the actual execution lists
+/// and AbstractNodeInstance's are allocated to reflect the ready to run
+/// System to the user.
+///
+///
 /// Evaluation orders:
 ///
 /// Initialization:
@@ -498,9 +518,21 @@ public:
     {
       OpenFDMAssert(!mModelContext);
       mModelContext = mModel->newModelContext();
+      if (!mModelContext) {
+        Log(Schedule, Warning) << "Could not create context for model \""
+                               << getNodeNamePath() << "\"" << endl;
+        return false;
+      }
       OpenFDMAssert(mModel->getNumPorts() == mPortDataVector.size());
       for (unsigned i = 0; i < mModel->getNumPorts(); ++i)
-        mModelContext->setPortValue(*mModel->getPort(i), mPortValueList.getPortValue(i));
+        mModelContext->setPortValue(*mModel->getPort(i),
+                                    mPortValueList.getPortValue(i));
+      if (!mModelContext->alloc()) {
+        Log(Schedule, Warning) << "Could not alloc for model \""
+                               << getNodeNamePath() << "\"" << endl;
+        return false;
+      }
+      return true;
     }
 
     virtual AbstractNodeInstance* newNodeInstance()
@@ -527,9 +559,23 @@ public:
     {
       OpenFDMAssert(!mMechanicContext);
       mMechanicContext = getNode()->newMechanicContext();
+      if (!mMechanicContext) {
+        Log(Schedule, Warning) << "Could not create context for mechanic "
+                               << "node \"" << getNodeNamePath()
+                               << "\"" << endl;
+        return false;
+      }
       OpenFDMAssert(getNode()->getNumPorts() == mPortDataVector.size());
       for (unsigned i = 0; i < getNode()->getNumPorts(); ++i)
-        mMechanicContext->setPortValue(*getNode()->getPort(i), mPortValueList.getPortValue(i));
+        mMechanicContext->setPortValue(*getNode()->getPort(i),
+                                       mPortValueList.getPortValue(i));
+      if (!mMechanicContext->alloc()) {
+        Log(Schedule, Warning) << "Could not alloc for mechanic "
+                               << "node \"" << getNodeNamePath()
+                               << "\"" << endl;
+        return false;
+      }
+      return true;
     }
 
     virtual AbstractNodeInstance* newNodeInstance()
@@ -834,13 +880,9 @@ public:
     // The model instances are sorted to match the direct input property
     if (!sortModelList())
       return 0;
-    // Allocates and distributes the PortValues, is required for the sort
-    // steps below
-    if (!allocPortValues())
-      return 0;
-    // Now that they are sorted, allocate the port sizes and with that
-    // knowledge the state values.
-    if (!allocModels())
+    // Allocates and distributes the PortValues, check for unassigned ports
+    // and allocate contexts.
+    if (!createContexts())
       return 0;
 
     real_type basicSampleTime = 0.01; // FIXME in this case just continous
@@ -1034,7 +1076,7 @@ protected:
   }
 
   bool
-  allocPortValues()
+  createContexts()
   {
     // alloc port values
     InstanceMap::const_iterator i;
@@ -1043,19 +1085,6 @@ protected:
           return false;
     }
 
-    {
-    ModelInstanceList::const_iterator i;
-    for (i = mModelInstanceList.begin(); i != mModelInstanceList.end(); ++i) {
-      (*i)->createModelContext();
-    }
-
-    MechanicInstanceList::const_iterator j;
-    for (j = mMechanicInstanceList.begin();
-         j != mMechanicInstanceList.end(); ++j) {
-      (*j)->createMechanicContext();
-    }
-    }
-    
     // check port values and report unconnected mandatory values.
     for (i = mInstanceMap.begin(); i != mInstanceMap.end(); ++i) {
       const Node* node = i->second->getNode();
@@ -1072,29 +1101,23 @@ protected:
         }
       }
     }
-    return true;
-  }
 
-  bool allocModels()
-  {
-    ModelInstanceList::const_iterator i;
-    for (i = mModelInstanceList.begin(); i != mModelInstanceList.end(); ++i) {
-      if (!(*i)->mModelContext->alloc()) {
-        Log(Schedule, Warning) << "Could not alloc for model \""
-                             << (*i)->getNodeNamePath() << "\"" << endl;
+    // Create the contexts
+    // This happens past the port values are assigned, this way models can
+    // create different kind of contexts based on the type of port values.
+    ModelInstanceList::const_iterator j;
+    for (j = mModelInstanceList.begin(); j != mModelInstanceList.end(); ++j) {
+      if (!(*j)->createModelContext())
         return false;
-      }
     }
 
-    MechanicInstanceList::const_iterator j;
-    for (j = mMechanicInstanceList.begin();
-         j != mMechanicInstanceList.end(); ++j) {
-      if (!(*j)->mMechanicContext->alloc()) {
-        Log(Schedule, Warning) << "Could not alloc for MechanicNode \""
-                             << (*j)->getNodeNamePath() << "\"" << endl;
+    MechanicInstanceList::const_iterator k;
+    for (k = mMechanicInstanceList.begin();
+         k != mMechanicInstanceList.end(); ++k) {
+      if (!(*k)->createMechanicContext())
         return false;
-      }
     }
+
     return true;
   }
 };
