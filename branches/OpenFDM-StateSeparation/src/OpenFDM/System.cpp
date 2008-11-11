@@ -385,6 +385,7 @@ public:
     virtual ~Instance()
     { }
     virtual const Node* getNode() const = 0;
+    virtual AbstractNodeInstance* getAbstractNodeInstance() = 0;
 
     PortData* getPortData(unsigned i)
     {
@@ -395,7 +396,7 @@ public:
 
     void setPortValue(const PortInfo& portInfo, PortValue* portValue)
     {
-      mAbstractNodeInstance->setPortValue(portInfo, portValue);
+      getAbstractNodeInstance()->setPortValue(portInfo, portValue);
       mPortValueList.setPortValue(portInfo.getIndex(), portValue);
     }
     const PortValue* getPortValue(const PortInfo& portInfo)
@@ -464,9 +465,6 @@ public:
     PortDataVector mPortDataVector;
 
     PortValueList mPortValueList;
-    
-    /// FIXME, just in this intermediate step
-    SharedPtr<AbstractNodeInstance> mAbstractNodeInstance;
   };
 
   struct NodeInstance : public Instance {
@@ -476,6 +474,10 @@ public:
       mNode(&node)
     { }
     virtual const Node* getNode() const { return mNode; }
+    virtual AbstractNodeInstance* getAbstractNodeInstance()
+    { return mAbstractNodeInstance; }
+    /// FIXME, just in this intermediate step
+    SharedPtr<AbstractNodeInstance> mAbstractNodeInstance;
   private:
     SharedPtr<const Node> mNode;
   };
@@ -486,6 +488,13 @@ public:
       mModel(&model)
     { }
     virtual const Model* getNode() const { return mModel; }
+    virtual AbstractNodeInstance* getAbstractNodeInstance()
+    { return mAbstractNodeInstance; }
+    /// FIXME, just in this intermediate step
+    SharedPtr<AbstractNodeInstance> mAbstractNodeInstance;
+
+    ModelContext* getModelContext()
+    { return mModelContext; }
 
     SharedPtr<ModelContext> mModelContext;
 
@@ -498,6 +507,13 @@ public:
       Instance(mechanicNode, nodePath, sampleTime)
     { }
     virtual const MechanicNode* getNode() const = 0;
+    virtual AbstractNodeInstance* getAbstractNodeInstance()
+    { return mAbstractNodeInstance; }
+    /// FIXME, just in this intermediate step
+    SharedPtr<AbstractNodeInstance> mAbstractNodeInstance;
+
+    MechanicContext* getMechanicContext()
+    { return mMechanicContext; }
 
     SharedPtr<MechanicContext> mMechanicContext;
 
@@ -569,10 +585,7 @@ public:
     SharedPtr<NodeInstance> instance;
     instance = new NodeInstance(node, getNodePath(), mSampleTime);
     addInstance(instance);
-
-    OpenFDM::NodeInstance* nodeInstance;
-    nodeInstance = new OpenFDM::NodeInstance(mSampleTime, &node);
-    instance->mAbstractNodeInstance = nodeInstance;
+    mNodeInstanceList.push_back(instance);
 
     OpenFDMAssert(node.getPort(0));
     PortData* portData = instance->getPortData(0);
@@ -602,10 +615,8 @@ public:
     SharedPtr<NodeInstance> instance;
     instance = new NodeInstance(node, getNodePath(), mSampleTime);
     addInstance(instance);
+    mNodeInstanceList.push_back(instance);
 
-    OpenFDM::NodeInstance* nodeInstance
-      = new OpenFDM::NodeInstance(mSampleTime, &node);
-    instance->mAbstractNodeInstance = nodeInstance;
     // Make all rigid mechanic body links use the same link value
     // FIXME, allocate them in this way!
     PortData* portData = 0;
@@ -641,10 +652,7 @@ public:
     SharedPtr<NodeInstance> instance;
     instance = new NodeInstance(group, getNodePath(), mSampleTime);
     addInstance(instance);
-
-    OpenFDM::NodeInstance* nodeInstance;
-    nodeInstance = new OpenFDM::NodeInstance(mSampleTime, &group);
-    instance->mAbstractNodeInstance = nodeInstance;
+    mNodeInstanceList.push_back(instance);
 
     // The vector of instances for this group.
     InstanceVector parentInstanceVector;
@@ -758,11 +766,12 @@ public:
   typedef std::map<NodePath, SharedPtr<Instance> > InstanceMap;
   InstanceMap mInstanceMap;
 
+  typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
   typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
   typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
-  typedef std::list<SharedPtr<InteractInstance> > InteractInstanceList;
-  typedef std::list<SharedPtr<JointInstance> > JointInstanceList;
 
+  // The list of Nodes that do not need a context for itself.
+  NodeInstanceList mNodeInstanceList;
   // The Models list, worthwhile for sorting
   ModelInstanceList mModelInstanceList;
   // The mechanical system list, also for sorting
@@ -1021,6 +1030,14 @@ protected:
       (*j)->mAbstractNodeInstance = mechanicInstance;
       (*j)->mMechanicContext = context;
     }
+
+    NodeInstanceList::const_iterator k;
+    for (k = mNodeInstanceList.begin(); k != mNodeInstanceList.end(); ++k) {
+      OpenFDM::NodeInstance* nodeInstance;
+      nodeInstance = new OpenFDM::NodeInstance((*k)->mSampleTime,
+                                               (*k)->getNode());
+      (*k)->mAbstractNodeInstance = nodeInstance;
+    }
     }
 
     // alloc port values
@@ -1124,7 +1141,7 @@ System::init(const real_type& t0)
   NodeInstanceCollector::InstanceMap::const_iterator i;
   for (i = nodeInstanceCollector.mInstanceMap.begin();
        i != nodeInstanceCollector.mInstanceMap.end(); ++i) {
-    mNodeInstanceMap[i->first] = i->second->mAbstractNodeInstance;
+    mNodeInstanceMap[i->first] = i->second->getAbstractNodeInstance();
   }
 
   SystemOutputList::const_iterator j;
