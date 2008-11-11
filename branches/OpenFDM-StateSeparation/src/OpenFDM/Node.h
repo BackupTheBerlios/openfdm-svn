@@ -62,9 +62,6 @@ public:
   /// Return all node paths this Node is currently attached to.
   NodePathList getNodePathList() const;
 
-  /// Hmm, here or in the leaf stuff:
-  virtual AbstractNodeContext* newNodeContext() const = 0;
-
   static std::string toNodePathName(const NodePath& nodePath)
   {
     if (nodePath.empty())

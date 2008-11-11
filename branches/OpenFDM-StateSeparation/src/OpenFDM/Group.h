@@ -30,9 +30,6 @@ public:
     visitor.handleNodePathAndApply(this);
   }
 
-  virtual AbstractNodeContext* newNodeContext() const
-  { return 0; }
-
   unsigned getExternalPortIndex() const
   { return mExternalPortInfo->getIndex(); }
 protected:
@@ -127,9 +124,6 @@ public:
 
   void traverse(NodeVisitor& visitor);
   void traverse(ConstNodeVisitor& visitor) const;
-
-  virtual AbstractNodeContext* newNodeContext() const
-  { return 0; }
 
   NodeId addChild(const SharedPtr<Node>& node);
   unsigned getNumChildren() const;

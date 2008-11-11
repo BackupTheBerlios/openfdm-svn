@@ -51,7 +51,6 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual AbstractNodeContext* newNodeContext() const;
   virtual MechanicContext* newMechanicContext() const = 0;
 
 protected:

@@ -34,10 +34,4 @@ MechanicNode::accept(ConstNodeVisitor& visitor) const
   visitor.handleNodePathAndApply(this);
 }
 
-AbstractNodeContext*
-MechanicNode::newNodeContext() const
-{
-  return newMechanicContext();
-}
-
 } // namespace OpenFDM

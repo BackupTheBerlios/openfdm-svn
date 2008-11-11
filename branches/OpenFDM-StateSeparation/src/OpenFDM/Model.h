@@ -35,7 +35,6 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual AbstractNodeContext* newNodeContext() const;
   virtual ModelContext* newModelContext() const;
 
   // FIXME: May be we want to collapse all state values in one

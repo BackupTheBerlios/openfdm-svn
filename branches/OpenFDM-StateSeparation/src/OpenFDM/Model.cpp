@@ -35,12 +35,6 @@ Model::accept(ConstNodeVisitor& visitor) const
   visitor.handleNodePathAndApply(this);
 }
 
-AbstractNodeContext*
-Model::newNodeContext() const
-{
-  return newModelContext();
-}
-
 ModelContext*
 Model::newModelContext() const
 {
