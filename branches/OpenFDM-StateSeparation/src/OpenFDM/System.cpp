@@ -517,18 +517,9 @@ public:
     bool createModelContext()
     {
       OpenFDMAssert(!mModelContext);
-      mModelContext = mModel->newModelContext();
+      mModelContext = mModel->newModelContext(mPortValueList);
       if (!mModelContext) {
         Log(Schedule, Warning) << "Could not create context for model \""
-                               << getNodeNamePath() << "\"" << endl;
-        return false;
-      }
-      OpenFDMAssert(mModel->getNumPorts() == mPortDataVector.size());
-      for (unsigned i = 0; i < mModel->getNumPorts(); ++i)
-        mModelContext->setPortValue(*mModel->getPort(i),
-                                    mPortValueList.getPortValue(i));
-      if (!mModelContext->alloc()) {
-        Log(Schedule, Warning) << "Could not alloc for model \""
                                << getNodeNamePath() << "\"" << endl;
         return false;
       }
