@@ -11,6 +11,52 @@
 
 namespace OpenFDM {
 
+class Model::Context : public ModelContext {
+public:
+  Context(const Model* model) :
+    mModel(model)
+  {
+  }
+  virtual ~Context()
+  { }
+
+  virtual const Model& getNode() const
+  { return *mModel; }
+
+  bool alloc()
+  {
+    if (!allocStates())
+      return false;
+    return mModel->alloc(*this);
+  }
+  virtual void initOutput(const /*Init*/Task& task)
+  {
+    mModel->init(task, mDiscreteState, mContinousState, mPortValueList);
+    mModel->output(task, mDiscreteState, mContinousState, mPortValueList);
+  }
+  virtual void output(const Task& task)
+  {
+    mModel->output(task, mDiscreteState, mContinousState, mPortValueList);
+  }
+  virtual void update(const DiscreteTask& discreteTask)
+  {
+    mModel->update(discreteTask, mDiscreteState, mContinousState, mPortValueList);
+  }
+
+  virtual void derivative(const Task&)
+  {
+    mModel->derivative(mDiscreteState, mContinousState, mPortValueList,
+                       mContinousStateDerivative);
+  }
+
+private:
+  Context();
+  Context(const Context&);
+  Context& operator=(const Context&);
+
+  SharedPtr<const Model> mModel;
+};
+
 BEGIN_OPENFDM_OBJECT_DEF(Model, LeafNode)
   END_OPENFDM_OBJECT_DEF
 
@@ -38,7 +84,7 @@ Model::accept(ConstNodeVisitor& visitor) const
 ModelContext*
 Model::newModelContext(PortValueList& portValueList) const
 {
-  SharedPtr<ModelContext> context = new ModelContext(this);
+  SharedPtr<Context> context = new Context(this);
   for (unsigned i = 0; i < getNumPorts(); ++i) {
     PortValue* portValue = portValueList.getPortValue(i);
     if (!portValue) {

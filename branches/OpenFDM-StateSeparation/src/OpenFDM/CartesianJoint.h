@@ -28,7 +28,7 @@ public:
 
   virtual MechanicContext* newMechanicContext(PortValueList& portValueList) const
   {
-    SharedPtr<MechanicContext> context = new Context(this);
+    SharedPtr<Context> context = new Context(this);
     for (unsigned i = 0; i < getNumPorts(); ++i) {
       PortValue* portValue = portValueList.getPortValue(i);
       if (!portValue) {
@@ -184,7 +184,7 @@ private:
     virtual const CartesianJoint& getNode() const
     { return *mCartesianJoint; }
     
-    virtual bool alloc()
+    bool alloc()
     {
       if (!allocStates())
         return false;

@@ -14,7 +14,6 @@
 #include "Interact.h"
 #include "LogStream.h"
 #include "PortValueList.h"
-#include "MechanicContext.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {

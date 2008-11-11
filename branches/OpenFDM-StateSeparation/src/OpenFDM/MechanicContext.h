@@ -25,7 +25,6 @@ public:
 
   virtual const MechanicNode& getNode() const = 0;
 
-  virtual bool alloc() = 0;
   virtual void initVelocities(const /*Init*/Task& task) = 0;
   virtual void velocities(const Task& task) = 0;
   virtual void articulation(const Task& task) = 0;
@@ -42,13 +41,6 @@ class MechanicContextList : public std::list<SharedPtr<MechanicContext> > {
 public:
   typedef std::list<SharedPtr<MechanicContext> > list_type;
 
-  bool alloc() const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      if (!(*i)->alloc())
-        return false;
-    return true;
-  }
   void initVelocities(const /*Init*/Task& task) const
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)

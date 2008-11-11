@@ -18,7 +18,7 @@ public:
   virtual const RootJoint& getNode() const
   { return *mRootJoint; }
   
-  virtual bool alloc()
+  bool alloc()
   { if (!allocStates()) return false; return mRootJoint->alloc(*this); }
   virtual void initVelocities(const /*Init*/Task& task)
   {
@@ -69,7 +69,7 @@ RootJoint::~RootJoint()
 MechanicContext*
 RootJoint::newMechanicContext(PortValueList& portValueList) const
 {
-  SharedPtr<MechanicContext> context = new Context(this);
+  SharedPtr<Context> context = new Context(this);
   for (unsigned i = 0; i < getNumPorts(); ++i) {
     PortValue* portValue = portValueList.getPortValue(i);
     if (!portValue) {

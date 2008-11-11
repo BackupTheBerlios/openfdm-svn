@@ -20,46 +20,25 @@ class InitTask;
 //// This one is used to execute the simulation system
 class ModelContext : public LeafContext {
 public:
-  ModelContext(const Model* model);
+  ModelContext() {}
   virtual ~ModelContext();
 
-  virtual const Model& getNode() const;
+  virtual const Model& getNode() const = 0;
 
-  bool alloc()
-  { if (!allocStates()) return false; return mModel->alloc(*this); }
-  void initOutput(const /*Init*/Task& task)
-  {
-    mModel->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mModel->output(task, mDiscreteState, mContinousState, mPortValueList);
-  }
-  void output(const Task& task)
-  { mModel->output(task, mDiscreteState, mContinousState, mPortValueList); }
-  void update(const DiscreteTask& discreteTask)
-  { mModel->update(discreteTask, mDiscreteState, mContinousState, mPortValueList); }
-
-  void derivative(const Task&)
-  { mModel->derivative(mDiscreteState, mContinousState, mPortValueList,
-                       mContinousStateDerivative); }
+  virtual void initOutput(const /*Init*/Task& task) = 0;
+  virtual void output(const Task& task) = 0;
+  virtual void update(const DiscreteTask& discreteTask) = 0;
+  virtual void derivative(const Task&) = 0;
 
 private:
-  ModelContext();
   ModelContext(const ModelContext&);
   ModelContext& operator=(const ModelContext&);
-
-  SharedPtr<const Model> mModel;
 };
 
 class ModelContextList : public std::list<SharedPtr<ModelContext> > {
 public:
   typedef std::list<SharedPtr<ModelContext> > list_type;
 
-  bool alloc() const
-  {
-    for (list_type::const_iterator i = begin(); i != end(); ++i)
-      if (!(*i)->alloc())
-        return false;
-    return true;
-  }
   void initOutput(const /*Init*/Task& task) const
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)

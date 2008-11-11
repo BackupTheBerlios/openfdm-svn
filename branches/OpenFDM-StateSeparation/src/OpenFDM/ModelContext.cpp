@@ -7,20 +7,8 @@
 
 namespace OpenFDM {
 
-ModelContext::ModelContext(const Model* model) :
-  mModel(model)
-{
-  OpenFDMAssert(mModel);
-}
-
 ModelContext::~ModelContext()
 {
-}
-
-const Model&
-ModelContext::getNode() const
-{
-  return *mModel;
 }
 
 } // namespace OpenFDM

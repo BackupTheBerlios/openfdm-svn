@@ -66,6 +66,9 @@ protected:
   RealInputPort
   newRealInputPort(const std::string& name, bool directInput)
   { return RealInputPort(this, name, directInput); }
+
+private:
+  class Context;
 };
 
 } // namespace OpenFDM
