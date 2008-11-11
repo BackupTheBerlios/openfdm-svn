@@ -19,6 +19,7 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
+  virtual MechanicContext* newMechanicContext(PortValueList& portValues) const;
   virtual MechanicContext* newMechanicContext() const;
 
   virtual void velocity(const Task&, const ContinousStateValueVector&,

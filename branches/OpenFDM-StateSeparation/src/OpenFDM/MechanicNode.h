@@ -51,8 +51,6 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual MechanicContext* newMechanicContext() const = 0;
-
 protected:
   MechanicLink newMechanicLink(const std::string& name)
   { return MechanicLink(this, name); }

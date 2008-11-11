@@ -546,28 +546,7 @@ public:
     { }
     virtual const MechanicNode* getNode() const = 0;
 
-    bool createMechanicContext()
-    {
-      OpenFDMAssert(!mMechanicContext);
-      mMechanicContext = getNode()->newMechanicContext();
-      if (!mMechanicContext) {
-        Log(Schedule, Warning) << "Could not create context for mechanic "
-                               << "node \"" << getNodeNamePath()
-                               << "\"" << endl;
-        return false;
-      }
-      OpenFDMAssert(getNode()->getNumPorts() == mPortDataVector.size());
-      for (unsigned i = 0; i < getNode()->getNumPorts(); ++i)
-        mMechanicContext->setPortValue(*getNode()->getPort(i),
-                                       mPortValueList.getPortValue(i));
-      if (!mMechanicContext->alloc()) {
-        Log(Schedule, Warning) << "Could not alloc for mechanic "
-                               << "node \"" << getNodeNamePath()
-                               << "\"" << endl;
-        return false;
-      }
-      return true;
-    }
+    virtual bool createMechanicContext() = 0;
 
     virtual AbstractNodeInstance* newNodeInstance()
     {
@@ -611,6 +590,18 @@ public:
       mJoint(&joint)
     { }
     virtual const Joint* getNode() const { return mJoint; }
+    virtual bool createMechanicContext()
+    {
+      OpenFDMAssert(!mMechanicContext);
+      mMechanicContext = getNode()->newMechanicContext(mPortValueList);
+      if (!mMechanicContext) {
+        Log(Schedule, Warning) << "Could not create context for mechanic "
+                               << "node \"" << getNodeNamePath()
+                               << "\"" << endl;
+        return false;
+      }
+      return true;
+    }
   private:
     SharedPtr<const Joint> mJoint;
   };
@@ -621,6 +612,18 @@ public:
       mInteract(&interact)
     { }
     virtual const Interact* getNode() const { return mInteract; }
+    virtual bool createMechanicContext()
+    {
+      OpenFDMAssert(!mMechanicContext);
+      mMechanicContext = getNode()->newMechanicContext(mPortValueList);
+      if (!mMechanicContext) {
+        Log(Schedule, Warning) << "Could not create context for mechanic "
+                               << "node \"" << getNodeNamePath()
+                               << "\"" << endl;
+        return false;
+      }
+      return true;
+    }
   private:
     SharedPtr<const Interact> mInteract;
   };
