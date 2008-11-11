@@ -250,7 +250,7 @@ public:
     mBasicSampleTime(SampleTime::getContinous())
   { }
 
-  struct Instance;
+  struct InstanceData;
   struct PortData;
 
   struct PortConnectSet : public Referenced {
@@ -269,9 +269,9 @@ public:
 
   struct PortData : public WeakReferenced {
   public:
-    PortData(Instance* instance, const PortInfo* portInfo,
+    PortData(InstanceData* instanceData, const PortInfo* portInfo,
              bool valueCreator = true) :
-      mInstance(instance),
+      mInstanceData(instanceData),
       mPortInfo(portInfo),
       mPortValueCreator(valueCreator)
     {
@@ -290,7 +290,8 @@ public:
       }
       // Merge the port sets together ...
       while (!mPortConnectSet->mParentPortData.empty()) {
-        SharedPtr<PortData> portData = mPortConnectSet->mParentPortData.back().lock();
+        SharedPtr<PortData> portData;
+        portData = mPortConnectSet->mParentPortData.back().lock();
         mPortConnectSet->mParentPortData.pop_back();
         if (portData == this)
           continue;
@@ -341,8 +342,8 @@ public:
     {
       if (!getPortInfo())
         return false;
-      SharedPtr<Instance> instance = mInstance.lock();
-      if (!instance)
+      SharedPtr<InstanceData> instanceData = mInstanceData.lock();
+      if (!instanceData)
         return false;
       Log(Schedule, Debug3)
         << "setPortValue for port \"" << getPortInfo()->getName()
@@ -350,7 +351,7 @@ public:
       // FIXME: move the set port value and accept port value into one call
       if (!getPortInfo()->acceptPortValue(portValue))
         return false;
-      instance->setPortValue(*getPortInfo(), portValue);
+      instanceData->setPortValue(*getPortInfo(), portValue);
       return true;
     }
 
@@ -369,11 +370,11 @@ public:
     {
       if (!mPortValueCreator)
         return true;
-      SharedPtr<Instance> instance = mInstance.lock();
-      if (!instance)
+      SharedPtr<InstanceData> instanceData = mInstanceData.lock();
+      if (!instanceData)
         return false;
       // FIXME
-      if (instance->getPortValue(*getPortInfo()))
+      if (instanceData->getPortValue(*getPortInfo()))
         return true;
       SharedPtr<PortValue> portValue = getPortInfo()->newValue();
       if (!portValue)
@@ -384,16 +385,16 @@ public:
     }
 
   private:
-    WeakPtr<Instance> mInstance;
+    WeakPtr<InstanceData> mInstanceData;
     SharedPtr<const PortInfo> mPortInfo;
     std::vector<WeakPtr<PortData> > mConnectedPorts;
     SharedPtr<PortConnectSet> mPortConnectSet;
     bool mPortValueCreator;
   };
 
-  struct Instance : public WeakReferenced {
-    Instance(const Node& node, const NodePath& nodePath,
-             const SampleTime& sampleTime) :
+  struct InstanceData : public WeakReferenced {
+    InstanceData(const Node& node, const NodePath& nodePath,
+                 const SampleTime& sampleTime) :
       mNodePath(nodePath),
       mSampleTime(sampleTime)
     {
@@ -402,7 +403,7 @@ public:
       for (unsigned i = 0; i < numPorts; ++i)
         mPortDataVector.push_back(new PortData(this, node.getPort(i)));
     }
-    virtual ~Instance()
+    virtual ~InstanceData()
     { }
     virtual const Node* getNode() const = 0;
     virtual AbstractNodeInstance* newNodeInstance() = 0;
@@ -423,7 +424,8 @@ public:
       return mPortValueList.getPortValue(portInfo);
     }
 
-    bool dependsOn(const Instance& instance, bool acceleration = false) const
+    bool
+    dependsOn(const InstanceData& instance, bool acceleration = false) const
     {
       unsigned numPorts = getNode()->getNumPorts();
       for (unsigned i = 0; i < numPorts; ++i) {
@@ -467,9 +469,9 @@ public:
                               << "\"" << endl;
         if (!mPortDataVector[i]->createPortValue()) {
           Log(Schedule, Warning) << "Failed to allocate port value \""
-                               << mPortDataVector[i]->getPortInfo()->getName()
-                               << "\" of \"" << getNodeNamePath()
-                               << "\".\nAborting!" << endl;
+                                 << mPortDataVector[i]->getPortInfo()->getName()
+                                 << "\" of \"" << getNodeNamePath()
+                                 << "\".\nAborting!" << endl;
 
           return false;
         }
@@ -477,6 +479,10 @@ public:
       return true;
     }
 
+    const SampleTime& getSampleTime() const
+    { return mSampleTime; }
+
+  protected:
     const NodePath mNodePath;
     const SampleTime mSampleTime;
 
@@ -486,17 +492,17 @@ public:
     PortValueList mPortValueList;
   };
 
-  struct NodeInstance : public Instance {
-    NodeInstance(const Node& node, const NodePath& nodePath,
-                  const SampleTime& sampleTime) :
-      Instance(node, nodePath, sampleTime),
+  struct NodeInstanceData : public InstanceData {
+    NodeInstanceData(const Node& node, const NodePath& nodePath,
+                     const SampleTime& sampleTime) :
+      InstanceData(node, nodePath, sampleTime),
       mNode(&node)
     { }
     virtual const Node* getNode() const { return mNode; }
     virtual AbstractNodeInstance* newNodeInstance()
     {
-      OpenFDM::NodeInstance* nodeInstance;
-      nodeInstance = new OpenFDM::NodeInstance(mSampleTime, getNode());
+      NodeInstance* nodeInstance;
+      nodeInstance = new NodeInstance(mSampleTime, getNode());
       OpenFDMAssert(mNode->getNumPorts() == mPortDataVector.size());
       for (unsigned i = 0; i < mNode->getNumPorts(); ++i)
         nodeInstance->setPortValue(*mNode->getPort(i),
@@ -506,10 +512,10 @@ public:
   private:
     SharedPtr<const Node> mNode;
   };
-  struct ModelInstance : public Instance {
-    ModelInstance(const Model& model, const NodePath& nodePath,
-                  const SampleTime& sampleTime) :
-      Instance(model, nodePath, sampleTime),
+  struct ModelInstanceData : public InstanceData {
+    ModelInstanceData(const Model& model, const NodePath& nodePath,
+                      const SampleTime& sampleTime) :
+      InstanceData(model, nodePath, sampleTime),
       mModel(&model)
     { }
     virtual const Model* getNode() const { return mModel; }
@@ -528,21 +534,21 @@ public:
 
     virtual AbstractNodeInstance* newNodeInstance()
     {
-      return new OpenFDM::LeafInstance(mSampleTime, mModelContext);
+      return new LeafInstance(mSampleTime, mModelContext);
     }
 
     ModelContext* getModelContext()
     { return mModelContext; }
 
-    SharedPtr<ModelContext> mModelContext;
-
   private:
     SharedPtr<const Model> mModel;
+    SharedPtr<ModelContext> mModelContext;
   };
-  struct MechanicInstance : public Instance {
-    MechanicInstance(const MechanicNode& mechanicNode, const NodePath& nodePath,
-                     const SampleTime& sampleTime) :
-      Instance(mechanicNode, nodePath, sampleTime)
+  struct MechanicInstanceData : public InstanceData {
+    MechanicInstanceData(const MechanicNode& mechanicNode,
+                         const NodePath& nodePath,
+                         const SampleTime& sampleTime) :
+      InstanceData(mechanicNode, nodePath, sampleTime)
     { }
     virtual const MechanicNode* getNode() const = 0;
 
@@ -550,15 +556,13 @@ public:
 
     virtual AbstractNodeInstance* newNodeInstance()
     {
-      return new OpenFDM::LeafInstance(mSampleTime, mMechanicContext);
+      return new LeafInstance(mSampleTime, mMechanicContext);
     }
 
     MechanicContext* getMechanicContext()
     { return mMechanicContext; }
 
-    SharedPtr<MechanicContext> mMechanicContext;
-
-    bool isLinkedTo(const MechanicInstance& instance) const
+    bool isLinkedTo(const MechanicInstanceData& instance) const
     {
       unsigned numPorts = getNode()->getNumPorts();
       for (unsigned i = 0; i < numPorts; ++i) {
@@ -582,11 +586,13 @@ public:
       }
       return false;
     }
+  protected:
+    SharedPtr<MechanicContext> mMechanicContext;
   };
-  struct JointInstance : public MechanicInstance {
-    JointInstance(const Joint& joint, const NodePath& nodePath,
-                  const SampleTime& sampleTime) :
-      MechanicInstance(joint, nodePath, sampleTime),
+  struct JointInstanceData : public MechanicInstanceData {
+    JointInstanceData(const Joint& joint, const NodePath& nodePath,
+                      const SampleTime& sampleTime) :
+      MechanicInstanceData(joint, nodePath, sampleTime),
       mJoint(&joint)
     { }
     virtual const Joint* getNode() const { return mJoint; }
@@ -605,10 +611,10 @@ public:
   private:
     SharedPtr<const Joint> mJoint;
   };
-  struct InteractInstance : public MechanicInstance {
-    InteractInstance(const Interact& interact, const NodePath& nodePath,
-                     const SampleTime& sampleTime) :
-      MechanicInstance(interact, nodePath, sampleTime),
+  struct InteractInstanceData : public MechanicInstanceData {
+    InteractInstanceData(const Interact& interact, const NodePath& nodePath,
+                         const SampleTime& sampleTime) :
+      MechanicInstanceData(interact, nodePath, sampleTime),
       mInteract(&interact)
     { }
     virtual const Interact* getNode() const { return mInteract; }
@@ -628,12 +634,12 @@ public:
     SharedPtr<const Interact> mInteract;
   };
 
-  void addInstance(Instance* instance)
+  void addInstanceData(InstanceData* instanceData)
   {
     // Add the instance to the per System instance map
-    mInstanceMap[getNodePath()] = instance;
+    mInstanceDataMap[getNodePath()] = instanceData;
     // Add the instance to the current groups instance list
-    mInstanceVector.push_back(instance);
+    mInstanceDataVector.push_back(instanceData);
   }
 
   virtual void apply(const Node& node)
@@ -647,13 +653,13 @@ public:
 
   virtual void apply(const GroupInterfaceNode& node)
   {
-    SharedPtr<NodeInstance> instance;
-    instance = new NodeInstance(node, getNodePath(), mSampleTime);
-    addInstance(instance);
-    mNodeInstanceList.push_back(instance);
+    SharedPtr<NodeInstanceData> instanceData;
+    instanceData = new NodeInstanceData(node, getNodePath(), mSampleTime);
+    addInstanceData(instanceData);
+    mNodeInstanceDataList.push_back(instanceData);
 
     OpenFDMAssert(node.getPort(0));
-    PortData* portData = instance->getPortData(0);
+    PortData* portData = instanceData->getPortData(0);
     OpenFDMAssert(portData);
     portData->disablePortValueCreation();
     mGroupInterfacePortDataMap[node.getExternalPortIndex()] = portData;
@@ -663,24 +669,24 @@ public:
   {
     // Need to store the root nodes to build up the spanning tree for the
     // mechanical system here.
-    SharedPtr<JointInstance> instance;
-    instance = new JointInstance(node, getNodePath(), mSampleTime);
-    addInstance(instance);
-    mRootJointInstanceList.push_back(instance);
+    SharedPtr<JointInstanceData> instanceData;
+    instanceData = new JointInstanceData(node, getNodePath(), mSampleTime);
+    addInstanceData(instanceData);
+    mRootJointInstanceDataList.push_back(instanceData);
   }
   virtual void apply(const Interact& node)
   {
-    SharedPtr<InteractInstance> instance;
-    instance = new InteractInstance(node, getNodePath(), mSampleTime);
-    addInstance(instance);
-    mInteractInstanceList.push_back(instance);
+    SharedPtr<InteractInstanceData> instanceData;
+    instanceData = new InteractInstanceData(node, getNodePath(), mSampleTime);
+    addInstanceData(instanceData);
+    mInteractInstanceDataList.push_back(instanceData);
   }
   virtual void apply(const RigidBody& node)
   {
-    SharedPtr<NodeInstance> instance;
-    instance = new NodeInstance(node, getNodePath(), mSampleTime);
-    addInstance(instance);
-    mNodeInstanceList.push_back(instance);
+    SharedPtr<NodeInstanceData> instanceData;
+    instanceData = new NodeInstanceData(node, getNodePath(), mSampleTime);
+    addInstanceData(instanceData);
+    mNodeInstanceDataList.push_back(instanceData);
 
     // Make all rigid mechanic body links use the same link value
     // FIXME, allocate them in this way!
@@ -689,40 +695,40 @@ public:
       if (!node.getPort(i)->toMechanicLinkInfo())
         continue;
       if (portData) {
-        instance->getPortData(i)->setProxyPortData(portData);
-        instance->getPortData(i)->disablePortValueCreation();
+        instanceData->getPortData(i)->setProxyPortData(portData);
+        instanceData->getPortData(i)->disablePortValueCreation();
       } else {
-        portData = instance->getPortData(i);
+        portData = instanceData->getPortData(i);
         portData->disablePortValueCreation();
       }
     }
   }
   virtual void apply(const Joint& node)
   {
-    SharedPtr<JointInstance> instance;
-    instance = new JointInstance(node, getNodePath(), mSampleTime);
-    addInstance(instance);
-    mJointInstanceList.push_back(instance);
+    SharedPtr<JointInstanceData> instanceData;
+    instanceData = new JointInstanceData(node, getNodePath(), mSampleTime);
+    addInstanceData(instanceData);
+    mJointInstanceDataList.push_back(instanceData);
   }
   virtual void apply(const Model& node)
   {
-    SharedPtr<ModelInstance> instance;
-    instance = new ModelInstance(node, getNodePath(), mSampleTime);
-    addInstance(instance);
-    mModelInstanceList.push_back(instance);
+    SharedPtr<ModelInstanceData> instanceData;
+    instanceData = new ModelInstanceData(node, getNodePath(), mSampleTime);
+    addInstanceData(instanceData);
+    mModelInstanceDataList.push_back(instanceData);
   }
 
   virtual void apply(const Group& group)
   {
-    SharedPtr<NodeInstance> instance;
-    instance = new NodeInstance(group, getNodePath(), mSampleTime);
-    addInstance(instance);
-    mNodeInstanceList.push_back(instance);
+    SharedPtr<NodeInstanceData> instanceData;
+    instanceData = new NodeInstanceData(group, getNodePath(), mSampleTime);
+    addInstanceData(instanceData);
+    mNodeInstanceDataList.push_back(instanceData);
 
     // The vector of instances for this group.
-    InstanceVector parentInstanceVector;
-    parentInstanceVector.swap(mInstanceVector);
-    mInstanceVector.reserve(group.getNumChildren());
+    InstanceDataVector parentInstanceDataVector;
+    parentInstanceDataVector.swap(mInstanceDataVector);
+    mInstanceDataVector.reserve(group.getNumChildren());
 
     // Get PortDataList indexed by group port index
     GroupInterfacePortDataMap parentGroupInterfacePortDataMap;
@@ -780,20 +786,22 @@ public:
       SharedPtr<const PortInfo> portInfo0 = group.getConnectPortInfo0(i);
       if (!portInfo0) {
         Log(Schedule, Error) << "Cannot find provider Port data node "
-                  << group.getChild(nodeIndex0)->getName() << std::endl;
+                             << group.getChild(nodeIndex0)->getName()
+                             << std::endl;
         continue;
       }
       SharedPtr<const PortInfo> portInfo1 = group.getConnectPortInfo1(i);
       if (!portInfo1) {
         Log(Schedule, Error) << "Cannot find acceptor Port data node "
-                  << group.getChild(nodeIndex1)->getName() << std::endl;
+                             << group.getChild(nodeIndex1)->getName()
+                             << std::endl;
         continue;
       }
 
       unsigned portInfoIndex0 = portInfo0->getIndex();
       unsigned portInfoIndex1 = portInfo1->getIndex();
-      if (!mInstanceVector[nodeIndex1]->getPortData(portInfoIndex1)->
-          connect(mInstanceVector[nodeIndex0]->getPortData(portInfoIndex0)))
+      if (!mInstanceDataVector[nodeIndex1]->getPortData(portInfoIndex1)->
+          connect(mInstanceDataVector[nodeIndex0]->getPortData(portInfoIndex0)))
         Log(Schedule, Error) << "Internal Error: Cannot connect ports that"
           " appeared to be compatible before." << std::endl;
     }
@@ -810,7 +818,7 @@ public:
       }
 
       // Allocate a new port data struct in the parent.
-      PortData* parentPortData = instance->getPortData(i);
+      PortData* parentPortData = instanceData->getPortData(i);
       parentPortData->setProxyPortData(portData);
       portData->setProxyPortData(parentPortData);
       parentPortData->disablePortValueCreation();
@@ -819,39 +827,39 @@ public:
 
     // We must have gained exactly this amount of instances while traversing
     // this group, so make sure it is like that ...
-    OpenFDMAssert(mInstanceVector.size() == group.getNumChildren());
+    OpenFDMAssert(mInstanceDataVector.size() == group.getNumChildren());
 
     // Pop the per group port connect info
     parentGroupInterfacePortDataMap.swap(mGroupInterfacePortDataMap);
-    parentInstanceVector.swap(mInstanceVector);
+    parentInstanceDataVector.swap(mInstanceDataVector);
   }
 
   ////////////////////////////////////////////////////////////////////////////
   // All instances in the system indexed by node path.
-  typedef std::map<NodePath, SharedPtr<Instance> > InstanceMap;
-  InstanceMap mInstanceMap;
+  typedef std::map<NodePath, SharedPtr<InstanceData> > InstanceDataMap;
+  InstanceDataMap mInstanceDataMap;
 
-  typedef std::list<SharedPtr<NodeInstance> > NodeInstanceList;
-  typedef std::list<SharedPtr<ModelInstance> > ModelInstanceList;
-  typedef std::list<SharedPtr<MechanicInstance> > MechanicInstanceList;
+  typedef std::list<SharedPtr<NodeInstanceData> > NodeInstanceDataList;
+  typedef std::list<SharedPtr<ModelInstanceData> > ModelInstanceDataList;
+  typedef std::list<SharedPtr<MechanicInstanceData> > MechanicInstanceDataList;
 
   // The list of Nodes that do not need a context for itself.
-  NodeInstanceList mNodeInstanceList;
+  NodeInstanceDataList mNodeInstanceDataList;
   // The Models list, worthwhile for sorting
-  ModelInstanceList mModelInstanceList;
+  ModelInstanceDataList mModelInstanceDataList;
   // The mechanical system list, also for sorting
-  MechanicInstanceList mMechanicInstanceList;
+  MechanicInstanceDataList mMechanicInstanceDataList;
 
   // The list of root nodes in the mechanical system. Will be a starting point
   // for sorting the tree of mechanical models downwards
-  MechanicInstanceList mRootJointInstanceList;
-  MechanicInstanceList mJointInstanceList;
-  MechanicInstanceList mInteractInstanceList;
+  MechanicInstanceDataList mRootJointInstanceDataList;
+  MechanicInstanceDataList mJointInstanceDataList;
+  MechanicInstanceDataList mInteractInstanceDataList;
 
   ////////////////////////////////////////////////////////////////////////////
   // Used to map connections in groups ...
-  typedef std::vector<SharedPtr<Instance> > InstanceVector;
-  InstanceVector mInstanceVector;
+  typedef std::vector<SharedPtr<InstanceData> > InstanceDataVector;
+  InstanceDataVector mInstanceDataVector;
   // Holds the PortDataList pointer indexed by parent groups port index
   typedef std::vector<SharedPtr<PortData> > GroupInterfacePortDataMap;
   GroupInterfacePortDataMap mGroupInterfacePortDataMap;
@@ -892,16 +900,17 @@ public:
     SharedPtr<DiscreteSystem> discreteSystem;
     discreteSystem = new DiscreteSystem(basicSampleTime, 1);
 
-    ModelInstanceList::const_iterator i;
-    for (i = mModelInstanceList.begin(); i != mModelInstanceList.end(); ++i) {
-      discreteSystem->appendModelContext((*i)->mSampleTime,
-                                         (*i)->mModelContext);
+    ModelInstanceDataList::const_iterator i;
+    for (i = mModelInstanceDataList.begin();
+         i != mModelInstanceDataList.end(); ++i) {
+      discreteSystem->appendModelContext((*i)->getSampleTime(),
+                                         (*i)->getModelContext());
     }
 
-    MechanicInstanceList::const_iterator j;
-    for (j = mMechanicInstanceList.begin();
-         j != mMechanicInstanceList.end(); ++j) {
-      discreteSystem->appendMechanicContext((*j)->mMechanicContext);
+    MechanicInstanceDataList::const_iterator j;
+    for (j = mMechanicInstanceDataList.begin();
+         j != mMechanicInstanceDataList.end(); ++j) {
+      discreteSystem->appendMechanicContext((*j)->getMechanicContext());
     }
 
     return discreteSystem.release();
@@ -911,8 +920,9 @@ protected:
   // method to sort the leafs according to their dependency
   bool sortMechanicList()
   {
-    if (mRootJointInstanceList.empty() &&
-        (!mJointInstanceList.empty() || !mInteractInstanceList.empty())) {
+    if (mRootJointInstanceDataList.empty() &&
+        (!mJointInstanceDataList.empty() ||
+         !mInteractInstanceDataList.empty())) {
       Log(Schedule,Warning)
         << "No root joint in System with mechanic components" << std::endl;
       return false;
@@ -920,35 +930,35 @@ protected:
 
     // Start with all the roots in front of the list ...
     // FIXME: ensure that there is no loop here?
-    mMechanicInstanceList.swap(mRootJointInstanceList);
+    mMechanicInstanceDataList.swap(mRootJointInstanceDataList);
 
     // Not the best algorithm, but for a first cut ...
-    while (!mJointInstanceList.empty()) {
-      MechanicInstanceList nextLevelList;
+    while (!mJointInstanceDataList.empty()) {
+      MechanicInstanceDataList nextLevelList;
 
-      MechanicInstanceList::iterator j;
-      for (j = mMechanicInstanceList.begin();
-           j != mMechanicInstanceList.end(); ++j) {
-        MechanicInstanceList::iterator i;
-        for (i = mJointInstanceList.begin();
-             i != mJointInstanceList.end();) {
+      MechanicInstanceDataList::iterator j;
+      for (j = mMechanicInstanceDataList.begin();
+           j != mMechanicInstanceDataList.end(); ++j) {
+        MechanicInstanceDataList::iterator i;
+        for (i = mJointInstanceDataList.begin();
+             i != mJointInstanceDataList.end();) {
         
           if ((*j)->isLinkedTo(*(*i))) {
-            SharedPtr<MechanicInstance> mechanicInstance = *i;
-            nextLevelList.push_back(mechanicInstance);
-            i = mJointInstanceList.erase(i);
+            SharedPtr<MechanicInstanceData> mechanicInstanceData = *i;
+            nextLevelList.push_back(mechanicInstanceData);
+            i = mJointInstanceDataList.erase(i);
 
             // Check if this current mechanic node does not reference
             // back into the already sorted models
-            MechanicInstanceList::const_iterator k;
-            for (k = mMechanicInstanceList.begin();
-                 k != mMechanicInstanceList.end(); ++k) {
+            MechanicInstanceDataList::const_iterator k;
+            for (k = mMechanicInstanceDataList.begin();
+                 k != mMechanicInstanceDataList.end(); ++k) {
               if (*k == *j)
                 continue;
-              if (mechanicInstance->isLinkedTo(*(*k))) {
+              if (mechanicInstanceData->isLinkedTo(*(*k))) {
                 Log(Schedule,Warning)
                   << "Detected closed kinematic loop: MechanicNode \""
-                  << mechanicInstance->getNodeNamePath()
+                  << mechanicInstanceData->getNodeNamePath()
                   << "\" is linked to MechanicNode \""
                   << (*k)->getNodeNamePath() << "\"" << std::endl;
                 return false;
@@ -965,7 +975,7 @@ protected:
       // if we have a connection in between them, there must be a
       // closed kinematic loop.
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
-        MechanicInstanceList::iterator i = j;
+        MechanicInstanceDataList::iterator i = j;
         for (++i; i != nextLevelList.end(); ++i) {
           if ((*j)->isLinkedTo(*(*i))) {
             Log(Schedule,Warning)
@@ -980,19 +990,19 @@ protected:
       
 
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
-        mMechanicInstanceList.push_back(*j);
+        mMechanicInstanceDataList.push_back(*j);
       }
     }
 
     // Interacts are always computed at the end of the list
-    mMechanicInstanceList.splice(mMechanicInstanceList.end(),
-                                 mInteractInstanceList,
-                                 mInteractInstanceList.begin(),
-                                 mInteractInstanceList.end());
+    mMechanicInstanceDataList.splice(mMechanicInstanceDataList.end(),
+                                     mInteractInstanceDataList,
+                                     mInteractInstanceDataList.begin(),
+                                     mInteractInstanceDataList.end());
     
     Log(Schedule,Info) << "MechanicNode Schedule" << std::endl;
-    MechanicInstanceList::iterator i = mMechanicInstanceList.begin();
-    for (; i != mMechanicInstanceList.end(); ++i) {
+    MechanicInstanceDataList::iterator i = mMechanicInstanceDataList.begin();
+    for (; i != mMechanicInstanceDataList.end(); ++i) {
       Log(Schedule,Info)
         << "  MechanicNode \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
     }
@@ -1003,65 +1013,66 @@ protected:
   // method to sort the leafs according to their dependency
   bool sortModelList()
   {
-    ModelInstanceList sortedModelInstanceList;
-    while (!mModelInstanceList.empty()) {
-      SharedPtr<ModelInstance> modelInstance = mModelInstanceList.front();
-      mModelInstanceList.pop_front();
+    ModelInstanceDataList sortedModelInstanceDataList;
+    while (!mModelInstanceDataList.empty()) {
+      SharedPtr<ModelInstanceData> modelInstanceData;
+      modelInstanceData = mModelInstanceDataList.front();
+      mModelInstanceDataList.pop_front();
 
-      if (modelInstance->dependsOn(*modelInstance)) {
+      if (modelInstanceData->dependsOn(*modelInstanceData)) {
         Log(Schedule, Warning)
           << "Self referencing direct dependency for Model \""
-          << modelInstance->getNodeNamePath()
+          << modelInstanceData->getNodeNamePath()
           << "\" detected!" << std::endl;
         return false;
       }
 
-      ModelInstanceList::iterator i;
-      for (i = sortedModelInstanceList.begin();
-           i != sortedModelInstanceList.end();
+      ModelInstanceDataList::iterator i;
+      for (i = sortedModelInstanceDataList.begin();
+           i != sortedModelInstanceDataList.end();
            ++i) {
-        if (!(*i)->dependsOn(*modelInstance))
+        if (!(*i)->dependsOn(*modelInstanceData))
           continue;
 
-        // Something already sorted in depends on modelInstance,
+        // Something already sorted in depends on modelInstanceData,
         // so schedule that new thing just before.
         Log(Schedule, Debug)
           << "Inserting Model \""
-          << modelInstance->getNodeNamePath()
+          << modelInstanceData->getNodeNamePath()
           << "\" before Model \""
           << (*i)->getNodeNamePath() << "\"" << std::endl;
-        i = sortedModelInstanceList.insert(i, modelInstance);
+        i = sortedModelInstanceDataList.insert(i, modelInstanceData);
         break;
       }
-      if (i == sortedModelInstanceList.end()) {
+      if (i == sortedModelInstanceDataList.end()) {
         // nothing found so far that depends on model instance.
         // So put it at the end.
         Log(Schedule, Debug)
           << "Appending Model \""
-          << modelInstance->getNodeNamePath()
+          << modelInstanceData->getNodeNamePath()
           << "\"" << std::endl;
 
-        sortedModelInstanceList.push_back(modelInstance);
+        sortedModelInstanceDataList.push_back(modelInstanceData);
       } else {
-        // If it cannot be put at the end, check if modelInstance depends
+        // If it cannot be put at the end, check if modelInstanceData depends
         // on any model that is already scheduled behind to detect cyclic loops.
-        for (; i != sortedModelInstanceList.end(); ++i) {
-          if (!modelInstance->dependsOn(*(*i)))
+        for (; i != sortedModelInstanceDataList.end(); ++i) {
+          if (!modelInstanceData->dependsOn(*(*i)))
             continue;
           Log(Schedule,Warning)
             << "Detected cyclic loop: Model \""
-            << modelInstance->getNodeNamePath()
+            << modelInstanceData->getNodeNamePath()
             << "\" depends on Model \""
             << (*i)->getNodeNamePath() << "\"" << std::endl;
           return false;
         }
       }
     }
-    mModelInstanceList.swap(sortedModelInstanceList);
+    mModelInstanceDataList.swap(sortedModelInstanceDataList);
 
     Log(Schedule,Info) << "Model Schedule" << std::endl;
-    ModelInstanceList::iterator i = mModelInstanceList.begin();
-    for (; i != mModelInstanceList.end(); ++i) {
+    ModelInstanceDataList::iterator i = mModelInstanceDataList.begin();
+    for (; i != mModelInstanceDataList.end(); ++i) {
       Log(Schedule,Info)
         << "  Model \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
     }
@@ -1073,14 +1084,14 @@ protected:
   createContexts()
   {
     // alloc port values
-    InstanceMap::const_iterator i;
-    for (i = mInstanceMap.begin(); i != mInstanceMap.end(); ++i) {
+    InstanceDataMap::const_iterator i;
+    for (i = mInstanceDataMap.begin(); i != mInstanceDataMap.end(); ++i) {
       if (!i->second->allocPortValues())
-          return false;
+        return false;
     }
 
     // check port values and report unconnected mandatory values.
-    for (i = mInstanceMap.begin(); i != mInstanceMap.end(); ++i) {
+    for (i = mInstanceDataMap.begin(); i != mInstanceDataMap.end(); ++i) {
       const Node* node = i->second->getNode();
       for (unsigned k = 0; k < node->getNumPorts(); ++k) {
         SharedPtr<const PortInfo> portInfo = node->getPort(k);
@@ -1088,9 +1099,9 @@ protected:
           continue;
         if (!i->second->getPortValue(*portInfo)) {
           Log(Schedule, Warning) << "Mandatory port value for port \""
-                               << portInfo->getName() << "\" for model \""
-                               << i->second->getNodeNamePath()
-                               << "\" is not connected!" << endl;
+                                 << portInfo->getName() << "\" for model \""
+                                 << i->second->getNodeNamePath()
+                                 << "\" is not connected!" << endl;
           return false;
         }
       }
@@ -1099,15 +1110,16 @@ protected:
     // Create the contexts
     // This happens past the port values are assigned, this way models can
     // create different kind of contexts based on the type of port values.
-    ModelInstanceList::const_iterator j;
-    for (j = mModelInstanceList.begin(); j != mModelInstanceList.end(); ++j) {
+    ModelInstanceDataList::const_iterator j;
+    for (j = mModelInstanceDataList.begin();
+         j != mModelInstanceDataList.end(); ++j) {
       if (!(*j)->createModelContext())
         return false;
     }
 
-    MechanicInstanceList::const_iterator k;
-    for (k = mMechanicInstanceList.begin();
-         k != mMechanicInstanceList.end(); ++k) {
+    MechanicInstanceDataList::const_iterator k;
+    for (k = mMechanicInstanceDataList.begin();
+         k != mMechanicInstanceDataList.end(); ++k) {
       if (!(*k)->createMechanicContext())
         return false;
     }
@@ -1164,9 +1176,9 @@ System::init(const real_type& t0)
 
   // Have something to run in our hands.
   // Now get the information required to reflect the system to the user.
-  NodeInstanceCollector::InstanceMap::const_iterator i;
-  for (i = nodeInstanceCollector.mInstanceMap.begin();
-       i != nodeInstanceCollector.mInstanceMap.end(); ++i) {
+  NodeInstanceCollector::InstanceDataMap::const_iterator i;
+  for (i = nodeInstanceCollector.mInstanceDataMap.begin();
+       i != nodeInstanceCollector.mInstanceDataMap.end(); ++i) {
     mNodeInstanceMap[i->first] = i->second->newNodeInstance();
   }
 
