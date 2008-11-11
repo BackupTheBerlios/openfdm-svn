@@ -26,8 +26,26 @@ public:
   typedef LinAlg::Matrix<real_type,n,n> MatrixNN;
   typedef LinAlg::MatrixFactors<real_type,n,n,LinAlg::LUTag> MatrixFactorsNN;
 
-  virtual MechanicContext* newMechanicContext() const
-  { return new Context(this); }
+  virtual MechanicContext* newMechanicContext(PortValueList& portValueList) const
+  {
+    SharedPtr<MechanicContext> context = new Context(this);
+    for (unsigned i = 0; i < getNumPorts(); ++i) {
+      PortValue* portValue = portValueList.getPortValue(i);
+      if (!portValue) {
+        Log(Model, Error) << "No port value given for model \"" << getName()
+                          << "\" and port \"" << getPort(i)->getName()
+                          << "\"" << endl;
+        return false;
+      }
+      context->setPortValue(*getPort(i), portValue);
+    }
+    if (!context->alloc()) {
+      Log(Model, Warning) << "Could not alloc for model \""
+                          << getName() << "\"" << endl;
+      return false;
+    }
+    return context.release();
+  }
 
 protected:
   CartesianJoint(const std::string& name) :

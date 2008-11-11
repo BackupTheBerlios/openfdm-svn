@@ -81,15 +81,9 @@ Interact::accept(ConstNodeVisitor& visitor) const
 }
 
 MechanicContext*
-Interact::newMechanicContext() const
-{
-  return new Context(this);
-}
-
-MechanicContext*
 Interact::newMechanicContext(PortValueList& portValueList) const
 {
-  SharedPtr<MechanicContext> context = newMechanicContext();
+  SharedPtr<MechanicContext> context = new Context(this);
   for (unsigned i = 0; i < getNumPorts(); ++i) {
     PortValue* portValue = portValueList.getPortValue(i);
     if (!portValue) {

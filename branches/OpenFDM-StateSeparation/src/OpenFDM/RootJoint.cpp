@@ -67,9 +67,25 @@ RootJoint::~RootJoint()
 }
 
 MechanicContext*
-RootJoint::newMechanicContext() const
+RootJoint::newMechanicContext(PortValueList& portValueList) const
 {
-  return new Context(this);
+  SharedPtr<MechanicContext> context = new Context(this);
+  for (unsigned i = 0; i < getNumPorts(); ++i) {
+    PortValue* portValue = portValueList.getPortValue(i);
+    if (!portValue) {
+      Log(Model, Error) << "No port value given for model \"" << getName()
+                        << "\" and port \"" << getPort(i)->getName()
+                        << "\"" << endl;
+      return false;
+    }
+    context->setPortValue(*getPort(i), portValue);
+  }
+  if (!context->alloc()) {
+    Log(Model, Warning) << "Could not alloc for model \""
+                        << getName() << "\"" << endl;
+    return false;
+  }
+  return context.release();
 }
 
 void

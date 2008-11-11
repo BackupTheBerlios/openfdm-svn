@@ -16,7 +16,7 @@ public:
   RootJoint(const std::string& name);
   virtual ~RootJoint();
 
-  virtual MechanicContext* newMechanicContext() const;
+  virtual MechanicContext* newMechanicContext(PortValueList& portValueList) const;
 
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
