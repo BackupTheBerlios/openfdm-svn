@@ -60,7 +60,7 @@ public:
 #if defined(NDEBUG) || defined(_NDEBUG)
     // In the NDEBUG case, give the compilers optimizer a chance to
     // completely remove the code.
-    if (Info <= priority)
+    if (Debug <= priority)
       return false;
 #endif
     return Instance()->getEnabled(category, priority);
