@@ -101,6 +101,12 @@ public:
       return 0;
     return mPortValueVector[idx];
   }
+  PortValue* getPortValue(unsigned idx)
+  {
+    if (mPortValueVector.size() <= idx)
+      return 0;
+    return mPortValueVector[idx];
+  }
 
   /// Save but partially expensive Accessor for numeric ports
   const NumericPortValue* getPortValue(const NumericPortInfo* portInfo) const

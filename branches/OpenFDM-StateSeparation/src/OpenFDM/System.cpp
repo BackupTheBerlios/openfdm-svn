@@ -385,7 +385,7 @@ public:
     virtual ~Instance()
     { }
     virtual const Node* getNode() const = 0;
-    virtual AbstractNodeInstance* getAbstractNodeInstance() = 0;
+    virtual AbstractNodeInstance* newNodeInstance() = 0;
 
     PortData* getPortData(unsigned i)
     {
@@ -396,7 +396,6 @@ public:
 
     void setPortValue(const PortInfo& portInfo, PortValue* portValue)
     {
-      getAbstractNodeInstance()->setPortValue(portInfo, portValue);
       mPortValueList.setPortValue(portInfo.getIndex(), portValue);
     }
     const PortValue* getPortValue(const PortInfo& portInfo)
@@ -474,10 +473,16 @@ public:
       mNode(&node)
     { }
     virtual const Node* getNode() const { return mNode; }
-    virtual AbstractNodeInstance* getAbstractNodeInstance()
-    { return mAbstractNodeInstance; }
-    /// FIXME, just in this intermediate step
-    SharedPtr<AbstractNodeInstance> mAbstractNodeInstance;
+    virtual AbstractNodeInstance* newNodeInstance()
+    {
+      OpenFDM::NodeInstance* nodeInstance;
+      nodeInstance = new OpenFDM::NodeInstance(mSampleTime, getNode());
+      OpenFDMAssert(mNode->getNumPorts() == mPortDataVector.size());
+      for (unsigned i = 0; i < mNode->getNumPorts(); ++i)
+        nodeInstance->setPortValue(*mNode->getPort(i),
+                                   mPortValueList.getPortValue(i));
+      return nodeInstance;
+    }
   private:
     SharedPtr<const Node> mNode;
   };
@@ -488,10 +493,20 @@ public:
       mModel(&model)
     { }
     virtual const Model* getNode() const { return mModel; }
-    virtual AbstractNodeInstance* getAbstractNodeInstance()
-    { return mAbstractNodeInstance; }
-    /// FIXME, just in this intermediate step
-    SharedPtr<AbstractNodeInstance> mAbstractNodeInstance;
+
+    bool createModelContext()
+    {
+      OpenFDMAssert(!mModelContext);
+      mModelContext = mModel->newModelContext();
+      OpenFDMAssert(mModel->getNumPorts() == mPortDataVector.size());
+      for (unsigned i = 0; i < mModel->getNumPorts(); ++i)
+        mModelContext->setPortValue(*mModel->getPort(i), mPortValueList.getPortValue(i));
+    }
+
+    virtual AbstractNodeInstance* newNodeInstance()
+    {
+      return new OpenFDM::LeafInstance(mSampleTime, mModelContext);
+    }
 
     ModelContext* getModelContext()
     { return mModelContext; }
@@ -507,10 +522,20 @@ public:
       Instance(mechanicNode, nodePath, sampleTime)
     { }
     virtual const MechanicNode* getNode() const = 0;
-    virtual AbstractNodeInstance* getAbstractNodeInstance()
-    { return mAbstractNodeInstance; }
-    /// FIXME, just in this intermediate step
-    SharedPtr<AbstractNodeInstance> mAbstractNodeInstance;
+
+    bool createMechanicContext()
+    {
+      OpenFDMAssert(!mMechanicContext);
+      mMechanicContext = getNode()->newMechanicContext();
+      OpenFDMAssert(getNode()->getNumPorts() == mPortDataVector.size());
+      for (unsigned i = 0; i < getNode()->getNumPorts(); ++i)
+        mMechanicContext->setPortValue(*getNode()->getPort(i), mPortValueList.getPortValue(i));
+    }
+
+    virtual AbstractNodeInstance* newNodeInstance()
+    {
+      return new OpenFDM::LeafInstance(mSampleTime, mMechanicContext);
+    }
 
     MechanicContext* getMechanicContext()
     { return mMechanicContext; }
@@ -1011,40 +1036,24 @@ protected:
   bool
   allocPortValues()
   {
-    {
-    ModelInstanceList::const_iterator i;
-    for (i = mModelInstanceList.begin(); i != mModelInstanceList.end(); ++i) {
-      ModelContext* context = (*i)->getNode()->newModelContext();
-      OpenFDM::LeafInstance* modelInstance;
-      modelInstance = new OpenFDM::LeafInstance((*i)->mSampleTime, context);
-      (*i)->mAbstractNodeInstance = modelInstance;
-      (*i)->mModelContext = context;
-    }
-
-    MechanicInstanceList::const_iterator j;
-    for (j = mMechanicInstanceList.begin();
-         j != mMechanicInstanceList.end(); ++j) {
-      MechanicContext* context = (*j)->getNode()->newMechanicContext();
-      OpenFDM::LeafInstance* mechanicInstance;
-      mechanicInstance = new OpenFDM::LeafInstance((*j)->mSampleTime, context);
-      (*j)->mAbstractNodeInstance = mechanicInstance;
-      (*j)->mMechanicContext = context;
-    }
-
-    NodeInstanceList::const_iterator k;
-    for (k = mNodeInstanceList.begin(); k != mNodeInstanceList.end(); ++k) {
-      OpenFDM::NodeInstance* nodeInstance;
-      nodeInstance = new OpenFDM::NodeInstance((*k)->mSampleTime,
-                                               (*k)->getNode());
-      (*k)->mAbstractNodeInstance = nodeInstance;
-    }
-    }
-
     // alloc port values
     InstanceMap::const_iterator i;
     for (i = mInstanceMap.begin(); i != mInstanceMap.end(); ++i) {
       if (!i->second->allocPortValues())
           return false;
+    }
+
+    {
+    ModelInstanceList::const_iterator i;
+    for (i = mModelInstanceList.begin(); i != mModelInstanceList.end(); ++i) {
+      (*i)->createModelContext();
+    }
+
+    MechanicInstanceList::const_iterator j;
+    for (j = mMechanicInstanceList.begin();
+         j != mMechanicInstanceList.end(); ++j) {
+      (*j)->createMechanicContext();
+    }
     }
     
     // check port values and report unconnected mandatory values.
@@ -1141,7 +1150,7 @@ System::init(const real_type& t0)
   NodeInstanceCollector::InstanceMap::const_iterator i;
   for (i = nodeInstanceCollector.mInstanceMap.begin();
        i != nodeInstanceCollector.mInstanceMap.end(); ++i) {
-    mNodeInstanceMap[i->first] = i->second->getAbstractNodeInstance();
+    mNodeInstanceMap[i->first] = i->second->newNodeInstance();
   }
 
   SystemOutputList::const_iterator j;
