@@ -18,6 +18,7 @@ public:
        const Vector3& position = Vector3::zeros());
   virtual ~Mass(void);
 
+  virtual void initDesignPosition(PortValueList&) const;
   virtual void articulation(const Task&, const ContinousStateValueVector&,
                             PortValueList&, Matrix&) const;
 
@@ -42,15 +43,6 @@ public:
   const Vector3& getPosition(void) const;
   void setPosition(const Vector3& position);
 
-  /** Set the local spatial inertia.
-      @param mass mass in kg.
-      @param inertia inertia matrix in kg*m^2.
-      Sets the spatial inertia of the current rigid body to a simple
-      point mass of the mass and inertia given in the argument.
-   */
-  void setInertia(const real_type& mass, const InertiaMatrix& inertia,
-                  const Vector3& position);
-
 private:
   MechanicLink mMechanicLink;
 
@@ -58,9 +50,6 @@ private:
   real_type mMass;
   InertiaMatrix mInertia;
   Vector3 mPosition;
-
-  /// The resulting local spatial inertia matrix
-  SpatialInertia mSpatialInertia;
 };
 
 } // namespace OpenFDM

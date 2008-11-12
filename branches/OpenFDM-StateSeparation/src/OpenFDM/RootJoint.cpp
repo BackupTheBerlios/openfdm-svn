@@ -18,6 +18,11 @@ public:
   virtual const RootJoint& getNode() const
   { return *mRootJoint; }
   
+  virtual void initDesignPosition()
+  {
+    mRootJoint->initDesignPosition(mPortValueList);
+  }
+
   bool alloc()
   { if (!allocStates()) return false; return mRootJoint->alloc(*this); }
   virtual void initVelocities(const /*Init*/Task& task)

@@ -76,6 +76,11 @@ public:
     applyInertia(linkValue.mArticulatedInertia);
   }
 
+  const Vector3& getDesignPosition() const
+  { return mDesignPosition; }
+  void setDesignPosition(const Vector3& designPosition)
+  { mDesignPosition = designPosition; }
+
 protected:
   // May be build a class hierarchy that accounts for different inputs
   // and outputs a rigid body can have.
@@ -83,6 +88,8 @@ protected:
   Frame mFrame;
   Vector6 mArticulatedForce;
   SpatialInertia mArticulatedInertia;
+
+  Vector3 mDesignPosition;
 };
 
 } // namespace OpenFDM

@@ -33,11 +33,16 @@ public:
   const Vector3& getAxis() const;
   void setAxis(const Vector3& axis);
 
+  const Vector3& getPosition() const;
+  void setPosition(const Vector3& position);
+
   void setEnableExternalForce(bool enable);
   bool getEnableExternalForce() const;
 
 protected:
 
+  virtual void initDesignPosition(const MechanicLinkValue& parentLink,
+                                  MechanicLinkValue& childLink) const;
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector& continousState,
                     const PortValueList&) const;
@@ -76,6 +81,7 @@ private:
   SharedPtr<Vector2StateInfo> mVelocityStateInfo;
 
   Vector3 mAxis;
+  Vector3 mPosition;
   Quaternion mOrientation;
 };
 

@@ -29,6 +29,8 @@ public:
   void setAngularBaseVelocity(const Vector3& angularBaseVelocity)
   { mAngularBaseVelocity = angularBaseVelocity; }
 
+  virtual void initDesignPosition(PortValueList&) const = 0;
+
   virtual void velocity(const Task&, const ContinousStateValueVector&,
                         PortValueList&) const = 0;
   virtual void articulation(const Task&, const ContinousStateValueVector&,

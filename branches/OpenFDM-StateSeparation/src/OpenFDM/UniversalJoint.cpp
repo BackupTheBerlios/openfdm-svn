@@ -19,6 +19,7 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(UniversalJoint, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 UniversalJoint::UniversalJoint(const std::string& name) :
@@ -27,7 +28,8 @@ UniversalJoint::UniversalJoint(const std::string& name) :
   mVelocityPort(this, "velocity", Size(2, 1)),
   mPositionStateInfo(new Vector3StateInfo),
   mVelocityStateInfo(new Vector2StateInfo),
-  mAxis(Vector3(1, 0, 0))
+  mAxis(Vector3(1, 0, 0)),
+  mPosition(0, 0, 0)
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -66,6 +68,18 @@ UniversalJoint::setAxis(const Vector3& axis)
   setJointMatrix(jointMatrix);
 }
 
+const Vector3&
+UniversalJoint::getPosition() const
+{
+  return mPosition;
+}
+
+void
+UniversalJoint::setPosition(const Vector3& position)
+{
+  mPosition = position;
+}
+
 void
 UniversalJoint::setEnableExternalForce(bool enable)
 {
@@ -81,6 +95,13 @@ bool
 UniversalJoint::getEnableExternalForce() const
 {
   return !mForcePort.empty();
+}
+
+void
+UniversalJoint::initDesignPosition(const MechanicLinkValue& parentLink,
+                                  MechanicLinkValue& childLink) const
+{
+  childLink.setDesignPosition(mPosition);
 }
 
 void
@@ -109,7 +130,8 @@ UniversalJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  velocity(parentLink, childLink, Vector3(0, 0, 0),
+  Vector3 position = mPosition - parentLink.getDesignPosition();
+  velocity(parentLink, childLink, position,
            orientation, getJointMatrix()*jointVel);
 }
 

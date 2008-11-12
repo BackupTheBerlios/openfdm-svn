@@ -19,6 +19,7 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteJoint, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RevoluteJoint::RevoluteJoint(const std::string& name) :
@@ -27,7 +28,8 @@ RevoluteJoint::RevoluteJoint(const std::string& name) :
   mVelocityPort(this, "velocity", Size(1, 1)),
   mPositionStateInfo(new Vector1StateInfo),
   mVelocityStateInfo(new Vector1StateInfo),
-  mAxis(Vector3(1, 0, 0))
+  mAxis(Vector3(1, 0, 0)),
+  mPosition(Vector3(0, 0, 0))
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -58,6 +60,18 @@ RevoluteJoint::setAxis(const Vector3& axis)
   setJointMatrix(Vector6(mAxis, Vector3::zeros()));
 }
 
+const Vector3&
+RevoluteJoint::getPosition() const
+{
+  return mPosition;
+}
+
+void
+RevoluteJoint::setPosition(const Vector3& position)
+{
+  mPosition = position;
+}
+
 void
 RevoluteJoint::setEnableExternalForce(bool enable)
 {
@@ -73,6 +87,13 @@ bool
 RevoluteJoint::getEnableExternalForce() const
 {
   return !mForcePort.empty();
+}
+
+void
+RevoluteJoint::initDesignPosition(const MechanicLinkValue& parentLink,
+                                  MechanicLinkValue& childLink) const
+{
+  childLink.setDesignPosition(mPosition);
 }
 
 void
@@ -97,8 +118,10 @@ RevoluteJoint::velocity(const MechanicLinkValue& parentLink,
   VectorN jointVel = states[*mVelocityStateInfo];
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
-  
-  velocity(parentLink, childLink, Vector3(0, 0, 0),
+
+  // FIXME: move that somewhere into the context??
+  Vector3 position = mPosition - parentLink.getDesignPosition();
+  velocity(parentLink, childLink, position,
            Quaternion::fromAngleAxis(jointPos(0), mAxis),
            getJointMatrix()*jointVel);
 }

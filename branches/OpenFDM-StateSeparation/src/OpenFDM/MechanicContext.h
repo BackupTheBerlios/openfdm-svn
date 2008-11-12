@@ -25,6 +25,7 @@ public:
 
   virtual const MechanicNode& getNode() const = 0;
 
+  virtual void initDesignPosition() = 0;
   virtual void initVelocities(const /*Init*/Task& task) = 0;
   virtual void velocities(const Task& task) = 0;
   virtual void articulation(const Task& task) = 0;
@@ -41,10 +42,18 @@ class MechanicContextList : public std::list<SharedPtr<MechanicContext> > {
 public:
   typedef std::list<SharedPtr<MechanicContext> > list_type;
 
-  void initVelocities(const /*Init*/Task& task) const
+  void initDesignPosition() const
   {
     for (list_type::const_iterator i = begin(); i != end(); ++i)
+      (*i)->initDesignPosition();
+  }
+
+  void initVelocities(const /*Init*/Task& task) const
+  {
+    for (list_type::const_iterator i = begin(); i != end(); ++i) {
+      (*i)->initDesignPosition();
       (*i)->initVelocities(task);
+    }
   }
   void velocities(const Task& task) const
   {

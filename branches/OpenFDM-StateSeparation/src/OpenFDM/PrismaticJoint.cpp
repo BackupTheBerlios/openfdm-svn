@@ -19,6 +19,7 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(PrismaticJoint, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 PrismaticJoint::PrismaticJoint(const std::string& name) :
@@ -27,7 +28,8 @@ PrismaticJoint::PrismaticJoint(const std::string& name) :
   mVelocityPort(this, "velocity", Size(1, 1)),
   mPositionStateInfo(new Vector1StateInfo),
   mVelocityStateInfo(new Vector1StateInfo),
-  mAxis(Vector3(1, 0, 0))
+  mAxis(Vector3(1, 0, 0)),
+  mPosition(Vector3(0, 0, 0))
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -58,6 +60,18 @@ PrismaticJoint::setAxis(const Vector3& axis)
   setJointMatrix(Vector6(Vector3::zeros(), mAxis));
 }
 
+const Vector3&
+PrismaticJoint::getPosition() const
+{
+  return mPosition;
+}
+
+void
+PrismaticJoint::setPosition(const Vector3& position)
+{
+  mPosition = position;
+}
+
 void
 PrismaticJoint::setEnableExternalForce(bool enable)
 {
@@ -73,6 +87,13 @@ bool
 PrismaticJoint::getEnableExternalForce() const
 {
   return !mForcePort.empty();
+}
+
+void
+PrismaticJoint::initDesignPosition(const MechanicLinkValue& parentLink,
+                                   MechanicLinkValue& childLink) const
+{
+  childLink.setDesignPosition(mPosition);
 }
 
 void
@@ -98,7 +119,8 @@ PrismaticJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  velocity(parentLink, childLink, mAxis*jointPos, Quaternion::unit(),
+  Vector3 position = mAxis*jointPos + mPosition - parentLink.getDesignPosition();
+  velocity(parentLink, childLink, position, Quaternion::unit(),
            getJointMatrix()*jointVel);
 }
 

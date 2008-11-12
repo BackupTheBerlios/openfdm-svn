@@ -176,6 +176,8 @@ protected:
     childLink.setAccel(parentLink, mJointMatrix*velDot);
   }
 
+  virtual void initDesignPosition(const MechanicLinkValue& parentLink,
+                                  MechanicLinkValue& childLink) const = 0;
   virtual void velocity(const MechanicLinkValue& parentLink,
                         MechanicLinkValue& childLink,
                         const ContinousStateValueVector& states,
@@ -210,6 +212,11 @@ private:
     virtual const CartesianJoint& getNode() const
     { return *mCartesianJoint; }
     
+    virtual void initDesignPosition()
+    {
+      mCartesianJoint->initDesignPosition(*mParentLink, *mChildLink);
+    }
+
     bool alloc()
     {
       if (!allocStates())

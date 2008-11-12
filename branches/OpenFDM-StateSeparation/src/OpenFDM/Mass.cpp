@@ -21,13 +21,16 @@ Mass::Mass(const std::string& name, const real_type& mass,
   mMechanicLink(newMechanicLink("link")),
   mMass(mass),
   mInertia(inertia),
-  mPosition(position),
-  mSpatialInertia(0)
+  mPosition(position)
 {
-  setInertia(mMass, mInertia, mPosition);
 }
 
 Mass::~Mass(void)
+{
+}
+
+void
+Mass::initDesignPosition(PortValueList&) const
 {
 }
 
@@ -36,21 +39,23 @@ Mass::articulation(const Task&, const ContinousStateValueVector&,
                    PortValueList& portValues, Matrix&) const
 {
   // FIXME: Hardcoding that gravity happens in the roots??
-  // Vectro3 position = portValues[mMechanicLink].mPosition;
   Vector3 gravity = Vector3::zeros();
   Vector6 force = Vector6(Vector3::zeros(), gravity);
+
+  Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
+  SpatialInertia I = inertiaFrom(position, SpatialInertia(mInertia, mMass));
 
   // FIXME: do we really need that in the mass
   // I did search for a while until I found that missing term here ...
   Vector6 iv = portValues[mMechanicLink].getFrame().getSpVel();
-  Vector6 Jiv = mSpatialInertia*iv;
+  Vector6 Jiv = I*iv;
   force += Vector6(cross(iv.getAngular(), Jiv.getAngular()) +
                    cross(iv.getLinear(), Jiv.getLinear()),
                    cross(iv.getAngular(), Jiv.getLinear()));
 
 
-  portValues[mMechanicLink].applyInertia(mSpatialInertia);
-  portValues[mMechanicLink].applyForce(force);
+  portValues[mMechanicLink].applyInertia(I);
+  portValues[mMechanicLink].applyForce(forceFrom(position, force));
 }
 
 const InertiaMatrix&
@@ -62,7 +67,7 @@ Mass::getInertia(void) const
 void
 Mass::setInertia(const InertiaMatrix& inertia)
 {
-  setInertia(mMass, inertia, mPosition);
+  mInertia = inertia;
 }
 
 const real_type&
@@ -74,7 +79,7 @@ Mass::getMass() const
 void
 Mass::setMass(const real_type& mass)
 {
-  setInertia(mass, mInertia, mPosition);
+  mMass = mass;
 }
 
 const Vector3&
@@ -86,17 +91,7 @@ Mass::getPosition(void) const
 void
 Mass::setPosition(const Vector3& position)
 {
-  setInertia(mMass, mInertia, position);
-}
-
-void
-Mass::setInertia(const real_type& mass, const InertiaMatrix& inertia,
-                 const Vector3& position)
-{
-  mMass = mass;
-  mInertia = inertia;
   mPosition = position;
-  mSpatialInertia = inertiaFrom(mPosition, SpatialInertia(mInertia, mMass));
 }
 
 } // namespace OpenFDM

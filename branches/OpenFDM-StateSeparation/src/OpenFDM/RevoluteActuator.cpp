@@ -19,6 +19,11 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuator, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, VelocityControl, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, MaxVel, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, VelGain, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, VelDotGain, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RevoluteActuator::RevoluteActuator(const std::string& name) :
@@ -28,7 +33,12 @@ RevoluteActuator::RevoluteActuator(const std::string& name) :
   mVelocityPort(this, "velocity", Size(1, 1)),
   mPositionStateInfo(new Vector1StateInfo),
   mVelocityStateInfo(new Vector1StateInfo),
-  mAxis(Vector3(1, 0, 0))
+  mAxis(Vector3(1, 0, 0)),
+  mPosition(Vector3(0, 0, 0)),
+  mVelocityControl(false),
+  mVelGain(1),
+  mVelDotGain(1),
+  mMaxVel(1)
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -59,6 +69,25 @@ RevoluteActuator::setAxis(const Vector3& axis)
   setJointMatrix(Vector6(mAxis, Vector3::zeros()));
 }
 
+const Vector3&
+RevoluteActuator::getPosition() const
+{
+  return mPosition;
+}
+
+void
+RevoluteActuator::setPosition(const Vector3& position)
+{
+  mPosition = position;
+}
+
+void
+RevoluteActuator::initDesignPosition(const MechanicLinkValue& parentLink,
+                                     MechanicLinkValue& childLink) const
+{
+  childLink.setDesignPosition(mPosition);
+}
+
 void
 RevoluteActuator::init(const Task&, DiscreteStateValueVector&,
                        ContinousStateValueVector& continousState,
@@ -82,9 +111,8 @@ RevoluteActuator::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position(0, 0, 0);
+  Vector3 position = mPosition - parentLink.getDesignPosition();
   Quaternion orientation(Quaternion::fromAngleAxis(jointPos(0), mAxis));
-
   velocity(parentLink, childLink, position, orientation, getJointMatrix()*jointVel);
 }
 
@@ -101,7 +129,7 @@ RevoluteActuator::articulation(MechanicLinkValue& parentLink,
   // the joints accelerations, velocities and positions must fit together
   // otherwise the articulated body dynamics get fooled ...
 
-  if (mPositionControl) {
+  if (!mVelocityControl) {
     // The desired position input
     VectorN desiredPos = portValues[mInputPort];
     // Compute the error ...
@@ -136,7 +164,7 @@ RevoluteActuator::acceleration(const MechanicLinkValue& parentLink,
   // the joints accelerations, velocities and positions must fit together
   // otherwise the articulated body dynamics get fooled ...
 
-  if (mPositionControl) {
+  if (!mVelocityControl) {
     // The desired position input
     VectorN desiredPos = portValues[mInputPort];
     // Compute the error ...

@@ -33,8 +33,33 @@ public:
   const Vector3& getAxis() const;
   void setAxis(const Vector3& axis);
 
+  const Vector3& getPosition() const;
+  void setPosition(const Vector3& position);
+
+  const bool& getVelocityControl(void) const
+  { return mVelocityControl; }
+  void setVelocityControl(const bool& velocityControl)
+  { mVelocityControl = velocityControl; }
+
+  const real_type& getMaxVel(void) const
+  { return mMaxVel; }
+  void setMaxVel(const real_type& maxVel)
+  { mMaxVel = maxVel; }
+
+  const real_type& getVelGain(void) const
+  { return mVelGain; }
+  void setVelGain(const real_type& velGain)
+  { mVelGain = velGain; }
+
+  const real_type& getVelDotGain(void) const
+  { return mVelDotGain; }
+  void setVelDotGain(const real_type& velDotGain)
+  { mVelDotGain = velDotGain; }
+
 protected:
 
+  virtual void initDesignPosition(const MechanicLinkValue& parentLink,
+                                  MechanicLinkValue& childLink) const;
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector& continousState,
                     const PortValueList&) const;
@@ -73,7 +98,8 @@ private:
   SharedPtr<Vector1StateInfo> mVelocityStateInfo;
 
   Vector3 mAxis;
-  bool mPositionControl;
+  Vector3 mPosition;
+  bool mVelocityControl;
   real_type mVelGain;
   real_type mVelDotGain;
   real_type mMaxVel;

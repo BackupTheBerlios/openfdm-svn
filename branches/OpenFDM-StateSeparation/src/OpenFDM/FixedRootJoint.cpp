@@ -38,6 +38,12 @@ FixedRootJoint::init(const Task&, DiscreteStateValueVector&,
 }
 
 void
+FixedRootJoint::initDesignPosition(PortValueList& portValues) const
+{
+  portValues[mMechanicLink].setDesignPosition(Vector3::zeros());
+}
+
+void
 FixedRootJoint::velocity(const Task&,
                           const ContinousStateValueVector& continousState,
                           PortValueList& portValues) const
