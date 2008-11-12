@@ -67,7 +67,9 @@ RootJoint::~RootJoint()
 }
 
 MechanicContext*
-RootJoint::newMechanicContext(PortValueList& portValueList) const
+RootJoint::newMechanicContext(const MechanicLinkInfo* parentLink,
+                              const MechanicLinkInfo* childLink,
+                              PortValueList& portValueList) const
 {
   SharedPtr<Context> context = new Context(this);
   for (unsigned i = 0; i < getNumPorts(); ++i) {

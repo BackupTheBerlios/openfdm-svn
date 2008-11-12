@@ -26,23 +26,46 @@ public:
   typedef LinAlg::Matrix<real_type,n,n> MatrixNN;
   typedef LinAlg::MatrixFactors<real_type,n,n,LinAlg::LUTag> MatrixFactorsNN;
 
-  virtual MechanicContext* newMechanicContext(PortValueList& portValueList) const
+  virtual MechanicContext*
+  newMechanicContext(const MechanicLinkInfo* parentLink,
+                     const MechanicLinkInfo* childLink,
+                     PortValueList& portValueList) const
   {
-    SharedPtr<Context> context = new Context(this);
+    if (!parentLink) {
+      Log(Model, Error) << "Parent link is not set while creating context "
+                        << "for model \"" << getName() << "\"" << endl;
+      return 0;
+    }
+    MechanicLinkValue* parentLinkValue;
+    parentLinkValue = portValueList.getPortValue(*parentLink);
+    if (!parentLinkValue)
+      return 0;
+    if (!childLink) {
+      Log(Model, Error) << "Child link is not set while creating context "
+                        << "for model \"" << getName() << "\"" << endl;
+      return 0;
+    }
+    MechanicLinkValue* childLinkValue;
+    childLinkValue = portValueList.getPortValue(*childLink);
+    if (!childLinkValue)
+      return 0;
+
+    SharedPtr<Context> context;
+    context = new Context(this, parentLinkValue, childLinkValue);
     for (unsigned i = 0; i < getNumPorts(); ++i) {
       PortValue* portValue = portValueList.getPortValue(i);
       if (!portValue) {
         Log(Model, Error) << "No port value given for model \"" << getName()
                           << "\" and port \"" << getPort(i)->getName()
                           << "\"" << endl;
-        return false;
+        return 0;
       }
       context->setPortValue(*getPort(i), portValue);
     }
     if (!context->alloc()) {
       Log(Model, Warning) << "Could not alloc for model \""
                           << getName() << "\"" << endl;
-      return false;
+      return 0;
     }
     return context.release();
   }
@@ -176,8 +199,11 @@ protected:
 private:
   class Context : public MechanicContext {
   public:
-    Context(const CartesianJoint* cartesianJoint) :
-      mCartesianJoint(cartesianJoint)
+    Context(const CartesianJoint* cartesianJoint, MechanicLinkValue* parentLink,
+            MechanicLinkValue* childLink) :
+      mCartesianJoint(cartesianJoint),
+      mParentLink(parentLink),
+      mChildLink(childLink)
     { }
     virtual ~Context() {}
     
@@ -188,8 +214,6 @@ private:
     {
       if (!allocStates())
         return false;
-      mParentLink = &mPortValueList[mCartesianJoint->mParentLink];
-      mChildLink = &mPortValueList[mCartesianJoint->mChildLink];
       return mCartesianJoint->alloc(*this);
     }
     virtual void initVelocities(const /*Init*/Task& task)

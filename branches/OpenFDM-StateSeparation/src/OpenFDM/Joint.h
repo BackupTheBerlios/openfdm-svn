@@ -27,7 +27,10 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual MechanicContext* newMechanicContext(PortValueList& portValues) const = 0;
+  virtual MechanicContext*
+  newMechanicContext(const MechanicLinkInfo* parentLink,
+                     const MechanicLinkInfo* childLink,
+                     PortValueList& portValues) const = 0;
 };
 
 } // namespace OpenFDM

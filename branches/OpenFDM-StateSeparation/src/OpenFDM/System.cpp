@@ -599,7 +599,8 @@ public:
     virtual bool createMechanicContext()
     {
       OpenFDMAssert(!mMechanicContext);
-      mMechanicContext = getNode()->newMechanicContext(mPortValueList);
+      mMechanicContext = getNode()->newMechanicContext(mParentLink, mChildLink,
+                                                       mPortValueList);
       if (!mMechanicContext) {
         Log(Schedule, Warning) << "Could not create context for mechanic "
                                << "node \"" << getNodeNamePath()
@@ -608,6 +609,56 @@ public:
       }
       return true;
     }
+
+    bool isLinkedToAndSetChild(JointInstanceData& instance)
+    {
+      unsigned numPorts = getNode()->getNumPorts();
+      for (unsigned i = 0; i < numPorts; ++i) {
+        const MechanicLinkInfo* linkInfo;
+        linkInfo = getNode()->getPort(i)->toMechanicLinkInfo();
+        if (!linkInfo)
+          continue;
+        OpenFDMAssert(i < mPortDataVector.size());
+
+        const Node* otherNode = instance.getNode();
+        unsigned otherNumPorts = otherNode->getNumPorts();
+        for (unsigned j = 0; j < otherNumPorts; ++j) {
+          const MechanicLinkInfo* otherLinkInfo;
+          otherLinkInfo = otherNode->getPort(j)->toMechanicLinkInfo();
+          if (!otherLinkInfo)
+            continue;
+
+          OpenFDMAssert(j < instance.mPortDataVector.size());
+          OpenFDMAssert(instance.mPortDataVector[j]);
+          if (!mPortDataVector[i]->isConnected(*instance.mPortDataVector[j]))
+            continue;
+
+          mChildLink = linkInfo;
+          instance.mParentLink = otherLinkInfo;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // FIXME: do real checks in this case, connected and so forth ...
+    bool makeRemainigLinksChildLinks()
+    {
+      unsigned numPorts = getNode()->getNumPorts();
+      for (unsigned i = 0; i < numPorts; ++i) {
+        const MechanicLinkInfo* linkInfo;
+        linkInfo = getNode()->getPort(i)->toMechanicLinkInfo();
+        if (!linkInfo)
+          continue;
+        if (linkInfo == mParentLink)
+          continue;
+        mChildLink = linkInfo;
+      }
+      return true;
+    }
+
+    SharedPtr<const MechanicLinkInfo> mParentLink;
+    SharedPtr<const MechanicLinkInfo> mChildLink;
   private:
     SharedPtr<const Joint> mJoint;
   };
@@ -842,6 +893,7 @@ public:
   typedef std::list<SharedPtr<NodeInstanceData> > NodeInstanceDataList;
   typedef std::list<SharedPtr<ModelInstanceData> > ModelInstanceDataList;
   typedef std::list<SharedPtr<MechanicInstanceData> > MechanicInstanceDataList;
+  typedef std::list<SharedPtr<JointInstanceData> > JointInstanceDataList;
 
   // The list of Nodes that do not need a context for itself.
   NodeInstanceDataList mNodeInstanceDataList;
@@ -852,8 +904,8 @@ public:
 
   // The list of root nodes in the mechanical system. Will be a starting point
   // for sorting the tree of mechanical models downwards
-  MechanicInstanceDataList mRootJointInstanceDataList;
-  MechanicInstanceDataList mJointInstanceDataList;
+  JointInstanceDataList mRootJointInstanceDataList;
+  JointInstanceDataList mJointInstanceDataList;
   MechanicInstanceDataList mInteractInstanceDataList;
 
   ////////////////////////////////////////////////////////////////////////////
@@ -929,30 +981,34 @@ protected:
     }
 
     // Start with all the roots in front of the list ...
-    // FIXME: ensure that there is no loop here?
-    mMechanicInstanceDataList.swap(mRootJointInstanceDataList);
+    // FIXME: ensure that we have no root joints with two mechanic links.
+    // They must then appear in the joint list. When we know that, we are sure
+    // that there is no mechanic link loop in the root joints - they
+    // have only one link ...
+    JointInstanceDataList sortedJoints;
+    sortedJoints.swap(mRootJointInstanceDataList);
 
     // Not the best algorithm, but for a first cut ...
     while (!mJointInstanceDataList.empty()) {
-      MechanicInstanceDataList nextLevelList;
+      JointInstanceDataList nextLevelList;
 
-      MechanicInstanceDataList::iterator j;
-      for (j = mMechanicInstanceDataList.begin();
-           j != mMechanicInstanceDataList.end(); ++j) {
-        MechanicInstanceDataList::iterator i;
+      JointInstanceDataList::iterator j;
+      for (j = sortedJoints.begin();
+           j != sortedJoints.end(); ++j) {
+        JointInstanceDataList::iterator i;
         for (i = mJointInstanceDataList.begin();
              i != mJointInstanceDataList.end();) {
         
-          if ((*j)->isLinkedTo(*(*i))) {
-            SharedPtr<MechanicInstanceData> mechanicInstanceData = *i;
+          if ((*j)->isLinkedToAndSetChild(*(*i))) {
+            SharedPtr<JointInstanceData> mechanicInstanceData = *i;
             nextLevelList.push_back(mechanicInstanceData);
             i = mJointInstanceDataList.erase(i);
 
             // Check if this current mechanic node does not reference
             // back into the already sorted models
-            MechanicInstanceDataList::const_iterator k;
-            for (k = mMechanicInstanceDataList.begin();
-                 k != mMechanicInstanceDataList.end(); ++k) {
+            JointInstanceDataList::const_iterator k;
+            for (k = sortedJoints.begin();
+                 k != sortedJoints.end(); ++k) {
               if (*k == *j)
                 continue;
               if (mechanicInstanceData->isLinkedTo(*(*k))) {
@@ -975,7 +1031,7 @@ protected:
       // if we have a connection in between them, there must be a
       // closed kinematic loop.
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
-        MechanicInstanceDataList::iterator i = j;
+        JointInstanceDataList::iterator i = j;
         for (++i; i != nextLevelList.end(); ++i) {
           if ((*j)->isLinkedTo(*(*i))) {
             Log(Schedule,Warning)
@@ -990,11 +1046,15 @@ protected:
       
 
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
-        mMechanicInstanceDataList.push_back(*j);
+        // FIXME
+        (*j)->makeRemainigLinksChildLinks();
+        sortedJoints.push_back(*j);
       }
     }
 
-    // Interacts are always computed at the end of the list
+    // First the sorted joints ...
+    mMechanicInstanceDataList.assign(sortedJoints.begin(), sortedJoints.end());
+    // ... then Interacts at the end of the list
     mMechanicInstanceDataList.splice(mMechanicInstanceDataList.end(),
                                      mInteractInstanceDataList,
                                      mInteractInstanceDataList.begin(),
