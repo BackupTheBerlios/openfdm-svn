@@ -195,24 +195,40 @@ public:
 class HDFMatrixStream : public HDF5Object {
 public:
   HDFMatrixStream(const HDF5Object& parent, const std::string& name,
-                  const Size& size)
+                  const Size& size) :
+    _timeIndex(0)
   {
     hsize_t _chunklen(100);
     herr_t status;
     hsize_t rank = 3;
-    if (size(0) == 1) {
-      rank = 2;
-      if (size(1) == 1)
-        rank = 1;
-    }
     _dims[0] = 1;
-    _dims[1] = size(1);
-    _dims[2] = size(0);
+    if (size(0) == 1) {
+      if (size(1) == 1) {
+        rank = 1;
+        _dims[1] = 0;
+        _dims[2] = 0;
+      } else {
+        rank = 2;
+        _dims[1] = size(1);
+        _dims[2] = 0;
+      }
+    } else {
+      if (size(1) == 1) {
+        rank = 2;
+        _dims[1] = size(0);
+        _dims[2] = 0;
+      } else {
+        rank = 3;
+        _dims[1] = size(1);
+        _dims[2] = size(0);
+      }
+    }
     hsize_t maxdims[3] = { H5S_UNLIMITED, _dims[1], _dims[2] };
     _dataspace = HDF5Object(H5Screate_simple(rank, _dims, maxdims), true);
     if (!_dataspace.valid())
       return;
 
+    _timeIndex = 0;
     _dims[0] = 0;
 
     hsize_t chunk_dims[3] = { _chunklen, _dims[1], _dims[2] };
@@ -262,6 +278,7 @@ public:
 
 private:
   hsize_t _dims[3];
+  unsigned _timeIndex;
   HDF5Object _dataspace;
 };
 
