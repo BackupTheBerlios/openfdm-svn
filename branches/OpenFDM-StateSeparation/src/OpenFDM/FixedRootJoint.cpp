@@ -18,16 +18,44 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(FixedRootJoint, RootJoint)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
+  DEF_OPENFDM_PROPERTY(Quaternion, Orientation, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 FixedRootJoint::FixedRootJoint(const std::string& name) :
   RootJoint(name),
-  mMechanicLink(newMechanicLink("link"))
+  mMechanicLink(newMechanicLink("link")),
+  mPosition(0, 0, 0),
+  mOrientation(Quaternion::unit())
 {
 }
 
 FixedRootJoint::~FixedRootJoint()
 {
+}
+
+const Vector3&
+FixedRootJoint::getPosition() const
+{
+  return mPosition;
+}
+
+void
+FixedRootJoint::setPosition(const Vector3& position)
+{
+  mPosition = position;
+}
+
+const Quaternion&
+FixedRootJoint::getOrientation() const
+{
+  return mOrientation;
+}
+
+void
+FixedRootJoint::setOrientation(const Quaternion& orientation)
+{
+  mOrientation = orientation;
 }
 
 void
@@ -48,12 +76,8 @@ FixedRootJoint::velocity(const Task&,
                           const ContinousStateValueVector& continousState,
                           PortValueList& portValues) const
 {
-  Vector3 position(0, 0, 0);
-  Quaternion orientation = Quaternion::unit();
-  Vector6 velocity = Vector6::zeros();
-
-  portValues[mMechanicLink].setPosAndVel(getAngularBaseVelocity(),
-                                         position, orientation, velocity);
+  portValues[mMechanicLink].setPosAndVel(getAngularBaseVelocity(), mPosition,
+                                         mOrientation, Vector6::zeros());
 }
 
 void

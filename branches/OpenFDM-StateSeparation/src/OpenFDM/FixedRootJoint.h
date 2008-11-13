@@ -22,6 +22,14 @@ public:
   FixedRootJoint(const std::string& name);
   virtual ~FixedRootJoint();
 
+  /// The position is global coordinates
+  const Vector3& getPosition() const;
+  void setPosition(const Vector3& position);
+
+  /// The orientation is global coordinates
+  const Quaternion& getOrientation() const;
+  void setOrientation(const Quaternion& orientation);
+
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector&,
                     const PortValueList&) const;
@@ -34,6 +42,9 @@ public:
                             PortValueList& portValues) const;
 private:
   MechanicLink mMechanicLink;
+
+  Vector3 mPosition;
+  Quaternion mOrientation;
 };
 
 } // namespace OpenFDM
