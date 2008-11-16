@@ -4,6 +4,7 @@
 #include <OpenFDM/UniversalJoint.h>
 // #include <OpenFDM/RevoluteJoint.h>
 #include <OpenFDM/RigidBody.h>
+#include <OpenFDM/Sensor.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
 // #include <OpenFDM/Planet.h>
@@ -28,14 +29,27 @@ int main()
 //   RevoluteJoint* universalJoint = new RevoluteJoint("Revolute");
 //   universalJoint->setAxis(Vector3(0, 1, 0));
   Group::NodeId universal = group->addChild(universalJoint);
-  Group::NodeId rigidBody = group->addChild(new RigidBody("Rigid Body"));
+
+  RigidBody* rigidBodyNode = new RigidBody("Rigid Body");
+  rigidBodyNode->addLink("sensorLink");
+  Group::NodeId rigidBody = group->addChild(rigidBodyNode);
   Mass* massModel = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
   massModel->setPosition(Vector3(1, 0, 0));
   Group::NodeId mass = group->addChild(massModel);
 
+  Sensor* sensorModel = new Sensor("Sensor");
+  sensorModel->setPosition(massModel->getPosition());
+  sensorModel->setEnablePosition(true);
+  sensorModel->setEnableOrientation(true);
+  sensorModel->setEnableLinearVelocity(true);
+  sensorModel->setEnableAngularVelocity(true);
+  sensorModel->setEnableCentrifugalAcceleration(true);
+  Group::NodeId sensor = group->addChild(sensorModel);
+
   group->connect(root, 0, universal, 0);
   group->connect(universal, 1, rigidBody, 0);
   group->connect(rigidBody, 1, mass, 0);
+  group->connect(rigidBody, "sensorLink", sensor, "link");
 
   SharedPtr<System> system = new System("System", group);
 

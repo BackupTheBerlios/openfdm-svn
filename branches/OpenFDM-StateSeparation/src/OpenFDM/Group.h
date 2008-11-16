@@ -61,7 +61,7 @@ class GroupInput : public GroupInterfaceNode {
 public:
   GroupInput(const std::string& name) :
     GroupInterfaceNode(name),
-    mGroupInternalPort(new OutputPortInfo(this, "output", Size(0, 0)))
+    mGroupInternalPort(new OutputPortInfo(this, "output", Size(0, 0), false))
   { }
 protected:
   virtual bool addParent(Node* parent)
@@ -86,7 +86,7 @@ protected:
   {
     if (!GroupInterfaceNode::addParent(parent))
       return false;
-    setExternalPortInfo(new OutputPortInfo(parent, "output", Size(0, 0)));
+    setExternalPortInfo(new OutputPortInfo(parent, "output", Size(0, 0), false));
     return true;
   }
 private:

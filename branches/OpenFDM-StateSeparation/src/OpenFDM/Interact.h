@@ -28,7 +28,6 @@ public:
   virtual void articulation(const Task&, const ContinousStateValueVector&,
                             PortValueList&, Matrix&) const
   { }
-  // hmm, may be this should be output???
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
                             PortValueList&, const Matrix&, Vector&) const
   { }

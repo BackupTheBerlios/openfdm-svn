@@ -13,8 +13,11 @@ namespace OpenFDM {
 
 class RealOutputPort {
 public:
-  RealOutputPort(Node* node, const std::string& name) :
-    mPort(new OutputPortInfo(node, name, Size(1, 1)))
+  RealOutputPort()
+  { }
+  RealOutputPort(Node* node, const std::string& name,
+                 bool accelerationPort = false) :
+    mPort(new OutputPortInfo(node, name, Size(1, 1), accelerationPort))
   { }
   NumericPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -29,6 +32,10 @@ public:
   { if (!mPort) return; mPort->clear(); mPort = 0; }
   unsigned getPortIndex() const
   { return mPort->getIndex(); }
+  bool getAccelerationOutput() const
+  { OpenFDMAssert(mPort); return mPort->getAccelerationOutput(); }
+  void setAccelerationOutput(bool accelerationOutput)
+  { OpenFDMAssert(mPort); mPort->setAccelerationOutput(accelerationOutput); }
 private:
   SharedPtr<OutputPortInfo> mPort;
 };

@@ -242,6 +242,7 @@ OpenFDMMechanicSOURCES = \
   PrismaticJoint.cpp \
   RevoluteActuator.cpp \
   RevoluteJoint.cpp \
+  Sensor.cpp \
   UniversalJoint.cpp
 
 

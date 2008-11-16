@@ -161,9 +161,10 @@ private:
 
 class OutputPortInfo : public NumericPortInfo {
 public:
-  OutputPortInfo(Node* node, const std::string& name, const Size& size) :
+  OutputPortInfo(Node* node, const std::string& name, const Size& size,
+                 bool accelerationOutput) :
     NumericPortInfo(node, name, size),
-    mAccelerationOutput(false)
+    mAccelerationOutput(accelerationOutput)
   { }
   virtual ~OutputPortInfo()
   { }

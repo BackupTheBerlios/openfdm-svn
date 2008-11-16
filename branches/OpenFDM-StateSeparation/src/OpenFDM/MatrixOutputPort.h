@@ -12,8 +12,11 @@ namespace OpenFDM {
 
 class MatrixOutputPort {
 public:
-  MatrixOutputPort(Node* node, const std::string& name, const Size& size) :
-    mPort(new OutputPortInfo(node, name, size))
+  MatrixOutputPort()
+  { }
+  MatrixOutputPort(Node* node, const std::string& name, const Size& size,
+                   bool accelerationPort = false) :
+    mPort(new OutputPortInfo(node, name, size, accelerationPort))
   { }
   NumericPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -28,6 +31,10 @@ public:
   { if (!mPort) return; mPort->clear(); mPort = 0; }
   unsigned getPortIndex() const
   { return mPort->getIndex(); }
+  bool getAccelerationOutput() const
+  { OpenFDMAssert(mPort); return mPort->getAccelerationOutput(); }
+  void setAccelerationOutput(bool accelerationOutput)
+  { OpenFDMAssert(mPort); mPort->setAccelerationOutput(accelerationOutput); }
 private:
   SharedPtr<OutputPortInfo> mPort;
 };

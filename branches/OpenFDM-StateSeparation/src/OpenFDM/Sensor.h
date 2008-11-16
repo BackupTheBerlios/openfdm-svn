@@ -5,87 +5,66 @@
 #ifndef OpenFDM_Sensor_H
 #define OpenFDM_Sensor_H
 
-#include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Gravity.h"
-#include "Frame.h"
-#include "RigidBody.h"
-#include "Environment.h"
 #include "Interact.h"
+#include "MatrixOutputPort.h"
+#include "MechanicLink.h"
+#include "Vector.h"
 
 namespace OpenFDM {
 
-class Sensor
-  : public Interact {
+class Sensor : public Interact {
 public:
-  Sensor(const std::string& name) :
-    Interact(name, 1)
-  {
-    setNumOutputPorts(2);
-    setOutputPort(0, "nlfz", this, &Sensor::getNlfz);
-    setOutputPort(1, "az", this, &Sensor::getAz);
-  }
-  virtual ~Sensor(void)
-  { }
+  Sensor(const std::string& name);
+  virtual ~Sensor(void);
 
-  virtual bool init(void)
-  {
-    mNextNlfz = 0;
-    mNextAz = 0;
-    return Interact::init();
-  }
+  virtual void initDesignPosition(PortValueList&) const;
+  virtual void velocity(const Task&, const ContinousStateValueVector&,
+                        PortValueList&) const;
+  virtual void acceleration(const Task&, const ContinousStateValueVector&,
+                            PortValueList&, const Matrix&, Vector&) const;
 
-  virtual void output(const TaskInfo& taskInfo)
-  {
-    mNlfz = mNextNlfz;
-    mAz = mNextAz;
-  }
+  /// Set the position of the sensor in design coordinates
+  void setPosition(const Vector3& position);
+  /// Get the position of the sensor in design coordinates
+  const Vector3& getPosition() const;
 
-  virtual void update(const TaskInfo& taskInfo)
-  {
-    if (!nonZeroIntersection(taskInfo.getSampleTimeSet(), getSampleTimeSet()))
-        return;
+  /// Set availabilty of the position output port
+  void setEnablePosition(bool enable);
+  /// Get availabilty of the position output port
+  bool getEnablePosition() const;
 
-    mNextNlfz = 0;
-    mNextAz = 0;
-    RigidBody* rigidBody = getParentRigidBody(0);
-    if (!rigidBody)
-      return;
-    Frame* frame = rigidBody->getFrame();
-    if (!frame)
-      return;
-    const Gravity* grav = mEnvironment->getGravity();
-    if (!grav)
-      return;
-    Vector3 accel = frame->getClassicAccel().getLinear();
-    // That is the acceleration like sensed by a gyro
-    mNextAz = accel(2);
+  /// Set availabilty of the orientation output port
+  void setEnableOrientation(bool enable);
+  /// Get availabilty of the orientation output port
+  bool getEnableOrientation() const;
 
-    // Now compute the acceleration like sensed by anything sensing the
-    // gravitational stuff too
-    accel -= frame->rotFromRef(grav->gravityAccel(frame->getRefPosition()));
-    mNextNlfz = accel(2)/9.81;
-  }
+  /// Set availabilty of the linear velocity output port
+  void setEnableLinearVelocity(bool enable);
+  /// Get availabilty of the linear velocity output port
+  bool getEnableLinearVelocity() const;
 
-  const real_type& getNlfz(void) const
-  { return mNlfz; }
-  const real_type& getAz(void) const
-  { return mAz; }
+  /// Set availabilty of the angular velocity output port
+  void setEnableAngularVelocity(bool enable);
+  /// Get availabilty of the angular velocity output port
+  bool getEnableAngularVelocity() const;
 
-  virtual void interactWith(RigidBody*)
-  {}
-
-protected:
-  virtual void setEnvironment(Environment* environment)
-  { mEnvironment = environment; }
+  /// Set availabilty of the linear acceleration output port
+  void setEnableCentrifugalAcceleration(bool enable);
+  /// Get availabilty of the linear acceleration output port
+  bool getEnableCentrifugalAcceleration() const;
 
 private:
-  SharedPtr<Environment> mEnvironment;
-  real_type mNlfz;
-  real_type mNextNlfz;
-  real_type mAz;
-  real_type mNextAz;
+  MechanicLink mMechanicLink;
+
+  Vector3 mPosition;
+
+  MatrixOutputPort mPositionPort;
+  MatrixOutputPort mOrientationPort;
+
+  MatrixOutputPort mLinearVelocityPort;
+  MatrixOutputPort mAngularVelocityPort;
+
+  MatrixOutputPort mCentrifugalAccelerationPort;
 };
 
 } // namespace OpenFDM
