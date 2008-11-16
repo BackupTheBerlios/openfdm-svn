@@ -414,6 +414,11 @@ public:
   Vector6 getRelVel(const Frame& frame) const
   { return motionFromRef(frame.motionToRef(frame.getRefVel())) - getRefVel(); }
 
+  // FIXME, docunment, and improove
+  Vector6 getRefVelAt(const Vector3& p) const
+  { return motionFrom(posToRef(p), getRefOrientation(), motionTo(p, getRefVel())); }
+
+
 private:
   // The offset of this frames origin wrt the parent frame measured in
   // the parent frames coordinates.

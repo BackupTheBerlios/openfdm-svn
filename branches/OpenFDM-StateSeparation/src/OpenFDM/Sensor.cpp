@@ -42,9 +42,7 @@ Sensor::velocity(const Task&, const ContinousStateValueVector&,
   if (getEnableOrientation())
     portValues[mOrientationPort] = frame.getRefOrientation();
 
-  
-  Vector6 refVelocity = motionTo(refPosition, frame.getRefOrientation(),
-                                 Vector6::zeros());
+  Vector6 refVelocity = frame.getRefVelAt(position);
   if (getEnableAngularVelocity())
     portValues[mAngularVelocityPort] = refVelocity.getAngular();
 
