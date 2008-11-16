@@ -38,6 +38,11 @@ public:
   /// Get availabilty of the orientation output port
   bool getEnableOrientation() const;
 
+  /// Set availabilty of the euler angles output port
+  void setEnableEulerAngles(bool enable);
+  /// Get availabilty of the euler angles output port
+  bool getEnableEulerAngles() const;
+
   /// Set availabilty of the linear velocity output port
   void setEnableLinearVelocity(bool enable);
   /// Get availabilty of the linear velocity output port
@@ -60,6 +65,7 @@ private:
 
   MatrixOutputPort mPositionPort;
   MatrixOutputPort mOrientationPort;
+  MatrixOutputPort mEulerAnglesPort;
 
   MatrixOutputPort mLinearVelocityPort;
   MatrixOutputPort mAngularVelocityPort;

@@ -42,6 +42,9 @@ Sensor::velocity(const Task&, const ContinousStateValueVector&,
   if (getEnableOrientation())
     portValues[mOrientationPort] = frame.getRefOrientation();
 
+  if (getEnableEulerAngles())
+    portValues[mEulerAnglesPort] = frame.getRefOrientation().getEuler();
+
   Vector6 refVelocity = frame.getRefVelAt(position);
   if (getEnableAngularVelocity())
     portValues[mAngularVelocityPort] = refVelocity.getAngular();
@@ -116,6 +119,23 @@ bool
 Sensor::getEnableOrientation() const
 {
   return !mOrientationPort.empty();
+}
+
+void
+Sensor::setEnableEulerAngles(bool enable)
+{
+  if (enable == getEnableEulerAngles())
+    return;
+  if (enable)
+    mEulerAnglesPort = MatrixOutputPort(this, "eulerAngles", Size(3, 1));
+  else
+    mEulerAnglesPort.clear();
+}
+
+bool
+Sensor::getEnableEulerAngles() const
+{
+  return !mEulerAnglesPort.empty();
 }
 
 void
