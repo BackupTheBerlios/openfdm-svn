@@ -292,7 +292,7 @@ public:
   virtual ~HDF5SystemOutput()
   { }
 
-  void output(const real_type& t)
+  virtual void output(const real_type& t)
   {
     mTimeStream.append(t);
     DumperList::iterator i;
