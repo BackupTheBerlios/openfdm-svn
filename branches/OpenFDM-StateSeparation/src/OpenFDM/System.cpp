@@ -113,15 +113,15 @@ public:
   }
 
   void appendModelContext(const SampleTime& sampleTime,
-                          ModelContext* modelContext)
+                          ModelContext* modelContext, unsigned listIndex)
   {
     // The init task contains them all
-    mInitTask->mModelContextList[0].push_back(modelContext);
+    mInitTask->mModelContextList[listIndex].push_back(modelContext);
     
     // for now continous tasks take also all of them
     mContinousTask->appendStateValuesFromLeafContext(*modelContext);
     if (sampleTime.isContinous())
-      mContinousTask->mModelContextList[0].push_back(modelContext);
+      mContinousTask->mModelContextList[listIndex].push_back(modelContext);
 
     // Discrete tasks need special treatment
     if (sampleTime.isDiscrete()) {
@@ -129,6 +129,7 @@ public:
       for (unsigned i = 0; i < mDiscreteTaskList.size(); ++i) {
         if (!equal(mDiscreteTaskList[i]->getStepsize(), realSampleTime))
           continue;
+        // FIXME: is this true??? No model index here??
         mDiscreteTaskList[i]->mModelContextList.push_back(modelContext);
         break;
       }
@@ -899,6 +900,8 @@ public:
   NodeInstanceDataList mNodeInstanceDataList;
   // The Models list, worthwhile for sorting
   ModelInstanceDataList mModelInstanceDataList;
+  ModelInstanceDataList mVelocityModelInstanceDataList;
+  ModelInstanceDataList mAccelerationModelInstanceDataList;
   // The mechanical system list, also for sorting
   MechanicInstanceDataList mMechanicInstanceDataList;
 
@@ -928,7 +931,7 @@ public:
   // to simulate the system.
   AbstractSystem* buildSystem()
   {
-    // The MechanicNode instances are sorted to match the direct input property
+    // Build the spanning tree for the mechanic system
     if (!sortMechanicList())
       return 0;
     // The model instances are sorted to match the direct input property
@@ -956,7 +959,19 @@ public:
     for (i = mModelInstanceDataList.begin();
          i != mModelInstanceDataList.end(); ++i) {
       discreteSystem->appendModelContext((*i)->getSampleTime(),
-                                         (*i)->getModelContext());
+                                         (*i)->getModelContext(), 0);
+    }
+
+    for (i = mVelocityModelInstanceDataList.begin();
+         i != mVelocityModelInstanceDataList.end(); ++i) {
+      discreteSystem->appendModelContext((*i)->getSampleTime(),
+                                         (*i)->getModelContext(), 1);
+    }
+
+    for (i = mAccelerationModelInstanceDataList.begin();
+         i != mAccelerationModelInstanceDataList.end(); ++i) {
+      discreteSystem->appendModelContext((*i)->getSampleTime(),
+                                         (*i)->getModelContext(), 2);
     }
 
     MechanicInstanceDataList::const_iterator j;
@@ -1070,14 +1085,126 @@ protected:
     return true;
   }
 
-  // method to sort the leafs according to their dependency
+  bool isDirectVelocityDependent(ModelInstanceData& modelInstanceData)
+  {
+    MechanicInstanceDataList::iterator i = mMechanicInstanceDataList.begin();
+    for (; i != mMechanicInstanceDataList.end(); ++i) {
+      if (modelInstanceData.dependsOn(*(*i), false))
+        return true;
+      if (modelInstanceData.dependsOn(*(*i), true))
+        return true;
+    }
+    return false;
+  }
+
+  bool isDirectForceModel(ModelInstanceData& modelInstanceData)
+  {
+    MechanicInstanceDataList::iterator i = mMechanicInstanceDataList.begin();
+    for (; i != mMechanicInstanceDataList.end(); ++i) {
+      if ((*i)->dependsOn(modelInstanceData))
+        return true;
+    }
+    return false;
+  }
+
+  void
+  getVelocityDependentModels(ModelInstanceDataList& velocityDependentModels)
+  {
+    // find all models that are dependent on the mechanic systems velocities
+    ModelInstanceDataList::iterator i = mModelInstanceDataList.begin();
+    while (i != mModelInstanceDataList.end()) {
+      if (isDirectVelocityDependent(*(*i))) {
+        velocityDependentModels.push_back(*i);
+        i = mModelInstanceDataList.erase(i);
+      } else {
+        ++i;
+      }
+    }
+
+    for (i = velocityDependentModels.begin();
+         i != velocityDependentModels.end(); ++i) {
+
+      ModelInstanceDataList::iterator j = mModelInstanceDataList.begin();
+      while (j != mModelInstanceDataList.end()) {
+        if ((*j)->dependsOn(*(*i))) {
+          velocityDependentModels.push_back(*j);
+          j = mModelInstanceDataList.erase(j);
+        } else {
+          ++j;
+        }
+      }
+    }
+  }
+
+  void splitForceModels(ModelInstanceDataList& velocityDependentModels,
+                        ModelInstanceDataList& forceModelList)
+  {
+    ModelInstanceDataList::iterator i = velocityDependentModels.begin();
+    while (i != velocityDependentModels.end()) {
+      if (isDirectForceModel(*(*i))) {
+        forceModelList.push_back(*i);
+        i = velocityDependentModels.erase(i);
+      } else {
+        ++i;
+      }
+    }
+
+    for (i = forceModelList.begin();
+         i != forceModelList.end(); ++i) {
+
+      ModelInstanceDataList::iterator j = velocityDependentModels.begin();
+      while (j != velocityDependentModels.end()) {
+        if ((*i)->dependsOn(*(*j))) {
+          forceModelList.push_back(*j);
+          j = velocityDependentModels.erase(j);
+        } else {
+          ++j;
+        }
+      }
+    }
+  }
+
   bool sortModelList()
   {
+    // How to sort:
+    //  * First split out all velocity dependent models.
+    //  * build up a usual sorted list of models
+    //  * Go from the back of this list and push all models in the acceleration
+    //    list when it is not needed for the forces (?? does not work ??)
+    //    (hmm, alternatively build the force list by walking back the velocity
+    //     list and pulling out all chains that depend on force.
+    //     The old velocity list is than the acceleration one??)
+    //  * Check the resulting velocity list for dependency on acceleration
+    
+    // get the list of models that depend on the mechnic systems velocity or
+    // acceleration
+    getVelocityDependentModels(mAccelerationModelInstanceDataList);
+
+    // Seperate out those models that are really required for forces
+    splitForceModels(mAccelerationModelInstanceDataList,
+                     mVelocityModelInstanceDataList);
+
+    // Sort that lists according to the usual rules
+    if (!sortModelList(mModelInstanceDataList))
+      return false;
+
+    if (!sortModelList(mVelocityModelInstanceDataList))
+      return false;
+
+    if (!sortModelList(mAccelerationModelInstanceDataList))
+      return false;
+
+    return true;
+  }
+
+  // method to sort the leafs according to their dependency
+  bool sortModelList(ModelInstanceDataList& modelInstanceDataList)
+  {
     ModelInstanceDataList sortedModelInstanceDataList;
-    while (!mModelInstanceDataList.empty()) {
+    while (!modelInstanceDataList.empty()) {
       SharedPtr<ModelInstanceData> modelInstanceData;
-      modelInstanceData = mModelInstanceDataList.front();
-      mModelInstanceDataList.pop_front();
+      modelInstanceData = modelInstanceDataList.front();
+      modelInstanceDataList.pop_front();
 
       if (modelInstanceData->dependsOn(*modelInstanceData)) {
         Log(Schedule, Warning)
@@ -1128,11 +1255,11 @@ protected:
         }
       }
     }
-    mModelInstanceDataList.swap(sortedModelInstanceDataList);
+    modelInstanceDataList.swap(sortedModelInstanceDataList);
 
     Log(Schedule,Info) << "Model Schedule" << std::endl;
-    ModelInstanceDataList::iterator i = mModelInstanceDataList.begin();
-    for (; i != mModelInstanceDataList.end(); ++i) {
+    ModelInstanceDataList::iterator i = modelInstanceDataList.begin();
+    for (; i != modelInstanceDataList.end(); ++i) {
       Log(Schedule,Info)
         << "  Model \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
     }
