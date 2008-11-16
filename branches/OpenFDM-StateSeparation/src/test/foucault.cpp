@@ -1,8 +1,7 @@
 #include <OpenFDM/Group.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/FixedRootJoint.h>
-#include <OpenFDM/UniversalJoint.h>
-// #include <OpenFDM/RevoluteJoint.h>
+#include <OpenFDM/RotationalJoint.h>
 #include <OpenFDM/RigidBody.h>
 #include <OpenFDM/Sensor.h>
 #include <OpenFDM/System.h>
@@ -24,11 +23,8 @@ int main()
   FixedRootJoint* fixedRoot = new FixedRootJoint("Root");
   fixedRoot->setPosition(Vector3(0, 0, -10));
   Group::NodeId root = group->addChild(fixedRoot);
-  UniversalJoint* universalJoint = new UniversalJoint("Universal");
-  universalJoint->setAxis(Vector3(0, 0, 1));
-//   RevoluteJoint* universalJoint = new RevoluteJoint("Revolute");
-//   universalJoint->setAxis(Vector3(0, 1, 0));
-  Group::NodeId universal = group->addChild(universalJoint);
+  RotationalJoint* rotationalJoint = new RotationalJoint("Rotational");
+  Group::NodeId rotational = group->addChild(rotationalJoint);
 
   RigidBody* rigidBodyNode = new RigidBody("Rigid Body");
   rigidBodyNode->addLink("sensorLink");
@@ -46,8 +42,8 @@ int main()
   sensorModel->setEnableCentrifugalAcceleration(true);
   Group::NodeId sensor = group->addChild(sensorModel);
 
-  group->connect(root, 0, universal, 0);
-  group->connect(universal, 1, rigidBody, 0);
+  group->connect(root, 0, rotational, 0);
+  group->connect(rotational, 1, rigidBody, 0);
   group->connect(rigidBody, 1, mass, 0);
   group->connect(rigidBody, "sensorLink", sensor, "link");
 

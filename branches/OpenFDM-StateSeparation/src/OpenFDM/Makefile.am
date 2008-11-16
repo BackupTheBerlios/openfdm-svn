@@ -206,6 +206,7 @@ OpenFDMModelsHEADERS = \
   PrismaticJoint.h \
   RevoluteActuator.h \
   RevoluteJoint.h \
+  RotationalJoint.h \
   Saturation.h \
   Sensor.h \
   SimpleContact.h \
@@ -242,6 +243,7 @@ OpenFDMMechanicSOURCES = \
   PrismaticJoint.cpp \
   RevoluteActuator.cpp \
   RevoluteJoint.cpp \
+  RotationalJoint.cpp \
   Sensor.cpp \
   UniversalJoint.cpp
 
