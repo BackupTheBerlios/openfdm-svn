@@ -21,7 +21,7 @@ int main()
   // FIXME, need usable environment stuff like gravity first ...
   SharedPtr<Group> group = new Group("Foucault");
   FixedRootJoint* fixedRoot = new FixedRootJoint("Root");
-  fixedRoot->setPosition(Vector3(0, 0, -10));
+  fixedRoot->setPosition(Vector3(0, 0, -1));
   Group::NodeId root = group->addChild(fixedRoot);
   RotationalJoint* rotationalJoint = new RotationalJoint("Rotational");
   Group::NodeId rotational = group->addChild(rotationalJoint);
@@ -37,6 +37,7 @@ int main()
   sensorModel->setPosition(massModel->getPosition());
   sensorModel->setEnablePosition(true);
   sensorModel->setEnableOrientation(true);
+  sensorModel->setEnableEulerAngles(true);
   sensorModel->setEnableLinearVelocity(true);
   sensorModel->setEnableAngularVelocity(true);
   sensorModel->setEnableCentrifugalAcceleration(true);
