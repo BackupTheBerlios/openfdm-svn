@@ -152,8 +152,7 @@ RotationalJoint::derivative(const DiscreteStateValueVector&,
   // Correction term to keep the quaternion normalized.
   // That is if |q| < 1 add a little radial component outward,
   // if |q| > 1 add a little radial component inward
-  Vector3 angVel = getJointMatrix()(Range(0, 2), Range(0, 2))
-    *states[*mVelocityStateInfo];
+  Vector3 angVel = states[*mVelocityStateInfo];
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
   derivative[*mPositionStateInfo] = qderiv;
