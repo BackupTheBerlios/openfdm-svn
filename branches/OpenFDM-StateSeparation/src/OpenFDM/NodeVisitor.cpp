@@ -12,7 +12,7 @@
 #include "LibraryNode.h"
 #include "LeafNode.h"
 #include "MechanicNode.h"
-#include "Model.h"
+#include "AbstractModel.h"
 #include "Output.h"
 #include "RigidBody.h"
 #include "RootJoint.h"
@@ -56,7 +56,7 @@ NodeVisitor::apply(LeafNode& leafNode)
 }
 
 void
-NodeVisitor::apply(Model& node)
+NodeVisitor::apply(AbstractModel& node)
 {
   apply(static_cast<LeafNode&>(node));
 }
@@ -64,13 +64,13 @@ NodeVisitor::apply(Model& node)
 void
 NodeVisitor::apply(Input& node)
 {
-  apply(static_cast<Model&>(node));
+  apply(static_cast<AbstractModel&>(node));
 }
 
 void
 NodeVisitor::apply(Output& node)
 {
-  apply(static_cast<Model&>(node));
+  apply(static_cast<AbstractModel&>(node));
 }
 
 void

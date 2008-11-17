@@ -9,7 +9,7 @@
 
 #include "OpenFDMConfig.h"
 #include "Assert.h"
-#include "LeafNode.h"
+#include "AbstractModel.h"
 #include "MatrixInputPort.h"
 #include "MatrixOutputPort.h"
 #include "RealInputPort.h"
@@ -26,14 +26,11 @@ class ContinousStateValueVector;
 class Task;
 class ModelContext;
 
-class Model : public LeafNode {
-  OPENFDM_OBJECT(Model, LeafNode);
+class Model : public AbstractModel {
+  OPENFDM_OBJECT(Model, AbstractModel);
 public:
   Model(const std::string& name);
   virtual ~Model();
-
-  virtual void accept(NodeVisitor& visitor);
-  virtual void accept(ConstNodeVisitor& visitor) const;
 
   virtual ModelContext* newModelContext(PortValueList& portValueList) const;
 

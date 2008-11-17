@@ -15,7 +15,7 @@ class Group;
 class GroupInterfaceNode;
 class LibraryNode;
 class LeafNode;
-class Model;
+class AbstractModel;
 class Input;
 class Joint;
 class Output;
@@ -40,7 +40,7 @@ public:
   virtual void apply(const LibraryNode&);
 
   virtual void apply(const LeafNode&);
-  virtual void apply(const Model&);
+  virtual void apply(const AbstractModel&);
   virtual void apply(const Input&);
   virtual void apply(const Output&);
 

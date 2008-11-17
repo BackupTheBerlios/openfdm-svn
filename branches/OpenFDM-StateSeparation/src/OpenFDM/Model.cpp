@@ -57,28 +57,16 @@ private:
   SharedPtr<const Model> mModel;
 };
 
-BEGIN_OPENFDM_OBJECT_DEF(Model, LeafNode)
+BEGIN_OPENFDM_OBJECT_DEF(Model, AbstractModel)
   END_OPENFDM_OBJECT_DEF
 
 Model::Model(const std::string& name) :
-  LeafNode(name)
+  AbstractModel(name)
 {
 }
 
 Model::~Model()
 {
-}
-
-void
-Model::accept(NodeVisitor& visitor)
-{
-  visitor.handleNodePathAndApply(this);
-}
-
-void
-Model::accept(ConstNodeVisitor& visitor) const
-{
-  visitor.handleNodePathAndApply(this);
 }
 
 ModelContext*

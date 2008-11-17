@@ -12,6 +12,7 @@ libOpenFDM_la_LIBADD += -lhdf5
 endif
 
 OpenFDMCoreHEADERS = \
+  AbstractModel.h \
   AbstractNodeContext.h \
   AbstractNodeInstance.h \
   AbstractSystem.h \
@@ -124,6 +125,7 @@ OpenFDMCoreHEADERS = \
   XMLDumpModelVisitor.h
 
 OpenFDMCoreSOURCES = \
+  AbstractModel.cpp \
   AbstractNodeContext.cpp \
   AbstractNodeInstance.cpp \
   Assert.cpp \

@@ -515,12 +515,12 @@ public:
     SharedPtr<const Node> mNode;
   };
   struct ModelInstanceData : public InstanceData {
-    ModelInstanceData(const Model& model, const NodePath& nodePath,
+    ModelInstanceData(const AbstractModel& model, const NodePath& nodePath,
                       const SampleTime& sampleTime) :
       InstanceData(model, nodePath, sampleTime),
       mModel(&model)
     { }
-    virtual const Model* getNode() const { return mModel; }
+    virtual const AbstractModel* getNode() const { return mModel; }
 
     bool createModelContext()
     {
@@ -543,7 +543,7 @@ public:
     { return mModelContext; }
 
   private:
-    SharedPtr<const Model> mModel;
+    SharedPtr<const AbstractModel> mModel;
     SharedPtr<ModelContext> mModelContext;
   };
   struct MechanicInstanceData : public InstanceData {
@@ -763,7 +763,7 @@ public:
     addInstanceData(instanceData);
     mJointInstanceDataList.push_back(instanceData);
   }
-  virtual void apply(const Model& node)
+  virtual void apply(const AbstractModel& node)
   {
     SharedPtr<ModelInstanceData> instanceData;
     instanceData = new ModelInstanceData(node, getNodePath(), mSampleTime);
