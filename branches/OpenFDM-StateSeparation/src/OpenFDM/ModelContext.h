@@ -8,7 +8,7 @@
 #include <list>
 #include "SharedPtr.h"
 #include "LeafContext.h"
-#include "Model.h"
+#include "AbstractModel.h"
 
 namespace OpenFDM {
 
@@ -23,7 +23,7 @@ public:
   ModelContext() {}
   virtual ~ModelContext();
 
-  virtual const Model& getNode() const = 0;
+  virtual const AbstractModel& getNode() const = 0;
 
   virtual void initOutput(const /*Init*/Task& task) = 0;
   virtual void output(const Task& task) = 0;
