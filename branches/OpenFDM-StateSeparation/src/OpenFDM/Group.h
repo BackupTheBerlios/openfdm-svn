@@ -8,108 +8,12 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "ConstNodeVisitor.h"
 #include "Node.h"
-#include "NodeVisitor.h"
-#include "Object.h"
 #include "PortId.h"
 #include "PortInfo.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
-
-class GroupInterfaceNode : public Node {
-public:
-  GroupInterfaceNode(const std::string& name) : Node(name) {}
-  virtual void accept(NodeVisitor& visitor)
-  {
-    visitor.handleNodePathAndApply(this);
-  }
-  virtual void accept(ConstNodeVisitor& visitor) const
-  {
-    visitor.handleNodePathAndApply(this);
-  }
-
-  unsigned getExternalPortIndex() const
-  { return mExternalPortInfo->getIndex(); }
-protected:
-  virtual bool addParent(Node* parent)
-  {
-    if (getNumParents()) {
-      Log(Model,Warning) << "Group Interface Nodes cannot have more than "
-        "one parent!" << std::endl;
-      return false;
-    }
-    
-    return Node::addParent(parent);
-  }
-  virtual void removeParent(Node* parent)
-  {
-    Node::removeParent(parent);
-  }
-
-  void setExternalPortInfo(PortInfo* portInfo)
-  {
-    mExternalPortInfo = portInfo;
-  }
-
-private:
-  SharedPtr<PortInfo> mExternalPortInfo;
-};
-
-class GroupInput : public GroupInterfaceNode {
-public:
-  GroupInput(const std::string& name) :
-    GroupInterfaceNode(name),
-    mGroupInternalPort(new OutputPortInfo(this, "output", Size(0, 0), false))
-  { }
-protected:
-  virtual bool addParent(Node* parent)
-  {
-    if (!GroupInterfaceNode::addParent(parent))
-      return false;
-    setExternalPortInfo(new InputPortInfo(parent, "input", Size(0, 0), false));
-    return true;
-  }
-private:
-  SharedPtr<OutputPortInfo> mGroupInternalPort;
-};
-
-class GroupOutput : public GroupInterfaceNode {
-public:
-  GroupOutput(const std::string& name) :
-    GroupInterfaceNode(name),
-    mGroupInternalPort(new InputPortInfo(this, "input", Size(0, 0), false))
-  { }
-protected:
-  virtual bool addParent(Node* parent)
-  {
-    if (!GroupInterfaceNode::addParent(parent))
-      return false;
-    setExternalPortInfo(new OutputPortInfo(parent, "output", Size(0, 0), false));
-    return true;
-  }
-private:
-  SharedPtr<InputPortInfo> mGroupInternalPort;
-};
-
-class GroupMechanicLink : public GroupInterfaceNode {
-public:
-  GroupMechanicLink(const std::string& name) :
-    GroupInterfaceNode(name),
-    mGroupInternalPort(new MechanicLinkInfo(this, "link"))
-  { }
-protected:
-  virtual bool addParent(Node* parent)
-  {
-    if (!GroupInterfaceNode::addParent(parent))
-      return false;
-    setExternalPortInfo(new MechanicLinkInfo(parent, "link"));
-    return true;
-  }
-private:
-  SharedPtr<MechanicLinkInfo> mGroupInternalPort;
-};
 
 class Group : public Node {
   OPENFDM_OBJECT(Group, Node);

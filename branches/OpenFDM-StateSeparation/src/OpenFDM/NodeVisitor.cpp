@@ -5,6 +5,7 @@
 #include "NodeVisitor.h"
 
 #include "Group.h"
+#include "GroupInterfaceNode.h"
 #include "Input.h"
 #include "Interact.h"
 #include "Joint.h"

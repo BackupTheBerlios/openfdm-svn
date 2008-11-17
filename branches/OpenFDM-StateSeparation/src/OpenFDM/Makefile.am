@@ -34,6 +34,10 @@ OpenFDMCoreHEADERS = \
   Frame.h \
   Function.h \
   Group.h \
+  GroupInterfaceNode.h \
+  GroupInput.h \
+  GroupMechanicLink.h \
+  GroupOutput.h \
   HDF5SystemOutput.h \
   ImplicitEuler.h \
   Inertia.h \
@@ -132,6 +136,10 @@ OpenFDMCoreSOURCES = \
   Frame.cpp \
   Function.cpp \
   Group.cpp \
+  GroupInterfaceNode.cpp \
+  GroupInput.cpp \
+  GroupMechanicLink.cpp \
+  GroupOutput.cpp \
   Interact.cpp \
   LeafNode.cpp \
   LibraryModel.cpp \

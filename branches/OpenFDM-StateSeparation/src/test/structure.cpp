@@ -4,6 +4,8 @@
 #include <OpenFDM/Delay.h>
 #include <OpenFDM/Output.h>
 #include <OpenFDM/Group.h>
+#include <OpenFDM/GroupInput.h>
+#include <OpenFDM/GroupOutput.h>
 #include <OpenFDM/LibraryNode.h>
 #include <OpenFDM/LibraryModel.h>
 #include <OpenFDM/System.h>

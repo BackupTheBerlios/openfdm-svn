@@ -5,6 +5,7 @@
 #include "ConstNodeVisitor.h"
 
 #include "Group.h"
+#include "GroupInterfaceNode.h"
 #include "Interact.h"
 #include "LibraryNode.h"
 #include "LeafNode.h"
