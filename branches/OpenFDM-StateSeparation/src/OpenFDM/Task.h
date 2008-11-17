@@ -13,6 +13,7 @@ namespace OpenFDM {
 
 class Task : public Referenced {
 public:
+  Task() : mTime(0) {}
   virtual ~Task() {}
 
   const real_type& getTime() const
