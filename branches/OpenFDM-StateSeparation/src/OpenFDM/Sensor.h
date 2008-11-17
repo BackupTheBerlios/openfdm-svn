@@ -13,6 +13,7 @@
 namespace OpenFDM {
 
 class Sensor : public Interact {
+  OPENFDM_OBJECT(Sensor, Interact);
 public:
   Sensor(const std::string& name);
   virtual ~Sensor(void);

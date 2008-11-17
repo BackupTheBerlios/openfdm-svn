@@ -10,6 +10,16 @@
 
 namespace OpenFDM {
 
+BEGIN_OPENFDM_OBJECT_DEF(Sensor, Interact)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnablePosition, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableOrientation, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableEulerAngles, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableLinearVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableAngularVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableCentrifugalAcceleration, Serialized)
+  END_OPENFDM_OBJECT_DEF
+
 Sensor::Sensor(const std::string& name) :
   Interact(name),
   mMechanicLink(newMechanicLink("link")),
