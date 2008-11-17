@@ -4,61 +4,36 @@
 
 #include "DeadBand.h"
 
-#include <string>
-#include <vector>
-
-#include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Model.h"
+#include "Matrix.h"
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(DeadBand, Model)
+BEGIN_OPENFDM_OBJECT_DEF(DeadBand, UnaryModel)
   DEF_OPENFDM_PROPERTY(Real, Width, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-DeadBand::DeadBand(const std::string& name) : Model(name)
+DeadBand::DeadBand(const std::string& name, const real_type& width) :
+  UnaryModel(name),
+  mWidth(width)
 {
-  setDirectFeedThrough(true);
-  
-  setNumInputPorts(1);
-  setInputPortName(0, "input");
-  
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &DeadBand::getOutput);
 }
 
 DeadBand::~DeadBand(void)
 {
 }
   
-bool
-DeadBand::init(void)
+ModelContext*
+DeadBand::newModelContext(PortValueList& portValueList) const
 {
-  mInputPort = getInputPort(0)->toRealPortHandle();
-  if (!mInputPort.isConnected()) {
-    Log(Model, Error) << "Initialization of DeadBand model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
-  return Model::init();
+  return UnaryModel::newModelContext(this, portValueList);
 }
 
 void
-DeadBand::output(const TaskInfo&)
+DeadBand::output(const Matrix& inputValue, Matrix& outputValue) const
 {
-  OpenFDMAssert(mInputPort.isConnected());
-  
-  mOutput = mInputPort.getRealValue();
-  if (mOutput < -mWidth)
-    mOutput += mWidth;
-  else if (mWidth < mOutput)
-    mOutput -= mWidth;
-  else
-    mOutput = 0;
+  for (unsigned i = 0; i < rows(inputValue); ++i)
+    for (unsigned j = 0; j < cols(inputValue); ++j)
+      outputValue(i, j) = deadBand(inputValue(i, j), mWidth);
 }
 
 const real_type&
@@ -71,12 +46,6 @@ void
 DeadBand::setWidth(const real_type& width)
 {
   mWidth = width;
-}
-
-const real_type&
-DeadBand::getOutput(void) const
-{
-  return mOutput;
 }
 
 } // namespace OpenFDM

@@ -83,12 +83,40 @@ public:
     else
       return false;
   }
+  bool setOrCheckPortSize(const OutputPortInfo* portInfo, const Size& sz)
+  {
+    if (!portInfo)
+      return false;
+    Size oldSize = size(getPortValue(portInfo)->getValue());
+    // If the size is still 0x0, just set to the desired size
+    if (oldSize(0) == 0 || oldSize(1) == 0) {
+      getPortValue(portInfo)->getValue().resize(sz(0), sz(1));
+      return true;
+    } else if (oldSize == sz)
+      return true;
+    else
+      return false;
+  }
   bool setOrCheckPortSize(const MatrixInputPort& port, const Size& sz)
   {
     Size oldSize = size(port.getPortValue(mPortValueVector)->getValue());
     // If the size is still 0x0, just set to the desired size
     if (oldSize(0) == 0 || oldSize(1) == 0) {
       port.getPortValue(mPortValueVector)->getValue().resize(sz(0), sz(1));
+      return true;
+    } else if (oldSize == sz)
+      return true;
+    else
+      return false;
+  }
+  bool setOrCheckPortSize(const InputPortInfo* portInfo, const Size& sz)
+  {
+    if (!portInfo)
+      return false;
+    Size oldSize = size(getPortValue(portInfo)->getValue());
+    // If the size is still 0x0, just set to the desired size
+    if (oldSize(0) == 0 || oldSize(1) == 0) {
+      getPortValue(portInfo)->getValue().resize(sz(0), sz(1));
       return true;
     } else if (oldSize == sz)
       return true;
@@ -109,6 +137,19 @@ public:
   }
 
   /// Save but partially expensive Accessor for numeric ports
+  NumericPortValue* getPortValue(const NumericPortInfo* portInfo)
+  {
+    if (!portInfo)
+      return 0;
+    return getPortValue(*portInfo);
+  }
+  NumericPortValue* getPortValue(const NumericPortInfo& portInfo)
+  {
+    PortValue* portValue = getPortValue(portInfo.getIndex());
+    if (!portValue)
+      return 0;
+    return portValue->toNumericPortValue();
+  }
   const NumericPortValue* getPortValue(const NumericPortInfo* portInfo) const
   {
     if (!portInfo)

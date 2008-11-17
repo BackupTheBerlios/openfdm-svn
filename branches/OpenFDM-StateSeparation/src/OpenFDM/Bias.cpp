@@ -14,55 +14,39 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Bias, Model)
+BEGIN_OPENFDM_OBJECT_DEF(Bias, UnaryModel)
   DEF_OPENFDM_PROPERTY(Matrix, Bias, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-Bias::Bias(const std::string& name) : Model(name)
+Bias::Bias(const std::string& name) :
+  UnaryModel(name),
+  mBias(Matrix::zeros(1, 1))
 {
-  setDirectFeedThrough(true);
-  
-  setNumInputPorts(1);
-  setInputPortName(0, "input");
-  
-  addOutputPort("output", this, &Bias::getOutput);
 }
 
 Bias::~Bias(void)
 {
 }
   
-bool
-Bias::init(void)
+ModelContext*
+Bias::newModelContext(PortValueList& portValueList) const
 {
-  // Invalidate outputs
-  mOutput.resize(0, 0);
+  return UnaryModel::newModelContext(this, portValueList);
+}
 
-  mInputPort = getInputPort(0)->toMatrixPortHandle();
-  if (!mInputPort.isConnected()) {
-    Log(Model, Error) << "Initialization of Bias model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
+bool
+Bias::alloc(LeafContext& context) const
+{
+  // FIXME: check that the mBias matches the size of the ports.
+  if (!UnaryModel::alloc(context))
     return false;
-  }
-
-  // Size compatibility check
-  if (size(mInputPort.getMatrixValue()) != size(mBias)) {
-    Log(Model, Error) << "Input port of \"" << getName() << "\", does not "
-                      << "match the size of the bias property" << endl;
-    return false;
-  }
-  mOutput.resize(mInputPort.getMatrixValue());
-
-  return Model::init();
+  return true;
 }
 
 void
-Bias::output(const TaskInfo&)
+Bias::output(const Matrix& inputValue, Matrix& outputValue) const
 {
-  OpenFDMAssert(mInputPort.isConnected());
-  mOutput = mInputPort.getMatrixValue();
-  mOutput += mBias;
+  outputValue = mBias + inputValue;
 }
 
 const Matrix&
@@ -75,12 +59,6 @@ void
 Bias::setBias(const Matrix& bias)
 {
   mBias = bias;
-}
-
-const Matrix&
-Bias::getOutput(void) const
-{
-  return mOutput;
 }
 
 } // namespace OpenFDM

@@ -6,32 +6,26 @@
 #define OpenFDM_DeadBand_H
 
 #include <string>
-#include <vector>
 
-#include "Assert.h"
-#include "Object.h"
-#include "Model.h"
+#include "UnaryModel.h"
 
 namespace OpenFDM {
 
-class DeadBand : public Model {
-  OPENFDM_OBJECT(DeadBand, Model);
+class DeadBand : public UnaryModel {
+  OPENFDM_OBJECT(DeadBand, UnaryModel);
 public:
-  DeadBand(const std::string& name);
+  DeadBand(const std::string& name, const real_type& width = real_type(0));
   virtual ~DeadBand(void);
-  
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+
+  ModelContext* newModelContext(PortValueList&) const;
+
+  void output(const Matrix& inputValue, Matrix& outputValue) const;
 
   const real_type& getWidth(void) const;
   void setWidth(const real_type& width);
 
-  const real_type& getOutput(void) const;
-
 private:
   real_type mWidth;
-  real_type mOutput;
-  RealPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

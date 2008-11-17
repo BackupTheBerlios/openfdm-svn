@@ -6,38 +6,30 @@
 #define OpenFDM_Saturation_H
 
 #include <string>
-#include <vector>
 
-#include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
 #include "Matrix.h"
-#include "Model.h"
+#include "UnaryModel.h"
 
 namespace OpenFDM {
 
-class Saturation : public Model {
-  OPENFDM_OBJECT(Saturation, Model);
+class Saturation : public UnaryModel {
+  OPENFDM_OBJECT(Saturation, UnaryModel);
 public:
   Saturation(const std::string& name);
   virtual ~Saturation(void);
   
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  ModelContext* newModelContext(PortValueList&) const;
+
+  void output(const Matrix& inputValue, Matrix& outputValue) const;
 
   const Matrix& getMinSaturation(void) const;
   void setMinSaturation(const Matrix& minSaturation);
   const Matrix& getMaxSaturation(void) const;
   void setMaxSaturation(const Matrix& maxSaturation);
 
-  const Matrix& getOutput(void) const;
-
 private:
   Matrix mMaxSaturation;
   Matrix mMinSaturation;
-  Matrix mOutput;
-
-  MatrixPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

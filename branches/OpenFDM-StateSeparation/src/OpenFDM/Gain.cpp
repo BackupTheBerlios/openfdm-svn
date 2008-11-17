@@ -5,24 +5,16 @@
 #include "Gain.h"
 
 #include <string>
-#include <vector>
-
-#include "Assert.h"
-#include "Object.h"
-#include "LeafContext.h"
-#include "Model.h"
 #include "Vector.h"
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Gain, Model)
+BEGIN_OPENFDM_OBJECT_DEF(Gain, UnaryModel)
   DEF_OPENFDM_PROPERTY(Real, Gain, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Gain::Gain(const std::string& name, const real_type& gain) :
-  Model(name),
-  mInputPort(newMatrixInputPort("input", true)),
-  mOutputPort(newMatrixOutputPort("output")),
+  UnaryModel(name),
   mGain(gain)
 {
 }
@@ -31,27 +23,16 @@ Gain::~Gain(void)
 {
 }
 
-bool
-Gain::alloc(LeafContext& leafContext) const
+ModelContext*
+Gain::newModelContext(PortValueList& portValueList) const
 {
-  Size sz = size(leafContext.mPortValueList[mInputPort]);
-  Log(Initialization, Debug)
-    << "Size for Gain is detemined by the input port with size: "
-    << trans(sz) << std::endl;
-  if (!leafContext.mPortValueList.setOrCheckPortSize(mOutputPort, sz)) {
-    Log(Initialization, Error)
-      << "Size for output port does not match!" << std::endl;
-    return false;
-  }
-  return true;
+  return UnaryModel::newModelContext(this, portValueList);
 }
 
 void
-Gain::output(const Task&,const DiscreteStateValueVector&,
-             const ContinousStateValueVector&,
-             PortValueList& portValues) const
+Gain::output(const Matrix& inputValue, Matrix& outputValue) const
 {
-  portValues[mOutputPort] = mGain*portValues[mInputPort];
+  outputValue = mGain*inputValue;
 }
 
 const real_type&

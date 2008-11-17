@@ -6,33 +6,27 @@
 #define OpenFDM_Bias_H
 
 #include <string>
-#include <vector>
 
-#include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Model.h"
+#include "UnaryModel.h"
 
 namespace OpenFDM {
 
-class Bias : public Model {
-  OPENFDM_OBJECT(Bias, Model);
+class Bias : public UnaryModel {
+  OPENFDM_OBJECT(Bias, UnaryModel);
 public:
   Bias(const std::string& name);
   virtual ~Bias(void);
-  
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+
+  ModelContext* newModelContext(PortValueList&) const;
+
+  bool alloc(LeafContext& context) const;
+  void output(const Matrix& inputValue, Matrix& outputValue) const;
 
   const Matrix& getBias(void) const;
   void setBias(const Matrix& bias);
 
-  const Matrix& getOutput(void) const;
-
 private:
   Matrix mBias;
-  Matrix mOutput;
-  MatrixPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

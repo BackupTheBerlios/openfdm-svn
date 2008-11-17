@@ -7,27 +7,25 @@
 
 #include <string>
 
-#include "Model.h"
+#include "UnaryModel.h"
+#include "ModelContext.h"
 
 namespace OpenFDM {
 
-class Gain : public Model {
-  OPENFDM_OBJECT(Gain, Model);
+class Gain : public UnaryModel {
+  OPENFDM_OBJECT(Gain, UnaryModel);
 public:
   Gain(const std::string& name, const real_type& gain = real_type(1));
   virtual ~Gain(void);
 
-  virtual bool alloc(LeafContext& leafContext) const;
-  virtual void output(const Task&,const DiscreteStateValueVector&,
-                      const ContinousStateValueVector&,
-                      PortValueList& portValues) const;
+  ModelContext* newModelContext(PortValueList&) const;
+
+  void output(const Matrix& inputValue, Matrix& outputValue) const;
 
   const real_type& getGain(void) const;
   void setGain(const real_type& gain);
 
 private:
-  MatrixInputPort mInputPort;
-  MatrixOutputPort mOutputPort;
   real_type mGain;
 };
 

@@ -230,19 +230,23 @@ OpenFDMModelsHEADERS = \
   TransferFunction.h \
   Turbulence.h \
   UnaryFunctionModel.h \
+  UnaryModel.h \
   UniversalJoint.h \
   Vehicle.h \
   WheelContact.h \
   Wind.h
 
 OpenFDMModelsSOURCES = \
+  Bias.cpp \
   ConstModel.cpp \
+  DeadBand.cpp \
   Delay.cpp \
   DiscreteIntegrator.cpp \
   Gain.cpp \
   Input.cpp \
   Integrator.cpp \
   Output.cpp \
+  Saturation.cpp \
   SimulationTime.cpp
 
 OpenFDMMechanicSOURCES = \
@@ -255,17 +259,15 @@ OpenFDMMechanicSOURCES = \
   RevoluteJoint.cpp \
   RotationalJoint.cpp \
   Sensor.cpp \
+  UnaryModel.cpp \
   UniversalJoint.cpp
-
 
 #   AeroForce.cpp \
 #   AirSpring.cpp \
 #   Atmosphere.cpp \
 #   AtmosphereSTD1976.cpp \
-#   Bias.cpp \
 #   BinaryFunctionModel.cpp \
 #   Contact.cpp \
-#   DeadBand.cpp \
 #   DefaultGravity.cpp \
 #   DefaultGround.cpp \
 #   DefaultPlanet.cpp \
@@ -281,7 +283,6 @@ OpenFDMMechanicSOURCES = \
 #   Output.cpp \
 #   Product.cpp \
 #   RigidBody.cpp \
-#   Saturation.cpp \
 #   SimpleContact.cpp \
 #   SimpleGear.cpp \
 #   Summer.cpp \
