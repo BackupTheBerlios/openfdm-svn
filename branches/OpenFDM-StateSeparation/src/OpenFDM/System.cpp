@@ -502,15 +502,7 @@ public:
     { }
     virtual const Node* getNode() const { return mNode; }
     virtual AbstractNodeInstance* newNodeInstance()
-    {
-      NodeInstance* nodeInstance;
-      nodeInstance = new NodeInstance(mSampleTime, getNode());
-      OpenFDMAssert(mNode->getNumPorts() == mPortDataVector.size());
-      for (unsigned i = 0; i < mNode->getNumPorts(); ++i)
-        nodeInstance->setPortValue(*mNode->getPort(i),
-                                   mPortValueList.getPortValue(i));
-      return nodeInstance;
-    }
+    { return new NodeInstance(mSampleTime, getNode(), mPortValueList); }
   private:
     SharedPtr<const Node> mNode;
   };
@@ -535,9 +527,7 @@ public:
     }
 
     virtual AbstractNodeInstance* newNodeInstance()
-    {
-      return new LeafInstance(mSampleTime, mModelContext);
-    }
+    { return new LeafInstance(mSampleTime, mModelContext); }
 
     ModelContext* getModelContext()
     { return mModelContext; }
@@ -557,9 +547,7 @@ public:
     virtual bool createMechanicContext() = 0;
 
     virtual AbstractNodeInstance* newNodeInstance()
-    {
-      return new LeafInstance(mSampleTime, mMechanicContext);
-    }
+    { return new LeafInstance(mSampleTime, mMechanicContext); }
 
     MechanicContext* getMechanicContext()
     { return mMechanicContext; }

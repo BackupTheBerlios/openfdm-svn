@@ -40,10 +40,6 @@ public:
   virtual const MechanicLinkValue*
   getPortValue(const MechanicLinkInfo& portInfo) const = 0;
 
-  /// Set port value for the given port.
-  // FIXME, must vanish ...
-  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue) = 0;
-
 private:
   AbstractNodeInstance(const AbstractNodeInstance&);
   AbstractNodeInstance& operator=(const AbstractNodeInstance&);
@@ -74,10 +70,6 @@ public:
   virtual const MechanicLinkValue*
   getPortValue(const MechanicLinkInfo& portInfo) const
   { return mNodeContext->getPortValue(portInfo); }
-
-  /// Set port value for the given port.
-  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue)
-  { mNodeContext->setPortValue(portInfo, portValue); }
 
 private:
   LeafInstance(const LeafInstance&);
