@@ -30,6 +30,10 @@ public:
   virtual void update(const DiscreteTask& discreteTask) = 0;
   virtual void derivative(const Task&) = 0;
 
+  /// might vanish???
+  PortValueList& getPortValueList()
+  { return mPortValueList; }
+
 private:
   ModelContext(const ModelContext&);
   ModelContext& operator=(const ModelContext&);
