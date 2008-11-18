@@ -19,17 +19,14 @@ public:
   virtual const Node& getNode() const = 0;
 
   /// Port value accessors for System external usage.
-  virtual const PortValue* getPortValue(const PortInfo& portInfo) const;
+  virtual const PortValue* getPortValue(const PortInfo&) const;
+  virtual const NumericPortValue* getPortValue(const NumericPortInfo&) const;
+  virtual const MechanicLinkValue* getPortValue(const MechanicLinkInfo&) const;
 
   /// Set port value for the given port.
-  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue);
+  virtual void setPortValue(const PortInfo&, PortValue*);
 
-  /// might vanish???
-  PortValueList& getPortValueList()
-  { return mPortValueList; }
-  const PortValueList& getPortValueList() const
-  { return mPortValueList; }
-
+protected:
   // PortValues
   PortValueList mPortValueList;
 };

@@ -176,6 +176,9 @@ protected:
     childLink.setAccel(parentLink, mJointMatrix*velDot);
   }
 
+  virtual void init(const Task&,DiscreteStateValueVector&,
+                    ContinousStateValueVector&, const PortValueList&) const
+  { }
   virtual void initDesignPosition(const MechanicLinkValue& parentLink,
                                   MechanicLinkValue& childLink) const = 0;
   virtual void velocity(const MechanicLinkValue& parentLink,
@@ -219,9 +222,7 @@ private:
 
     bool alloc()
     {
-      if (!allocStates())
-        return false;
-      return mCartesianJoint->alloc(*this);
+      return allocStates();
     }
     virtual void initVelocities(const /*Init*/Task& task)
     {

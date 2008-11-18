@@ -27,17 +27,6 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  // Is done once before a model starts to live
-  // Should have connect information here, can setup memory allocations and
-  // sizes. Then the PortValueList does not need to have resizable stuff.
-  // The same goes for the states.
-  virtual bool alloc(LeafContext&) const // = 0;
-  { return true; }
-
-  virtual void init(const Task&,DiscreteStateValueVector&,
-                    ContinousStateValueVector&, const PortValueList&) const
-  { }
-
   unsigned getNumContinousStateValues() const
   { return mContinousStateInfoVector.size(); }
   const ContinousStateInfo* getContinousStateInfo(unsigned index) const

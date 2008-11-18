@@ -18,13 +18,14 @@ public:
   virtual const RootJoint& getNode() const
   { return *mRootJoint; }
   
+  bool alloc()
+  { return allocStates(); }
+
   virtual void initDesignPosition()
   {
     mRootJoint->initDesignPosition(mPortValueList);
   }
 
-  bool alloc()
-  { if (!allocStates()) return false; return mRootJoint->alloc(*this); }
   virtual void initVelocities(const /*Init*/Task& task)
   {
     mRootJoint->init(task, mDiscreteState, mContinousState, mPortValueList);

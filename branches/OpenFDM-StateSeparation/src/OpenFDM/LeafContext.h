@@ -42,15 +42,19 @@ public:
     }
     return true;
   }
+
+  /// might vanish???
+  PortValueList& getPortValueList()
+  { return mPortValueList; }
+  const PortValueList& getPortValueList() const
+  { return mPortValueList; }
+
 // protected:
   // Continous States
   ContinousStateValueVector mContinousState;
   ContinousStateValueVector mContinousStateDerivative;
   // Discrete States
   DiscreteStateValueVector mDiscreteState;
-
-  // functors to the operations to do??
-
 };
 
 } // namespace OpenFDM

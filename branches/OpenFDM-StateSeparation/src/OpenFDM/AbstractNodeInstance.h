@@ -67,13 +67,13 @@ public:
   /// Access port values by the PortInfo values
   virtual const PortValue*
   getPortValue(const PortInfo& portInfo) const
-  { return mNodeContext->getPortValueList().getPortValue(portInfo); }
+  { return mNodeContext->getPortValue(portInfo); }
   virtual const NumericPortValue*
   getPortValue(const NumericPortInfo& portInfo) const
-  { return mNodeContext->getPortValueList().getPortValue(portInfo); }
+  { return mNodeContext->getPortValue(portInfo); }
   virtual const MechanicLinkValue*
   getPortValue(const MechanicLinkInfo& portInfo) const
-  { return mNodeContext->getPortValueList().getPortValue(portInfo); }
+  { return mNodeContext->getPortValue(portInfo); }
 
   /// Set port value for the given port.
   virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue)

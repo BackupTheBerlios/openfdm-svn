@@ -38,6 +38,12 @@ public:
   // argument? May be it is sufficient to have a const and non const version??
   // FIXME???
   // const TaskInfo& taskInfo
+  virtual bool alloc(LeafContext&) const // = 0;
+  { return true; }
+
+  virtual void init(const Task&,DiscreteStateValueVector&,
+                    ContinousStateValueVector&, const PortValueList&) const
+  { }
   virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
                       const ContinousStateValueVector&,
                       const PortValueList&) const { }

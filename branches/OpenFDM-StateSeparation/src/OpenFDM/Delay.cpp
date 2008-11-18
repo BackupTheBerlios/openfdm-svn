@@ -41,12 +41,12 @@ Delay::alloc(LeafContext& context) const
   Log(Initialization, Debug)
     << "Size for Delay is detemined by the static initial value "
     << "with size: " << trans(sz) << std::endl;
-  if (!context.mPortValueList.setOrCheckPortSize(mInputPort, sz)) {
+  if (!context.getPortValueList().setOrCheckPortSize(mInputPort, sz)) {
     Log(Initialization, Error)
       << "Size for input port does not match!" << std::endl;
     return false;
   }
-  if (!context.mPortValueList.setOrCheckPortSize(mOutputPort, sz)) {
+  if (!context.getPortValueList().setOrCheckPortSize(mOutputPort, sz)) {
     Log(Initialization, Error)
       << "Size for output port does not match!" << std::endl;
     return false;

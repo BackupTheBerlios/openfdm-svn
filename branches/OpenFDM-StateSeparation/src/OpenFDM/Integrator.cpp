@@ -33,7 +33,7 @@ Integrator::alloc(LeafContext& leafContext) const
 {
   Size sz;
   if (getEnableInitialValuePort()) {
-    sz = size(leafContext.mPortValueList[mInitialValuePort]);
+    sz = size(leafContext.getPortValueList()[mInitialValuePort]);
     Log(Initialization, Debug)
       << "Size for Integrator is detemined by the initial input "
       << "port with size: " << trans(sz) << std::endl;
@@ -43,12 +43,12 @@ Integrator::alloc(LeafContext& leafContext) const
       << "Size for Integrator is detemined by the static initial value "
       << "with size: " << trans(sz) << std::endl;
   }
-  if (!leafContext.mPortValueList.setOrCheckPortSize(mInputPort, sz)) {
+  if (!leafContext.getPortValueList().setOrCheckPortSize(mInputPort, sz)) {
     Log(Initialization, Error)
       << "Size for input port does not match!" << std::endl;
     return false;
   }
-  if (!leafContext.mPortValueList.setOrCheckPortSize(mOutputPort, sz)) {
+  if (!leafContext.getPortValueList().setOrCheckPortSize(mOutputPort, sz)) {
     Log(Initialization, Error)
       << "Size for input port does not match!" << std::endl;
     return false;

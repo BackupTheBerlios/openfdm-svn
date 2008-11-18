@@ -21,6 +21,9 @@ public:
 
   virtual MechanicContext* newMechanicContext(PortValueList& portValues) const;
 
+  virtual void init(const Task&,DiscreteStateValueVector&,
+                    ContinousStateValueVector&, const PortValueList&) const
+  { }
   virtual void initDesignPosition(PortValueList&) const = 0;
   virtual void velocity(const Task&, const ContinousStateValueVector&,
                         PortValueList&) const

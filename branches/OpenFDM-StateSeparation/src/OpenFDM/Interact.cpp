@@ -18,13 +18,14 @@ public:
   virtual const Interact& getNode() const
   { return *mInteract; }
 
+  virtual bool alloc()
+  { return allocStates(); }
+
   virtual void initDesignPosition()
   {
     mInteract->initDesignPosition(mPortValueList);
   }
 
-  virtual bool alloc()
-  { if (!allocStates()) return false; return mInteract->alloc(*this); }
   virtual void initVelocities(const /*Init*/Task& task)
   {
     mInteract->init(task, mDiscreteState, mContinousState, mPortValueList);
