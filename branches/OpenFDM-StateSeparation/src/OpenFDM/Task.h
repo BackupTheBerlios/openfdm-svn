@@ -173,8 +173,8 @@ public:
   {
     unsigned numContStates = leafContext.getNode().getNumContinousStateValues();
     for (unsigned k = 0; k < numContStates; ++k) {
-      ContinousStateInfo* continousStateInfo;
-      continousStateInfo = const_cast<ContinousStateInfo*>(leafContext.getNode().getContinousStateInfo(k));
+      const ContinousStateInfo* continousStateInfo;
+      continousStateInfo = leafContext.getNode().getContinousStateInfo(k);
       mStateValues.push_back(leafContext.mContinousState.getValue(*continousStateInfo));
       mDerivativeValues.push_back(leafContext.mContinousStateDerivative.getValue(*continousStateInfo));
     }
