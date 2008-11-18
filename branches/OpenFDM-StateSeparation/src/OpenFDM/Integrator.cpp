@@ -5,7 +5,7 @@
 #include "Integrator.h"
 
 #include "Assert.h"
-#include "LeafContext.h"
+#include "ModelContext.h"
 
 namespace OpenFDM {
 
@@ -29,7 +29,7 @@ Integrator::~Integrator(void)
 }
 
 bool
-Integrator::alloc(LeafContext& leafContext) const
+Integrator::alloc(ModelContext& leafContext) const
 {
   Size sz;
   if (getEnableInitialValuePort()) {

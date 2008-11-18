@@ -17,7 +17,7 @@ public:
   Integrator(const std::string& name);
   virtual ~Integrator(void);
 
-  virtual bool alloc(LeafContext& leafContext) const;
+  virtual bool alloc(ModelContext&) const;
   virtual void init(const Task&, DiscreteStateValueVector& discreteState,
                     ContinousStateValueVector& continousState,
                     const PortValueList& portValueList) const;

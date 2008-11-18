@@ -5,7 +5,6 @@
 #include "MobileRootJoint.h"
 
 #include "Assert.h"
-#include "LeafContext.h"
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"

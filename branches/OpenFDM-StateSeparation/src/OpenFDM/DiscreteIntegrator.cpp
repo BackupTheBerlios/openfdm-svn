@@ -4,8 +4,8 @@
 
 #include "DiscreteIntegrator.h"
 #include "Assert.h"
-#include "LeafContext.h"
 #include "Task.h"
+#include "ModelContext.h"
 
 namespace OpenFDM {
 
@@ -30,7 +30,7 @@ DiscreteIntegrator::~DiscreteIntegrator(void)
 }
 
 bool
-DiscreteIntegrator::alloc(LeafContext& leafContext) const
+DiscreteIntegrator::alloc(ModelContext& leafContext) const
 {
   Size sz;
   if (getEnableInitialValuePort()) {

@@ -18,7 +18,7 @@ public:
   Delay(const std::string& name);
   virtual ~Delay();
 
-  virtual bool alloc(LeafContext& leafContext) const;
+  virtual bool alloc(ModelContext&) const;
   virtual void init(const Task&,DiscreteStateValueVector& discreteState,
                     ContinousStateValueVector&, const PortValueList&) const;
   virtual void output(const Task&,const DiscreteStateValueVector& discreteState,

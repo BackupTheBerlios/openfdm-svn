@@ -9,8 +9,8 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "LeafContext.h"
 #include "Model.h"
+#include "ModelContext.h"
 #include "Vector.h"
 
 namespace OpenFDM {
@@ -35,7 +35,7 @@ Delay::~Delay()
 }
 
 bool
-Delay::alloc(LeafContext& context) const
+Delay::alloc(ModelContext& context) const
 {
   Size sz = size(mInitialValue);
   Log(Initialization, Debug)

@@ -20,14 +20,11 @@ public:
 
   /// Port value accessors for System external usage.
   virtual const PortValue* getPortValue(const PortInfo&) const;
-  virtual const NumericPortValue* getPortValue(const NumericPortInfo&) const;
-  virtual const MechanicLinkValue* getPortValue(const MechanicLinkInfo&) const;
 
   /// Set port value for the given port.
   virtual void setPortValue(const PortInfo&, PortValue*);
 
 protected:
-  // PortValues
   PortValueList mPortValueList;
 };
 

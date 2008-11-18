@@ -20,4 +20,24 @@ AbstractNodeInstance::~AbstractNodeInstance()
 {
 }
 
+const NumericPortValue*
+AbstractNodeInstance::getPortValue(const NumericPortInfo& portInfo) const
+{
+  const PortValue* portValue;
+  portValue = getPortValue(static_cast<const PortInfo&>(portInfo));
+  if (!portValue)
+    return 0;
+  return portValue->toNumericPortValue();
+}
+
+const MechanicLinkValue*
+AbstractNodeInstance::getPortValue(const MechanicLinkInfo& portInfo) const
+{
+  const PortValue* portValue;
+  portValue = getPortValue(static_cast<const PortInfo&>(portInfo));
+  if (!portValue)
+    return 0;
+  return portValue->toMechanicLinkValue();
+}
+
 } // namespace OpenFDM
