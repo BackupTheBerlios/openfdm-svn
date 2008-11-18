@@ -43,7 +43,12 @@ public:
     return true;
   }
 
-// protected:
+  virtual ContinousStateValue* getStateValue(const ContinousStateInfo& info)
+  { return mContinousState.getValue(info); }
+  virtual ContinousStateValue* getStateDerivative(const ContinousStateInfo& info)
+  { return mContinousStateDerivative.getValue(info); }
+  
+protected:
   // Continous States
   ContinousStateValueVector mContinousState;
   ContinousStateValueVector mContinousStateDerivative;

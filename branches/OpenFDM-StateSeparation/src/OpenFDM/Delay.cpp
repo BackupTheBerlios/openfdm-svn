@@ -51,7 +51,6 @@ Delay::alloc(ModelContext& context) const
       << "Size for output port does not match!" << std::endl;
     return false;
   }
-  context.mDiscreteState.setValue(*mMatrixStateInfo, context);
   return true;
 }
 

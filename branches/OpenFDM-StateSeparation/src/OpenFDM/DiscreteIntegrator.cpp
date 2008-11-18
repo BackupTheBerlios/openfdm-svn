@@ -54,7 +54,6 @@ DiscreteIntegrator::alloc(ModelContext& leafContext) const
       << "Size for input port does not match!" << std::endl;
     return false;
   }
-  leafContext.mDiscreteState.setValue(*mMatrixStateInfo, leafContext);
   return true;
 }
 
