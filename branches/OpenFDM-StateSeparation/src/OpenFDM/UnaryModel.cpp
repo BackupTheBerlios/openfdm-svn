@@ -22,20 +22,4 @@ UnaryModel::~UnaryModel()
 {
 }
 
-bool
-UnaryModel::alloc(LeafContext& leafContext) const
-{
-  Size sz;
-  sz = size(leafContext.getPortValue(*mInputPort)->getValue());
-  Log(Initialization, Debug)
-    << "Size for Gain is detemined by the input port with size: "
-    << trans(sz) << std::endl;
-  if (!leafContext.getPortValueList().setOrCheckPortSize(mOutputPort, sz)) {
-    Log(Initialization, Error)
-      << "Size for output port does not match!" << std::endl;
-    return false;
-  }
-  return true;
-}
-
 } // namespace OpenFDM

@@ -34,15 +34,6 @@ Bias::newModelContext(PortValueList& portValueList) const
   return UnaryModel::newModelContext(this, portValueList);
 }
 
-bool
-Bias::alloc(LeafContext& context) const
-{
-  // FIXME: check that the mBias matches the size of the ports.
-  if (!UnaryModel::alloc(context))
-    return false;
-  return true;
-}
-
 void
 Bias::output(const Matrix& inputValue, Matrix& outputValue) const
 {

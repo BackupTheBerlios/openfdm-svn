@@ -18,12 +18,23 @@ public:
   UnaryModel(const std::string& name);
   virtual ~UnaryModel();
 
-  virtual bool alloc(LeafContext& leafContext) const;
-
 protected:
   template<typename UM>
   ModelContext* newModelContext(UM* um, PortValueList& portValueList) const
   {
+    Size sz;
+    sz = size(portValueList.getPortValue(mInputPort)->getValue());
+    Log(Initialization, Debug)
+      << "Size for Model \"" << getName()
+      << "\" is detemined by the input port with size: "
+      << trans(sz) << std::endl;
+    if (!portValueList.setOrCheckPortSize(mOutputPort, sz)) {
+      Log(Initialization, Error)
+        << "Size for output port from Model \"" << getName()
+        << "\" does not match!" << std::endl;
+      return 0;
+    }
+
     SharedPtr<Context<UM> > context;
     context = new Context<UM>(um, portValueList.getPortValue(mInputPort),
                               portValueList.getPortValue(mOutputPort));
@@ -37,7 +48,7 @@ protected:
       }
       context->setPortValue(*getPort(i), portValue);
     }
-    if (!context->alloc()) {
+    if (!context->allocStates()) {
       Log(Model, Warning) << "Could not alloc for model \""
                           << getName() << "\"" << endl;
       return false;
@@ -60,12 +71,6 @@ protected:
     virtual const UM& getNode() const
     { return *mUnaryModel; }
     
-    bool alloc()
-    {
-      if (!allocStates())
-        return false;
-      return mUnaryModel->alloc(*this);
-    }
     virtual void initOutput(const /*Init*/Task&)
     { mUnaryModel->output(mInputValue->getValue(), mOutputValue->getValue()); }
     virtual void output(const Task&)

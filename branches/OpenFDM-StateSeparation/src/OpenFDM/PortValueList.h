@@ -71,6 +71,20 @@ public:
       mPortValueVector.resize(idx+1);
     mPortValueVector[idx] = portValue;
   }
+  bool setOrCheckPortSize(const NumericPortInfo* portInfo, const Size& sz)
+  {
+    if (!portInfo)
+      return false;
+    Size oldSize = size(getPortValue(portInfo)->getValue());
+    // If the size is still 0x0, just set to the desired size
+    if (oldSize(0) == 0 || oldSize(1) == 0) {
+      getPortValue(portInfo)->getValue().resize(sz(0), sz(1));
+      return true;
+    } else if (oldSize == sz)
+      return true;
+    else
+      return false;
+  }
   bool setOrCheckPortSize(const MatrixOutputPort& port, const Size& sz)
   {
     Size oldSize = size(port.getPortValue(mPortValueVector)->getValue());
@@ -83,40 +97,12 @@ public:
     else
       return false;
   }
-  bool setOrCheckPortSize(const OutputPortInfo* portInfo, const Size& sz)
-  {
-    if (!portInfo)
-      return false;
-    Size oldSize = size(getPortValue(portInfo)->getValue());
-    // If the size is still 0x0, just set to the desired size
-    if (oldSize(0) == 0 || oldSize(1) == 0) {
-      getPortValue(portInfo)->getValue().resize(sz(0), sz(1));
-      return true;
-    } else if (oldSize == sz)
-      return true;
-    else
-      return false;
-  }
   bool setOrCheckPortSize(const MatrixInputPort& port, const Size& sz)
   {
     Size oldSize = size(port.getPortValue(mPortValueVector)->getValue());
     // If the size is still 0x0, just set to the desired size
     if (oldSize(0) == 0 || oldSize(1) == 0) {
       port.getPortValue(mPortValueVector)->getValue().resize(sz(0), sz(1));
-      return true;
-    } else if (oldSize == sz)
-      return true;
-    else
-      return false;
-  }
-  bool setOrCheckPortSize(const InputPortInfo* portInfo, const Size& sz)
-  {
-    if (!portInfo)
-      return false;
-    Size oldSize = size(getPortValue(portInfo)->getValue());
-    // If the size is still 0x0, just set to the desired size
-    if (oldSize(0) == 0 || oldSize(1) == 0) {
-      getPortValue(portInfo)->getValue().resize(sz(0), sz(1));
       return true;
     } else if (oldSize == sz)
       return true;

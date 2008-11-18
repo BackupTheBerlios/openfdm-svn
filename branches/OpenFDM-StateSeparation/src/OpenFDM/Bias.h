@@ -19,7 +19,6 @@ public:
 
   ModelContext* newModelContext(PortValueList&) const;
 
-  bool alloc(LeafContext& context) const;
   void output(const Matrix& inputValue, Matrix& outputValue) const;
 
   const Matrix& getBias(void) const;
