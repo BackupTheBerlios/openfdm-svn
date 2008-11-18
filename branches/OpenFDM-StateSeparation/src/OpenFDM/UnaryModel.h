@@ -22,14 +22,13 @@ protected:
   template<typename UM>
   ModelContext* newModelContext(UM* um, PortValueList& portValueList) const
   {
-    Size sz;
-    sz = size(portValueList.getPortValue(mInputPort)->getValue());
+    Size sz = size(portValueList.getPortValue(mInputPort)->getValue());
     Log(Initialization, Debug)
       << "Size for Model \"" << getName()
       << "\" is detemined by the input port with size: "
       << trans(sz) << std::endl;
     if (!portValueList.setOrCheckPortSize(mOutputPort, sz)) {
-      Log(Initialization, Error)
+      Log(Initialization, Warning)
         << "Size for output port from Model \"" << getName()
         << "\" does not match!" << std::endl;
       return 0;
@@ -44,14 +43,14 @@ protected:
         Log(Model, Error) << "No port value given for model \"" << getName()
                           << "\" and port \"" << getPort(i)->getName()
                           << "\"" << endl;
-        return false;
+        return 0;
       }
       context->setPortValue(*getPort(i), portValue);
     }
     if (!context->allocStates()) {
       Log(Model, Warning) << "Could not alloc for model \""
                           << getName() << "\"" << endl;
-      return false;
+      return 0;
     }
     return context.release();
   }
