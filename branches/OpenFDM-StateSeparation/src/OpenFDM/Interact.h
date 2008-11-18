@@ -10,6 +10,13 @@
 
 namespace OpenFDM {
 
+class ConstNodeVisitor;
+class ContinousStateValueVector;
+class DiscreteStateValueVector;
+class NodeVisitor;
+class PortValueList;
+class Task;
+
 class Interact : public MechanicNode {
   OPENFDM_OBJECT(Interact, MechanicNode);
 public:

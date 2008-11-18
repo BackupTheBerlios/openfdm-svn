@@ -12,12 +12,8 @@
 
 namespace OpenFDM {
 
-class LeafContext;
+class ConstNodeVisitor;
 class NodeVisitor;
-class ContinousStateValueVector;
-class DiscreteStateValueVector;
-class PortValueList;
-class Task;
 
 class LeafNode : public Node {
   OPENFDM_OBJECT(LeafNode, Node);
