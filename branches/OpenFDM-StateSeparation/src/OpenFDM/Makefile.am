@@ -280,9 +280,7 @@ OpenFDMMechanicSOURCES = \
 #   LinearSpringDamper.cpp \
 #   MaxModel.cpp \
 #   MinModel.cpp \
-#   Output.cpp \
 #   Product.cpp \
-#   RigidBody.cpp \
 #   SimpleContact.cpp \
 #   SimpleGear.cpp \
 #   Summer.cpp \
