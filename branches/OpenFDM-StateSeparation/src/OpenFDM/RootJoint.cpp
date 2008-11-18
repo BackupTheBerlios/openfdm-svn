@@ -18,9 +18,6 @@ public:
   virtual const RootJoint& getNode() const
   { return *mRootJoint; }
   
-  bool alloc()
-  { return allocStates(); }
-
   virtual void initDesignPosition()
   {
     mRootJoint->initDesignPosition(mPortValueList);
@@ -88,7 +85,7 @@ RootJoint::newMechanicContext(const MechanicLinkInfo* parentLink,
     }
     context->setPortValue(*getPort(i), portValue);
   }
-  if (!context->alloc()) {
+  if (!context->allocStates()) {
     Log(Model, Warning) << "Could not alloc for model \""
                         << getName() << "\"" << endl;
     return false;
