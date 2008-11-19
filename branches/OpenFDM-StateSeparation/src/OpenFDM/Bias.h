@@ -14,15 +14,15 @@ namespace OpenFDM {
 class Bias : public UnaryModel {
   OPENFDM_OBJECT(Bias, UnaryModel);
 public:
-  Bias(const std::string& name);
+  Bias(const std::string& name, const real_type& bias = real_type(0));
   virtual ~Bias(void);
 
   ModelContext* newModelContext(PortValueList&) const;
-
   void output(const Matrix& inputValue, Matrix& outputValue) const;
 
   const Matrix& getBias(void) const;
   void setBias(const Matrix& bias);
+  void setBias(const real_type& bias);
 
 private:
   Matrix mBias;

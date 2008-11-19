@@ -18,10 +18,10 @@ BEGIN_OPENFDM_OBJECT_DEF(Bias, UnaryModel)
   DEF_OPENFDM_PROPERTY(Matrix, Bias, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-Bias::Bias(const std::string& name) :
-  UnaryModel(name),
-  mBias(Matrix::zeros(1, 1))
+Bias::Bias(const std::string& name, const real_type& bias) :
+  UnaryModel(name)
 {
+  setBias(bias);
 }
 
 Bias::~Bias(void)
@@ -50,6 +50,13 @@ void
 Bias::setBias(const Matrix& bias)
 {
   mBias = bias;
+}
+
+void
+Bias::setBias(const real_type& bias)
+{
+  mBias.resize(1, 1);
+  mBias(0, 0) = bias;
 }
 
 } // namespace OpenFDM
