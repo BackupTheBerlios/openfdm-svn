@@ -757,8 +757,8 @@ JSBSimReaderBase::addToUnit(const std::string& name, Unit u, PortProvider* in)
     std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
-  UnitConversionModel* unitConv
-    = new UnitConversionModel(name, UnitConversionModel::SiToUnit, u);
+  UnitConversion* unitConv
+    = new UnitConversion(name, UnitConversion::BaseUnitToUnit, u);
   modelGroup->addModel(unitConv, true);
   if (Port::Success != Connection::connect(in, unitConv->getInputPort(0)))
     return 0;
@@ -773,8 +773,8 @@ JSBSimReaderBase::addFromUnit(const std::string& name, Unit u, PortProvider* in)
     std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
-  UnitConversionModel* unitConv
-    = new UnitConversionModel(name, UnitConversionModel::UnitToSi, u);
+  UnitConversion* unitConv
+    = new UnitConversion(name, UnitConversion::UnitToBaseUnit, u);
   modelGroup->addModel(unitConv, true);
   if (Port::Success != Connection::connect(in, unitConv->getInputPort(0)))
     return 0;

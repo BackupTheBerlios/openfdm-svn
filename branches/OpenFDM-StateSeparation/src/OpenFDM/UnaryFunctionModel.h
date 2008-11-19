@@ -8,7 +8,6 @@
 #include <string>
 
 #include "Types.h"
-#include "Unit.h"
 #include "Model.h"
 
 namespace OpenFDM {
@@ -52,35 +51,6 @@ private:
   SharedPtr<UnaryFunctionModelImpl> mImpl;
   Type mType;
   real_type mFunctionValue;
-};
-
-class UnitConversionModel : public Model {
-  OPENFDM_OBJECT(UnitConversionModel, Model);
-public:
-  enum Type {
-    UnitToSi,
-    SiToUnit
-  };
-
-  UnitConversionModel(const std::string& name, Type type, const Unit& unit);
-  virtual ~UnitConversionModel(void);
-
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-
-  const real_type& getFunctionValue(void) const;
-
-  void setType(Type type);
-  Type getType(void) const;
-
-  void setUnit(const Unit& unit);
-  const Unit& getUnit(void) const;
-
-private:
-  Type mType;
-  Unit mUnit;
-  real_type mValue;
-  RealPortHandle mInputPort;
 };
 
 } // namespace OpenFDM

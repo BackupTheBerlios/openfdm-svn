@@ -657,10 +657,10 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           addOutputModel(port, "Gear " + numStr + " Steering Output",
                          "gear/gear[" + numStr + "]/steering-norm");
 
-          UnitConversionModel* unitConv
-            = new UnitConversionModel(name + " Degree Conversion",
-                                      UnitConversionModel::UnitToSi,
-                                      Unit::degree());
+          UnitConversion* unitConv
+            = new UnitConversion(name + " Degree Conversion",
+                                 UnitConversion::UnitToBaseUnit,
+                                 Unit::degree());
           addFCSModel(unitConv);
           Connection::connect(gain->getOutputPort(0),
                               unitConv->getInputPort(0));

@@ -231,6 +231,7 @@ OpenFDMModelsHEADERS = \
   Turbulence.h \
   UnaryFunctionModel.h \
   UnaryModel.h \
+  UnitConversion.h \
   UniversalJoint.h \
   Vehicle.h \
   WheelContact.h \
@@ -260,6 +261,7 @@ OpenFDMMechanicSOURCES = \
   RotationalJoint.cpp \
   Sensor.cpp \
   UnaryModel.cpp \
+  UnitConversion.cpp \
   UniversalJoint.cpp
 
 #   AeroForce.cpp \
