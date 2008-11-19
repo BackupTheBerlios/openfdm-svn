@@ -12,8 +12,7 @@
 
 namespace OpenFDM {
 
-class ImplicitEuler
-  : public ODESolver {
+class ImplicitEuler : public ODESolver {
 public:
   ImplicitEuler(void);
   virtual ~ImplicitEuler(void);
@@ -23,32 +22,7 @@ public:
   virtual bool denseOutput(real_type t, Vector& out);
 
 private:
-  class IEFunction
-    : public Function {
-  public:
-    IEFunction(ImplicitEuler* i) : ie(i) {}
-
-    virtual size_type inSize(void) const
-    { return ie->mSystem.lock()->getNumContinousStates(); }
-    virtual size_type outSize(void) const
-    { return ie->mSystem.lock()->getNumContinousStates(); }
-    virtual void eval(real_type t, const invector_type& v,
-                      outvector_type& out)
-    {
-      real_type h = ie->mCurrentStepsize;
-      ie->evalFunction(ie->getTime() + h, ie->getState() + v, out);
-      out -= (1/h)*v;
-    }
-    virtual void jac(real_type t, const invector_type& v, jacobian_type& jac)
-    {
-      real_type h = ie->mCurrentStepsize;
-      ie->evalJacobian(ie->getTime() + h, ie->getState() + v, jac);
-      size_type dim = ie->mSystem.lock()->getNumContinousStates();
-      jac -= (1/h)*LinAlg::Eye<real_type,0,0>(dim, dim);
-    }
-  private:
-    ImplicitEuler* ie;
-  };
+  class IEFunction;
 
   real_type mCurrentStepsize;
   real_type mJacStepsize;

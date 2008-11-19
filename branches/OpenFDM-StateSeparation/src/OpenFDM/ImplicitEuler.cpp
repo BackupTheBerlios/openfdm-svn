@@ -13,10 +13,35 @@
 
 namespace OpenFDM {
 
+class ImplicitEuler::IEFunction : public Function {
+public:
+  IEFunction(ImplicitEuler* i) : ie(i) {}
+  
+  virtual size_type inSize(void) const
+  { return ie->mFunction->inSize(); }
+  virtual size_type outSize(void) const
+  { return ie->mFunction->outSize(); }
+  virtual void eval(real_type t, const invector_type& v, outvector_type& out)
+  {
+    real_type h = ie->mCurrentStepsize;
+    ie->evalFunction(ie->getTime() + h, ie->getState() + v, out);
+    out -= (1/h)*v;
+  }
+  virtual void jac(real_type t, const invector_type& v, jacobian_type& jac)
+  {
+    real_type h = ie->mCurrentStepsize;
+    ie->evalJacobian(ie->getTime() + h, ie->getState() + v, jac);
+    size_type dim = ie->mFunction->inSize();
+    jac -= (1/h)*LinAlg::Eye<real_type,0,0>(dim, dim);
+  }
+private:
+  ImplicitEuler* ie;
+};
+
 ImplicitEuler::ImplicitEuler(void)
 {
   Log(TimeStep, Warning) << "Using mostly hacked implicit Euler method!!!"
-                             << endl;
+                         << endl;
   mJacStepsize = 0;
 }
 
@@ -38,8 +63,7 @@ ImplicitEuler::integrate(real_type toTEnd)
   Vector fState(mState.size());
   fState.clear();
 
-  SharedPtr<System> system = mSystem.lock();
-  unsigned dim = system->getNumContinousStates();
+  unsigned dim = mFunction->inSize();
 
   real_type h = 0;
   while (!reached(toTEnd)) {

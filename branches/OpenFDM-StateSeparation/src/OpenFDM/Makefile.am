@@ -142,6 +142,7 @@ OpenFDMCoreSOURCES = \
   GroupInput.cpp \
   GroupMechanicLink.cpp \
   GroupOutput.cpp \
+  ImplicitEuler.cpp \
   Interact.cpp \
   LeafNode.cpp \
   LibraryModel.cpp \
@@ -153,6 +154,7 @@ OpenFDMCoreSOURCES = \
   MidpointRule.cpp \
   Model.cpp \
   ModelContext.cpp \
+  Newton.cpp \
   Node.cpp \
   NodeInstance.cpp \
   NodeVisitor.cpp \
@@ -173,11 +175,7 @@ OpenFDMCoreSOURCES = \
 
 #   Environment.cpp \
 #   EnvironmentObject.cpp \
-#   ImplicitEuler.cpp \
-#   Newton.cpp \
 #   ReaderWriter.cpp \
-#
-
 #   Atmosphere.cpp \
 #   AtmosphereSTD1976.cpp \
 #   DefaultGravity.cpp \
@@ -296,7 +294,7 @@ OpenFDMMechanicSOURCES = \
 #   Tailhook.cpp \
 #   Tank.cpp \
 #   WheelContact.cpp
-
+#
 
 nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
 libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES) $(OpenFDMMechanicSOURCES)
