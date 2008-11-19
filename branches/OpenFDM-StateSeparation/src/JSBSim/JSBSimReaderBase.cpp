@@ -39,7 +39,7 @@
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/Table.h>
 #include <OpenFDM/TimeDerivative.h>
-#include <OpenFDM/UnaryFunctionModel.h>
+#include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/Unit.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/WheelContact.h>
@@ -711,8 +711,8 @@ JSBSimReaderBase::addInverterModel(const std::string& name, PortProvider* in)
     std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
-  UnaryFunctionModel *unary
-    = new UnaryFunctionModel(name + " Inverter", UnaryFunctionModel::Minus);
+  UnaryFunction *unary
+    = new UnaryFunction(name + " Inverter", UnaryFunction::Minus);
   modelGroup->addModel(unary, true);
   if (Port::Success != Connection::connect(in, unary->getInputPort(0)))
     return 0;
@@ -727,8 +727,8 @@ JSBSimReaderBase::addAbsModel(const std::string& name, PortProvider* in)
     std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
-  UnaryFunctionModel *unary
-    = new UnaryFunctionModel(name + " Abs", UnaryFunctionModel::Abs);
+  UnaryFunction *unary
+    = new UnaryFunction(name + " Abs", UnaryFunction::Abs);
   modelGroup->addModel(unary, true);
   if (Port::Success != Connection::connect(in, unary->getInputPort(0)))
     return 0;

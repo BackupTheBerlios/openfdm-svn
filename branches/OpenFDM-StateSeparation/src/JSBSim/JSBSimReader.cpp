@@ -40,7 +40,7 @@
 #include <OpenFDM/Table.h>
 #include <OpenFDM/Tailhook.h>
 #include <OpenFDM/TimeDerivative.h>
-#include <OpenFDM/UnaryFunctionModel.h>
+#include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/Unit.h>
 #include <OpenFDM/Vehicle.h>
 #include <OpenFDM/WheelContact.h>
@@ -632,8 +632,8 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 
         real_type maxSteer = realData((*it)->getElement("max_steer"), 0);
         if (maxSteer != 0) {
-          UnaryFunctionModel* scale
-            = new UnaryFunctionModel(name + " Scale", UnaryFunctionModel::Abs);
+          UnaryFunction* scale
+            = new UnaryFunction(name + " Scale", UnaryFunction::Abs);
           addFCSModel(scale);
           // FIXME: FCS might later define something for that gain ...
           // "fcs/steer-pos-deg[" + numStr + "]";
@@ -730,8 +730,8 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           sj->setPosition(parentPos);
           sj->setOrientation(Quaternion::unit());
           
-          UnaryFunctionModel* scale
-            = new UnaryFunctionModel(name + " Scale", UnaryFunctionModel::Abs);
+          UnaryFunction* scale
+            = new UnaryFunction(name + " Scale", UnaryFunction::Abs);
           addFCSModel(scale);
           if (!connectJSBExpression("fcs/steer-cmd-norm",
                                     scale->getInputPort(0)))

@@ -29,11 +29,11 @@ Integrator::~Integrator(void)
 }
 
 bool
-Integrator::alloc(ModelContext& leafContext) const
+Integrator::alloc(ModelContext& context) const
 {
   Size sz;
   if (getEnableInitialValuePort()) {
-    sz = size(leafContext.getPortValueList()[mInitialValuePort]);
+    sz = size(context.getPortValueList()[mInitialValuePort]);
     Log(Initialization, Debug)
       << "Size for Integrator is detemined by the initial input "
       << "port with size: " << trans(sz) << std::endl;
@@ -43,22 +43,22 @@ Integrator::alloc(ModelContext& leafContext) const
       << "Size for Integrator is detemined by the static initial value "
       << "with size: " << trans(sz) << std::endl;
   }
-  if (!leafContext.getPortValueList().setOrCheckPortSize(mInputPort, sz)) {
+  if (!context.getPortValueList().setOrCheckPortSize(mInputPort, sz)) {
     Log(Initialization, Error)
       << "Size for input port does not match!" << std::endl;
     return false;
   }
-  if (!leafContext.getPortValueList().setOrCheckPortSize(mOutputPort, sz)) {
+  if (!context.getPortValueList().setOrCheckPortSize(mOutputPort, sz)) {
     Log(Initialization, Error)
       << "Size for input port does not match!" << std::endl;
     return false;
   }
-  leafContext.setContinousStateSize(*mMatrixStateInfo, sz);
+  context.setContinousStateSize(*mMatrixStateInfo, sz);
   return true;
 }
 
 void
-Integrator::init(const Task&, DiscreteStateValueVector& discreteState,
+Integrator::init(const Task&, DiscreteStateValueVector&,
                  ContinousStateValueVector& continousState,
                  const PortValueList& portValues) const
 {

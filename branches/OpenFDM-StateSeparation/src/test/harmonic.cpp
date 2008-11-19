@@ -11,7 +11,7 @@
 #include <OpenFDM/SimulationTime.h>
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
-#include <OpenFDM/UnaryFunctionModel.h>
+#include <OpenFDM/UnaryFunction.h>
 #include "ErrorCollectorCallback.h"
 
 using namespace OpenFDM;
@@ -56,14 +56,14 @@ main(int argc, char *argv[])
   Connection::connect(gain->getInputPort(0),
                       simulationTime->getOutputPort(0));
 
-  UnaryFunctionModel* cosFunction
-    = new UnaryFunctionModel("Exact Pos Solution", UnaryFunctionModel::Cos);
+  UnaryFunction* cosFunction
+    = new UnaryFunction("Exact Pos Solution", UnaryFunction::Cos);
   system->addModel(cosFunction);
   Connection::connect(cosFunction->getInputPort(0),
                       gain->getOutputPort(0));
 
-  UnaryFunctionModel* sinFunction
-    = new UnaryFunctionModel("Exact Vel Solution", UnaryFunctionModel::Sin);
+  UnaryFunction* sinFunction
+    = new UnaryFunction("Exact Vel Solution", UnaryFunction::Sin);
   system->addModel(sinFunction);
   Connection::connect(sinFunction->getInputPort(0),
                       gain->getOutputPort(0));

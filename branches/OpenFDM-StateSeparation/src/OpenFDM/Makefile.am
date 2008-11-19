@@ -194,7 +194,7 @@ OpenFDMModelsHEADERS = \
   Atmosphere.h \
   AtmosphereSTD1976.h \
   Bias.h \
-  BinaryFunctionModel.h \
+  BinaryFunction.h \
   CartesianJoint.h \
   ConstModel.h \
   Contact.h \
@@ -238,7 +238,7 @@ OpenFDMModelsHEADERS = \
   TimeDerivative.h \
   TransferFunction.h \
   Turbulence.h \
-  UnaryFunctionModel.h \
+  UnaryFunction.h \
   UnaryModel.h \
   UnitConversion.h \
   UniversalJoint.h \
@@ -247,6 +247,7 @@ OpenFDMModelsHEADERS = \
 
 OpenFDMModelsSOURCES = \
   Bias.cpp \
+  BinaryFunction.cpp \
   ConstModel.cpp \
   DeadBand.cpp \
   Delay.cpp \
@@ -256,10 +257,12 @@ OpenFDMModelsSOURCES = \
   Integrator.cpp \
   Output.cpp \
   Saturation.cpp \
-  SimulationTime.cpp
+  SimulationTime.cpp \
+  UnaryFunction.cpp \
+  UnaryModel.cpp \
+  UnitConversion.cpp
 
 #   AirSpring.cpp \
-#   BinaryFunctionModel.cpp \
 #   DiscBrake.cpp \
 #   LinearSpringDamper.cpp \
 #   MaxModel.cpp \
@@ -269,7 +272,7 @@ OpenFDMModelsSOURCES = \
 #   Table.cpp \
 #   TimeDerivative.cpp \
 #   TransferFunction.cpp \
-#   UnaryFunctionModel.cpp
+#
 
 OpenFDMMechanicSOURCES = \
   Joint.cpp \
@@ -281,8 +284,6 @@ OpenFDMMechanicSOURCES = \
   RevoluteJoint.cpp \
   RotationalJoint.cpp \
   Sensor.cpp \
-  UnaryModel.cpp \
-  UnitConversion.cpp \
   UniversalJoint.cpp
 
 #   AeroForce.cpp \

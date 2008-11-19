@@ -21,7 +21,7 @@
 #include <OpenFDM/SimulationTime.h>
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
-#include <OpenFDM/UnaryFunctionModel.h>
+#include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/WheelContact.h>
 
 #include "HDF5Writer.h"
