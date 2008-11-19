@@ -178,6 +178,15 @@ OpenFDMCoreSOURCES = \
 #   ReaderWriter.cpp \
 #
 
+#   Atmosphere.cpp \
+#   AtmosphereSTD1976.cpp \
+#   DefaultGravity.cpp \
+#   DefaultGround.cpp \
+#   DefaultPlanet.cpp \
+#   Gravity.cpp \
+#   Ground.cpp
+
+
 
 OpenFDMModelsHEADERS = \
   AeroForce.h \
@@ -233,7 +242,6 @@ OpenFDMModelsHEADERS = \
   UnaryModel.h \
   UnitConversion.h \
   UniversalJoint.h \
-  Vehicle.h \
   WheelContact.h \
   Wind.h
 
@@ -250,6 +258,19 @@ OpenFDMModelsSOURCES = \
   Saturation.cpp \
   SimulationTime.cpp
 
+#   AirSpring.cpp \
+#   BinaryFunctionModel.cpp \
+#   DiscBrake.cpp \
+#   LinearSpringDamper.cpp \
+#   MaxModel.cpp \
+#   MinModel.cpp \
+#   Product.cpp \
+#   Summer.cpp \
+#   Table.cpp \
+#   TimeDerivative.cpp \
+#   TransferFunction.cpp \
+#   UnaryFunctionModel.cpp
+
 OpenFDMMechanicSOURCES = \
   Joint.cpp \
   FixedRootJoint.cpp \
@@ -265,35 +286,16 @@ OpenFDMMechanicSOURCES = \
   UniversalJoint.cpp
 
 #   AeroForce.cpp \
-#   AirSpring.cpp \
-#   Atmosphere.cpp \
-#   AtmosphereSTD1976.cpp \
-#   BinaryFunctionModel.cpp \
 #   Contact.cpp \
-#   DefaultGravity.cpp \
-#   DefaultGround.cpp \
-#   DefaultPlanet.cpp \
-#   DiscBrake.cpp \
 #   ExternalForceModel.cpp \
 #   Force.cpp \
-#   Gravity.cpp \
-#   Ground.cpp \
 #   Launchbar.cpp \
-#   LinearSpringDamper.cpp \
-#   MaxModel.cpp \
-#   MinModel.cpp \
-#   Product.cpp \
 #   SimpleContact.cpp \
 #   SimpleGear.cpp \
-#   Summer.cpp \
-#   Table.cpp \
 #   Tailhook.cpp \
 #   Tank.cpp \
-#   TimeDerivative.cpp \
-#   TransferFunction.cpp \
-#   UnaryFunctionModel.cpp \
-#   Vehicle.cpp \
 #   WheelContact.cpp
+
 
 nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
 libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES) $(OpenFDMMechanicSOURCES)

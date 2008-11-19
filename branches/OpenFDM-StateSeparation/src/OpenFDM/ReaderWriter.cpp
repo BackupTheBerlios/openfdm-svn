@@ -3,8 +3,6 @@
  */
 
 #include "ReaderWriter.h"
-#include "Vehicle.h"
-#include "Force.h"
 
 namespace OpenFDM {
 

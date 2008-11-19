@@ -46,8 +46,8 @@ public:
 
   /** Returns a pointer to the vehicle.
    */
-  Vehicle* getVehicle(void)
-  { return mVehicle; }
+//   Vehicle* getVehicle(void)
+//   { return mVehicle; }
   
 protected:
   /** Slot where a ReaderWriter implementation should reset it's state.
@@ -63,9 +63,9 @@ protected:
    */
   bool error(const std::string& message);
 
-  /** The Vehicle handle.
-   */
-  SharedPtr<Vehicle> mVehicle;
+//   /** The Vehicle handle.
+//    */
+//   SharedPtr<Vehicle> mVehicle;
 
 private:
   /** A list of errors during import.
