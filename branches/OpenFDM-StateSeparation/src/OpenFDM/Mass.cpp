@@ -38,12 +38,18 @@ void
 Mass::articulation(const Task&, const ContinousStateValueVector&,
                    PortValueList& portValues, Matrix&) const
 {
+  const EnvironmentCache* environment;
+  environment = portValues[mMechanicLink].getEnvironment();
+
   Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
 
-  // FIXME: Hardcoding that gravity happens in the roots??
-  Vector3 gravity = Vector3::zeros();
+  Vector3 refPosition = portValues[mMechanicLink].getFrame().posToRef(position);
+  Vector3 gravity = environment->getGravityAcceleration(refPosition);
+  gravity = portValues[mMechanicLink].getFrame().rotFromRef(gravity);
+  // FIXME: Why this -??
+  gravity = -mMass*gravity;
 
-  Vector6 force = forceFrom(position, Vector6(Vector3::zeros(), gravity));
+  Vector6 force = forceFrom(position, gravity);
   SpatialInertia I = inertiaFrom(position, SpatialInertia(mInertia, mMass));
 
   // FIXME: do we really need that in the mass
@@ -53,7 +59,6 @@ Mass::articulation(const Task&, const ContinousStateValueVector&,
   force += Vector6(cross(iv.getAngular(), Jiv.getAngular()) +
                    cross(iv.getLinear(), Jiv.getLinear()),
                    cross(iv.getAngular(), Jiv.getLinear()));
-
 
   portValues[mMechanicLink].applyInertia(I);
   portValues[mMechanicLink].applyForce(force);

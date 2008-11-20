@@ -11,7 +11,7 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Gravity.h"
+#include "Task.h"
 #include "MechanicContext.h"
 
 namespace OpenFDM {
@@ -71,11 +71,14 @@ FixedRootJoint::initDesignPosition(PortValueList& portValues) const
 }
 
 void
-FixedRootJoint::velocity(const Task&,
-                          const ContinousStateValueVector& continousState,
-                          PortValueList& portValues) const
+FixedRootJoint::velocity(const Task& task,
+                         const ContinousStateValueVector& continousState,
+                         PortValueList& portValues) const
 {
-  portValues[mMechanicLink].setPosAndVel(getAngularBaseVelocity(), mPosition,
+  const EnvironmentCache* environment;
+  environment = portValues[mMechanicLink].getEnvironment();
+  Vector3 angularBaseVelocity = environment->getAngularVelocity(task.getTime());
+  portValues[mMechanicLink].setPosAndVel(angularBaseVelocity, mPosition,
                                          mOrientation, Vector6::zeros());
 }
 
@@ -87,18 +90,12 @@ FixedRootJoint::articulation(const Task&, const ContinousStateValueVector&,
 }
 
 void
-FixedRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
+FixedRootJoint::acceleration(const Task& task, const ContinousStateValueVector&,
                               PortValueList& portValues) const
 {
-  // Assumption: body is small compared to the distance to the planets
-  // center of mass. That means gravity could be considered equal for the
-  // whole vehicle.
-  // See Featherstone, Orin: Equations and Algorithms
-
-  // FIXME
-  Vector6 grav = Vector6(Vector3::zeros(), portValues[mMechanicLink].getFrame().rotFromRef(Vector3(0, 0, 9.81)));
-
-  Vector6 spatialAcceleration = grav;
+  const EnvironmentCache* environment;
+  environment = portValues[mMechanicLink].getEnvironment();
+  Vector6 spatialAcceleration = environment->getAcceleration(task.getTime());
   portValues[mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
 }
 

@@ -56,12 +56,10 @@ private:
 };
   
 BEGIN_OPENFDM_OBJECT_DEF(RootJoint, Joint)
-  DEF_OPENFDM_PROPERTY(Matrix, AngularBaseVelocity, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RootJoint::RootJoint(const std::string& name) :
-  Joint(name),
-  mAngularBaseVelocity(Vector3::zeros())
+  Joint(name)
 {
 }
 
@@ -83,6 +81,11 @@ RootJoint::newMechanicContext(const MechanicLinkInfo* parentLink,
                         << "\"" << endl;
       return false;
     }
+
+    if (portValue->toMechanicLinkValue()) {
+      portValue->toMechanicLinkValue()->setEnvironment(new EnvironmentCache);
+    }
+
     context->setPortValue(*getPort(i), portValue);
   }
   if (!context->allocStates()) {

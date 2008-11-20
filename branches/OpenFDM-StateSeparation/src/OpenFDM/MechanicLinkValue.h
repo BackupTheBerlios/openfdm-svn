@@ -11,6 +11,95 @@
 
 namespace OpenFDM {
 
+class EnvironmentCache;
+
+class AbstractInertial : public Referenced {
+public:
+  virtual ~AbstractInertial() {}
+  virtual Vector3 getAngularVelocity(const real_type& t) const
+  { return Vector3::zeros(); }
+  virtual Vector6 getAcceleration(const real_type& t) const
+  { return Vector6::zeros(); }
+};
+
+class AbstractGravity : public Referenced {
+public:
+  virtual ~AbstractGravity() {}
+  virtual Vector3
+  getGravityAcceleration(const EnvironmentCache&, const Vector3&) const
+  { return Vector3(0, 0, 9.81); }
+};
+
+class AbstractWind : public Referenced {
+public:
+  virtual ~AbstractWind() {}
+  virtual Vector6 getWindVelocity(const EnvironmentCache&, const Vector3&) const
+  { return Vector6::zeros(); }
+};
+
+class EnvironmentCache : public Referenced {
+public:
+  EnvironmentCache() :
+    mInertial(new AbstractInertial),
+    mGravity(new AbstractGravity),
+    mWind(new AbstractWind)
+  {
+  }
+  EnvironmentCache(const AbstractInertial* inertial,
+                   const AbstractGravity* gravity,
+                   const AbstractWind* wind) :
+    mInertial(inertial),
+    mGravity(gravity),
+    mWind(wind)
+  {
+  }
+  virtual ~EnvironmentCache() {}
+
+  // The the global coordinate frames angular velocity and acceleration.
+  // Note that the acceleration and velocity must fit together to simulate
+  // something useful.
+  Vector3 getAngularVelocity(const real_type& t) const
+  { return mInertial->getAngularVelocity(t); }
+  Vector6 getAcceleration(const real_type& t) const
+  { return mInertial->getAcceleration(t); }
+
+  // Sets a new RootJoint position, evaluate environmental stuff
+  void setRootJointPosition(const Vector3& position)
+  {
+    mRootJointPosition = position;
+    mGravityAcceleration = getGravityAcceleration(position);
+    mWindVelocity = getWindVelocity(position);
+  }
+  const Vector3& getRootJointPosition() const
+  { return mRootJointPosition; }
+
+  Vector3 getGravityAcceleration(const Vector3& position) const
+  { return mGravity->getGravityAcceleration(*this, position); }
+  const Vector3& getGravityAccelerationAtRoot() const
+  { return mGravityAcceleration; }
+
+  Vector6 getWindVelocity(const Vector3& position) const
+  { return mWind->getWindVelocity(*this, position); }
+  const Vector6& getWindVelocityAtRoot() const
+  { return mWindVelocity; }
+
+private:
+  Vector3 mRootJointPosition;
+
+  SharedPtr<const AbstractInertial> mInertial;
+
+  Vector3 mGravityAcceleration;
+  SharedPtr<const AbstractGravity> mGravity;
+
+  Vector6 mWindVelocity;
+  SharedPtr<const AbstractWind> mWind;
+
+//   SharedPtr<const AbstractPlanet> mPlanet;
+//   SharedPtr<const AbstractAtmosphere> mAtmosphere;
+//   SharedPtr<const AbstractGround> mGround;
+};
+
+
 class MechanicLinkValue : public PortValue {
 public:
   MechanicLinkValue();
@@ -81,6 +170,15 @@ public:
   void setDesignPosition(const Vector3& designPosition)
   { mDesignPosition = designPosition; }
 
+  // This is a per link value because of interacts that can be child of two
+  // different roots.
+  // FIXME, enforce setting that in the contructor
+  const EnvironmentCache* getEnvironment() const
+  { return mEnvironment; }
+
+  void setEnvironment(const EnvironmentCache* environment)
+  { OpenFDMAssert(environment); mEnvironment = environment; }
+
 protected:
   // May be build a class hierarchy that accounts for different inputs
   // and outputs a rigid body can have.
@@ -90,6 +188,8 @@ protected:
   SpatialInertia mArticulatedInertia;
 
   Vector3 mDesignPosition;
+
+  SharedPtr<const EnvironmentCache> mEnvironment;
 };
 
 } // namespace OpenFDM

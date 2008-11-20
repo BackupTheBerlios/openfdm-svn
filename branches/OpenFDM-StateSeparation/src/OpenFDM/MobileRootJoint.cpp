@@ -6,12 +6,11 @@
 
 #include "Assert.h"
 #include "LogStream.h"
-#include "Object.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
-#include "Gravity.h"
+#include "Task.h"
 #include "MechanicContext.h"
 
 namespace OpenFDM {
@@ -52,15 +51,19 @@ MobileRootJoint::initDesignPosition(PortValueList& portValues) const
 }
 
 void
-MobileRootJoint::velocity(const Task&,
+MobileRootJoint::velocity(const Task& task,
                           const ContinousStateValueVector& continousState,
                           PortValueList& portValues) const
 {
+  const EnvironmentCache* environment;
+  environment = portValues[mMechanicLink].getEnvironment();
+  Vector3 angularBaseVelocity = environment->getAngularVelocity(task.getTime());
+
   Vector3 position = continousState[*mPositionStateInfo];
   Quaternion orientation = continousState[*mOrientationStateInfo];
   Vector6 velocity = continousState[*mVelocityStateInfo];
 
-  portValues[mMechanicLink].setPosAndVel(getAngularBaseVelocity(),
+  portValues[mMechanicLink].setPosAndVel(angularBaseVelocity,
                                          position, orientation, velocity);
 }
 
@@ -72,23 +75,18 @@ MobileRootJoint::articulation(const Task&, const ContinousStateValueVector&,
 }
 
 void
-MobileRootJoint::acceleration(const Task&, const ContinousStateValueVector&,
+MobileRootJoint::acceleration(const Task& task,
+                              const ContinousStateValueVector&,
                               PortValueList& portValues) const
 {
-  // Assumption: body is small compared to the distance to the planets
-  // center of mass. That means gravity could be considered equal for the
-  // whole vehicle.
-  // See Featherstone, Orin: Equations and Algorithms
-//   Vector3 ga = gravity->gravityAccel(getRefPosition());
-//     Vector6 grav = Vector6(Vector3::zeros(), rotFromRef(ga));
-
-  // FIXME
-  Vector6 grav = Vector6(Vector3::zeros(), portValues[mMechanicLink].getFrame().rotFromRef(Vector3(0, 0, 9.81)));
+  const EnvironmentCache* environment;
+  environment = portValues[mMechanicLink].getEnvironment();
+  Vector6 spatialAcceleration = environment->getAcceleration(task.getTime());
 
   SpatialInertia inertia = portValues[mMechanicLink].getInertia();
   Vector6 force = portValues[mMechanicLink].getForce();
 
-  Vector6 spatialAcceleration = grav - solve(inertia, force);
+  spatialAcceleration -= solve(inertia, force);
   portValues[mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
 }
 

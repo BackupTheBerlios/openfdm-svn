@@ -24,11 +24,6 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  const Vector3& getAngularBaseVelocity() const
-  { return mAngularBaseVelocity; }
-  void setAngularBaseVelocity(const Vector3& angularBaseVelocity)
-  { mAngularBaseVelocity = angularBaseVelocity; }
-
   virtual void init(const Task&,DiscreteStateValueVector&,
                     ContinousStateValueVector&, const PortValueList&) const
   { }
@@ -47,8 +42,6 @@ public:
   {}
 private:
   class Context;
-
-  Vector3 mAngularBaseVelocity;
 };
 
 } // namespace OpenFDM

@@ -50,6 +50,9 @@ public:
     if (!childLinkValue)
       return 0;
 
+    // Now propagate the root dependent data ...
+    childLinkValue->setEnvironment(parentLinkValue->getEnvironment());
+
     SharedPtr<Context> context;
     context = new Context(this, parentLinkValue, childLinkValue);
     for (unsigned i = 0; i < getNumPorts(); ++i) {
