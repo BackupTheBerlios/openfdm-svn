@@ -145,13 +145,11 @@ RotationalJoint::derivative(const DiscreteStateValueVector&,
                           const PortValueList&, const VectorN& velDot,
                           ContinousStateValueVector& derivative) const
 {
-  Quaternion orientation = states[*mPositionStateInfo];
-  Quaternion q = orientation;
-
   // Compute the derivative term originating from the angular velocity.
   // Correction term to keep the quaternion normalized.
   // That is if |q| < 1 add a little radial component outward,
   // if |q| > 1 add a little radial component inward
+  Quaternion q = states[*mPositionStateInfo];
   Vector3 angVel = states[*mVelocityStateInfo];
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
