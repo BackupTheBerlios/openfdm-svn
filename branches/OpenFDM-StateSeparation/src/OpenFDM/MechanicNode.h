@@ -38,7 +38,6 @@ namespace OpenFDM {
 
 // TODO:
 // * Remove AbstractNodeContext ...
-// * allocate contexts later ...
 
 class MechanicContext;
 
