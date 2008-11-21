@@ -625,7 +625,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
         v(i) = static_cast<value_type>(0);
       } else {
         v(i) /= Aii;
-        if (1 < i)
+        if (0 < i)
           v(Range(0,i-1)) -= v(i)*A(Range(0,i-1),i);
       }
     }
@@ -652,7 +652,7 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
           v(i,j) = static_cast<value_type>(0);
         } else {
           v(i,j) /= Aii;
-          if (1 < i)
+          if (0 < i)
             v(Range(0,i-1),j) -= v(i,j)*A(Range(0,i-1),i);
         }
       }
@@ -804,8 +804,8 @@ lu_factorize(Matrix<T,dim1,dim2>& A, Vector<size_type,dim1>& perm)
         // FIXME ...
 //         RangeExpr<Matrix<T,dim1,dim2>,1,0> re1 = A(j, Range(1, n-1));
 //         RangeExpr<Matrix<T,dim1,dim2>,1,0> re2 = A(jp, Range(1, n-1));
-        MatrixPointerExpr<Matrix<T,dim1,dim2>,1,0> re1 = A(j, Range(1, n-1));
-        MatrixPointerExpr<Matrix<T,dim1,dim2>,1,0> re2 = A(jp, Range(1, n-1));
+        MatrixPointerExpr<Matrix<T,dim1,dim2>,1,0> re1 = A(j, Range(0, n-1));
+        MatrixPointerExpr<Matrix<T,dim1,dim2>,1,0> re2 = A(jp, Range(0, n-1));
         swap(re1, re2);
       }
     
