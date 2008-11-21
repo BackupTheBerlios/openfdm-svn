@@ -20,33 +20,33 @@ int main()
 
   // FIXME, need usable environment stuff like gravity first ...
   SharedPtr<Group> group = new Group("Foucault");
-  FixedRootJoint* fixedRoot = new FixedRootJoint("Root");
-  fixedRoot->setPosition(Vector3(0, 0, -1));
-  Group::NodeId root = group->addChild(fixedRoot);
-  RotationalJoint* rotationalJoint = new RotationalJoint("Rotational");
-  Group::NodeId rotational = group->addChild(rotationalJoint);
+  FixedRootJoint* fixedRootJoint = new FixedRootJoint("Root");
+  fixedRootJoint->setPosition(Vector3(0, 0, 1));
+  Group::NodeId fixedRootJointId = group->addChild(fixedRootJoint);
+  RotationalJoint* rotationalJoint1 = new RotationalJoint("Rotational Joint 1");
+  Group::NodeId rotationalJoint1Id = group->addChild(rotationalJoint1);
+  RigidBody* rigidBody1 = new RigidBody("Rigid Body 1");
+  rigidBody1->addLink("sensorLink");
+  Group::NodeId rigidBody1Id = group->addChild(rigidBody1);
 
-  RigidBody* rigidBodyNode = new RigidBody("Rigid Body");
-  rigidBodyNode->addLink("sensorLink");
-  Group::NodeId rigidBody = group->addChild(rigidBodyNode);
-  Mass* massModel = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
-  massModel->setPosition(Vector3(1, 0, 0));
-  Group::NodeId mass = group->addChild(massModel);
+  Mass* mass = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
+  mass->setPosition(Vector3(1, 1, 0));
+  Group::NodeId massId = group->addChild(mass);
 
-  Sensor* sensorModel = new Sensor("Sensor");
-  sensorModel->setPosition(massModel->getPosition());
-  sensorModel->setEnablePosition(true);
-  sensorModel->setEnableOrientation(true);
-  sensorModel->setEnableEulerAngles(true);
-  sensorModel->setEnableLinearVelocity(true);
-  sensorModel->setEnableAngularVelocity(true);
-  sensorModel->setEnableCentrifugalAcceleration(true);
-  Group::NodeId sensor = group->addChild(sensorModel);
+  Sensor* sensor = new Sensor("Sensor");
+  sensor->setPosition(mass->getPosition());
+  sensor->setEnablePosition(true);
+  sensor->setEnableOrientation(true);
+  sensor->setEnableEulerAngles(true);
+  sensor->setEnableLinearVelocity(true);
+  sensor->setEnableAngularVelocity(true);
+  sensor->setEnableCentrifugalAcceleration(true);
+  Group::NodeId sensorId = group->addChild(sensor);
 
-  group->connect(root, 0, rotational, 0);
-  group->connect(rotational, 1, rigidBody, 0);
-  group->connect(rigidBody, 1, mass, 0);
-  group->connect(rigidBody, "sensorLink", sensor, "link");
+  group->connect(fixedRootJointId, 0, rotationalJoint1Id, 0);
+  group->connect(rotationalJoint1Id, 1, rigidBody1Id, 0);
+  group->connect(rigidBody1Id, 1, massId, 0);
+  group->connect(rigidBody1Id, "sensorLink", sensorId, "link");
 
   SharedPtr<System> system = new System("System", group);
 
