@@ -98,7 +98,7 @@ motionTo(const Rotation& r, const Vector6& v)
 OpenFDM_FORCE_INLINE Vector6
 angularMotionTo(const Vector3& p, const Rotation& r, const Vector3& v)
 {
-  return Vector6(r.transform(cross(v, p)), Vector3::zeros());
+  return Vector6(r.transform(v), r.transform(cross(v, p)));
 }
 OpenFDM_FORCE_INLINE Vector6
 angularMotionTo(const Rotation& r, const Vector3& v)
@@ -108,7 +108,7 @@ angularMotionTo(const Rotation& r, const Vector3& v)
 OpenFDM_FORCE_INLINE Vector6
 angularMotionTo(const Vector3& p, const Vector3& v)
 {
-  return Vector6(cross(v, p), Vector3::zeros());
+  return Vector6(v, cross(v, p));
 }
 
 /** Spatial motion vector transform.

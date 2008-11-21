@@ -18,6 +18,7 @@ public:
   virtual ~AbstractInertial() {}
   virtual Vector3 getAngularVelocity(const real_type& t) const
   { return Vector3::zeros(); }
+//   { return Vector3(0, 0, pi2/(24*60*60)); }
   virtual Vector6 getAcceleration(const real_type& t) const
   { return Vector6::zeros(); }
 };
