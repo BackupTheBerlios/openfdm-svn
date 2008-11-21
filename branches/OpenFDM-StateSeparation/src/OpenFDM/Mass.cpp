@@ -41,27 +41,31 @@ Mass::articulation(const Task&, const ContinousStateValueVector&,
   const EnvironmentCache* environment;
   environment = portValues[mMechanicLink].getEnvironment();
 
+  // The position of the mass point wrt its parent link frame
+  // FIXME precompute that
   Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
 
+  // The gravity force that applies to this mass
   Vector3 refPosition = portValues[mMechanicLink].getFrame().posToRef(position);
   Vector3 gravity = environment->getGravityAcceleration(refPosition);
-  gravity = portValues[mMechanicLink].getFrame().rotFromRef(gravity);
-  // FIXME: Why this -??
-  gravity = -mMass*gravity;
-
+  gravity = mMass*portValues[mMechanicLink].getFrame().rotFromRef(gravity);
+  // The gravity force at the coordinate system of the parent link
   Vector6 force = forceFrom(position, gravity);
+
+  // The inertia at the coordinate system of the parent link
+  // FIXME precompute that
   SpatialInertia I = inertiaFrom(position, SpatialInertia(mInertia, mMass));
 
   // FIXME: do we really need that in the mass
   // I did search for a while until I found that missing term here ...
-  Vector6 iv = portValues[mMechanicLink].getFrame().getSpVel();
-  Vector6 Jiv = I*iv;
-  force += Vector6(cross(iv.getAngular(), Jiv.getAngular()) +
-                   cross(iv.getLinear(), Jiv.getLinear()),
-                   cross(iv.getAngular(), Jiv.getLinear()));
+  Vector6 v = portValues[mMechanicLink].getFrame().getSpVel();
+  Vector6 Iv = I*v;
+  Vector6 vIv = Vector6(cross(v.getAngular(), Iv.getAngular()) +
+                        cross(v.getLinear(), Iv.getLinear()),
+                        cross(v.getAngular(), Iv.getLinear()));
 
   portValues[mMechanicLink].applyInertia(I);
-  portValues[mMechanicLink].applyForce(force);
+  portValues[mMechanicLink].applyForce(Vector6(vIv - force));
 }
 
 const InertiaMatrix&
