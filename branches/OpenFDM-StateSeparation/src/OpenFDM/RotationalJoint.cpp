@@ -109,10 +109,10 @@ RotationalJoint::velocity(const MechanicLinkValue& parentLink,
 
 void
 RotationalJoint::articulation(MechanicLinkValue& parentLink,
-                            const MechanicLinkValue& childLink,
-                            const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            MatrixFactorsNN& hIh) const
+                              const MechanicLinkValue& childLink,
+                              const ContinousStateValueVector& states,
+                              PortValueList& portValues,
+                              MatrixFactorsNN& hIh, Vector6& pAlpha) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -120,15 +120,16 @@ RotationalJoint::articulation(MechanicLinkValue& parentLink,
   else
     jointForce = portValues[mForcePort];
   
-  articulation(parentLink, childLink, jointForce, hIh);
+  articulation(parentLink, childLink, jointForce, hIh, pAlpha);
 }
 
 void
 RotationalJoint::acceleration(const MechanicLinkValue& parentLink,
-                            MechanicLinkValue& childLink,
-                            const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            const MatrixFactorsNN& hIh, VectorN& velDot) const
+                              MechanicLinkValue& childLink,
+                              const ContinousStateValueVector& states,
+                              PortValueList& portValues,
+                              const MatrixFactorsNN& hIh, const Vector6& pAlpha,
+                              VectorN& velDot) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -136,7 +137,7 @@ RotationalJoint::acceleration(const MechanicLinkValue& parentLink,
   else
     jointForce = portValues[mForcePort];
   
-  acceleration(parentLink, childLink, jointForce, hIh, velDot);
+  acceleration(parentLink, childLink, jointForce, hIh, pAlpha, velDot);
 }
 
 void

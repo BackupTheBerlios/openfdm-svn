@@ -100,7 +100,7 @@ protected:
   void articulation(MechanicLinkValue& parentLink,
                     const MechanicLinkValue& childLink,
                     const VectorN& jointForce,
-                    MatrixFactorsNN& hIh) const
+                    MatrixFactorsNN& hIh, Vector6& pAlpha) const
   {
     // The formulas conform to Roy Featherstones book eqn (6.37), (6.38)
     
@@ -110,12 +110,11 @@ protected:
     
     // Compute the projection to the joint coordinate space
     Matrix6N Ih = I*mJointMatrix;
-    hIh = MatrixNN(trans(mJointMatrix)*Ih);
-    
+    hIh = trans(mJointMatrix)*Ih;
+
     // Note that the momentum of the local mass is already included in the
     // child links force due the the mass model ...
-    Vector6 pAlpha = childLink.getForce() + I*childLink.getFrame().getHdot();
-    Vector6 force = pAlpha;
+    pAlpha = childLink.getForce() + I*childLink.getFrame().getHdot();
     
     if (hIh.singular()) {
       Log(ArtBody,Error) << "Detected singular mass matrix for "
@@ -125,6 +124,7 @@ protected:
     }
     
     // Project away the directions handled with this current joint
+    Vector6 force = pAlpha;
     force -= Ih*hIh.solve(trans(mJointMatrix)*pAlpha - jointForce);
     I -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
     
@@ -138,13 +138,13 @@ protected:
    */
   void acceleration(const MechanicLinkValue& parentLink,
                     MechanicLinkValue& childLink, const VectorN& jointForce,
-                    const MatrixFactorsNN& hIh, VectorN& velDot) const
+                    const MatrixFactorsNN& hIh, const Vector6& pAlpha,
+                    VectorN& velDot) const
   {
     Vector6 parentSpAccel
       = childLink.getFrame().motionFromParent(parentLink.getFrame().getSpAccel());
     
-    Vector6 f = childLink.getForce();
-    f += childLink.getInertia()*(parentSpAccel + childLink.getFrame().getHdot());
+    Vector6 f = childLink.getInertia()*parentSpAccel + pAlpha;
     velDot = hIh.solve(jointForce - trans(mJointMatrix)*f);
     childLink.setAccel(parentLink, mJointMatrix*velDot);
   }
@@ -192,12 +192,12 @@ protected:
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            MatrixFactorsNN& hIh) const = 0;
+                            MatrixFactorsNN& hIh, Vector6& pAlpha) const = 0;
   virtual void acceleration(const MechanicLinkValue& parentLink,
                             MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            const MatrixFactorsNN& hIh,
+                            const MatrixFactorsNN& hIh, const Vector6& pAlpha,
                             VectorN& velDot) const = 0;
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
@@ -241,13 +241,13 @@ private:
     }
     virtual void articulation(const Task& task)
     {
-      mCartesianJoint->articulation(*mParentLink, *mChildLink,
-                                    mContinousState, mPortValueList, hIh);
+      mCartesianJoint->articulation(*mParentLink, *mChildLink, mContinousState,
+                                    mPortValueList, hIh, pAlpha);
     }
     virtual void accelerations(const Task& task)
     {
       mCartesianJoint->acceleration(*mParentLink, *mChildLink, mContinousState,
-                                    mPortValueList, hIh, velDot);
+                                    mPortValueList, hIh, pAlpha, velDot);
     }
     
     virtual void derivative(const Task&)
@@ -263,6 +263,7 @@ private:
   private:
     // Stores some values persistent accross velocity/articulation/acceleration
     MatrixFactorsNN hIh;
+    Vector6 pAlpha;
     VectorN velDot;
 
     SharedPtr<MechanicLinkValue> mParentLink;

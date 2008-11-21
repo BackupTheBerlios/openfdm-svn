@@ -52,12 +52,12 @@ protected:
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            MatrixFactorsNN& hIh) const;
+                            MatrixFactorsNN& hIh, Vector6& pAlpha) const;
   virtual void acceleration(const MechanicLinkValue& parentLink,
                             MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            const MatrixFactorsNN& hIh, VectorN& velDot) const;
+                            const MatrixFactorsNN& hIh, const Vector6& pAlpha, VectorN& velDot) const;
 
   virtual void derivative(const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,

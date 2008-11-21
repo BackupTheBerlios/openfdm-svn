@@ -131,7 +131,7 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
                             const MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            MatrixFactorsNN& hIh) const
+                            MatrixFactorsNN& hIh, Vector6& pAlpha) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -139,7 +139,7 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
   else
     jointForce = portValues[mForcePort];
   
-  articulation(parentLink, childLink, jointForce, hIh);
+  articulation(parentLink, childLink, jointForce, hIh, pAlpha);
 }
 
 void
@@ -147,7 +147,8 @@ RevoluteJoint::acceleration(const MechanicLinkValue& parentLink,
                             MechanicLinkValue& childLink,
                             const ContinousStateValueVector& states,
                             PortValueList& portValues,
-                            const MatrixFactorsNN& hIh, VectorN& velDot) const
+                            const MatrixFactorsNN& hIh, const Vector6& pAlpha,
+                            VectorN& velDot) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -155,7 +156,7 @@ RevoluteJoint::acceleration(const MechanicLinkValue& parentLink,
   else
     jointForce = portValues[mForcePort];
   
-  acceleration(parentLink, childLink, jointForce, hIh, velDot);
+  acceleration(parentLink, childLink, jointForce, hIh, pAlpha, velDot);
 }
 
 void
