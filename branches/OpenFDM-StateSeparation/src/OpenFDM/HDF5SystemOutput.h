@@ -284,10 +284,11 @@ private:
 
 class HDF5SystemOutput : public SystemOutput {
 public:
-  HDF5SystemOutput(const std::string& filename) :
+  HDF5SystemOutput(const std::string& filename, bool outputMechanics = false) :
     mHDF5File(filename),
     mToplevelGroup(mHDF5File, "System"),
-    mTimeStream(mToplevelGroup, "t", Size(1, 1))
+    mTimeStream(mToplevelGroup, "t", Size(1, 1)),
+    mOutputMechanics(outputMechanics)
   { }
   virtual ~HDF5SystemOutput()
   { }
@@ -305,7 +306,7 @@ public:
     mDumperList.clear();
     if (!system)
       return;
-    Visitor visitor(mToplevelGroup, system);
+    Visitor visitor(mToplevelGroup, system, mOutputMechanics);
     system->getNode()->accept(visitor);
     mDumperList = visitor.mDumperList;
   }
@@ -314,6 +315,7 @@ private:
   HDF5File mHDF5File;
   HDF5Group mToplevelGroup;
   HDFMatrixStream mTimeStream;
+  bool mOutputMechanics;
 
   struct Dumper : public Referenced {
     virtual ~Dumper() {}
@@ -390,9 +392,10 @@ private:
 
   class Visitor : public ConstNodeVisitor {
   public:
-    Visitor(const HDF5Group& group, const System* system) :
+    Visitor(const HDF5Group& group, const System* system, bool outputMechanics) :
       mSystem(system),
-      mCurrentGroup(group)
+      mCurrentGroup(group),
+      mOutputMechanics(outputMechanics)
     { }
     
     SharedPtr<const System> mSystem;
@@ -413,6 +416,8 @@ private:
     }
     virtual void apply(const MechanicLinkInfo& portInfo)
     {
+      if (!mOutputMechanics)
+        return;
       const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
       if (!nodeInstance)
         return;
@@ -519,6 +524,8 @@ private:
     };
     
     HDF5Group mCurrentGroup;
+
+    bool mOutputMechanics;
     
     UniqueStringSet mCurrentPortValuesUniqueStringSet;
     UniqueStringSet mCurrentGroupUniqueStringSet;
