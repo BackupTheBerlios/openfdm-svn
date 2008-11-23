@@ -4,12 +4,15 @@
 
 #include "Environment.h"
 
+#include "FlatPlanet.h"
+
 namespace OpenFDM {
 
 Environment::Environment() :
   mInertial(new AbstractInertial),
   mGravity(new AbstractGravity),
-  mWind(new AbstractWind)
+  mWind(new AbstractWind),
+  mPlanet(new FlatPlanet)
 {
 }
 

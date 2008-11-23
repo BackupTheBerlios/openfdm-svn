@@ -7,6 +7,7 @@
 
 #include "AbstractGravity.h"
 #include "AbstractInertial.h"
+#include "AbstractPlanet.h"
 #include "AbstractWind.h"
 #include "Matrix.h"
 #include "Referenced.h"
@@ -40,7 +41,7 @@ private:
   SharedPtr<const AbstractInertial> mInertial;
   SharedPtr<const AbstractGravity> mGravity;
   SharedPtr<const AbstractWind> mWind;
-//   SharedPtr<const AbstractPlanet> mPlanet;
+  SharedPtr<const AbstractPlanet> mPlanet;
 //   SharedPtr<const AbstractAtmosphere> mAtmosphere;
 //   SharedPtr<const AbstractGround> mGround;
 };
