@@ -17,6 +17,7 @@ OpenFDMCoreHEADERS = \
   AbstractModel.h \
   AbstractNodeContext.h \
   AbstractNodeInstance.h \
+  AbstractPlanet.h \
   AbstractSystem.h \
   AbstractWind.h \
   Assert.h \
@@ -85,7 +86,6 @@ OpenFDMCoreHEADERS = \
   OpenFDMConfig.h \
   PhysicalDimension.h \
   Plane.h \
-  Planet.h \
   PortId.h \
   PortInfo.h \
   PortValue.h \
@@ -133,6 +133,7 @@ OpenFDMCoreSOURCES = \
   AbstractModel.cpp \
   AbstractNodeContext.cpp \
   AbstractNodeInstance.cpp \
+  AbstractPlanet.cpp \
   AbstractWind.cpp \
   Assert.cpp \
   Atomic.cpp \
@@ -182,7 +183,6 @@ OpenFDMCoreSOURCES = \
 #   EnvironmentObject.cpp \
 #   ReaderWriter.cpp \
 #   Atmosphere.cpp \
-#  Planet.cpp \
 #   AtmosphereSTD1976.cpp \
 #   DefaultGravity.cpp \
 #   DefaultGround.cpp \

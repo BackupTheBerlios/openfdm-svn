@@ -7,7 +7,6 @@
 #include <iosfwd>
 
 #include "Types.h"
-#include "Object.h"
 #include "Math.h"
 #include "Vector.h"
 #include "Quaternion.h"

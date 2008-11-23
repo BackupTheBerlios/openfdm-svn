@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_Planet_H
-#define OpenFDM_Planet_H
+#ifndef OpenFDM_AbstractPlanet_H
+#define OpenFDM_AbstractPlanet_H
 
 #include <iosfwd>
 
@@ -43,15 +43,15 @@ struct Geocentric {
  *
  * It holds some information about the planet the simulation is running on.
  */
-class Planet : public Referenced {
+class AbstractPlanet : public Referenced {
 public:
   /** Default constructor.
    */
-  Planet(void);
+  AbstractPlanet(void);
 
   /** Default destructor.
    */
-  virtual ~Planet(void);
+  virtual ~AbstractPlanet(void);
 
   /** Transform cartesian coordinates to geodetic coordinates.
    */
