@@ -38,6 +38,10 @@ struct Geocentric {
   real_type radius;
 };
 
+// FIXME Find out what we need, Move the rest of the elliptic stuff in here
+// into the EllipticPlanet class.
+// We probably only need the altitude computation from the cartesian coordinates
+
 /**
  * The Planet class.
  *
