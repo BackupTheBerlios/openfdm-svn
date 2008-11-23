@@ -8,9 +8,9 @@
 #include <iosfwd>
 
 #include "Types.h"
-#include "EnvironmentObject.h"
 #include "Vector.h"
 #include "Quaternion.h"
+#include "Referenced.h"
 
 namespace OpenFDM {
 
@@ -43,8 +43,7 @@ struct Geocentric {
  *
  * It holds some information about the planet the simulation is running on.
  */
-class Planet
-  : public EnvironmentObject {
+class Planet : public Referenced {
 public:
   /** Default constructor.
    */

@@ -2,7 +2,7 @@
  *
  */
 
-#include "Planet.h"
+#include "AbstractPlanet.h"
 
 #include <iosfwd>
 
@@ -14,16 +14,16 @@
 
 namespace OpenFDM {
 
-Planet::Planet(void)
+AbstractPlanet::AbstractPlanet(void)
 {
 }
 
-Planet::~Planet(void)
+AbstractPlanet::~AbstractPlanet(void)
 {
 }
 
 Geocentric
-Planet::toGeoc(const Vector3& cart) const
+AbstractPlanet::toGeoc(const Vector3& cart) const
 {
   real_type lon = (cart(0) == 0 && cart(1) == 0)
     ? real_type(0) : atan2(cart(1), cart(0));
@@ -34,7 +34,7 @@ Planet::toGeoc(const Vector3& cart) const
 }
 
 Vector3
-Planet::toCart(const Geocentric& geoc) const
+AbstractPlanet::toCart(const Geocentric& geoc) const
 {
   real_type slat = sin(geoc.latitude);
   real_type clat = cos(geoc.latitude);
@@ -44,55 +44,55 @@ Planet::toCart(const Geocentric& geoc) const
 }
 
 Geocentric
-Planet::toGeoc(const Geodetic& geod) const
+AbstractPlanet::toGeoc(const Geodetic& geod) const
 {
   return toGeoc(toCart(geod));
 }
 
 Geodetic
-Planet::toGeod(const Geocentric& geoc) const
+AbstractPlanet::toGeod(const Geocentric& geoc) const
 {
   return toGeod(toCart(geoc));
 }
 
 Quaternion
-Planet::getGeodHLOrientation(const Geodetic& pos) const
+AbstractPlanet::getGeodHLOrientation(const Geodetic& pos) const
 {
   return Quaternion::fromLonLat(pos.longitude, pos.latitude);
 }
 
 Quaternion
-Planet::getGeodHLOrientation(const Vector3& pos) const
+AbstractPlanet::getGeodHLOrientation(const Vector3& pos) const
 {
   return getGeodHLOrientation(toGeod(pos));
 }
 
 Quaternion
-Planet::getGeodHLOrientation(const Geocentric& pos) const
+AbstractPlanet::getGeodHLOrientation(const Geocentric& pos) const
 {
   return getGeodHLOrientation(toCart(pos));
 }
 
 Quaternion
-Planet::getGeocHLOrientation(const Geodetic& pos) const
+AbstractPlanet::getGeocHLOrientation(const Geodetic& pos) const
 {
   return getGeocHLOrientation(toCart(pos));
 }
 
 Quaternion
-Planet::getGeocHLOrientation(const Vector3& pos) const
+AbstractPlanet::getGeocHLOrientation(const Vector3& pos) const
 {
   return getGeocHLOrientation(toGeoc(pos));
 }
 
 Quaternion
-Planet::getGeocHLOrientation(const Geocentric& pos) const
+AbstractPlanet::getGeocHLOrientation(const Geocentric& pos) const
 {
   return Quaternion::fromLonLat(pos.longitude, pos.latitude);
 }
 
 Vector3
-Planet::getGoecHLRate(const Geocentric& pos, const Vector3& ecVel) const
+AbstractPlanet::getGoecHLRate(const Geocentric& pos, const Vector3& ecVel) const
 {
   Quaternion hlOrientation = getGeocHLOrientation(pos);
   Vector3 hlVel = hlOrientation.transform(ecVel);
@@ -101,13 +101,13 @@ Planet::getGoecHLRate(const Geocentric& pos, const Vector3& ecVel) const
 }
 
 Vector3
-Planet::getGoecHLRate(const Vector3& pos, const Vector3& ecVel) const
+AbstractPlanet::getGoecHLRate(const Vector3& pos, const Vector3& ecVel) const
 {
   return getGoecHLRate(toGeoc(pos), ecVel);
 }
 
 Vector3
-Planet::getGoecHLRate(const Geodetic& pos, const Vector3& ecVel) const
+AbstractPlanet::getGoecHLRate(const Geodetic& pos, const Vector3& ecVel) const
 {
   return getGoecHLRate(toCart(pos), ecVel);
 }
