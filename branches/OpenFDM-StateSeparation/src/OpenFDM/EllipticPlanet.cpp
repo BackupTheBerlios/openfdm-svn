@@ -12,7 +12,6 @@
 namespace OpenFDM {
 
 EllipticPlanet::EllipticPlanet(void)
-  : mRotationRate(pi2/(60.0*60.0*24.0))
 {
   // values taken from simgear
   setAequatorialRadius(6378137.0);

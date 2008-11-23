@@ -55,8 +55,6 @@ private:
   real_type e;
   real_type e2;
   real_type e4;
-
-  real_type mRotationRate;
 };
 
 } // namespace OpenFDM
