@@ -2,32 +2,30 @@
  *
  */
 
-#ifndef OpenFDM_DefaultPlanet_H
-#define OpenFDM_DefaultPlanet_H
+#ifndef OpenFDM_EllipticPlanet_H
+#define OpenFDM_EllipticPlanet_H
 
 #include "Types.h"
-#include "Object.h"
 #include "Vector.h"
 #include "Quaternion.h"
-#include "Planet.h"
+#include "AbstractPlanet.h"
 
 namespace OpenFDM {
 
 /**
- * The DefaultPlanet class.
+ * The EllipticPlanet class.
  *
  * It holds some information about the planet the simulation is running on.
  */
-class DefaultPlanet
-  : public Planet {
+class EllipticPlanet : public AbstractPlanet {
 public:
-  /** Default constructor.
+  /** Elliptic constructor.
    */
-  DefaultPlanet(void);
+  EllipticPlanet(void);
 
-  /** Default destructor.
+  /** Elliptic destructor.
    */
-  virtual ~DefaultPlanet(void);
+  virtual ~EllipticPlanet(void);
 
   /** Get aequatorial radius.
    */

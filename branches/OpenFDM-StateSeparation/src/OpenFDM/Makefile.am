@@ -31,6 +31,7 @@ OpenFDMCoreHEADERS = \
   CowPtr.h \
   DiscreteStateValueVector.h \
   DoPri5.h \
+  EllipticPlanet.h \
   Environment.h \
   EnvironmentObject.h \
   ExplicitAdams.h \
@@ -140,6 +141,7 @@ OpenFDMCoreSOURCES = \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
   DoPri5.cpp \
+  EllipticPlanet.cpp \
   Environment.cpp \
   ExplicitAdams.cpp \
   ExplicitEuler.cpp \
@@ -186,7 +188,6 @@ OpenFDMCoreSOURCES = \
 #   AtmosphereSTD1976.cpp \
 #   DefaultGravity.cpp \
 #   DefaultGround.cpp \
-#   DefaultPlanet.cpp \
 #   Gravity.cpp \
 #   Ground.cpp
 
@@ -205,7 +206,6 @@ OpenFDMModelsHEADERS = \
   DeadBand.h \
   DefaultGravity.h \
   DefaultGround.h \
-  DefaultPlanet.h \
   Delay.h \
   DiscBrake.h \
   DiscreteIntegrator.h \

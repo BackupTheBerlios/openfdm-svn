@@ -2,18 +2,16 @@
  *
  */
 
-#include "DefaultPlanet.h"
+#include "EllipticPlanet.h"
 
 #include "Types.h"
-#include "Object.h"
 #include "Unit.h"
 #include "Vector.h"
 #include "Quaternion.h"
-#include "Planet.h"
 
 namespace OpenFDM {
 
-DefaultPlanet::DefaultPlanet(void)
+EllipticPlanet::EllipticPlanet(void)
   : mRotationRate(pi2/(60.0*60.0*24.0))
 {
   // values taken from simgear
@@ -29,25 +27,25 @@ DefaultPlanet::DefaultPlanet(void)
   //  f = 1/298.257223563
 }
 
-DefaultPlanet::~DefaultPlanet(void)
+EllipticPlanet::~EllipticPlanet(void)
 {
 }
 
 real_type
-DefaultPlanet::getAequatorialRadius(void) const
+EllipticPlanet::getAequatorialRadius(void) const
 {
   return a;
 }
 
 void
-DefaultPlanet::setAequatorialRadius(real_type r)
+EllipticPlanet::setAequatorialRadius(real_type r)
 {
   a = r;
   ra2 = 1/(a*a);
 }
 
 void
-DefaultPlanet::setFlattening(real_type flat)
+EllipticPlanet::setFlattening(real_type flat)
 {
   real_type squash = 1 - 1/flat;
   e2 = fabs(1 - squash*squash);
@@ -56,7 +54,7 @@ DefaultPlanet::setFlattening(real_type flat)
 }
 
 Geodetic
-DefaultPlanet::toGeod(const Vector3& cart) const
+EllipticPlanet::toGeod(const Vector3& cart) const
 {
   // according to
   // H. Vermeille,
@@ -85,7 +83,7 @@ DefaultPlanet::toGeod(const Vector3& cart) const
 }
 
 Vector3
-DefaultPlanet::toCart(const Geodetic& geod) const
+EllipticPlanet::toCart(const Geodetic& geod) const
 {
   // according to
   // H. Vermeille,
