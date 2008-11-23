@@ -5,100 +5,69 @@
 #ifndef OpenFDM_Environment_H
 #define OpenFDM_Environment_H
 
-#include "Object.h"
+#include "Matrix.h"
+#include "Referenced.h"
+#include "SharedPtr.h"
+#include "Vector.h"
 
 namespace OpenFDM {
 
-class Atmosphere;
-class Gravity;
-class Ground;
-class Planet;
-class Turbulence;
-class Wind;
-class RootFrame;
+class Environment;
 
-class EnvironmentObject;
-
-class Environment :
-    public Object {
+class AbstractInertial : public Referenced {
 public:
-  Environment(void);
-  virtual ~Environment(void);
+  virtual ~AbstractInertial() {}
+  virtual Vector3 getAngularVelocity(const real_type& t) const
+  { return Vector3::zeros(); }
+//   { return Vector3(0, 0, pi2/(24*60*60)); }
+  virtual Vector6 getAcceleration(const real_type& t) const
+  { return Vector6::zeros(); }
+};
 
-  /** Set atmosphere model.
-   */
-  void setAtmosphere(Atmosphere* p);
+class AbstractGravity : public Referenced {
+public:
+  virtual ~AbstractGravity() {}
+  virtual Vector3
+  getGravityAcceleration(const Environment&, const Vector3&) const
+  { return Vector3(0, 0, 9.81); }
+};
 
-  /** Get atmosphere model.
-   */
-  const Atmosphere* getAtmosphere(void) const
-  { return mAtmosphere; }
+class AbstractWind : public Referenced {
+public:
+  virtual ~AbstractWind() {}
+  virtual Vector6
+  getWindVelocity(const Environment&, const real_type& t, const Vector3&) const
+  { return Vector6::zeros(); }
+};
 
-  /** Set gravity model.
-   */
-  void setGravity(Gravity* g);
+class Environment : public Referenced {
+public:
+  Environment();
+  virtual ~Environment();
 
-  /** Get gravity model.
-   */
-  const Gravity* getGravity(void) const
-  { return mGravity; }
+  // The the global coordinate frames angular velocity and acceleration.
+  // Note that the acceleration and velocity must fit together to simulate
+  // something useful.
+  Vector3 getAngularVelocity(const real_type& t) const
+  { return mInertial->getAngularVelocity(t); }
+  Vector6 getAcceleration(const real_type& t) const
+  { return mInertial->getAcceleration(t); }
 
-  /** Set ground callback.
-   */
-  void setGround(Ground* g);
+  // The gravity acceleration vector in the global coordinate system
+  Vector3 getGravityAcceleration(const Vector3& position) const
+  { return mGravity->getGravityAcceleration(*this, position); }
 
-  /** Get ground callback.
-   */
-  const Ground* getGround(void) const
-  { return mGround; }
-
-  /** Set planet callback.
-   */
-  void setPlanet(Planet* p);
-
-  /** Get planet callback.
-   */
-  const Planet* getPlanet(void) const
-  { return mPlanet; }
-
-  /** Set turbulence model.
-   */
-  void setTurbulence(Turbulence* p);
-
-  /** Get turbulence model.
-   */
-  const Turbulence* getTurbulence(void) const
-  { return mTurbulence; }
-
-  /** Set wind callback.
-   */
-  void setWind(Wind* p);
-
-  /** Get wind callback.
-   */
-  const Wind* getWind(void) const
-  { return mWind; }
-
-  /// Set RootFrame
-  void setRootFrame(RootFrame* rootFrame);
-
-  /// Get RootFrame
-  const RootFrame* getRootFrame(void) const
-  { return mRootFrame; }
-  RootFrame* getRootFrame(void)
-  { return mRootFrame; }
+  // The wind velocity vector in the global coordinate system
+  Vector6 getWindVelocity(const real_type& t, const Vector3& position) const
+  { return mWind->getWindVelocity(*this, t, position); }
 
 private:
-  void attachEnvironmentObject(EnvironmentObject* environmentObject);
-  void detachEnvironmentObject(EnvironmentObject* environmentObject);
-
-  SharedPtr<Atmosphere> mAtmosphere;
-  SharedPtr<Gravity> mGravity;
-  SharedPtr<Ground> mGround;
-  SharedPtr<Planet> mPlanet;
-  SharedPtr<Turbulence> mTurbulence;
-  SharedPtr<Wind> mWind;
-  SharedPtr<RootFrame> mRootFrame;
+  SharedPtr<const AbstractInertial> mInertial;
+  SharedPtr<const AbstractGravity> mGravity;
+  SharedPtr<const AbstractWind> mWind;
+//   SharedPtr<const AbstractPlanet> mPlanet;
+//   SharedPtr<const AbstractAtmosphere> mAtmosphere;
+//   SharedPtr<const AbstractGround> mGround;
 };
 
 } // namespace OpenFDM

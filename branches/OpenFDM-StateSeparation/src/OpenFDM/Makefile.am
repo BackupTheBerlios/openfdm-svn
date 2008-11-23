@@ -133,6 +133,7 @@ OpenFDMCoreSOURCES = \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
   DoPri5.cpp \
+  Environment.cpp \
   ExplicitAdams.cpp \
   ExplicitEuler.cpp \
   Frame.cpp \
@@ -161,7 +162,6 @@ OpenFDMCoreSOURCES = \
   NumericPortValue.cpp \
   Object.cpp \
   ODESolver.cpp \
-  Planet.cpp \
   PortInfo.cpp \
   PortValue.cpp \
   RigidBody.cpp \
@@ -173,10 +173,10 @@ OpenFDMCoreSOURCES = \
   Unit.cpp \
   Variant.cpp
 
-#   Environment.cpp \
 #   EnvironmentObject.cpp \
 #   ReaderWriter.cpp \
 #   Atmosphere.cpp \
+#  Planet.cpp \
 #   AtmosphereSTD1976.cpp \
 #   DefaultGravity.cpp \
 #   DefaultGround.cpp \
