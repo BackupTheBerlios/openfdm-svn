@@ -9,7 +9,7 @@
 
 #include "Types.h"
 #include "Object.h"
-#include "Atmosphere.h"
+#include "AbstractAtmosphere.h"
 
 namespace OpenFDM {
 
@@ -17,7 +17,7 @@ namespace OpenFDM {
 // http://nssdc.gsfc.nasa.gov/space/model/atmos/atmos_index.html
 // ftp://nssdcftp.gsfc.nasa.gov/models/
 
-class AtmosphereSTD1976 : public Atmosphere {
+class AtmosphereSTD1976 : public AbstractAtmosphere {
 public:
   AtmosphereSTD1976(void);
   virtual ~AtmosphereSTD1976(void);
@@ -35,7 +35,7 @@ public:
   { mSlTemperature = temperature; }
 
   // Get the atmosphere data for a given height.
-  virtual AtmosphereData getData(real_type alt) const;
+  virtual AtmosphereData getData(const real_type& alt) const;
 private:
 
   static const real_type mHydrostaticConstant;

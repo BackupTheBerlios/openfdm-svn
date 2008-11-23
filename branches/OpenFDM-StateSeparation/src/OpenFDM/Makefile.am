@@ -12,6 +12,7 @@ libOpenFDM_la_LIBADD += -lhdf5
 endif
 
 OpenFDMCoreHEADERS = \
+  AbstractAtmosphere.h \
   AbstractGravity.h \
   AbstractInertial.h \
   AbstractModel.h \
@@ -23,6 +24,7 @@ OpenFDMCoreHEADERS = \
   Assert.h \
   Atomic.h \
   BoolStateInfo.h \
+  CentralMassGravity.cpp \
   ConstNodeVisitor.h \
   ContinousStateInfo.h \
   ContinousStateInfoVector.h \
@@ -33,7 +35,6 @@ OpenFDMCoreHEADERS = \
   DoPri5.h \
   EllipticPlanet.h \
   Environment.h \
-  EnvironmentObject.h \
   ExplicitAdams.h \
   ExplicitEuler.h \
   FlatPlanet.h \
@@ -130,7 +131,9 @@ OpenFDMCoreHEADERS = \
   XMLDumpModelVisitor.h
 
 OpenFDMCoreSOURCES = \
+  AbstractAtmosphere.cpp \
   AbstractGravity.cpp \
+  AbstractGround.cpp \
   AbstractInertial.cpp \
   AbstractModel.cpp \
   AbstractNodeContext.cpp \
@@ -138,6 +141,7 @@ OpenFDMCoreSOURCES = \
   AbstractPlanet.cpp \
   AbstractWind.cpp \
   Assert.cpp \
+  AtmosphereSTD1976.cpp \
   Atomic.cpp \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
@@ -184,30 +188,21 @@ OpenFDMCoreSOURCES = \
   Unit.cpp \
   Variant.cpp
 
-#   EnvironmentObject.cpp \
-#   ReaderWriter.cpp \
-#   Atmosphere.cpp \
-#   AtmosphereSTD1976.cpp \
-#   DefaultGravity.cpp \
-#   DefaultGround.cpp \
-#   Gravity.cpp \
-#   Ground.cpp
+#   ReaderWriter.cpp
 
 
 
 OpenFDMModelsHEADERS = \
   AeroForce.h \
   AirSpring.h \
-  Atmosphere.h \
   AtmosphereSTD1976.h \
   Bias.h \
   BinaryFunction.h \
   CartesianJoint.h \
+  CentralMassGravity.h \
   ConstModel.h \
   Contact.h \
   DeadBand.h \
-  DefaultGravity.h \
-  DefaultGround.h \
   Delay.h \
   DiscBrake.h \
   DiscreteIntegrator.h \
@@ -215,8 +210,6 @@ OpenFDMModelsHEADERS = \
   FixedRootJoint.h \
   Force.h \
   Gain.h \
-  Gravity.h \
-  Ground.h \
   Input.h \
   Integrator.h \
   Joint.h \

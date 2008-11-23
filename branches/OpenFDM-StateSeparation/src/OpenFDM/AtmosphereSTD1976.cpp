@@ -8,9 +8,6 @@
 #include "Types.h"
 #include "LogStream.h"
 #include "Math.h"
-#include "Object.h"
-#include "Atmosphere.h"
-#include "Environment.h"
 #include <iostream>
 
 namespace OpenFDM {
@@ -25,7 +22,7 @@ const real_type AtmosphereSTD1976::mEarthRadius = 6369.0;
 #define R_HAT           8314.32  // J/kgmol.K (gas const.)
 
 AtmosphereSTD1976::AtmosphereSTD1976(void) :
-  Atmosphere(R_HAT/MOL_WT),
+  AbstractAtmosphere(R_HAT/MOL_WT),
   mSlPressure(101325),
   mSlTemperature(288.15)
 {
@@ -44,8 +41,9 @@ AtmosphereSTD1976::~AtmosphereSTD1976(void)
 }
 
 AtmosphereData
-AtmosphereSTD1976::getData(real_type alt) const
+AtmosphereSTD1976::getData(const real_type& altitude) const
 {
+  real_type alt = altitude;
   // We cannot compute data for negative altitudes, just treat them as 0 alt
   if (alt < 0.0)
     alt = 0.0;

@@ -5,6 +5,7 @@
 #ifndef OpenFDM_Limits_H
 #define OpenFDM_Limits_H
 
+#include <algorithm>
 #include <limits>
 
 #include "Types.h"
