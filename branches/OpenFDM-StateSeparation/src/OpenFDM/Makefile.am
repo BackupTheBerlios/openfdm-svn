@@ -12,10 +12,13 @@ libOpenFDM_la_LIBADD += -lhdf5
 endif
 
 OpenFDMCoreHEADERS = \
+  AbstractGravity.h \
+  AbstractInertial.h \
   AbstractModel.h \
   AbstractNodeContext.h \
   AbstractNodeInstance.h \
   AbstractSystem.h \
+  AbstractWind.h \
   Assert.h \
   Atomic.h \
   BoolStateInfo.h \
@@ -125,9 +128,12 @@ OpenFDMCoreHEADERS = \
   XMLDumpModelVisitor.h
 
 OpenFDMCoreSOURCES = \
+  AbstractGravity.cpp \
+  AbstractInertial.cpp \
   AbstractModel.cpp \
   AbstractNodeContext.cpp \
   AbstractNodeInstance.cpp \
+  AbstractWind.cpp \
   Assert.cpp \
   Atomic.cpp \
   ConstNodeVisitor.cpp \

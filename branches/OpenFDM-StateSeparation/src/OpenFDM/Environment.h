@@ -5,40 +5,15 @@
 #ifndef OpenFDM_Environment_H
 #define OpenFDM_Environment_H
 
+#include "AbstractGravity.h"
+#include "AbstractInertial.h"
+#include "AbstractWind.h"
 #include "Matrix.h"
 #include "Referenced.h"
 #include "SharedPtr.h"
 #include "Vector.h"
 
 namespace OpenFDM {
-
-class Environment;
-
-class AbstractInertial : public Referenced {
-public:
-  virtual ~AbstractInertial() {}
-  virtual Vector3 getAngularVelocity(const real_type& t) const
-  { return Vector3::zeros(); }
-//   { return Vector3(0, 0, pi2/(24*60*60)); }
-  virtual Vector6 getAcceleration(const real_type& t) const
-  { return Vector6::zeros(); }
-};
-
-class AbstractGravity : public Referenced {
-public:
-  virtual ~AbstractGravity() {}
-  virtual Vector3
-  getGravityAcceleration(const Environment&, const Vector3&) const
-  { return Vector3(0, 0, 9.81); }
-};
-
-class AbstractWind : public Referenced {
-public:
-  virtual ~AbstractWind() {}
-  virtual Vector6
-  getWindVelocity(const Environment&, const real_type& t, const Vector3&) const
-  { return Vector6::zeros(); }
-};
 
 class Environment : public Referenced {
 public:
