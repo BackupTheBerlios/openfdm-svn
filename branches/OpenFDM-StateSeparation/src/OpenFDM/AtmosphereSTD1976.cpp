@@ -25,7 +25,9 @@ const real_type AtmosphereSTD1976::mEarthRadius = 6369.0;
 #define R_HAT           8314.32  // J/kgmol.K (gas const.)
 
 AtmosphereSTD1976::AtmosphereSTD1976(void) :
-  Atmosphere(R_HAT/MOL_WT)
+  Atmosphere(R_HAT/MOL_WT),
+  mSlPressure(101325),
+  mSlTemperature(288.15)
 {
   mTable[0.0] = TableData(288.15, 1.0, -6.5);
   mTable[11.0] = TableData(216.65, 2.233611e-1, 0.0);
@@ -79,21 +81,12 @@ AtmosphereSTD1976::getData(real_type alt) const
   // density ratio
   sigma = delta/theta;
 
-
-  // Sea level pressure = 101325 N/m2
-  real_type slPressure = 101325;
-  // Sea level temperature = 288.15 K
-  real_type slTemperature = 288.15;
-
-  // Sea leve density of 1.225 kg/m3.
-  real_type slDensity = 1.225;
-
   AtmosphereData data;
 
   // Is aequivalent to one bar.
-  data.pressure = slPressure*delta;
+  data.pressure = mSlPressure*delta;
   // Temperature in kelvin
-  data.temperature = slTemperature*theta;
+  data.temperature = mSlTemperature*theta;
 
   if (fabs(data.temperature) > Limits<real_type>::min())
     data.density = data.pressure / (getGasConstant()*data.temperature);

@@ -17,11 +17,22 @@ namespace OpenFDM {
 // http://nssdc.gsfc.nasa.gov/space/model/atmos/atmos_index.html
 // ftp://nssdcftp.gsfc.nasa.gov/models/
 
-class AtmosphereSTD1976
-  : public Atmosphere {
+class AtmosphereSTD1976 : public Atmosphere {
 public:
   AtmosphereSTD1976(void);
   virtual ~AtmosphereSTD1976(void);
+
+  // Sea level pressure, defaults to 101325 N/m2
+  const real_type& getSeaLevelPressure() const
+  { return mSlPressure; }
+  void setSeaLevelPressure(const real_type& pressure)
+  { mSlPressure = pressure; }
+
+  // Sea level temperature, defaults to 288.15 K
+  const real_type& getSeaLevelTemperature() const
+  { return mSlTemperature; }
+  void setSeaLevelTemperature(const real_type& temperature)
+  { mSlTemperature = temperature; }
 
   // Get the atmosphere data for a given height.
   virtual AtmosphereData getData(real_type alt) const;
@@ -42,6 +53,11 @@ private:
 
   // Should be static, but lacking a good initializer for the map ...
   Table mTable;
+
+  // Sea level pressure
+  real_type mSlPressure;
+  // Sea level temperature
+  real_type mSlTemperature;
 };
 
 } // namespace OpenFDM
