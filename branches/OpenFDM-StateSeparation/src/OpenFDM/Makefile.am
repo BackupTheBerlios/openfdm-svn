@@ -36,6 +36,7 @@ OpenFDMCoreHEADERS = \
   EnvironmentObject.h \
   ExplicitAdams.h \
   ExplicitEuler.h \
+  FlatPlanet.h \
   Fraction.h \
   Frame.h \
   Function.h \
@@ -145,6 +146,7 @@ OpenFDMCoreSOURCES = \
   Environment.cpp \
   ExplicitAdams.cpp \
   ExplicitEuler.cpp \
+  FlatPlanet.cpp \
   Frame.cpp \
   Function.cpp \
   Group.cpp \
