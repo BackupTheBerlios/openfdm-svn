@@ -41,31 +41,21 @@ protected:
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector& continousState,
                     const PortValueList&) const;
+  virtual Matrix6N getJointMatrix() const;
 
-  virtual void velocity(const MechanicLinkValue& parentLink,
-                        MechanicLinkValue& childLink,
+  virtual void velocity(const Task& task, Context& context,
                         const ContinousStateValueVector& states,
                         PortValueList& portValues) const;
-  virtual void articulation(MechanicLinkValue& parentLink,
-                            const MechanicLinkValue& childLink,
+  virtual void articulation(const Task& task, Context& context,
                             const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            MatrixFactorsNN& hIh, Vector6& pAlpha) const;
-  virtual void acceleration(const MechanicLinkValue& parentLink,
-                            MechanicLinkValue& childLink,
+                            PortValueList& portValues) const;
+  virtual void acceleration(const Task& task, Context& context,
                             const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            const MatrixFactorsNN& hIh, const Vector6& pAlpha, VectorN& velDot) const;
-
-  virtual void derivative(const DiscreteStateValueVector&,
+                            PortValueList& portValues) const;
+  virtual void derivative(const Task& task, Context& context,
                           const ContinousStateValueVector&,
                           const PortValueList& portValues,
-                          const VectorN& velDot,
                           ContinousStateValueVector&) const;
-
-  using CartesianJoint<3>::velocity;
-  using CartesianJoint<3>::articulation;
-  using CartesianJoint<3>::acceleration;
 
 private:
   MatrixInputPort mForcePort;

@@ -32,9 +32,6 @@ RevoluteJoint::RevoluteJoint(const std::string& name) :
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
-
-  // FIXME
-  setAxis(mAxis);
 }
 
 RevoluteJoint::~RevoluteJoint(void)
@@ -56,7 +53,6 @@ RevoluteJoint::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-  setJointMatrix(Vector6(mAxis, Vector3::zeros()));
 }
 
 const Vector3&
@@ -97,9 +93,14 @@ RevoluteJoint::init(const Task&, DiscreteStateValueVector&,
   continousState[*mVelocityStateInfo] = 0;
 }
 
+RevoluteJoint::Matrix6N
+RevoluteJoint::getJointMatrix() const
+{
+  return Vector6(mAxis, Vector3::zeros());
+}
+
 void
-RevoluteJoint::velocity(const MechanicLinkValue& parentLink,
-                        MechanicLinkValue& childLink,
+RevoluteJoint::velocity(const Task&, Context& context,
                         const ContinousStateValueVector& states,
                         PortValueList& portValues) const
 {
@@ -110,20 +111,15 @@ RevoluteJoint::velocity(const MechanicLinkValue& parentLink,
   VectorN jointVel = states[*mVelocityStateInfo];
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
-
-  // FIXME: move that somewhere into the context??
-  Vector3 position = getPosition() - parentLink.getDesignPosition();
-  velocity(parentLink, childLink, position,
-           Quaternion::fromAngleAxis(jointPos(0), mAxis),
-           getJointMatrix()*jointVel);
+  
+  Quaternion orientation = Quaternion::fromAngleAxis(jointPos(0), mAxis);
+  context.setPosAndVel(Vector3::zeros(), orientation, jointVel);
 }
 
 void
-RevoluteJoint::articulation(MechanicLinkValue& parentLink,
-                            const MechanicLinkValue& childLink,
+RevoluteJoint::articulation(const Task&, Context& context,
                             const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            MatrixFactorsNN& hIh, Vector6& pAlpha) const
+                            PortValueList& portValues) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -131,34 +127,25 @@ RevoluteJoint::articulation(MechanicLinkValue& parentLink,
   else
     jointForce = portValues[mForcePort];
   
-  articulation(parentLink, childLink, jointForce, hIh, pAlpha);
+  context.applyJointForce(jointForce);
 }
 
 void
-RevoluteJoint::acceleration(const MechanicLinkValue& parentLink,
-                            MechanicLinkValue& childLink,
-                            const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            const MatrixFactorsNN& hIh, const Vector6& pAlpha,
-                            VectorN& velDot) const
+RevoluteJoint::acceleration(const Task&, Context& context,
+                            const ContinousStateValueVector&,
+                            PortValueList&) const
 {
-  VectorN jointForce;
-  if (mForcePort.empty())
-    jointForce.clear();
-  else
-    jointForce = portValues[mForcePort];
-  
-  acceleration(parentLink, childLink, jointForce, hIh, pAlpha, velDot);
+  context.accelerateDueToForce();
 }
 
 void
-RevoluteJoint::derivative(const DiscreteStateValueVector&,
+RevoluteJoint::derivative(const Task&, Context& context,
                           const ContinousStateValueVector& states,
-                          const PortValueList&, const VectorN& velDot,
+                          const PortValueList&,
                           ContinousStateValueVector& derivative) const
 {
   derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];
-  derivative[*mVelocityStateInfo] = velDot;
+  derivative[*mVelocityStateInfo] = context.getVelDot();
 }
 
 } // namespace OpenFDM

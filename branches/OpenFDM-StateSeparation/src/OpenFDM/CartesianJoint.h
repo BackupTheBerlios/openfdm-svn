@@ -19,7 +19,9 @@ namespace OpenFDM {
 
 template<unsigned n>
 class CartesianJoint : public Joint {
+protected:
   class Context;
+
 public:
   typedef LinAlg::Vector<real_type,n> VectorN;
   typedef LinAlg::Matrix<real_type,6,n> Matrix6N;
@@ -89,127 +91,25 @@ protected:
   virtual ~CartesianJoint(void)
   { }
 
-  const Matrix6N& getJointMatrix() const
-  { return mJointMatrix; }
-  void setJointMatrix(const Matrix6N& jointMatrix)
-  { mJointMatrix = jointMatrix; }
-
-  void velocity(const MechanicLinkValue& parentLink,
-                MechanicLinkValue& childLink, const Vector3& position,
-                const Quaternion& orientation, const Vector6& vel) const
-  {
-    childLink.setPosAndVel(parentLink, position, orientation, vel);
-  }
-
-  /** Compute the articulation step for a given joint force.
-   *  Use this for usual joints.
-   */
-  void articulation(MechanicLinkValue& parentLink,
-                    const MechanicLinkValue& childLink,
-                    const VectorN& jointForce,
-                    MatrixFactorsNN& hIh, Vector6& pAlpha) const
-  {
-    // The formulas conform to Roy Featherstones book eqn (6.37), (6.38)
-    
-    // Store the outboard values since we will need them later in velocity
-    // derivative computations
-    SpatialInertia I = childLink.getInertia();
-    
-    // Compute the projection to the joint coordinate space
-    Matrix6N Ih = I*mJointMatrix;
-    hIh = trans(mJointMatrix)*Ih;
-
-    // Note that the momentum of the local mass is already included in the
-    // child links force due the the mass model ...
-    pAlpha = childLink.getForce() + I*childLink.getFrame().getHdot();
-    
-    if (hIh.singular()) {
-      Log(ArtBody,Error) << "Detected singular mass matrix for "
-                         << "CartesianJointFrame \"" << getName()
-                         << "\": Fix your model!" << endl;
-      return;
-    }
-    
-    // Project away the directions handled with this current joint
-    Vector6 force = pAlpha;
-    force -= Ih*hIh.solve(trans(mJointMatrix)*pAlpha - jointForce);
-    I -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
-    
-    // Transform to parent link's coordinates and apply to the parent link
-    parentLink.applyForce(childLink.getFrame().forceToParent(force));
-    parentLink.applyInertia(childLink.getFrame().inertiaToParent(I));
-  }
-
-  /** Compute the acceleration step for a given joint force.
-   *  Use this for usual joints.
-   */
-  void acceleration(const MechanicLinkValue& parentLink,
-                    MechanicLinkValue& childLink, const VectorN& jointForce,
-                    const MatrixFactorsNN& hIh, const Vector6& pAlpha,
-                    VectorN& velDot) const
-  {
-    Vector6 parentSpAccel
-      = childLink.getFrame().motionFromParent(parentLink.getFrame().getSpAccel());
-    
-    Vector6 f = childLink.getInertia()*parentSpAccel + pAlpha;
-    velDot = hIh.solve(jointForce - trans(mJointMatrix)*f);
-    childLink.setAccel(parentLink, mJointMatrix*velDot);
-  }
-  
-  /** Compute the articulation step for a given velocity derivative.
-   *  Use this for actuators.
-   */
-  void articulation(MechanicLinkValue& parentLink,
-                    const MechanicLinkValue& childLink,
-                    const VectorN& velDot) const
-  {
-    // The formulas conform to Roy Featherstones book eqn (7.36), (7.37)
-
-    // Compute the articulated force and inertia.
-    // This Since there is no projection step with the joint axis, it is clear
-    // that this is just a rigid connection ...
-    SpatialInertia I = childLink.getInertia();
-    Vector6 force = childLink.getForce();
-    force += I*(childLink.getFrame().getHdot() + mJointMatrix*velDot);
-    
-    // Transform to parent link's coordinates and apply to the parent link
-    parentLink.applyForce(childLink.getFrame().forceToParent(force));
-    parentLink.applyInertia(childLink.getFrame().inertiaToParent(I));
-  }
-
-  /** Compute the acceleration step for a given velocity derivative.
-   *  Use this for actuators.
-   */
-  void acceleration(const MechanicLinkValue& parentLink,
-                    MechanicLinkValue& childLink, VectorN& velDot) const
-  {
-    childLink.setAccel(parentLink, mJointMatrix*velDot);
-  }
-
-  virtual void init(const Task&,DiscreteStateValueVector&,
+  virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector&, const PortValueList&) const
   { }
-  virtual void velocity(const MechanicLinkValue& parentLink,
-                        MechanicLinkValue& childLink,
+  virtual Matrix6N getJointMatrix() const = 0;
+
+  virtual void velocity(const Task& task, Context& context,
                         const ContinousStateValueVector& states,
                         PortValueList& portValues) const = 0;
-  virtual void articulation(MechanicLinkValue& parentLink,
-                            const MechanicLinkValue& childLink,
+  virtual void articulation(const Task& task, Context& context,
                             const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            MatrixFactorsNN& hIh, Vector6& pAlpha) const = 0;
-  virtual void acceleration(const MechanicLinkValue& parentLink,
-                            MechanicLinkValue& childLink,
+                            PortValueList& portValues) const = 0;
+  virtual void acceleration(const Task& task, Context& context,
                             const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            const MatrixFactorsNN& hIh, const Vector6& pAlpha,
-                            VectorN& velDot) const = 0;
-  virtual void derivative(const DiscreteStateValueVector&,
+                            PortValueList& portValues) const = 0;
+  virtual void derivative(const Task& task, Context& context,
                           const ContinousStateValueVector&,
-                          const PortValueList& portValues, const VectorN&,
+                          const PortValueList& portValues,
                           ContinousStateValueVector&) const = 0;
 
-private:
   class Context : public MechanicContext {
   public:
     Context(const CartesianJoint* cartesianJoint, MechanicLinkValue* parentLink,
@@ -225,7 +125,11 @@ private:
     
     virtual void initDesignPosition()
     {
-      mChildLink->setDesignPosition(mCartesianJoint->getPosition());
+      Vector3 jointPosition = mCartesianJoint->getPosition();
+      mRelativePosition = jointPosition - mParentLink->getDesignPosition();
+      mChildLink->setDesignPosition(jointPosition);
+
+      mJointMatrix = mCartesianJoint->getJointMatrix();
     }
 
     bool alloc()
@@ -234,53 +138,146 @@ private:
     }
     virtual void initVelocities(const /*Init*/Task& task)
     {
-      mCartesianJoint->init(task, mDiscreteState, mContinousState, mPortValueList);
-      mCartesianJoint->velocity(*mParentLink, *mChildLink,
-                                mContinousState, mPortValueList);
+      mCartesianJoint->init(task, mDiscreteState,
+                            mContinousState, mPortValueList);
+      mCartesianJoint->velocity(task, *this, mContinousState, mPortValueList);
     }
     
     virtual void velocities(const Task& task)
     {
-      mCartesianJoint->velocity(*mParentLink, *mChildLink,
-                                mContinousState, mPortValueList);
+      mCartesianJoint->velocity(task, *this, mContinousState, mPortValueList);
     }
     virtual void articulation(const Task& task)
     {
-      mCartesianJoint->articulation(*mParentLink, *mChildLink, mContinousState,
-                                    mPortValueList, hIh, pAlpha);
+      mCartesianJoint->articulation(task, *this, mContinousState,
+                                    mPortValueList);
     }
     virtual void accelerations(const Task& task)
     {
-      mCartesianJoint->acceleration(*mParentLink, *mChildLink, mContinousState,
-                                    mPortValueList, hIh, pAlpha, velDot);
+      mCartesianJoint->acceleration(task, *this, mContinousState,
+                                    mPortValueList);
     }
     
-    virtual void derivative(const Task&)
+    virtual void derivative(const Task& task)
     {
-      mCartesianJoint->derivative(mDiscreteState, mContinousState,
-                                  mPortValueList, velDot,
-                                  mContinousStateDerivative);
+      mCartesianJoint->derivative(task, *this, mContinousState,
+                                  mPortValueList, mContinousStateDerivative);
     }
     
     virtual void update(const DiscreteTask&)
     { }
+
+    void setPosAndVel(const Vector3& position, const Quaternion& orientation,
+                      const VectorN& velocity)
+    {
+      mChildLink->setPosAndVel(*mParentLink, mRelativePosition + position,
+                               orientation, mJointMatrix*velocity);
+    }
+
+    /** Compute the articulation step for a given joint force.
+     *  Use this for usual joints.
+     */
+    void applyJointForce(const VectorN& jointForce)
+    {
+      // The formulas conform to Roy Featherstones book eqn (6.37), (6.38)
+
+      mJointForce = jointForce;
+    
+      // Store the outboard values since we will need them later in velocity
+      // derivative computations
+      SpatialInertia I = mChildLink->getInertia();
+      
+      // Compute the projection to the joint coordinate space
+      Matrix6N Ih = I*mJointMatrix;
+      hIh = trans(mJointMatrix)*Ih;
+
+      // Note that the momentum of the local mass is already included in the
+      // child links force due the the mass model ...
+      pAlpha = mChildLink->getForce() + I*mChildLink->getFrame().getHdot();
+      
+      if (hIh.singular()) {
+        Log(ArtBody,Error) << "Detected singular mass matrix for "
+                           << "CartesianJoint \"" << mCartesianJoint->getName()
+                           << "\": Fix your model!" << endl;
+        return;
+      }
+      
+      // Project away the directions handled with this current joint
+      Vector6 force = pAlpha;
+      force -= Ih*hIh.solve(trans(mJointMatrix)*pAlpha - jointForce);
+      I -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
+      
+      // Transform to parent link's coordinates and apply to the parent link
+      mParentLink->applyForce(mChildLink->getFrame().forceToParent(force));
+      mParentLink->applyInertia(mChildLink->getFrame().inertiaToParent(I));
+    }
+
+    /** Compute the acceleration step for a given joint force.
+     *  Use this for usual joints.
+     */
+    void accelerateDueToForce()
+    {
+      Vector6 parentSpAccel
+        = mChildLink->getFrame().motionFromParent(mParentLink->getFrame().getSpAccel());
+    
+      Vector6 f = mChildLink->getInertia()*parentSpAccel + pAlpha;
+      velDot = hIh.solve(mJointForce - trans(mJointMatrix)*f);
+      mChildLink->setAccel(*mParentLink, mJointMatrix*velDot);
+    }
+  
+    /** Compute the articulation step for a given velocity derivative.
+     *  Use this for actuators.
+     */
+    void applyActuatorForce(const VectorN& _velDot)
+    {
+      // The formulas conform to Roy Featherstones book eqn (7.36), (7.37)
+      
+      velDot = _velDot;
+      
+      // Compute the articulated force and inertia.
+      // This Since there is no projection step with the joint axis, it is clear
+      // that this is just a rigid connection ...
+      SpatialInertia I = mChildLink->getInertia();
+      Vector6 force = mChildLink->getForce();
+      force += I*(mChildLink->getFrame().getHdot() + mJointMatrix*velDot);
+      
+      // Transform to parent link's coordinates and apply to the parent link
+      mParentLink->applyForce(mChildLink->getFrame().forceToParent(force));
+      mParentLink->applyInertia(mChildLink->getFrame().inertiaToParent(I));
+    }
+    
+    /** Compute the acceleration step for a given velocity derivative.
+     *  Use this for actuators.
+     */
+    void accelerateDueToVelDot()
+    {
+      mChildLink->setAccel(*mParentLink, mJointMatrix*velDot);
+    }
+
+    const VectorN& getVelDot() const
+    { return velDot; }
     
   private:
     // Stores some values persistent accross velocity/articulation/acceleration
     MatrixFactorsNN hIh;
     Vector6 pAlpha;
     VectorN velDot;
+    VectorN mJointForce;
 
+    Vector3 mRelativePosition;
+
+    Matrix6N mJointMatrix;
+    
     SharedPtr<MechanicLinkValue> mParentLink;
     SharedPtr<MechanicLinkValue> mChildLink;
     
     SharedPtr<const CartesianJoint> mCartesianJoint;
   };
   
+private:
   MechanicLink mParentLink;
   MechanicLink mChildLink;
 
-  Matrix6N mJointMatrix;
   Vector3 mPosition;
 };
 

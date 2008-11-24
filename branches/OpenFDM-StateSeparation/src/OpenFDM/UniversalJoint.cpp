@@ -32,9 +32,6 @@ UniversalJoint::UniversalJoint(const std::string& name) :
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
-
-  // FIXME
-  setAxis(mAxis);
 }
 
 UniversalJoint::~UniversalJoint(void)
@@ -56,15 +53,7 @@ UniversalJoint::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-
   mOrientation = Quaternion::fromRotateTo(Vector3(0, 0, 1), mAxis);
-  
-  Vector3 axis1 = perpendicular(mAxis);
-  Vector3 axis2 = cross(mAxis, axis1);
-  Matrix6N jointMatrix;
-  jointMatrix(Range(0, 5), Range(0)) = Vector6(axis1, Vector3::zeros());
-  jointMatrix(Range(0, 5), Range(1)) = Vector6(axis2, Vector3::zeros());
-  setJointMatrix(jointMatrix);
 }
 
 const Vector3&
@@ -98,18 +87,28 @@ UniversalJoint::getEnableExternalForce() const
 
 void
 UniversalJoint::init(const Task&, DiscreteStateValueVector&,
-                    ContinousStateValueVector& continousState,
-                    const PortValueList&) const
+                     ContinousStateValueVector& continousState,
+                     const PortValueList&) const
 {
   continousState[*mPositionStateInfo] = Vector3(1, 0, 0);
   continousState[*mVelocityStateInfo] = Vector2(0, 0);
 }
 
+UniversalJoint::Matrix6N
+UniversalJoint::getJointMatrix() const
+{
+  Vector3 axis1 = perpendicular(mAxis);
+  Vector3 axis2 = cross(mAxis, axis1);
+  Matrix6N jointMatrix;
+  jointMatrix(Range(0, 5), Range(0)) = Vector6(axis1, Vector3::zeros());
+  jointMatrix(Range(0, 5), Range(1)) = Vector6(axis2, Vector3::zeros());
+  return jointMatrix;
+}
+
 void
-UniversalJoint::velocity(const MechanicLinkValue& parentLink,
-                        MechanicLinkValue& childLink,
-                        const ContinousStateValueVector& states,
-                        PortValueList& portValues) const
+UniversalJoint::velocity(const Task&, Context& context,
+                         const ContinousStateValueVector& states,
+                         PortValueList& portValues) const
 {
   Vector3 jointPos = states[*mPositionStateInfo];
   Quaternion orientation(jointPos(0), jointPos(1), 0, jointPos(2));
@@ -122,17 +121,13 @@ UniversalJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position = getPosition() - parentLink.getDesignPosition();
-  velocity(parentLink, childLink, position,
-           orientation, getJointMatrix()*jointVel);
+  context.setPosAndVel(Vector3::zeros(), orientation, jointVel);
 }
 
 void
-UniversalJoint::articulation(MechanicLinkValue& parentLink,
-                             const MechanicLinkValue& childLink,
+UniversalJoint::articulation(const Task&, Context& context,
                              const ContinousStateValueVector& states,
-                             PortValueList& portValues,
-                             MatrixFactorsNN& hIh, Vector6& pAlpha) const
+                             PortValueList& portValues) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -140,31 +135,22 @@ UniversalJoint::articulation(MechanicLinkValue& parentLink,
   else
     jointForce = portValues[mForcePort];
   
-  articulation(parentLink, childLink, jointForce, hIh, pAlpha);
+  context.applyJointForce(jointForce);
 }
 
 void
-UniversalJoint::acceleration(const MechanicLinkValue& parentLink,
-                             MechanicLinkValue& childLink,
-                             const ContinousStateValueVector& states,
-                             PortValueList& portValues,
-                             const MatrixFactorsNN& hIh, const Vector6& pAlpha,
-                             VectorN& velDot) const
+UniversalJoint::acceleration(const Task&, Context& context,
+                             const ContinousStateValueVector&,
+                             PortValueList&) const
 {
-  VectorN jointForce;
-  if (mForcePort.empty())
-    jointForce.clear();
-  else
-    jointForce = portValues[mForcePort];
-  
-  acceleration(parentLink, childLink, jointForce, hIh, pAlpha, velDot);
+  context.accelerateDueToForce();
 }
 
 void
-UniversalJoint::derivative(const DiscreteStateValueVector&,
-                          const ContinousStateValueVector& states,
-                          const PortValueList&, const VectorN& velDot,
-                          ContinousStateValueVector& derivative) const
+UniversalJoint::derivative(const Task&, Context& context,
+                           const ContinousStateValueVector& states,
+                           const PortValueList&,
+                           ContinousStateValueVector& derivative) const
 {
   Vector3 jointPos = states[*mPositionStateInfo];
   Quaternion q = Quaternion(jointPos(0), jointPos(1), 0, jointPos(2));
@@ -179,7 +165,7 @@ UniversalJoint::derivative(const DiscreteStateValueVector&,
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
   derivative[*mPositionStateInfo] = Vector3(qderiv(0), qderiv(1), qderiv(3));
-  derivative[*mVelocityStateInfo] = velDot;
+  derivative[*mVelocityStateInfo] = context.getVelDot();
 }
 
 } // namespace OpenFDM

@@ -56,7 +56,6 @@ PrismaticJoint::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-  setJointMatrix(Vector6(Vector3::zeros(), mAxis));
 }
 
 const Vector3&
@@ -97,11 +96,16 @@ PrismaticJoint::init(const Task&, DiscreteStateValueVector&,
   continousState[*mVelocityStateInfo] = 0;
 }
 
+PrismaticJoint::Matrix6N
+PrismaticJoint::getJointMatrix() const
+{
+  return Vector6(Vector3::zeros(), mAxis);
+}
+
 void
-PrismaticJoint::velocity(const MechanicLinkValue& parentLink,
-                        MechanicLinkValue& childLink,
-                        const ContinousStateValueVector& states,
-                        PortValueList& portValues) const
+PrismaticJoint::velocity(const Task&, Context& context,
+                         const ContinousStateValueVector& states,
+                         PortValueList& portValues) const
 {
   VectorN jointPos = states[*mPositionStateInfo];
   if (!mPositionPort.empty())
@@ -111,17 +115,13 @@ PrismaticJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position = mAxis*jointPos + getPosition() - parentLink.getDesignPosition();
-  velocity(parentLink, childLink, position, Quaternion::unit(),
-           getJointMatrix()*jointVel);
+  context.setPosAndVel(mAxis*jointPos, Quaternion::unit(), jointVel);
 }
 
 void
-PrismaticJoint::articulation(MechanicLinkValue& parentLink,
-                             const MechanicLinkValue& childLink,
+PrismaticJoint::articulation(const Task&, Context& context,
                              const ContinousStateValueVector& states,
-                             PortValueList& portValues,
-                             MatrixFactorsNN& hIh, Vector6& pAlpha) const
+                             PortValueList& portValues) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -129,34 +129,25 @@ PrismaticJoint::articulation(MechanicLinkValue& parentLink,
   else
     jointForce = portValues[mForcePort];
   
-  articulation(parentLink, childLink, jointForce, hIh, pAlpha);
+  context.applyJointForce(jointForce);
 }
 
 void
-PrismaticJoint::acceleration(const MechanicLinkValue& parentLink,
-                             MechanicLinkValue& childLink,
-                             const ContinousStateValueVector& states,
-                             PortValueList& portValues,
-                             const MatrixFactorsNN& hIh, const Vector6& pAlpha,
-                             VectorN& velDot) const
+PrismaticJoint::acceleration(const Task&, Context& context,
+                             const ContinousStateValueVector&,
+                             PortValueList&) const
 {
-  VectorN jointForce;
-  if (mForcePort.empty())
-    jointForce.clear();
-  else
-    jointForce = portValues[mForcePort];
-  
-  acceleration(parentLink, childLink, jointForce, hIh, pAlpha, velDot);
+  context.accelerateDueToForce();
 }
 
 void
-PrismaticJoint::derivative(const DiscreteStateValueVector&,
-                          const ContinousStateValueVector& states,
-                          const PortValueList&, const VectorN& velDot,
-                          ContinousStateValueVector& derivative) const
+PrismaticJoint::derivative(const Task&, Context& context,
+                           const ContinousStateValueVector& states,
+                           const PortValueList&,
+                           ContinousStateValueVector& derivative) const
 {
   derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];
-  derivative[*mVelocityStateInfo] = velDot;
+  derivative[*mVelocityStateInfo] = context.getVelDot();
 }
 
 } // namespace OpenFDM

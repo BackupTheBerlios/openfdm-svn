@@ -65,7 +65,6 @@ RevoluteActuator::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-  setJointMatrix(Vector6(mAxis, Vector3::zeros()));
 }
 
 const Vector3&
@@ -89,11 +88,16 @@ RevoluteActuator::init(const Task&, DiscreteStateValueVector&,
   continousState[*mVelocityStateInfo] = 0;
 }
 
+RevoluteActuator::Matrix6N
+RevoluteActuator::getJointMatrix() const
+{
+  return Vector6(mAxis, Vector3::zeros());
+}
+
 void
-RevoluteActuator::velocity(const MechanicLinkValue& parentLink,
-                           MechanicLinkValue& childLink,
-                           const ContinousStateValueVector& states,
-                           PortValueList& portValues) const
+RevoluteActuator::velocity(const Task&, Context& context,
+                        const ContinousStateValueVector& states,
+                        PortValueList& portValues) const
 {
   VectorN jointPos = states[*mPositionStateInfo];
   if (!mPositionPort.empty())
@@ -103,24 +107,20 @@ RevoluteActuator::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position = getPosition() - parentLink.getDesignPosition();
-  Quaternion orientation(Quaternion::fromAngleAxis(jointPos(0), mAxis));
-  velocity(parentLink, childLink, position, orientation, getJointMatrix()*jointVel);
+  Quaternion orientation = Quaternion::fromAngleAxis(jointPos(0), mAxis);
+  context.setPosAndVel(Vector3::zeros(), orientation, jointVel);
 }
 
 void
-RevoluteActuator::articulation(MechanicLinkValue& parentLink,
-                            const MechanicLinkValue& childLink,
+RevoluteActuator::articulation(const Task&, Context& context,
                             const ContinousStateValueVector& states,
-                            PortValueList& portValues,
-                            Matrix&) const
+                            PortValueList& portValues) const
 {
+  // This is a simple second order system with velocity limits.
+  // the joints accelerations, velocities and positions must fit together
+  // otherwise the articulated body dynamics get fooled ...
+
   VectorN velDot;
-
-  // This is a simple second order system with velocity limits.
-  // the joints accelerations, velocities and positions must fit together
-  // otherwise the articulated body dynamics get fooled ...
-
   if (!mVelocityControl) {
     // The desired position input
     VectorN desiredPos = portValues[mInputPort];
@@ -142,52 +142,25 @@ RevoluteActuator::articulation(MechanicLinkValue& parentLink,
     velDot = mVelDotGain*velErr;
   }
 
-  articulation(parentLink, childLink, velDot);
+  context.applyActuatorForce(velDot);
 }
 
 void
-RevoluteActuator::acceleration(const MechanicLinkValue& parentLink,
-                               MechanicLinkValue& childLink,
-                               const ContinousStateValueVector& states,
-                               PortValueList& portValues,
-                               const Matrix&, VectorN& velDot) const
+RevoluteActuator::acceleration(const Task&, Context& context,
+                            const ContinousStateValueVector&,
+                            PortValueList&) const
 {
-  // This is a simple second order system with velocity limits.
-  // the joints accelerations, velocities and positions must fit together
-  // otherwise the articulated body dynamics get fooled ...
-
-  if (!mVelocityControl) {
-    // The desired position input
-    VectorN desiredPos = portValues[mInputPort];
-    // Compute the error ...
-    VectorN posErr = desiredPos - states[*mPositionStateInfo];
-    // ... and compute a desired velocity within the given limits from that.
-    VectorN desiredVel;
-    desiredVel(0) = smoothSaturate(mVelGain*posErr(0), mMaxVel);
-    // The usual control loops: there we get a velocity error
-    VectorN velErr = desiredVel - states[*mVelocityStateInfo];
-    // and accelerate that proportional to that error ...
-    velDot = mVelDotGain*velErr;
-  } else {
-    // The desired velocity input
-    VectorN desiredVel = portValues[mInputPort];
-    // The usual control loops: there we get a velocity error
-    VectorN velErr = desiredVel - states[*mVelocityStateInfo];
-    // and accelerate that proportional to that error ...
-    velDot = mVelDotGain*velErr;
-  }
-
-  acceleration(parentLink, childLink, velDot);
+  context.accelerateDueToVelDot();
 }
 
 void
-RevoluteActuator::derivative(const DiscreteStateValueVector&,
-                             const ContinousStateValueVector& states,
-                             const PortValueList&, const VectorN& velDot,
-                             ContinousStateValueVector& derivative) const
+RevoluteActuator::derivative(const Task&, Context& context,
+                          const ContinousStateValueVector& states,
+                          const PortValueList&,
+                          ContinousStateValueVector& derivative) const
 {
   derivative[*mPositionStateInfo] = states[*mVelocityStateInfo];
-  derivative[*mVelocityStateInfo] = velDot;
+  derivative[*mVelocityStateInfo] = context.getVelDot();
 }
 
 } // namespace OpenFDM

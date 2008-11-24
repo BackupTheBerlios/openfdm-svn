@@ -30,12 +30,6 @@ RotationalJoint::RotationalJoint(const std::string& name) :
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
-
-  Matrix6N jointMatrix;
-  for (unsigned i = 0; i < 3; ++i)
-    for (unsigned j = 0; j < 6; ++j)
-      jointMatrix(j, i) = real_type(i == j);
-  setJointMatrix(jointMatrix);
 }
 
 RotationalJoint::~RotationalJoint(void)
@@ -73,18 +67,27 @@ RotationalJoint::getEnableExternalForce() const
 
 void
 RotationalJoint::init(const Task&, DiscreteStateValueVector&,
-                    ContinousStateValueVector& continousState,
-                    const PortValueList&) const
+                      ContinousStateValueVector& continousState,
+                      const PortValueList&) const
 {
   continousState[*mPositionStateInfo] = Quaternion::unit();
   continousState[*mVelocityStateInfo] = Vector3::zeros();
 }
 
+RotationalJoint::Matrix6N
+RotationalJoint::getJointMatrix() const
+{
+  Matrix6N jointMatrix;
+  for (unsigned i = 0; i < 3; ++i)
+    for (unsigned j = 0; j < 6; ++j)
+      jointMatrix(j, i) = real_type(i == j);
+  return jointMatrix;
+}
+
 void
-RotationalJoint::velocity(const MechanicLinkValue& parentLink,
-                        MechanicLinkValue& childLink,
-                        const ContinousStateValueVector& states,
-                        PortValueList& portValues) const
+RotationalJoint::velocity(const Task&, Context& context,
+                          const ContinousStateValueVector& states,
+                          PortValueList& portValues) const
 {
   Quaternion orientation = states[*mPositionStateInfo];
   if (!mOrientationPort.empty())
@@ -94,17 +97,13 @@ RotationalJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position = getPosition() - parentLink.getDesignPosition();
-  velocity(parentLink, childLink, position,
-           orientation, getJointMatrix()*jointVel);
+  context.setPosAndVel(Vector3::zeros(), orientation, jointVel);
 }
 
 void
-RotationalJoint::articulation(MechanicLinkValue& parentLink,
-                              const MechanicLinkValue& childLink,
+RotationalJoint::articulation(const Task&, Context& context,
                               const ContinousStateValueVector& states,
-                              PortValueList& portValues,
-                              MatrixFactorsNN& hIh, Vector6& pAlpha) const
+                              PortValueList& portValues) const
 {
   VectorN jointForce;
   if (mForcePort.empty())
@@ -112,31 +111,22 @@ RotationalJoint::articulation(MechanicLinkValue& parentLink,
   else
     jointForce = portValues[mForcePort];
   
-  articulation(parentLink, childLink, jointForce, hIh, pAlpha);
+  context.applyJointForce(jointForce);
 }
 
 void
-RotationalJoint::acceleration(const MechanicLinkValue& parentLink,
-                              MechanicLinkValue& childLink,
-                              const ContinousStateValueVector& states,
-                              PortValueList& portValues,
-                              const MatrixFactorsNN& hIh, const Vector6& pAlpha,
-                              VectorN& velDot) const
+RotationalJoint::acceleration(const Task&, Context& context,
+                              const ContinousStateValueVector&,
+                              PortValueList&) const
 {
-  VectorN jointForce;
-  if (mForcePort.empty())
-    jointForce.clear();
-  else
-    jointForce = portValues[mForcePort];
-  
-  acceleration(parentLink, childLink, jointForce, hIh, pAlpha, velDot);
+  context.accelerateDueToForce();
 }
 
 void
-RotationalJoint::derivative(const DiscreteStateValueVector&,
-                          const ContinousStateValueVector& states,
-                          const PortValueList&, const VectorN& velDot,
-                          ContinousStateValueVector& derivative) const
+RotationalJoint::derivative(const Task&, Context& context,
+                            const ContinousStateValueVector& states,
+                            const PortValueList&,
+                            ContinousStateValueVector& derivative) const
 {
   // Compute the derivative term originating from the angular velocity.
   // Correction term to keep the quaternion normalized.
@@ -147,7 +137,7 @@ RotationalJoint::derivative(const DiscreteStateValueVector&,
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
   derivative[*mPositionStateInfo] = qderiv;
-  derivative[*mVelocityStateInfo] = velDot;
+  derivative[*mVelocityStateInfo] = context.getVelDot();
 }
 
 } // namespace OpenFDM
