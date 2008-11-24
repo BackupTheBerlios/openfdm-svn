@@ -18,6 +18,8 @@ BEGIN_OPENFDM_OBJECT_DEF(Sensor, Interact)
   DEF_OPENFDM_PROPERTY(Bool, EnableLinearVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAngularVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableCentrifugalAcceleration, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnablePressure, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Sensor::Sensor(const std::string& name) :
@@ -40,6 +42,8 @@ void
 Sensor::velocity(const Task&, const ContinousStateValueVector&,
                  PortValueList& portValues) const
 {
+  const Environment* environment;
+  environment = portValues[mMechanicLink].getEnvironment();
   const Frame& frame = portValues[mMechanicLink].getFrame();
 
   // FIXME, for now relative position
@@ -61,6 +65,17 @@ Sensor::velocity(const Task&, const ContinousStateValueVector&,
 
   if (getEnableLinearVelocity())
     portValues[mLinearVelocityPort] = refVelocity.getLinear();
+
+  // Atmosphere related sensing
+  bool enableTemperature = getEnableTemperature();
+  bool enablePressure = getEnablePressure();
+  if (enableTemperature || enablePressure) {
+    AtmosphereData data = environment->getAtmosphereData(refPosition);
+    if (enableTemperature)
+      portValues[mTemperaturePort] = data.temperature;
+    if (enablePressure)
+      portValues[mPressurePort] = data.pressure;
+  }
 }
 
 void
@@ -199,6 +214,40 @@ bool
 Sensor::getEnableCentrifugalAcceleration() const
 {
   return !mCentrifugalAccelerationPort.empty();
+}
+
+void
+Sensor::setEnableTemperature(bool enable)
+{
+  if (enable == getEnableTemperature())
+    return;
+  if (enable)
+    mTemperaturePort = RealOutputPort(this, "temperature");
+  else
+    mTemperaturePort.clear();
+}
+
+bool
+Sensor::getEnableTemperature() const
+{
+  return !mTemperaturePort.empty();
+}
+
+void
+Sensor::setEnablePressure(bool enable)
+{
+  if (enable == getEnablePressure())
+    return;
+  if (enable)
+    mPressurePort = RealOutputPort(this, "pressure");
+  else
+    mPressurePort.clear();
+}
+
+bool
+Sensor::getEnablePressure() const
+{
+  return !mPressurePort.empty();
 }
 
 } // namespace OpenFDM

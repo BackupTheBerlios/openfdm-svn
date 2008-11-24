@@ -8,6 +8,7 @@
 #include "Interact.h"
 #include "MatrixOutputPort.h"
 #include "MechanicLink.h"
+#include "RealOutputPort.h"
 #include "Vector.h"
 
 namespace OpenFDM {
@@ -59,6 +60,17 @@ public:
   /// Get availabilty of the linear acceleration output port
   bool getEnableCentrifugalAcceleration() const;
 
+
+  /// Set availabilty of the temperature output port
+  void setEnableTemperature(bool enable);
+  /// Get availabilty of the temperature output port
+  bool getEnableTemperature() const;
+
+  /// Set availabilty of the pressure output port
+  void setEnablePressure(bool enable);
+  /// Get availabilty of the pressure output port
+  bool getEnablePressure() const;
+
 private:
   MechanicLink mMechanicLink;
 
@@ -72,6 +84,10 @@ private:
   MatrixOutputPort mAngularVelocityPort;
 
   MatrixOutputPort mCentrifugalAccelerationPort;
+
+  RealOutputPort mTemperaturePort;
+  RealOutputPort mPressurePort;
+//   RealOutputPort mDensityPort;
 };
 
 } // namespace OpenFDM
