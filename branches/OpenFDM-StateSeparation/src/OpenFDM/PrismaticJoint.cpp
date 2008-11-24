@@ -28,8 +28,7 @@ PrismaticJoint::PrismaticJoint(const std::string& name) :
   mVelocityPort(this, "velocity", Size(1, 1)),
   mPositionStateInfo(new Vector1StateInfo),
   mVelocityStateInfo(new Vector1StateInfo),
-  mAxis(Vector3(1, 0, 0)),
-  mPosition(Vector3(0, 0, 0))
+  mAxis(Vector3(1, 0, 0))
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -63,13 +62,13 @@ PrismaticJoint::setAxis(const Vector3& axis)
 const Vector3&
 PrismaticJoint::getPosition() const
 {
-  return mPosition;
+  return CartesianJoint<1>::getPosition();
 }
 
 void
 PrismaticJoint::setPosition(const Vector3& position)
 {
-  mPosition = position;
+  CartesianJoint<1>::setPosition(position);
 }
 
 void
@@ -87,13 +86,6 @@ bool
 PrismaticJoint::getEnableExternalForce() const
 {
   return !mForcePort.empty();
-}
-
-void
-PrismaticJoint::initDesignPosition(const MechanicLinkValue& parentLink,
-                                   MechanicLinkValue& childLink) const
-{
-  childLink.setDesignPosition(mPosition);
 }
 
 void
@@ -119,7 +111,7 @@ PrismaticJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position = mAxis*jointPos + mPosition - parentLink.getDesignPosition();
+  Vector3 position = mAxis*jointPos + getPosition() - parentLink.getDesignPosition();
   velocity(parentLink, childLink, position, Quaternion::unit(),
            getJointMatrix()*jointVel);
 }

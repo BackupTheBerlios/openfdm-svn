@@ -58,8 +58,6 @@ public:
 
 protected:
 
-  virtual void initDesignPosition(const MechanicLinkValue& parentLink,
-                                  MechanicLinkValue& childLink) const;
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector& continousState,
                     const PortValueList&) const;
@@ -98,7 +96,6 @@ private:
   SharedPtr<Vector1StateInfo> mVelocityStateInfo;
 
   Vector3 mAxis;
-  Vector3 mPosition;
   bool mVelocityControl;
   real_type mVelGain;
   real_type mVelDotGain;

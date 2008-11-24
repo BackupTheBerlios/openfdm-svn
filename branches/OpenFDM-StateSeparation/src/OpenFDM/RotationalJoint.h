@@ -38,8 +38,6 @@ public:
 
 protected:
 
-  virtual void initDesignPosition(const MechanicLinkValue& parentLink,
-                                  MechanicLinkValue& childLink) const;
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector& continousState,
                     const PortValueList&) const;
@@ -76,8 +74,6 @@ private:
 
   SharedPtr<Vector4StateInfo> mPositionStateInfo;
   SharedPtr<Vector3StateInfo> mVelocityStateInfo;
-
-  Vector3 mPosition;
 };
 
 } // namespace OpenFDM

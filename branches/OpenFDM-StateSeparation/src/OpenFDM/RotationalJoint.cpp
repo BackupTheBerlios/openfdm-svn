@@ -26,8 +26,7 @@ RotationalJoint::RotationalJoint(const std::string& name) :
   mOrientationPort(this, "orientation", Size(4, 1)),
   mVelocityPort(this, "velocity", Size(3, 1)),
   mPositionStateInfo(new Vector4StateInfo),
-  mVelocityStateInfo(new Vector3StateInfo),
-  mPosition(0, 0, 0)
+  mVelocityStateInfo(new Vector3StateInfo)
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -46,13 +45,13 @@ RotationalJoint::~RotationalJoint(void)
 const Vector3&
 RotationalJoint::getPosition() const
 {
-  return mPosition;
+  return CartesianJoint<3>::getPosition();
 }
 
 void
 RotationalJoint::setPosition(const Vector3& position)
 {
-  mPosition = position;
+  CartesianJoint<3>::setPosition(position);
 }
 
 void
@@ -70,13 +69,6 @@ bool
 RotationalJoint::getEnableExternalForce() const
 {
   return !mForcePort.empty();
-}
-
-void
-RotationalJoint::initDesignPosition(const MechanicLinkValue& parentLink,
-                                  MechanicLinkValue& childLink) const
-{
-  childLink.setDesignPosition(mPosition);
 }
 
 void
@@ -102,7 +94,7 @@ RotationalJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position = mPosition - parentLink.getDesignPosition();
+  Vector3 position = getPosition() - parentLink.getDesignPosition();
   velocity(parentLink, childLink, position,
            orientation, getJointMatrix()*jointVel);
 }

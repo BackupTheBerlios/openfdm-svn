@@ -26,6 +26,12 @@ public:
   typedef LinAlg::Matrix<real_type,n,n> MatrixNN;
   typedef LinAlg::MatrixFactors<real_type,n,n,LinAlg::LUTag> MatrixFactorsNN;
 
+  // Each Cartesian joint has a position that has some kind of invariance
+  const Vector3& getPosition() const
+  { return mPosition; }
+  void setPosition(const Vector3& position)
+  { mPosition = position; }
+
   virtual MechanicContext*
   newMechanicContext(const MechanicLinkInfo* parentLink,
                      const MechanicLinkInfo* childLink,
@@ -77,7 +83,8 @@ protected:
   CartesianJoint(const std::string& name) :
     Joint(name),
     mParentLink(newMechanicLink("link0")),
-    mChildLink(newMechanicLink("link1"))
+    mChildLink(newMechanicLink("link1")),
+    mPosition(0, 0, 0)
   { }
   virtual ~CartesianJoint(void)
   { }
@@ -182,8 +189,6 @@ protected:
   virtual void init(const Task&,DiscreteStateValueVector&,
                     ContinousStateValueVector&, const PortValueList&) const
   { }
-  virtual void initDesignPosition(const MechanicLinkValue& parentLink,
-                                  MechanicLinkValue& childLink) const = 0;
   virtual void velocity(const MechanicLinkValue& parentLink,
                         MechanicLinkValue& childLink,
                         const ContinousStateValueVector& states,
@@ -220,7 +225,7 @@ private:
     
     virtual void initDesignPosition()
     {
-      mCartesianJoint->initDesignPosition(*mParentLink, *mChildLink);
+      mChildLink->setDesignPosition(mCartesianJoint->getPosition());
     }
 
     bool alloc()
@@ -276,6 +281,7 @@ private:
   MechanicLink mChildLink;
 
   Matrix6N mJointMatrix;
+  Vector3 mPosition;
 };
 
 } // namespace OpenFDM

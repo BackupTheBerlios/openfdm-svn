@@ -28,8 +28,7 @@ UniversalJoint::UniversalJoint(const std::string& name) :
   mVelocityPort(this, "velocity", Size(2, 1)),
   mPositionStateInfo(new Vector3StateInfo),
   mVelocityStateInfo(new Vector2StateInfo),
-  mAxis(Vector3(1, 0, 0)),
-  mPosition(0, 0, 0)
+  mAxis(Vector3(1, 0, 0))
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -71,13 +70,13 @@ UniversalJoint::setAxis(const Vector3& axis)
 const Vector3&
 UniversalJoint::getPosition() const
 {
-  return mPosition;
+  return CartesianJoint<2>::getPosition();
 }
 
 void
 UniversalJoint::setPosition(const Vector3& position)
 {
-  mPosition = position;
+  CartesianJoint<2>::setPosition(position);
 }
 
 void
@@ -95,13 +94,6 @@ bool
 UniversalJoint::getEnableExternalForce() const
 {
   return !mForcePort.empty();
-}
-
-void
-UniversalJoint::initDesignPosition(const MechanicLinkValue& parentLink,
-                                  MechanicLinkValue& childLink) const
-{
-  childLink.setDesignPosition(mPosition);
 }
 
 void
@@ -130,7 +122,7 @@ UniversalJoint::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position = mPosition - parentLink.getDesignPosition();
+  Vector3 position = getPosition() - parentLink.getDesignPosition();
   velocity(parentLink, childLink, position,
            orientation, getJointMatrix()*jointVel);
 }

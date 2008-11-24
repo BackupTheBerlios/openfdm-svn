@@ -34,7 +34,6 @@ RevoluteActuator::RevoluteActuator(const std::string& name) :
   mPositionStateInfo(new Vector1StateInfo),
   mVelocityStateInfo(new Vector1StateInfo),
   mAxis(Vector3(1, 0, 0)),
-  mPosition(Vector3(0, 0, 0)),
   mVelocityControl(false),
   mVelGain(1),
   mVelDotGain(1),
@@ -72,20 +71,13 @@ RevoluteActuator::setAxis(const Vector3& axis)
 const Vector3&
 RevoluteActuator::getPosition() const
 {
-  return mPosition;
+  return CartesianJoint<1>::getPosition();
 }
 
 void
 RevoluteActuator::setPosition(const Vector3& position)
 {
-  mPosition = position;
-}
-
-void
-RevoluteActuator::initDesignPosition(const MechanicLinkValue& parentLink,
-                                     MechanicLinkValue& childLink) const
-{
-  childLink.setDesignPosition(mPosition);
+  CartesianJoint<1>::setPosition(position);
 }
 
 void
@@ -111,7 +103,7 @@ RevoluteActuator::velocity(const MechanicLinkValue& parentLink,
   if (!mVelocityPort.empty())
     portValues[mVelocityPort] = jointVel;
   
-  Vector3 position = mPosition - parentLink.getDesignPosition();
+  Vector3 position = getPosition() - parentLink.getDesignPosition();
   Quaternion orientation(Quaternion::fromAngleAxis(jointPos(0), mAxis));
   velocity(parentLink, childLink, position, orientation, getJointMatrix()*jointVel);
 }

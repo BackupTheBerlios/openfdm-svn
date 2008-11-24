@@ -28,8 +28,7 @@ RevoluteJoint::RevoluteJoint(const std::string& name) :
   mVelocityPort(this, "velocity", Size(1, 1)),
   mPositionStateInfo(new Vector1StateInfo),
   mVelocityStateInfo(new Vector1StateInfo),
-  mAxis(Vector3(1, 0, 0)),
-  mPosition(Vector3(0, 0, 0))
+  mAxis(Vector3(1, 0, 0))
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -63,13 +62,13 @@ RevoluteJoint::setAxis(const Vector3& axis)
 const Vector3&
 RevoluteJoint::getPosition() const
 {
-  return mPosition;
+  return CartesianJoint<1>::getPosition();
 }
 
 void
 RevoluteJoint::setPosition(const Vector3& position)
 {
-  mPosition = position;
+  CartesianJoint<1>::setPosition(position);
 }
 
 void
@@ -87,13 +86,6 @@ bool
 RevoluteJoint::getEnableExternalForce() const
 {
   return !mForcePort.empty();
-}
-
-void
-RevoluteJoint::initDesignPosition(const MechanicLinkValue& parentLink,
-                                  MechanicLinkValue& childLink) const
-{
-  childLink.setDesignPosition(mPosition);
 }
 
 void
@@ -120,7 +112,7 @@ RevoluteJoint::velocity(const MechanicLinkValue& parentLink,
     portValues[mVelocityPort] = jointVel;
 
   // FIXME: move that somewhere into the context??
-  Vector3 position = mPosition - parentLink.getDesignPosition();
+  Vector3 position = getPosition() - parentLink.getDesignPosition();
   velocity(parentLink, childLink, position,
            Quaternion::fromAngleAxis(jointPos(0), mAxis),
            getJointMatrix()*jointVel);
