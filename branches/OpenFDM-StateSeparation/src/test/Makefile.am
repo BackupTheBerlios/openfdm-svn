@@ -6,7 +6,7 @@ bin_PROGRAMS = structure mechanic foucault
 
 # define some unit tests
 #check_PROGRAMS = quattest unitstest structure simulationtime constintegral harmonic limit
-check_PROGRAMS = quattest unitstest simulationtime limit
+check_PROGRAMS = quattest unitstest simulationtime limit linalg
 TESTS          = $(check_PROGRAMS)
 
 # tiretestrig_SOURCES = tiretestrig.cpp
@@ -20,6 +20,9 @@ quattest_LDADD = ../OpenFDM/libOpenFDM.la
 
 mechanic_SOURCES = mechanic.cpp
 mechanic_LDADD = ../OpenFDM/libOpenFDM.la
+
+linalg_SOURCES = linalg.cpp
+linalg_LDADD = ../OpenFDM/libOpenFDM.la
 
 foucault_SOURCES = foucault.cpp
 foucault_LDADD = ../OpenFDM/libOpenFDM.la
