@@ -59,12 +59,17 @@ Sensor::velocity(const Task&, const ContinousStateValueVector&,
   if (getEnableEulerAngles())
     portValues[mEulerAnglesPort] = frame.getRefOrientation().getEuler();
 
-  Vector6 refVelocity = frame.getRefVelAt(position);
-  if (getEnableAngularVelocity())
-    portValues[mAngularVelocityPort] = refVelocity.getAngular();
-
-  if (getEnableLinearVelocity())
-    portValues[mLinearVelocityPort] = refVelocity.getLinear();
+  // Velocity related sensing
+  bool enableAngularVelocity = getEnableAngularVelocity();
+  bool enableLinearVelocity = getEnableLinearVelocity();
+  if (enableAngularVelocity || enableLinearVelocity) {
+    Vector6 refVelocity = frame.getRefVelAt(position);
+    if (enableAngularVelocity)
+      portValues[mAngularVelocityPort] = refVelocity.getAngular();
+    
+    if (enableLinearVelocity)
+      portValues[mLinearVelocityPort] = refVelocity.getLinear();
+  }
 
   // Atmosphere related sensing
   bool enableTemperature = getEnableTemperature();
