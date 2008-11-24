@@ -284,7 +284,7 @@ private:
 
 class HDF5SystemOutput : public SystemOutput {
 public:
-  HDF5SystemOutput(const std::string& filename, bool outputMechanics = false) :
+  HDF5SystemOutput(const std::string& filename, bool outputMechanics = true) :
     mHDF5File(filename),
     mToplevelGroup(mHDF5File, "System"),
     mTimeStream(mToplevelGroup, "t", Size(1, 1)),
