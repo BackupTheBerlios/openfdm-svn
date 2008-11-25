@@ -5,6 +5,7 @@
 #include "LinearSpringDamper.h"
 
 #include "Model.h"
+#include "PortValueList.h"
 #include "Vector.h"
 
 namespace OpenFDM {
@@ -17,59 +18,28 @@ BEGIN_OPENFDM_OBJECT_DEF(LinearSpringDamper, Model)
 
 LinearSpringDamper::LinearSpringDamper(const std::string& name) :
   Model(name),
+  mPositionPort(this, "position", true),
+  mVelocityPort(this, "velocity", true),
+  mForcePort(this, "force"),
   mSpringReference(0),
   mSpringConstant(0),
   mDamperConstant(0)
 {
-  setDirectFeedThrough(true);
-
-  setNumInputPorts(2);
-  setInputPortName(0, "position");
-  setInputPortName(1, "velocity");
-  
-  setNumOutputPorts(1);
-  setOutputPort(0, "force", this, &LinearSpringDamper::getForce);
 }
 
 LinearSpringDamper::~LinearSpringDamper(void)
 {
 }
 
-bool
-LinearSpringDamper::init(void)
-{
-  mPositionPort = getInputPort(0)->toRealPortHandle();
-  if (!mPositionPort.isConnected()) {
-    Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
-  mVelocityPort = getInputPort(1)->toRealPortHandle();
-  if (!mVelocityPort.isConnected()) {
-    Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(1)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
-  return Model::init();
-}
-
 void
-LinearSpringDamper::output(const TaskInfo& taskInfo)
+LinearSpringDamper::output(const Task&, const DiscreteStateValueVector&,
+                           const ContinousStateValueVector&,
+                           PortValueList& portValues) const
 {
-  real_type position = mPositionPort.getRealValue();
-  real_type vel = mVelocityPort.getRealValue();
+  real_type position = portValues[mPositionPort];
+  real_type vel = portValues[mVelocityPort];
   real_type displacement = position - mSpringReference;
-  mForce = mSpringConstant*displacement + vel*mDamperConstant;
-}
-
-const real_type&
-LinearSpringDamper::getForce(void) const
-{
-  return mForce;
+  portValues[mForcePort] = mSpringConstant*displacement + vel*mDamperConstant;
 }
 
 const real_type&

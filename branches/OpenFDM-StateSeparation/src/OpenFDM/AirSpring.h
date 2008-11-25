@@ -6,6 +6,8 @@
 #define OpenFDM_AirSpring_H
 
 #include "Model.h"
+#include "RealInputPort.h"
+#include "RealOutputPort.h"
 #include "Vector.h"
 
 namespace OpenFDM {
@@ -17,10 +19,9 @@ public:
   AirSpring(const std::string& name);
   virtual ~AirSpring(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo& taskInfo);
-
-  const real_type& getForce(void) const;
+  virtual void output(const Task&, const DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
 
   const real_type& getPushPressure(void) const;
   void setPushPressure(const real_type& pushPressure);
@@ -43,10 +44,14 @@ public:
   const real_type& getMinDamperConstant(void) const;
   void setMinDamperConstant(const real_type& minDamperConstant);
 
-  real_type getGamma(void) const;
-  void setGamma(real_type gamma);
+  const real_type& getGamma(void) const;
+  void setGamma(const real_type& gamma);
 
 private:
+  RealInputPort mPositionPort;
+  RealInputPort mVelocityPort;
+  RealOutputPort mForcePort;
+
   real_type mPushPressure;
   real_type mPullPressure;
 
@@ -59,13 +64,6 @@ private:
   real_type mMinDamperConstant;
 
   real_type mGamma;
-
-  real_type mForce;
-
-  /// The intput port which must provide the position
-  RealPortHandle mPositionPort;
-  /// The intput port which must provide the velocity
-  RealPortHandle mVelocityPort;
 };
 
 } // namespace OpenFDM

@@ -13,8 +13,8 @@ namespace OpenFDM {
 class ConstModel : public Model {
   OPENFDM_OBJECT(ConstModel, Model);
 public:
-  ConstModel(const std::string& name, const Matrix& value = Matrix());
-  ConstModel(const std::string& name, const real_type& value);
+  ConstModel(const std::string& name, const Matrix& value);
+  ConstModel(const std::string& name, const real_type& value = real_type(0));
   virtual ~ConstModel(void);
 
   virtual void output(const Task&,const DiscreteStateValueVector&,

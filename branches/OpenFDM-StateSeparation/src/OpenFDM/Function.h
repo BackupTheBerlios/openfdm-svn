@@ -11,7 +11,7 @@
 
 namespace OpenFDM {
 
-// FIXME: aplit that into two types of functions:
+// FIXME: split that into two types of functions:
 // Functions from R^m->R^n
 // and ODE Functions ...
 

@@ -245,6 +245,7 @@ OpenFDMModelsHEADERS = \
   Wind.h
 
 OpenFDMModelsSOURCES = \
+  AirSpring.cpp \
   Bias.cpp \
   BinaryFunction.cpp \
   ConstModel.cpp \
@@ -254,6 +255,7 @@ OpenFDMModelsSOURCES = \
   Gain.cpp \
   Input.cpp \
   Integrator.cpp \
+  LinearSpringDamper.cpp \
   Output.cpp \
   Saturation.cpp \
   SimulationTime.cpp \
@@ -261,9 +263,7 @@ OpenFDMModelsSOURCES = \
   UnaryModel.cpp \
   UnitConversion.cpp
 
-#   AirSpring.cpp \
 #   DiscBrake.cpp \
-#   LinearSpringDamper.cpp \
 #   MaxModel.cpp \
 #   MinModel.cpp \
 #   Product.cpp \

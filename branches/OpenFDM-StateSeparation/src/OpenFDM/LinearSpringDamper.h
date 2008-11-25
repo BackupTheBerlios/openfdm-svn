@@ -7,8 +7,9 @@
 
 #include <string>
 
-#include "Types.h"
 #include "Model.h"
+#include "RealInputPort.h"
+#include "RealOutputPort.h"
 
 namespace OpenFDM {
 
@@ -19,10 +20,9 @@ public:
   LinearSpringDamper(const std::string& name);
   virtual ~LinearSpringDamper(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo& taskInfo);
-
-  const real_type& getForce(void) const;
+  virtual void output(const Task&, const DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
 
   const real_type& getSpringReference(void) const;
   void setSpringReference(const real_type& springReference);
@@ -34,16 +34,13 @@ public:
   void setDamperConstant(const real_type& damperConstant);
 
 private:
+  RealInputPort mPositionPort;
+  RealInputPort mVelocityPort;
+  RealOutputPort mForcePort;
+
   real_type mSpringReference;
   real_type mSpringConstant;
   real_type mDamperConstant;
-
-  real_type mForce;
-
-  /// The intput port which must provide the position
-  RealPortHandle mPositionPort;
-  /// The intput port which must provide the velocity
-  RealPortHandle mVelocityPort;
 };
 
 } // namespace OpenFDM

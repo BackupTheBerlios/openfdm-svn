@@ -5,6 +5,7 @@
 #include "AirSpring.h"
 
 #include <string>
+#include "PortValueList.h"
 
 namespace OpenFDM {
 
@@ -20,6 +21,9 @@ BEGIN_OPENFDM_OBJECT_DEF(AirSpring, Model)
 
 AirSpring::AirSpring(const std::string& name) :
   Model(name),
+  mPositionPort(this, "position", true),
+  mVelocityPort(this, "velocity", true),
+  mForcePort(this, "force"),
   mPushPressure(2e5),
   mPullPressure(1e5),
   mArea(0),
@@ -29,47 +33,19 @@ AirSpring::AirSpring(const std::string& name) :
   mMaxDamperConstant(0),
   mGamma(1.4)
 {
-  setDirectFeedThrough(true);
-
-  setNumInputPorts(2);
-  setInputPortName(0, "position");
-  setInputPortName(1, "velocity");
-  
-  setNumOutputPorts(1);
-  setOutputPort(0, "force", this, &AirSpring::getForce);
 }
 
 AirSpring::~AirSpring(void)
 {
 }
 
-bool
-AirSpring::init(void)
-{
-  mPositionPort = getInputPort(0)->toRealPortHandle();
-  if (!mPositionPort.isConnected()) {
-    Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
-  mVelocityPort = getInputPort(1)->toRealPortHandle();
-  if (!mVelocityPort.isConnected()) {
-    Log(Model, Error) << "Initialization of AirSpring model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(1)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
-  return Model::init();
-}
-
 void
-AirSpring::output(const TaskInfo& taskInfo)
+AirSpring::output(const Task&, const DiscreteStateValueVector&,
+                  const ContinousStateValueVector&,
+                  PortValueList& portValues) const
 {
-  real_type position = mPositionPort.getRealValue();
-  real_type vel = mVelocityPort.getRealValue();
+  real_type position = portValues[mPositionPort];
+  real_type vel = portValues[mVelocityPort];
 
   real_type maxDisp = mMaxCompression - mMinCompression;
   real_type pullDisp = mMaxCompression - position;
@@ -86,19 +62,14 @@ AirSpring::output(const TaskInfo& taskInfo)
   real_type pushPressure = mPushPressure/(1-pow(pushDispRatio, mGamma));
   
   // The output force is the pressure difference times the piston area
-  mForce = sign(maxDisp)*mArea*(pullPressure - pushPressure);
+  real_type force = sign(maxDisp)*mArea*(pullPressure - pushPressure);
   // Add a position dependent damping force
   // That sign of the area is just a handy hack to determine
   // the polarity of the output value
-  mForce += sign(mArea)*vel*interpolate(position,
-                                        mMinCompression, mMinDamperConstant,
-                                        mMaxCompression, mMaxDamperConstant);
-}
-
-const real_type&
-AirSpring::getForce(void) const
-{
-  return mForce;
+  force += sign(mArea)*vel*interpolate(position,
+                                       mMinCompression, mMinDamperConstant,
+                                       mMaxCompression, mMaxDamperConstant);
+  portValues[mForcePort] = force;
 }
 
 const real_type&
@@ -185,14 +156,14 @@ AirSpring::setMinDamperConstant(const real_type& minDamperConstant)
   mMinDamperConstant = minDamperConstant;
 }
 
-real_type
+const real_type&
 AirSpring::getGamma(void) const
 {
   return mGamma;
 }
 
 void
-AirSpring::setGamma(real_type gamma)
+AirSpring::setGamma(const real_type& gamma)
 {
   mGamma = gamma;
 }
