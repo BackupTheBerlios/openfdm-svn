@@ -61,6 +61,12 @@ public:
   bool getEnableCentrifugalAcceleration() const;
 
 
+  /// Set availabilty of the wind velocity output port
+  void setEnableWindVelocity(bool enable);
+  /// Get availabilty of the wind velocity output port
+  bool getEnableWindVelocity() const;
+
+
   /// Set availabilty of the temperature output port
   void setEnableTemperature(bool enable);
   /// Get availabilty of the temperature output port
@@ -84,6 +90,8 @@ private:
   MatrixOutputPort mAngularVelocityPort;
 
   MatrixOutputPort mCentrifugalAccelerationPort;
+
+  MatrixOutputPort mWindVelocityPort;
 
   RealOutputPort mTemperaturePort;
   RealOutputPort mPressurePort;

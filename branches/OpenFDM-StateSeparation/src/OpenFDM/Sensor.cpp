@@ -7,6 +7,7 @@
 #include "MechanicLinkValue.h"
 #include "NumericPortValue.h"
 #include "PortValueList.h"
+#include "Task.h"
 
 namespace OpenFDM {
 
@@ -18,6 +19,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Sensor, Interact)
   DEF_OPENFDM_PROPERTY(Bool, EnableLinearVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAngularVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableCentrifugalAcceleration, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnablePressure, Serialized)
   END_OPENFDM_OBJECT_DEF
@@ -39,7 +41,7 @@ Sensor::initDesignPosition(PortValueList& portValues) const
 }
 
 void
-Sensor::velocity(const Task&, const ContinousStateValueVector&,
+Sensor::velocity(const Task& task, const ContinousStateValueVector&,
                  PortValueList& portValues) const
 {
   const Environment* environment;
@@ -71,6 +73,12 @@ Sensor::velocity(const Task&, const ContinousStateValueVector&,
       portValues[mLinearVelocityPort] = refVelocity.getLinear();
   }
 
+  // Wind sensing
+  if (getEnableWindVelocity()) {
+    Vector6 wind = environment->getWindVelocity(task.getTime(), position);
+    portValues[mWindVelocityPort] = frame.rotFromRef(wind.getLinear());
+  }
+ 
   // Atmosphere related sensing
   bool enableTemperature = getEnableTemperature();
   bool enablePressure = getEnablePressure();
@@ -219,6 +227,23 @@ bool
 Sensor::getEnableCentrifugalAcceleration() const
 {
   return !mCentrifugalAccelerationPort.empty();
+}
+
+void
+Sensor::setEnableWindVelocity(bool enable)
+{
+  if (enable == getEnableWindVelocity())
+    return;
+  if (enable)
+    mWindVelocityPort = MatrixOutputPort(this, "windVelocity", Size(3, 1));
+  else
+    mWindVelocityPort.clear();
+}
+
+bool
+Sensor::getEnableWindVelocity() const
+{
+  return !mWindVelocityPort.empty();
 }
 
 void
