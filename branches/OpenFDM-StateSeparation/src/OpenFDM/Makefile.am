@@ -236,13 +236,11 @@ OpenFDMModelsHEADERS = \
   Tank.h \
   TimeDerivative.h \
   TransferFunction.h \
-  Turbulence.h \
   UnaryFunction.h \
   UnaryModel.h \
   UnitConversion.h \
   UniversalJoint.h \
-  WheelContact.h \
-  Wind.h
+  WheelContact.h
 
 OpenFDMModelsSOURCES = \
   AirSpring.cpp \
