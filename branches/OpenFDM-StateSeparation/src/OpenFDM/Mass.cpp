@@ -38,7 +38,7 @@ void
 Mass::articulation(const Task&, const ContinousStateValueVector&,
                    PortValueList& portValues, Matrix&) const
 {
-  const EnvironmentCache* environment;
+  const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();
 
   // The position of the mass point wrt its parent link frame

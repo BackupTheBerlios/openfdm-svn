@@ -55,7 +55,7 @@ MobileRootJoint::velocity(const Task& task,
                           const ContinousStateValueVector& continousState,
                           PortValueList& portValues) const
 {
-  const EnvironmentCache* environment;
+  const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();
   Vector3 angularBaseVelocity = environment->getAngularVelocity(task.getTime());
 
@@ -79,7 +79,7 @@ MobileRootJoint::acceleration(const Task& task,
                               const ContinousStateValueVector&,
                               PortValueList& portValues) const
 {
-  const EnvironmentCache* environment;
+  const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();
   Vector6 spatialAcceleration = environment->getAcceleration(task.getTime());
 

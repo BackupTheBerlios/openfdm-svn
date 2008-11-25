@@ -68,7 +68,8 @@ RootJoint::~RootJoint()
 }
 
 MechanicContext*
-RootJoint::newMechanicContext(const MechanicLinkInfo* parentLink,
+RootJoint::newMechanicContext(const Environment* environment,
+                              const MechanicLinkInfo* parentLink,
                               const MechanicLinkInfo* childLink,
                               PortValueList& portValueList) const
 {
@@ -83,7 +84,7 @@ RootJoint::newMechanicContext(const MechanicLinkInfo* parentLink,
     }
 
     if (portValue->toMechanicLinkValue()) {
-      portValue->toMechanicLinkValue()->setEnvironment(new EnvironmentCache);
+      portValue->toMechanicLinkValue()->setEnvironment(environment);
     }
 
     context->setPortValue(*getPort(i), portValue);

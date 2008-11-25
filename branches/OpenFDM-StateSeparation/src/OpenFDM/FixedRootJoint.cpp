@@ -75,7 +75,7 @@ FixedRootJoint::velocity(const Task& task,
                          const ContinousStateValueVector& continousState,
                          PortValueList& portValues) const
 {
-  const EnvironmentCache* environment;
+  const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();
   Vector3 angularBaseVelocity = environment->getAngularVelocity(task.getTime());
   portValues[mMechanicLink].setPosAndVel(angularBaseVelocity, mPosition,
@@ -93,7 +93,7 @@ void
 FixedRootJoint::acceleration(const Task& task, const ContinousStateValueVector&,
                               PortValueList& portValues) const
 {
-  const EnvironmentCache* environment;
+  const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();
   Vector6 spatialAcceleration = environment->getAcceleration(task.getTime());
   portValues[mMechanicLink].getFrame().setSpAccel(spatialAcceleration);

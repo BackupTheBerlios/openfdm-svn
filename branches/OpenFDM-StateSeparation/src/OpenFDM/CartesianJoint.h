@@ -35,7 +35,8 @@ public:
   { mPosition = position; }
 
   virtual MechanicContext*
-  newMechanicContext(const MechanicLinkInfo* parentLink,
+  newMechanicContext(const Environment* environment,
+                     const MechanicLinkInfo* parentLink,
                      const MechanicLinkInfo* childLink,
                      PortValueList& portValueList) const
   {
@@ -59,7 +60,8 @@ public:
       return 0;
 
     // Now propagate the root dependent data ...
-    childLinkValue->setEnvironment(parentLinkValue->getEnvironment());
+    OpenFDMAssert(environment == parentLinkValue->getEnvironment());
+    childLinkValue->setEnvironment(environment);
 
     SharedPtr<Context> context;
     context = new Context(this, parentLinkValue, childLinkValue);

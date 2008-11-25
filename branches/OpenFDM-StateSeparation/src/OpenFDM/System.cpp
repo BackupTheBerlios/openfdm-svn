@@ -6,6 +6,7 @@
 
 #include "AbstractSystem.h"
 #include "ConstNodeVisitor.h"
+#include "Environment.h"
 #include "Group.h"
 #include "GroupInterfaceNode.h"
 #include "Interact.h"
@@ -247,9 +248,11 @@ private:
 
 class System::NodeInstanceCollector : public ConstNodeVisitor {
 public:
-  NodeInstanceCollector(const SampleTime& sampleTime) :
+  NodeInstanceCollector(const SampleTime& sampleTime,
+                        Environment* environment) :
     mSampleTime(sampleTime),
-    mBasicSampleTime(SampleTime::getContinous())
+    mBasicSampleTime(SampleTime::getContinous()),
+    mEnvironment(environment)
   { }
 
   struct InstanceData;
@@ -544,7 +547,7 @@ public:
     { }
     virtual const MechanicNode* getNode() const = 0;
 
-    virtual bool createMechanicContext() = 0;
+    virtual bool createMechanicContext(Environment*) = 0;
 
     virtual AbstractNodeInstance* newNodeInstance()
     { return new LeafInstance(mSampleTime, mMechanicContext); }
@@ -586,10 +589,11 @@ public:
       mJoint(&joint)
     { }
     virtual const Joint* getNode() const { return mJoint; }
-    virtual bool createMechanicContext()
+    virtual bool createMechanicContext(Environment* environment)
     {
       OpenFDMAssert(!mMechanicContext);
-      mMechanicContext = getNode()->newMechanicContext(mParentLink, mChildLink,
+      mMechanicContext = getNode()->newMechanicContext(environment, mParentLink,
+                                                       mChildLink,
                                                        mPortValueList);
       if (!mMechanicContext) {
         Log(Schedule, Warning) << "Could not create context for mechanic "
@@ -659,7 +663,7 @@ public:
       mInteract(&interact)
     { }
     virtual const Interact* getNode() const { return mInteract; }
-    virtual bool createMechanicContext()
+    virtual bool createMechanicContext(Environment* environment)
     {
       OpenFDMAssert(!mMechanicContext);
       mMechanicContext = getNode()->newMechanicContext(mPortValueList);
@@ -914,6 +918,9 @@ public:
   // whole system. It is built up during traversal and has almost no meaning
   // until all models have be traversed.
   SampleTime mBasicSampleTime;
+
+  // The mechanic simulation environment for this system
+  SharedPtr<Environment> mEnvironment;
 
   // Here the miracle occurs.
   // The collected simulation nodes are packed into something that can be used
@@ -1296,7 +1303,7 @@ protected:
     MechanicInstanceDataList::const_iterator k;
     for (k = mMechanicInstanceDataList.begin();
          k != mMechanicInstanceDataList.end(); ++k) {
-      if (!(*k)->createMechanicContext())
+      if (!(*k)->createMechanicContext(mEnvironment))
         return false;
     }
 
@@ -1310,7 +1317,8 @@ BEGIN_OPENFDM_OBJECT_DEF(System, Object)
 System::System(const std::string& name, Node* node) :
   Object(name),
   mNode(node),
-  mSampleTime(SampleTime::getContinous())
+  mSampleTime(SampleTime::getContinous()),
+  mEnvironment(new Environment)
 {
 }
 
@@ -1336,6 +1344,24 @@ System::setSampleTime(const SampleTime& sampleTime)
   mSampleTime = sampleTime;
 }
 
+void
+System::setEnvironment(Environment* environment)
+{
+  mEnvironment = environment;
+}
+
+Environment*
+System::getEnvironment()
+{
+  return mEnvironment;
+}
+
+const Environment*
+System::getEnvironment() const
+{
+  return mEnvironment;
+}
+
 bool
 System::init(const real_type& t0)
 {
@@ -1343,7 +1369,7 @@ System::init(const real_type& t0)
     return false;
   
   // Build up the lists required to run the model.
-  NodeInstanceCollector nodeInstanceCollector(mSampleTime);
+  NodeInstanceCollector nodeInstanceCollector(mSampleTime, mEnvironment);
   mNode->accept(nodeInstanceCollector);
   
   mAbstractSystem = nodeInstanceCollector.buildSystem();

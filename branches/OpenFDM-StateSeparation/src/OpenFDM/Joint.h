@@ -35,7 +35,8 @@ public:
   virtual void accept(ConstNodeVisitor& visitor) const;
 
   virtual MechanicContext*
-  newMechanicContext(const MechanicLinkInfo* parentLink,
+  newMechanicContext(const Environment* environment,
+                     const MechanicLinkInfo* parentLink,
                      const MechanicLinkInfo* childLink,
                      PortValueList& portValues) const = 0;
 };

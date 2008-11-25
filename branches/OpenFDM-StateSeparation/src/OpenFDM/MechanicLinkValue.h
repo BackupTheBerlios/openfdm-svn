@@ -12,35 +12,6 @@
 
 namespace OpenFDM {
 
-class EnvironmentCache : public Environment {
-public:
-  virtual ~EnvironmentCache() {}
-
-  // Sets a new RootJoint position, evaluate environmental stuff
-  void setPosition(const real_type& t, const Vector3& position)
-  {
-    mTime = t;
-    mRootJointPosition = position;
-    mGravityAcceleration = getGravityAcceleration(position);
-    mWindVelocity = getWindVelocity(t, position);
-  }
-  const Vector3& getRootJointPosition() const
-  { return mRootJointPosition; }
-
-  const Vector3& getGravityAccelerationAtRoot() const
-  { return mGravityAcceleration; }
-
-  const Vector6& getWindVelocityAtRoot() const
-  { return mWindVelocity; }
-
-private:
-  real_type mTime;
-  Vector3 mRootJointPosition;
-  Vector3 mGravityAcceleration;
-  Vector6 mWindVelocity;
-};
-
-
 class MechanicLinkValue : public PortValue {
 public:
   MechanicLinkValue();
@@ -114,10 +85,10 @@ public:
   // This is a per link value because of interacts that can be child of two
   // different roots.
   // FIXME, enforce setting that in the contructor
-  const EnvironmentCache* getEnvironment() const
+  const Environment* getEnvironment() const
   { return mEnvironment; }
 
-  void setEnvironment(const EnvironmentCache* environment)
+  void setEnvironment(const Environment* environment)
   { OpenFDMAssert(environment); mEnvironment = environment; }
 
 protected:
@@ -130,7 +101,7 @@ protected:
 
   Vector3 mDesignPosition;
 
-  SharedPtr<const EnvironmentCache> mEnvironment;
+  SharedPtr<const Environment> mEnvironment;
 };
 
 } // namespace OpenFDM

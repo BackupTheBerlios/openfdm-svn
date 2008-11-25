@@ -18,6 +18,7 @@ namespace OpenFDM {
 /// Provides algorithms to simulate and trim the whole system.
 
 class AbstractSystem;
+class Environment;
 class SystemOutput;
 
 class System : public Object {
@@ -35,6 +36,11 @@ public:
   /// Attemps to set an invalid value are ignored.
   const SampleTime& getSampleTime(void) const { return mSampleTime; }
   bool setSampleTime(const SampleTime& sampleTime);
+
+  /// Access the environment functions bundle.
+  void setEnvironment(Environment* environment);
+  Environment* getEnvironment();
+  const Environment* getEnvironment() const;
 
   bool init(const real_type& t0 = real_type(0));
   void clear();
@@ -59,6 +65,8 @@ private:
 
   SharedPtr<Node> mNode;
   SampleTime mSampleTime;
+
+  SharedPtr<Environment> mEnvironment;
 
   SharedPtr<AbstractSystem> mAbstractSystem;
 

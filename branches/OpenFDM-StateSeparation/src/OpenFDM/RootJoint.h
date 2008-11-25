@@ -17,7 +17,8 @@ public:
   virtual ~RootJoint();
 
   virtual MechanicContext*
-  newMechanicContext(const MechanicLinkInfo* parentLink,
+  newMechanicContext(const Environment* environment,
+                     const MechanicLinkInfo* parentLink,
                      const MechanicLinkInfo* childLink,
                      PortValueList& portValueList) const;
 
