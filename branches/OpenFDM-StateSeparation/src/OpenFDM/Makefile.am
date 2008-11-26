@@ -228,6 +228,7 @@ OpenFDMModelsHEADERS = \
   Saturation.h \
   Sensor.h \
   SimpleContact.h \
+  SimpleDirectModel.h \
   SimpleGear.h \
   SimulationTime.h \
   Summer.h \
@@ -254,18 +255,19 @@ OpenFDMModelsSOURCES = \
   Input.cpp \
   Integrator.cpp \
   LinearSpringDamper.cpp \
+  MaxModel.cpp \
+  MinModel.cpp \
   Output.cpp \
   Saturation.cpp \
+  SimpleDirectModel.cpp \
   SimulationTime.cpp \
+  Summer.cpp \
   UnaryFunction.cpp \
   UnaryModel.cpp \
   UnitConversion.cpp
 
 #   DiscBrake.cpp \
-#   MaxModel.cpp \
-#   MinModel.cpp \
 #   Product.cpp \
-#   Summer.cpp \
 #   Table.cpp \
 #   TimeDerivative.cpp \
 #   TransferFunction.cpp \

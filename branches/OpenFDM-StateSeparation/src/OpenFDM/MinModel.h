@@ -7,28 +7,20 @@
 
 #include <string>
 
-#include "Matrix.h"
-#include "Model.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
-class MinModel : public Model {
-  OPENFDM_OBJECT(MinModel, Model);
+class MinModel : public SimpleDirectModel {
+  OPENFDM_OBJECT(MinModel, SimpleDirectModel);
 public:
   MinModel(const std::string& name);
   virtual ~MinModel(void);
+
+  virtual void output(Context& context) const;
   
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-
-  const Matrix& getMin(void) const;
-
   unsigned getNumMinInputs(void) const;
   void setNumMinInputs(unsigned num);
-
-private:
-  Matrix mMin;
-  std::vector<MatrixPortHandle> mInputPorts2;
 };
 
 } // namespace OpenFDM

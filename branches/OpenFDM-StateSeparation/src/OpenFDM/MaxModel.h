@@ -7,28 +7,20 @@
 
 #include <string>
 
-#include "Matrix.h"
-#include "Model.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
-class MaxModel : public Model {
-  OPENFDM_OBJECT(MaxModel, Model);
+class MaxModel : public SimpleDirectModel {
+  OPENFDM_OBJECT(MaxModel, SimpleDirectModel);
 public:
   MaxModel(const std::string& name);
   virtual ~MaxModel(void);
   
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-
-  const Matrix& getMax(void) const;
+  virtual void output(Context& context) const;
 
   unsigned getNumMaxInputs(void) const;
   void setNumMaxInputs(unsigned num);
-
-private:
-  Matrix mMax;
-  std::vector<MatrixPortHandle> mInputPorts;
 };
 
 } // namespace OpenFDM

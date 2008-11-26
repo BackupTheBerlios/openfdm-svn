@@ -6,34 +6,24 @@
 #define OpenFDM_Summer_H
 
 #include <string>
-
-#include "Matrix.h"
-#include "Model.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
-class Summer : public Model {
-  OPENFDM_OBJECT(Summer, Model);
+class Summer : public SimpleDirectModel {
+  OPENFDM_OBJECT(Summer, SimpleDirectModel);
 public:
   Summer(const std::string& name);
   virtual ~Summer(void);
   
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  virtual void output(Context& context) const;
 
-  const Matrix& getSum(void) const;
+//   unsigned getNumSummands(void) const;
+//   void setNumSummands(unsigned num);
 
-  unsigned getNumSummands(void) const;
-  void setNumSummands(unsigned num);
-
-  enum Sign { Plus, Minus };
-  void setInputSign(unsigned num, Sign sign);
-  Sign getInputSign(unsigned num) const;
-
-private:
-  Matrix mSum;
-  std::vector<MatrixPortHandle> mPositiveSummandPorts;
-  std::vector<MatrixPortHandle> mNegativeSummandPorts;
+//   enum Sign { Plus, Minus };
+//   void setInputSign(unsigned num, Sign sign);
+//   Sign getInputSign(unsigned num) const;
 };
 
 } // namespace OpenFDM
