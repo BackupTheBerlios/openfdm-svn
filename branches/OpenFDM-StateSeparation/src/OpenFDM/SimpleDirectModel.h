@@ -65,23 +65,9 @@ public:
   };
 
 protected:
-  PortId addInputPort(const std::string& name)
-  {
-    mInputPorts.push_back(new InputPortInfo(this, name, Size(0, 0), true));
-    return PortId(mInputPorts.back());
-  }
-  void removeInputPort(const PortId& portId)
-  {
-    InputPortVector::iterator i = mInputPorts.begin();
-    while (i != mInputPorts.end()) {
-      if (portId != PortId(*i)) {
-        ++i;
-        continue;
-      }
-      (*i)->clear();
-      i = mInputPorts.erase(i);
-    }
-  }
+  void setNumInputPorts(unsigned numInputPorts);
+  PortId addInputPort(const std::string& name);
+  void removeInputPort(const PortId& portId);
 
 private:
   typedef std::vector<SharedPtr<InputPortInfo> > InputPortVector;

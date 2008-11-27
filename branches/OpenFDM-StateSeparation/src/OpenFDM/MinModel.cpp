@@ -5,7 +5,6 @@
 #include "MinModel.h"
 
 #include <string>
-#include <sstream>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
@@ -45,14 +44,7 @@ MinModel::getNumMinInputs(void) const
 void
 MinModel::setNumMinInputs(unsigned num)
 {
-  unsigned oldnum = getNumInputPorts();
-  for (; oldnum < num; ++oldnum) {
-    std::stringstream s;
-    s << "input" << oldnum;
-    addInputPort(s.str());
-  }
-  for (; num < oldnum; --oldnum)
-    removeInputPort(getInputPort(oldnum-1));
+  setNumInputPorts(num);
 }
 
 } // namespace OpenFDM

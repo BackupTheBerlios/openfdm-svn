@@ -5,7 +5,6 @@
 #include "Summer.h"
 
 #include <string>
-#include <sstream>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
@@ -53,14 +52,7 @@ void
 Summer::setNumSummands(unsigned num)
 {
   mSigns.resize(num, Plus);
-  unsigned oldnum = getNumSummands();
-  for (; oldnum < num; ++oldnum) {
-    std::stringstream s;
-    s << "input" << oldnum;
-    addInputPort(s.str());
-  }
-  for (; num < oldnum; --oldnum)
-    removeInputPort(getInputPort(oldnum-1));
+  setNumInputPorts(num);
 }
 
 void

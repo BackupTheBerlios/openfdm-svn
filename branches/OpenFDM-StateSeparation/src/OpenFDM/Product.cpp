@@ -5,7 +5,6 @@
 #include "Product.h"
 
 #include <string>
-#include <sstream>
 #include "Types.h"
 #include "Matrix.h"
 
@@ -48,14 +47,7 @@ Product::getNumFactors(void) const
 void
 Product::setNumFactors(unsigned num)
 {
-  unsigned oldnum = getNumFactors();
-  for (; oldnum < num; ++oldnum) {
-    std::stringstream s;
-    s << "input" << oldnum;
-    addInputPort(s.str());
-  }
-  for (; num < oldnum; --oldnum)
-    removeInputPort(getInputPort(oldnum-1));
+  setNumInputPorts(num);
 }
 
 } // namespace OpenFDM

@@ -4,6 +4,7 @@
 
 #include "SimpleDirectModel.h"
 
+#include <sstream>
 #include "Matrix.h"
 #include "AbstractModel.h"
 #include "ModelContext.h"
@@ -138,6 +139,40 @@ SimpleDirectModel::newModelContext(PortValueList& portValueList) const
   }
   
   return new Context(this, inputValues, outputPortValue);
+}
+
+void
+SimpleDirectModel::setNumInputPorts(unsigned numInputPorts)
+{
+  unsigned oldnum = getNumInputPorts();
+  for (; oldnum < numInputPorts; ++oldnum) {
+    std::stringstream s;
+    s << "input" << oldnum;
+    addInputPort(s.str());
+  }
+  for (; numInputPorts < oldnum; --oldnum)
+    removeInputPort(getInputPort(oldnum-1));
+}
+
+PortId
+SimpleDirectModel::addInputPort(const std::string& name)
+{
+  mInputPorts.push_back(new InputPortInfo(this, name, Size(0, 0), true));
+  return PortId(mInputPorts.back());
+}
+
+void
+SimpleDirectModel::removeInputPort(const PortId& portId)
+{
+  InputPortVector::iterator i = mInputPorts.begin();
+  while (i != mInputPorts.end()) {
+    if (portId != PortId(*i)) {
+      ++i;
+      continue;
+    }
+    (*i)->clear();
+    i = mInputPorts.erase(i);
+  }
 }
 
 } // namespace OpenFDM

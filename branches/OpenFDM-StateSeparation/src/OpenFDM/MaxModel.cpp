@@ -5,7 +5,6 @@
 #include "MaxModel.h"
 
 #include <string>
-#include <sstream>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
@@ -46,14 +45,7 @@ MaxModel::getNumMaxInputs(void) const
 void
 MaxModel::setNumMaxInputs(unsigned num)
 {
-  unsigned oldnum = getNumInputPorts();
-  for (; oldnum < num; ++oldnum) {
-    std::stringstream s;
-    s << "input" << oldnum;
-    addInputPort(s.str());
-  }
-  for (; num < oldnum; --oldnum)
-    removeInputPort(getInputPort(oldnum-1));
+  setNumInputPorts(num);
 }
 
 } // namespace OpenFDM
