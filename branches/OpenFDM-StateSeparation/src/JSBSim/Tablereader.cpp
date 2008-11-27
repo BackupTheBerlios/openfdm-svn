@@ -9,7 +9,7 @@
 namespace OpenFDM {
 
 bool
-parseTable1D(std::istream& s, TableData<1>& data, TableLookup& lookup)
+parseTable1D(std::istream& s, TableData<1>& data, BreakPointVector& lookup)
 {
   /// FIXME error handling
   for (unsigned i = 0; s && i < data.size(0); ++i) {
@@ -25,7 +25,7 @@ parseTable1D(std::istream& s, TableData<1>& data, TableLookup& lookup)
 }
 
 bool
-parseTable2D(std::istream& s, TableData<2>& data, TableLookup lookup[2])
+parseTable2D(std::istream& s, TableData<2>& data, BreakPointVector lookup[2])
 {
   /// FIXME error handling
   for (unsigned j = 0; s && j < data.size(1); ++j) {
@@ -57,7 +57,7 @@ parseTable2D(std::istream& s, TableData<2>& data, TableLookup lookup[2])
 }
 
 bool
-parseTable3D(std::istream& s, TableData<3>& data, TableLookup lookup[3])
+parseTable3D(std::istream& s, TableData<3>& data, BreakPointVector lookup[3])
 {
   for (unsigned k = 0; s && k < data.size(2); ++k) {
     real_type in = 0;

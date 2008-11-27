@@ -21,14 +21,14 @@ public:
 
   const real_type& getOutput(void) const;
 
-  void setTableLookup(const TableLookup& tl)
-  { mTableLookup = tl; }
-  const TableLookup& getTableLookup(void) const
-  { return mTableLookup; }
+  void setBreakPointVector(const BreakPointVector& tl)
+  { mBreakPointVector = tl; }
+  const BreakPointVector& getBreakPointVector(void) const
+  { return mBreakPointVector; }
 
 private:
   real_type mOutput;
-  TableLookup mTableLookup;
+  BreakPointVector mBreakPointVector;
   RealPortHandle mInputPortHandle;
 };
 

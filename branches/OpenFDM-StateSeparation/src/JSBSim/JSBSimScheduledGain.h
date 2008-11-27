@@ -19,7 +19,7 @@ public:
   JSBSimScheduledGain(const std::string& name);
   virtual ~JSBSimScheduledGain(void);
 
-  void setTableData(const TableData<1>& tableData, const TableLookup& lookup);
+  void setTableData(const TableData<1>& tableData, const BreakPointVector& lookup);
 
 private:
   SharedPtr<TablePreLookup> mTablePreLookup;

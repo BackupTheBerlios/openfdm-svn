@@ -26,7 +26,7 @@ JSBSimKinemat::JSBSimKinemat(const std::string& name) :
   //                                |
   //  -------------------------------
   //  |
-  //  o-|TableLookup|-o-|Minus|-| FIXME: that table lookup is still missing
+  //  o-|BreakPointVector|-o-|Minus|-| FIXME: that table lookup is still missing
   //  |               |         |
   //  +-|ErrorGain|--|Min|----|Max|-|Integrator|-o-|Outgain|-
   //  |                                          |

@@ -7,157 +7,71 @@
 
 #include <iosfwd>
 #include <map>
+#include <vector>
+#include <algorithm>
 #include "Vector.h"
 
 namespace OpenFDM {
 
-class TableLookup {
-  typedef std::map<real_type, unsigned> Table;
-  typedef std::pair<real_type, unsigned> Pair;
- 
+class BreakPointVector {
 public:
-  TableLookup(void)
-  {}
+  typedef real_type value_type;
+  typedef std::vector<value_type> vector_type;
 
   /// Return the breakpoint at the given index i
   /// If it does not exist in the lookup table, zero is returned
-  real_type getAtIndex(unsigned i) const
-  {
-    Table::const_iterator it;
-    for (it = mTable.begin(); it != mTable.end(); ++it) {
-      if (it->second == i)
-        return it->first;
-    }
-    return 0;
-  }
+  const value_type& operator[](unsigned i) const
+  { OpenFDMAssert(i < mVector.size()); return mVector[i]; }
+
   /// Set the breakpoint value at index i, the lookup table is extended if
   /// required. Keep in mind, that the table lookup behaves undefined if
   /// the sequence of indices does not increase or decrease strictly monotonic
   /// with the values.
-  void setAtIndex(unsigned i, real_type value)
+  void insert(const value_type& value)
   {
-    Table::iterator it = mTable.begin();
-    while (it != mTable.end()) {
-      if (it->second == i) {
-        mTable.erase(it);
-        it = mTable.begin();
-      }
-      else
-        ++it;
-    }
-    mTable.insert(it, Pair(value, i));
+    vector_type::iterator i;
+    i = std::lower_bound(mVector.begin(), mVector.end(), value);
+    mVector.insert(i, value);
+    mVector.erase(std::unique(mVector.begin(), mVector.end()), mVector.end());
   }
 
   /// Returns the size of the lookup table
   unsigned size(void) const
-  {
-    unsigned sz = 0;
-    Table::const_iterator it;
-    for (it = mTable.begin(); it != mTable.end(); ++it) {
-      sz = max(sz, it->second);
-    }
-    return sz;
-  }
+  { return mVector.size(); }
 
-  /// Check for consistency, that is, the breakpoint indices are strictly
-  /// ordered and there are no holes in the sequence of indices
-  bool isValid(void) const
-  {
-    Table::const_iterator it = mTable.begin();
-    if (it == mTable.end())
-      return false;
-    int indexDir = 0;
-    int valueDir = 0;
-    real_type prevValue = it->first;
-    unsigned prevIndex = it->second;
-    for (++it; it != mTable.end(); ++it) {
-      // We do not yet know which direction we should check
-      if (indexDir == 0) {
-        // Check for the direction of the indices
-        if (prevIndex + 1 == it->second) {
-          indexDir = 1;
-        } else if (prevIndex == it->second + 1) {
-          indexDir = -1;
-        } else {
-          // Duplicate index ...
-          return false;
-        }
-        
-        // Check for the direction of the lookup keys
-        if (prevValue < it->first) {
-          valueDir = 1;
-        } else if (prevValue > it->first) {
-          valueDir = -1;
-        } else {
-          // Duplicate lookup keys ...
-          return false;
-        }
-
-      } else if (indexDir == -1) {
-        // Check if the direction is still the same
-        if (prevIndex != it->second + 1)
-          return false;
-        if (prevValue*valueDir >= it->first*valueDir)
-          return false;
-      } else {
-        // Check if the direction is still the same
-        if (prevIndex + 1 != it->second)
-          return false;
-        if (prevValue*valueDir >= it->first*valueDir)
-          return false;
-      }
-
-      prevValue = it->first;
-      prevIndex = it->second;
-    }
-    return true;
-  }
-
-  real_type lookup(real_type input) const
+  value_type lookup(const value_type& input) const
   {
     // Empty table??
     // FIXME
-    if (mTable.empty())
-      return 0;
+    if (mVector.empty())
+      return value_type(0);
+
+    vector_type::const_iterator vectorBegin = mVector.begin();
+    vector_type::const_iterator vectorEnd = mVector.end();
 
     // Find the table bounds for the requested input.
-    Table::const_iterator upBoundIt = mTable.upper_bound(input);
-    Table::const_iterator loBoundIt = upBoundIt;
+    vector_type::const_iterator upBoundIt;
+    upBoundIt = std::upper_bound(vectorBegin, vectorEnd, input);
+    vector_type::const_iterator loBoundIt = upBoundIt;
     --loBoundIt;
 
-    Table::const_iterator beg = mTable.begin();
-    if (upBoundIt == beg)
-      return 0;
-    if (upBoundIt == mTable.end()) {
-      unsigned last = mTable.rbegin()->second;
-      return last;
-    }
+    if (upBoundIt == vectorBegin)
+      return value_type(0);
+    if (upBoundIt == vectorEnd)
+      return value_type(mVector.size() - 1);
 
     // Just do linear interpolation.
-    real_type loBound = loBoundIt->first;
-    real_type upBound = upBoundIt->first;
-    unsigned loIdx = loBoundIt->second;
-    if (loBound == upBound)
+    value_type loIdx = value_type(std::distance(vectorBegin, loBoundIt));
+    if (loBoundIt == upBoundIt)
       return loIdx;
-    real_type theta = (input - loBound)/(upBound-loBound);
-    return loIdx + theta;
+    return loIdx + (input - *loBoundIt)/(*upBoundIt - *loBoundIt);
   }
 
-  bool operator==(const TableLookup& tl) const
-  {
-    Table::const_iterator i1 = mTable.begin();
-    Table::const_iterator i2 = tl.mTable.begin();
-    while (i1 != mTable.end() && i2 != tl.mTable.end()) {
-      if (i1->first != i2->first || i1->second != i2->second)
-        return false;
-      ++i1;
-      ++i2;
-    }
-    return i1 == mTable.end() && i2 == tl.mTable.end();
-  }
+  bool operator==(const BreakPointVector& bv) const
+  { return mVector == bv.mVector; }
 
 private:
-  Table mTable;
+  vector_type mVector;
 };
 
 template<unsigned numDims>
@@ -289,18 +203,19 @@ private:
 template<typename char_type, typename traits_type> 
 inline
 std::basic_ostream<char_type, traits_type>&
-operator<<(std::basic_ostream<char_type, traits_type>& os, const TableLookup& tl)
+operator<<(std::basic_ostream<char_type, traits_type>& os,
+           const BreakPointVector& breakPointVector)
 {
-  for (unsigned idx = 0; idx < tl.size(); ++idx) {
-    os << tl.getAtIndex(idx) << ' ';
-  }
+  for (unsigned i = 0; i < breakPointVector.size(); ++i)
+    os << breakPointVector[i] << ' ';
   return os;
 }
 
 template<typename char_type, typename traits_type> 
 inline
 std::basic_ostream<char_type, traits_type>&
-operator<<(std::basic_ostream<char_type, traits_type>& os, const TableData<1>& td)
+operator<<(std::basic_ostream<char_type, traits_type>& os,
+           const TableData<1>& td)
 {
   TableData<1>::SizeVector sz = td.size();
 
@@ -315,7 +230,8 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const TableData<1>& t
 template<typename char_type, typename traits_type> 
 inline
 std::basic_ostream<char_type, traits_type>&
-operator<<(std::basic_ostream<char_type, traits_type>& os, const TableData<2>& td)
+operator<<(std::basic_ostream<char_type, traits_type>& os,
+           const TableData<2>& td)
 {
   TableData<2>::SizeVector sz = td.size();
 
@@ -334,7 +250,8 @@ operator<<(std::basic_ostream<char_type, traits_type>& os, const TableData<2>& t
 template<typename char_type, typename traits_type> 
 inline
 std::basic_ostream<char_type, traits_type>&
-operator<<(std::basic_ostream<char_type, traits_type>& os, const TableData<3>& td)
+operator<<(std::basic_ostream<char_type, traits_type>& os,
+           const TableData<3>& td)
 {
   TableData<3>::SizeVector sz = td.size();
 

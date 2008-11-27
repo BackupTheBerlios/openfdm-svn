@@ -1353,7 +1353,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("Table for scheduled gain is not 1 dimensional");
 
     TableData<1> data;
-    TableLookup lookup;
+    BreakPointVector lookup;
     if (!readTable1D(tbl, data, lookup))
       return error("Cannot read table");
     sGain->setTableData(data, lookup);
@@ -1613,7 +1613,7 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
       unsigned dim = getNumTableDims(*ait);
       if (dim == 1) {
         TableData<1> data;
-        TableLookup lookup;
+        BreakPointVector lookup;
         if (!readTable1D(*ait, data, lookup)) {
           error("Cannot read 1D table data.");
           return std::list<PortProvider*>();
@@ -1630,7 +1630,7 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
 
       } else if (dim == 2) {
         TableData<2> data;
-        TableLookup lookup[2];
+        BreakPointVector lookup[2];
         if (!readTable2D(*ait, data, lookup)) {
           error("Cannot read 2D table data.");
           return std::list<PortProvider*>();
@@ -1659,7 +1659,7 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
 
       } else if (dim == 3) {
         TableData<3> data;
-        TableLookup lookup[3];
+        BreakPointVector lookup[3];
         if (!readTable3D(*ait, data, lookup)) {
           error("Cannot read 1D table data.");
           return std::list<PortProvider*>();
@@ -1714,7 +1714,7 @@ JSBSimReader::getNumTableDims(const XMLElement* tableElem)
 
 bool
 JSBSimReader::readTable1D(const XMLElement* tableElem,
-                          TableData<1>& data, TableLookup& lookup)
+                          TableData<1>& data, BreakPointVector& lookup)
 {
   std::string input = stringData(tableElem->getElement("independentVar"));
 
@@ -1750,7 +1750,7 @@ JSBSimReader::readTable1D(const XMLElement* tableElem,
 
 bool
 JSBSimReader::readTable2D(const XMLElement* tableElem,
-                          TableData<2>& data, TableLookup lookup[2])
+                          TableData<2>& data, BreakPointVector lookup[2])
 {
   std::list<const XMLElement*> indeps
     = tableElem->getElements("independentVar");
@@ -1813,7 +1813,7 @@ JSBSimReader::readTable2D(const XMLElement* tableElem,
 
 bool
 JSBSimReader::readTable3D(const XMLElement* tableElem,
-                          TableData<3>& data, TableLookup lookup[3])
+                          TableData<3>& data, BreakPointVector lookup[3])
 {
   return false;
 //   std::list<const XMLElement*> indeps

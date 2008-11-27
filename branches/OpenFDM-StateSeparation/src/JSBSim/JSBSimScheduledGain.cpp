@@ -55,10 +55,10 @@ JSBSimScheduledGain::~JSBSimScheduledGain(void)
 
 void
 JSBSimScheduledGain::setTableData(const TableData<1>& tableData,
-                                  const TableLookup& lookup)
+                                  const BreakPointVector& lookup)
 {
   mTable->setTableData(tableData);
-  mTablePreLookup->setTableLookup(lookup);
+  mTablePreLookup->setBreakPointVector(lookup);
 }
 
 } //namespace OpenFDM

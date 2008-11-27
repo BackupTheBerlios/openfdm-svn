@@ -48,8 +48,8 @@ public:
   {}
 
   // FIXME: just to hack reflection for now
-  Variant(const TableLookup& value) :
-    mData(new TableLookupVariantData(value))
+  Variant(const BreakPointVector& value) :
+    mData(new BreakPointVectorVariantData(value))
   {}
   Variant(const TableData<1>& value) :
     mData(new Table1DVariantData(value))
@@ -77,7 +77,7 @@ public:
   inline bool isMatrix(void) const;
 
   // FIXME: just to hack reflection for now
-  inline bool isTableLookup(void) const;
+  inline bool isBreakPointVector(void) const;
   inline bool isTable1D(void) const;
   inline bool isTable2D(void) const;
   inline bool isTable3D(void) const;
@@ -94,7 +94,7 @@ public:
   Matrix toMatrix(void) const;
 
   // FIXME: just to hack reflection for now
-  TableLookup toTableLookup(void) const;
+  BreakPointVector toBreakPointVector(void) const;
   TableData<1> toTable1D(void) const;
   TableData<2> toTable2D(void) const;
   TableData<3> toTable3D(void) const;
@@ -107,7 +107,7 @@ private:
   struct MatrixVariantData;
   struct StringVariantData;
 
-  struct TableLookupVariantData;
+  struct BreakPointVectorVariantData;
   struct Table1DVariantData;
   struct Table2DVariantData;
   struct Table3DVariantData;
@@ -127,7 +127,7 @@ private:
     virtual const StringVariantData* toStringVariant(void) const
     { return 0; }
 
-    virtual const TableLookupVariantData* toTableLookupVariant(void) const
+    virtual const BreakPointVectorVariantData* toBreakPointVectorVariant(void) const
     { return 0; }
     virtual const Table1DVariantData* toTable1DVariant(void) const
     { return 0; }
@@ -172,9 +172,9 @@ private:
     { return this; }
   };
 
-  struct TableLookupVariantData : VariantDataImpl<TableLookup> {
-    TableLookupVariantData(const TableLookup& data) { mData = data; }
-    virtual const TableLookupVariantData* toTableLookupVariant(void) const
+  struct BreakPointVectorVariantData : VariantDataImpl<BreakPointVector> {
+    BreakPointVectorVariantData(const BreakPointVector& data) { mData = data; }
+    virtual const BreakPointVectorVariantData* toBreakPointVectorVariant(void) const
     { return this; }
   };
   struct Table1DVariantData : VariantDataImpl<TableData<1> > {
@@ -240,9 +240,9 @@ Variant::isMatrix() const
 }
 
 inline bool
-Variant::isTableLookup() const
+Variant::isBreakPointVector() const
 {
-  return mData && mData->toTableLookupVariant();
+  return mData && mData->toBreakPointVectorVariant();
 }
 
 inline bool
@@ -296,8 +296,8 @@ variant_copy(const Variant& variant, LinAlg::MatrixLValue<Impl,m,n>& value)
 
 template<> 
 inline void
-variant_copy(const Variant& variant, TableLookup& value)
-{ value = variant.toTableLookup(); }
+variant_copy(const Variant& variant, BreakPointVector& value)
+{ value = variant.toBreakPointVector(); }
 
 template<> 
 inline void

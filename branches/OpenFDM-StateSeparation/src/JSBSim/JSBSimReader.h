@@ -61,11 +61,11 @@ private:
 
   unsigned getNumTableDims(const XMLElement* tableElem);
   bool readTable1D(const XMLElement* tableElem,
-                   TableData<1>& data, TableLookup& lookup);
+                   TableData<1>& data, BreakPointVector& lookup);
   bool readTable2D(const XMLElement* tableElem,
-                   TableData<2>& data, TableLookup lookup[2]);
+                   TableData<2>& data, BreakPointVector lookup[2]);
   bool readTable3D(const XMLElement* tableElem,
-                   TableData<3>& data, TableLookup lookup[3]);
+                   TableData<3>& data, BreakPointVector lookup[3]);
 };
 
 } // namespace OpenFDM

@@ -49,7 +49,7 @@ Variant::toString() const
       return sstr.str();
     }
 
-    const TableLookupVariantData* tableLookupData = mData->toTableLookupVariant();
+    const BreakPointVectorVariantData* tableLookupData = mData->toBreakPointVectorVariant();
     if (tableLookupData) {
       std::stringstream sstr;
       sstr << tableLookupData->mData;
@@ -174,13 +174,13 @@ Variant::toMatrix() const
   return Matrix();
 }
 
-TableLookup
-Variant::toTableLookup(void) const
+BreakPointVector
+Variant::toBreakPointVector(void) const
 {
-  const TableLookupVariantData* data = mData->toTableLookupVariant();
+  const BreakPointVectorVariantData* data = mData->toBreakPointVectorVariant();
   if (data)
     return data->mData;
-  return TableLookup();
+  return BreakPointVector();
 }
 
 TableData<1>

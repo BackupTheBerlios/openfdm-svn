@@ -263,7 +263,7 @@ protected:
   PortProvider* addMultiBodyConstModel(const std::string& name, real_type value);
   void addMultiBodyModel(Model* model);
   /// </FIXME> document and rethink
-  PortProvider* getTablePrelookup(const std::string& name, PortProvider* in, const TableLookup& tl);
+  PortProvider* getTablePrelookup(const std::string& name, PortProvider* in, const BreakPointVector& tl);
   /// List for the aircraft search path.
   std::list<std::string> mAircraftPath;
   /// List for the engine search path.
@@ -271,7 +271,7 @@ protected:
 
   PropertyMap mExpressionTable;
   SharedPtr<AeroForce> mAeroForce;
-  std::vector<SharedPtr<TablePreLookup> > mTableLookups;
+  std::vector<SharedPtr<TablePreLookup> > mBreakPointVectors;
 
   // For now just copies from the prevous try ...
   Vector3 structToBody(const Vector3& v)

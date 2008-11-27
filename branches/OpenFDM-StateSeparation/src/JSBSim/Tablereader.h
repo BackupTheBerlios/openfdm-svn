@@ -12,13 +12,13 @@
 namespace OpenFDM {
 
 bool
-parseTable1D(std::istream& s, TableData<1>& data, TableLookup& lookup);
+parseTable1D(std::istream& s, TableData<1>& data, BreakPointVector& lookup);
 
 bool
-parseTable2D(std::istream& s, TableData<2>& data, TableLookup lookup[2]);
+parseTable2D(std::istream& s, TableData<2>& data, BreakPointVector lookup[2]);
 
 bool
-parseTable3D(std::istream& s, TableData<3>& data, TableLookup lookup[3]);
+parseTable3D(std::istream& s, TableData<3>& data, BreakPointVector lookup[3]);
 
 } // namespace OpenFDM
 

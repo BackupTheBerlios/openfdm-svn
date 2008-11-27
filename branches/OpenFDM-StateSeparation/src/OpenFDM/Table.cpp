@@ -12,9 +12,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(TablePreLookup, Model)
-/// FIXME
-//   DEF_OPENFDM_PROPERTY(TablePreLookup, LookupVector, Serialized)
-  DEF_OPENFDM_PROPERTY(TablePreLookup, TableLookup, Serialized)
+  DEF_OPENFDM_PROPERTY(TablePreLookup, BreakPointVector, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 TablePreLookup::TablePreLookup(const std::string& name) :
@@ -49,7 +47,7 @@ void
 TablePreLookup::output(const TaskInfo&)
 {
   OpenFDMAssert(mInputPortHandle.isConnected());
-  mOutput = mTableLookup.lookup(mInputPortHandle.getRealValue());
+  mOutput = mBreakPointVector.lookup(mInputPortHandle.getRealValue());
   Log(Model,Debug3) << "Output of TablePreLookup \"" << getName() << "\" "
                     << mOutput << endl;
 }

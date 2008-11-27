@@ -31,11 +31,11 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   mInputSaturation->setMaxSaturation(tmp);
 
   mTablePreLookup = new TablePreLookup("Table Lookup");
-  TableLookup tl;
+  BreakPointVector tl;
   tl.setAtIndex(0, -1);
   tl.setAtIndex(1, 0);
   tl.setAtIndex(2, 1);
-  mTablePreLookup->setTableLookup(tl);
+  mTablePreLookup->setBreakPointVector(tl);
   getModelGroup()->addModel(mTablePreLookup);
   Connection::connect(mTablePreLookup->getInputPort(0),
                       mInputSaturation->getOutputPort(0));
@@ -80,9 +80,9 @@ JSBSimAerosurfaceScale::setMinDomain(real_type minDomain)
   Matrix tmp(1, 1);
   tmp(0, 0) = minDomain;
   mInputSaturation->setMinSaturation(tmp);
-  TableLookup tl = mTablePreLookup->getTableLookup();
+  BreakPointVector tl = mTablePreLookup->getBreakPointVector();
   tl.setAtIndex(0, minDomain);
-  mTablePreLookup->setTableLookup(tl);
+  mTablePreLookup->setBreakPointVector(tl);
 }
 
 void
@@ -91,16 +91,16 @@ JSBSimAerosurfaceScale::setMaxDomain(real_type maxDomain)
   Matrix tmp(1, 1);
   tmp(0, 0) = maxDomain;
   mInputSaturation->setMaxSaturation(tmp);
-  TableLookup tl = mTablePreLookup->getTableLookup();
+  BreakPointVector tl = mTablePreLookup->getBreakPointVector();
   tl.setAtIndex(tl.size()-1, maxDomain);
-  mTablePreLookup->setTableLookup(tl);
+  mTablePreLookup->setBreakPointVector(tl);
 }
 
 void
 JSBSimAerosurfaceScale::setCentered(bool centered)
 {
-  TableLookup tlOld = mTablePreLookup->getTableLookup();
-  TableLookup tl;
+  BreakPointVector tlOld = mTablePreLookup->getBreakPointVector();
+  BreakPointVector tl;
 
   TableData<1> tableDataOld = mTable->getTableData();
   TableData<1>::SizeVector sz;
@@ -136,7 +136,7 @@ JSBSimAerosurfaceScale::setCentered(bool centered)
     tableData(iv) = oldVal;
   }
 
-  mTablePreLookup->setTableLookup(tl);
+  mTablePreLookup->setBreakPointVector(tl);
   mTable->setTableData(tableData);
 }
 
@@ -153,7 +153,7 @@ JSBSimAerosurfaceScale::setMinValue(real_type minValue)
 void
 JSBSimAerosurfaceScale::setMaxValue(real_type maxValue)
 {
-  TableLookup tl = mTablePreLookup->getTableLookup();
+  BreakPointVector tl = mTablePreLookup->getBreakPointVector();
   TableData<1> tableData = mTable->getTableData();
   TableData<1>::Index iv;
   iv(0) = tl.size()-1;
@@ -164,7 +164,7 @@ JSBSimAerosurfaceScale::setMaxValue(real_type maxValue)
 void
 JSBSimAerosurfaceScale::setGain(real_type gain)
 {
-  TableLookup tl = mTablePreLookup->getTableLookup();
+  BreakPointVector tl = mTablePreLookup->getBreakPointVector();
   TableData<1> tableData = mTable->getTableData();
   TableData<1>::Index iv;
   iv(0) = 0;
