@@ -263,12 +263,12 @@ OpenFDMModelsSOURCES = \
   SimpleDirectModel.cpp \
   SimulationTime.cpp \
   Summer.cpp \
+  Table.cpp \
   UnaryFunction.cpp \
   UnaryModel.cpp \
   UnitConversion.cpp
 
 #   DiscBrake.cpp \
-#   Table.cpp \
 #   TimeDerivative.cpp \
 #   TransferFunction.cpp \
 #

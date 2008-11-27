@@ -840,7 +840,7 @@ JSBSimReaderBase::getTablePrelookup(const std::string& name, PortProvider* in,
 
   // First check if we already have a table lookup for this port/brakepoint
   // combination. If so return that output port
-  std::vector<SharedPtr<TablePreLookup> >::iterator it;
+  std::vector<SharedPtr<BreakPointLookup> >::iterator it;
   for (it = mBreakPointVectors.begin(); it != mBreakPointVectors.end(); ++it) {
     if (tl == (*it)->getBreakPointVector() &&
         nin->getPortInterface() == (*it)->getInputPort(0)->getPortInterface())
@@ -848,8 +848,8 @@ JSBSimReaderBase::getTablePrelookup(const std::string& name, PortProvider* in,
   }
 
   // No sharable table lookup found, we need to create a new one
-  TablePreLookup* tablePreLookup
-    = new TablePreLookup(name + " Table Prelookup");
+  BreakPointLookup* tablePreLookup
+    = new BreakPointLookup(name + " Table Prelookup");
   addMultiBodyModel(tablePreLookup);
   tablePreLookup->setBreakPointVector(tl);
   Connection::connect(in, tablePreLookup->getInputPort(0));

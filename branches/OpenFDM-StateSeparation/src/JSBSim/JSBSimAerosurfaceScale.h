@@ -32,7 +32,7 @@ public:
 
 private:
   SharedPtr<Saturation> mInputSaturation;
-  SharedPtr<TablePreLookup> mTablePreLookup;
+  SharedPtr<BreakPointLookup> mBreakPointLookup;
   SharedPtr<Table1D> mTable;
   real_type mGain;
 };

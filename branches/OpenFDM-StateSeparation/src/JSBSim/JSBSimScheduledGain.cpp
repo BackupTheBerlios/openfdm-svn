@@ -17,21 +17,21 @@ JSBSimScheduledGain::JSBSimScheduledGain(const std::string& name) :
   // Such a component is a simple product and a table lookup
   //
   // -------------------------------|
-  // --|TablePreLookup|-|Table|-|Product|-
+  // --|BreakPointLookup|-|Table|-|Product|-
   //
 
   Product* product = new Product("Product");
   getModelGroup()->addModel(product);
 
-  mTablePreLookup = new TablePreLookup("Table Lookup");
-  getModelGroup()->addModel(mTablePreLookup);
+  mBreakPointLookup = new BreakPointLookup("Table Lookup");
+  getModelGroup()->addModel(mBreakPointLookup);
 
   mTable = new Table1D("Table");
   getModelGroup()->addModel(mTable);
   Connection::connect(product->getInputPort(0),
                       mTable->getOutputPort(0));
   Connection::connect(mTable->getInputPort(0),
-                      mTablePreLookup->getOutputPort(0));
+                      mBreakPointLookup->getOutputPort(0));
 
   // Now connect the input and the output to this groups in and outputs
   GroupInput* groupInput = new GroupInput("Input");
@@ -41,7 +41,7 @@ JSBSimScheduledGain::JSBSimScheduledGain(const std::string& name) :
  
   groupInput = new GroupInput("Schedule Input");
   getModelGroup()->addModel(groupInput);
-  Connection::connect(mTablePreLookup->getInputPort(0),
+  Connection::connect(mBreakPointLookup->getInputPort(0),
                       groupInput->getOutputPort(0));
 
   // That single output port is this one
@@ -58,7 +58,7 @@ JSBSimScheduledGain::setTableData(const TableData<1>& tableData,
                                   const BreakPointVector& lookup)
 {
   mTable->setTableData(tableData);
-  mTablePreLookup->setBreakPointVector(lookup);
+  mBreakPointLookup->setBreakPointVector(lookup);
 }
 
 } //namespace OpenFDM

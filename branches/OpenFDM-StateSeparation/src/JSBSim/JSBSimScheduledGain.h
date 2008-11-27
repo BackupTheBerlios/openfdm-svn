@@ -22,7 +22,7 @@ public:
   void setTableData(const TableData<1>& tableData, const BreakPointVector& lookup);
 
 private:
-  SharedPtr<TablePreLookup> mTablePreLookup;
+  SharedPtr<BreakPointLookup> mBreakPointLookup;
   SharedPtr<Table1D> mTable;
 };
 

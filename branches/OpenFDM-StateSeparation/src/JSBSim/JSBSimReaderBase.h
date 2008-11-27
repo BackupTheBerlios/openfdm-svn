@@ -271,7 +271,7 @@ protected:
 
   PropertyMap mExpressionTable;
   SharedPtr<AeroForce> mAeroForce;
-  std::vector<SharedPtr<TablePreLookup> > mBreakPointVectors;
+  std::vector<SharedPtr<BreakPointLookup> > mBreakPointVectors;
 
   // For now just copies from the prevous try ...
   Vector3 structToBody(const Vector3& v)

@@ -7,41 +7,34 @@
 
 #include "TableData.h"
 #include "Model.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
-class TablePreLookup : public Model {
-  OPENFDM_OBJECT(TablePreLookup, Model);
+class BreakPointLookup : public SimpleDirectModel {
+  OPENFDM_OBJECT(BreakPointLookup, SimpleDirectModel);
 public:
-  TablePreLookup(const std::string& name);
-  virtual ~TablePreLookup(void);
+  BreakPointLookup(const std::string& name);
+  virtual ~BreakPointLookup(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  virtual void output(Context& context) const;
 
-  const real_type& getOutput(void) const;
-
-  void setBreakPointVector(const BreakPointVector& tl)
-  { mBreakPointVector = tl; }
+  void setBreakPointVector(const BreakPointVector& breakPointVector)
+  { mBreakPointVector = breakPointVector; }
   const BreakPointVector& getBreakPointVector(void) const
   { return mBreakPointVector; }
 
 private:
-  real_type mOutput;
   BreakPointVector mBreakPointVector;
-  RealPortHandle mInputPortHandle;
 };
 
-class Table1D : public Model {
-  OPENFDM_OBJECT(Table1D, Model);
+class Table1D : public SimpleDirectModel {
+  OPENFDM_OBJECT(Table1D, SimpleDirectModel);
 public:
   Table1D(const std::string& name);
   virtual ~Table1D(void);
   
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-
-  const real_type& getOutput(void) const;
+  virtual void output(Context& context) const;
 
   void setTableData(const TableData<1>& table)
   { mTableData = table; }
@@ -51,21 +44,16 @@ public:
   { return mTableData; }
 
 private:
-  real_type mOutput;
   TableData<1> mTableData;
-  RealPortHandle mInputPortHandle;
 };
 
-class Table2D : public Model {
-  OPENFDM_OBJECT(Table2D, Model);
+class Table2D : public SimpleDirectModel {
+  OPENFDM_OBJECT(Table2D, SimpleDirectModel);
 public:
   Table2D(const std::string& name);
   virtual ~Table2D(void);
   
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-
-  const real_type& getOutput(void) const;
+  virtual void output(Context& context) const;
 
   void setTableData(const TableData<2>& table)
   { mTableData = table; }
@@ -75,21 +63,16 @@ public:
   { return mTableData; }
 
 private:
-  real_type mOutput;
   TableData<2> mTableData;
-  RealPortHandle mInputPortHandle[2];
 };
 
-class Table3D : public Model {
-  OPENFDM_OBJECT(Table3D, Model);
+class Table3D : public SimpleDirectModel {
+  OPENFDM_OBJECT(Table3D, SimpleDirectModel);
 public:
   Table3D(const std::string& name);
   virtual ~Table3D(void);
   
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-
-  const real_type& getOutput(void) const;
+  virtual void output(Context& context) const;
 
   void setTableData(const TableData<3>& table)
   { mTableData = table; }
@@ -99,9 +82,7 @@ public:
   { return mTableData; }
 
 private:
-  real_type mOutput;
   TableData<3> mTableData;
-  RealPortHandle mInputPortHandle[3];
 };
 
 } // namespace OpenFDM
