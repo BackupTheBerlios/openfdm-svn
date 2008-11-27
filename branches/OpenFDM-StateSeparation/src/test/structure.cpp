@@ -123,8 +123,6 @@ Node* buildContinousExample()
   Group::NodeId outputDelay = group->addChild(new Output("OD"));
 
   Summer* summer = new Summer("S");
-  summer->addInputPort("input0");
-  summer->addInputPort("input1");
   Group::NodeId summerId = group->addChild(summer);
 
   group->connect(integrator1, "output", integrator2, "input");

@@ -18,12 +18,15 @@ public:
   
   virtual void output(Context& context) const;
 
-//   unsigned getNumSummands(void) const;
-//   void setNumSummands(unsigned num);
+  unsigned getNumSummands(void) const;
+  void setNumSummands(unsigned num);
 
-//   enum Sign { Plus, Minus };
-//   void setInputSign(unsigned num, Sign sign);
-//   Sign getInputSign(unsigned num) const;
+  enum Sign { Plus, Minus };
+  void setInputSign(unsigned num, Sign sign);
+  Sign getInputSign(unsigned num) const;
+
+private:
+  std::vector<Sign> mSigns;
 };
 
 } // namespace OpenFDM

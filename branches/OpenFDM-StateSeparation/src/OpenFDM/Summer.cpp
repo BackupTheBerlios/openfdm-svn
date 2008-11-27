@@ -5,6 +5,7 @@
 #include "Summer.h"
 
 #include <string>
+#include <sstream>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
@@ -12,12 +13,13 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Summer, SimpleDirectModel)
-//   DEF_OPENFDM_PROPERTY(Unsigned, NumSummands, Serialized)
+  DEF_OPENFDM_PROPERTY(Unsigned, NumSummands, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Summer::Summer(const std::string& name) :
   SimpleDirectModel(name)
 {
+  setNumSummands(2);
 }
 
 Summer::~Summer(void)
@@ -29,46 +31,52 @@ Summer::output(Context& context) const
 {
   if (!getNumInputPorts())
     return;
-  context.getOutputValue() = context.getInputValue(0);
-  for (unsigned i = 1; i < getNumInputPorts(); ++i)
-    context.getOutputValue() += context.getInputValue(i);
+  if (mSigns.front() == Plus)
+    context.getOutputValue() = context.getInputValue(0);
+  else
+    context.getOutputValue() = -context.getInputValue(0);
+  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
+    if (mSigns[i] == Plus)
+      context.getOutputValue() += context.getInputValue(i);
+    else
+      context.getOutputValue() -= context.getInputValue(i);
+  }
 }
 
-// unsigned
-// Summer::getNumSummands(void) const
-// {
-//   return getNumInputPorts();
-// }
+unsigned
+Summer::getNumSummands(void) const
+{
+  return getNumInputPorts();
+}
 
-// void
-// Summer::setNumSummands(unsigned num)
-// {
-//   unsigned oldnum = getNumSummands();
-//   setNumInputPorts(num);
-//   for (; oldnum < num; ++oldnum)
-//     setInputPortName(oldnum, "+");
-// }
+void
+Summer::setNumSummands(unsigned num)
+{
+  mSigns.resize(num, Plus);
+  unsigned oldnum = getNumSummands();
+  for (; oldnum < num; ++oldnum) {
+    std::stringstream s;
+    s << "input" << oldnum;
+    addInputPort(s.str());
+  }
+  for (; num < oldnum; --oldnum)
+    removeInputPort(getInputPort(oldnum-1));
+}
 
-// void
-// Summer::setInputSign(unsigned num, Sign sign)
-// {
-//   if (getNumSummands() <= num)
-//     return;
-//   if (sign == Minus)
-//     setInputPortName(num, "-");
-//   else
-//     setInputPortName(num, "+");
-// }
+void
+Summer::setInputSign(unsigned num, Sign sign)
+{
+  if (mSigns.size() <= num)
+    return;
+  mSigns[num] = sign;
+}
 
-// Summer::Sign
-// Summer::getInputSign(unsigned num) const
-// {
-//   if (getNumSummands() <= num)
-//     return Plus;
-//   if (getInputPortName(num) == "-")
-//     return Minus;
-//   else
-//     return Plus;
-// }
+Summer::Sign
+Summer::getInputSign(unsigned num) const
+{
+  if (mSigns.size() <= num)
+    return Plus;
+  return mSigns[num];
+}
 
 } // namespace OpenFDM

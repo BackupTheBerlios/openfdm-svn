@@ -5,6 +5,7 @@
 #include "MaxModel.h"
 
 #include <string>
+#include <sstream>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
@@ -18,6 +19,7 @@ BEGIN_OPENFDM_OBJECT_DEF(MaxModel, SimpleDirectModel)
 MaxModel::MaxModel(const std::string& name) :
   SimpleDirectModel(name)
 {
+  setNumMaxInputs(2);
 }
 
 MaxModel::~MaxModel(void)
@@ -44,7 +46,14 @@ MaxModel::getNumMaxInputs(void) const
 void
 MaxModel::setNumMaxInputs(unsigned num)
 {
-//   setNumInputPorts(num);
+  unsigned oldnum = getNumInputPorts();
+  for (; oldnum < num; ++oldnum) {
+    std::stringstream s;
+    s << "input" << oldnum;
+    addInputPort(s.str());
+  }
+  for (; num < oldnum; --oldnum)
+    removeInputPort(getInputPort(oldnum-1));
 }
 
 } // namespace OpenFDM

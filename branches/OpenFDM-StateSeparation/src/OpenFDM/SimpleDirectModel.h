@@ -21,6 +21,14 @@ public:
 
   unsigned getNumInputPorts() const
   { return mInputPorts.size(); }
+  PortId getInputPort(unsigned i) const
+  {
+    if (mInputPorts.size() <= i)
+      return PortId();
+    return PortId(mInputPorts[i]);
+  }
+  PortId getOutputPort() const
+  { return PortId(mOutputPort); }
 
   class Context;
   virtual ModelContext* newModelContext(PortValueList& portValueList) const;
@@ -56,7 +64,7 @@ public:
     SharedPtr<NumericPortValue> mOutputValue;
   };
 
-// protected:
+protected:
   PortId addInputPort(const std::string& name)
   {
     mInputPorts.push_back(new InputPortInfo(this, name, Size(0, 0), true));

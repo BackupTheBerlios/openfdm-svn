@@ -7,29 +7,22 @@
 
 #include <string>
 
-#include "Matrix.h"
-#include "Model.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
-class Product : public Model {
-  OPENFDM_OBJECT(Product, Model);
+class Product : public SimpleDirectModel {
+  OPENFDM_OBJECT(Product, SimpleDirectModel);
 public:
   Product(const std::string& name);
   virtual ~Product(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  // FIXME implements only pointwise products. Also want matrix products
 
-  const Matrix& getProduct(void) const;
+  virtual void output(Context& context) const;
 
   unsigned getNumFactors(void) const;
   void setNumFactors(unsigned num);
-
-private:
-  Matrix mProduct;
-  std::vector<RealPortHandle> mScalarFactorPorts;
-  std::vector<MatrixPortHandle> mMatrixFactorPorts;
 };
 
 } // namespace OpenFDM

@@ -258,6 +258,7 @@ OpenFDMModelsSOURCES = \
   MaxModel.cpp \
   MinModel.cpp \
   Output.cpp \
+  Product.cpp \
   Saturation.cpp \
   SimpleDirectModel.cpp \
   SimulationTime.cpp \
@@ -267,7 +268,6 @@ OpenFDMModelsSOURCES = \
   UnitConversion.cpp
 
 #   DiscBrake.cpp \
-#   Product.cpp \
 #   Table.cpp \
 #   TimeDerivative.cpp \
 #   TransferFunction.cpp \

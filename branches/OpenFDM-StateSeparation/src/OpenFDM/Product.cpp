@@ -5,94 +5,38 @@
 #include "Product.h"
 
 #include <string>
+#include <sstream>
 #include "Types.h"
 #include "Matrix.h"
-#include "Model.h"
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Product, Model)
+BEGIN_OPENFDM_OBJECT_DEF(Product, SimpleDirectModel)
   DEF_OPENFDM_PROPERTY(Unsigned, NumFactors, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Product::Product(const std::string& name) :
-  Model(name)
+  SimpleDirectModel(name)
 {
-  setDirectFeedThrough(true);
-  setNumInputPorts(2);
-  setInputPortName(0, "*");
-  setInputPortName(1, "*");
-  
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &Product::getProduct);
+  setNumFactors(2);
 }
 
 Product::~Product(void)
 {
 }
 
-bool
-Product::init(void)
-{
-  mScalarFactorPorts.clear();
-  mMatrixFactorPorts.clear();
-  for (unsigned i = 0; i < getNumInputPorts(); ++i) {
-    RealPortHandle scalarHandle = getInputPort(i)->toRealPortHandle();
-    if (scalarHandle.isConnected())
-      mScalarFactorPorts.push_back(scalarHandle);
-    else {
-      MatrixPortHandle matrixHandle = getInputPort(i)->toMatrixPortHandle();
-      if (matrixHandle.isConnected()) {
-        if (!mMatrixFactorPorts.empty()) {
-          unsigned lastCols = cols(mMatrixFactorPorts.back().getMatrixValue());
-          unsigned thisRows = rows(matrixHandle.getMatrixValue());
-          if (lastCols != thisRows) {
-            Log(Model, Error) << "Dimensions for Product \""
-                              << getName() << "\" do not agree!" << endl;
-            return false;
-          }
-        }
-
-        mMatrixFactorPorts.push_back(matrixHandle);
-      } else {
-        Log(Model, Error) << "Found unconnected input Port for Product \""
-                          << getName() << "\"" << endl;
-        return false;
-      }
-    }
-  }
-  if (mMatrixFactorPorts.empty()) {
-    mProduct.resize(1, 1);
-  } else {
-    mProduct.resize(rows(mMatrixFactorPorts.front().getMatrixValue()),
-                    cols(mMatrixFactorPorts.back().getMatrixValue()));
-  }
-
-  return Model::init();
-}
-
 void
-Product::output(const TaskInfo&)
+Product::output(Context& context) const
 {
-  real_type scalarFac = 1;
-  for (unsigned i = 0; i < mScalarFactorPorts.size(); ++i)
-    scalarFac *= mScalarFactorPorts[i].getRealValue();
-  if (mMatrixFactorPorts.empty()) {
-    mProduct(0, 0) = scalarFac;
-  } else {
-    mProduct = mMatrixFactorPorts[0].getMatrixValue();
-    for (unsigned i = 1; i < mMatrixFactorPorts.size(); ++i)
-      mProduct = mProduct*mMatrixFactorPorts[i].getMatrixValue();
-    mProduct *= scalarFac;
+  if (!getNumInputPorts())
+    return;
+  Size sz = size(context.getInputValue(0));
+  context.getOutputValue() = context.getInputValue(0);
+  for (unsigned i = 1; i < getNumInputPorts(); ++i) {
+    for (unsigned j = 0; j < sz(0); ++j)
+      for (unsigned k = 0; k < sz(1); ++k)
+        context.getOutputValue()(j, k) *= context.getInputValue(i)(j, k);
   }
-  Log(Model,Debug3) << "Output of Product \"" << getName() << "\" "
-                    << mProduct << endl;
-}
-
-const Matrix&
-Product::getProduct(void) const
-{
-  return mProduct;
 }
 
 unsigned
@@ -105,9 +49,13 @@ void
 Product::setNumFactors(unsigned num)
 {
   unsigned oldnum = getNumFactors();
-  setNumInputPorts(num);
-  for (; oldnum < num; ++oldnum)
-    setInputPortName(oldnum, "*");
+  for (; oldnum < num; ++oldnum) {
+    std::stringstream s;
+    s << "input" << oldnum;
+    addInputPort(s.str());
+  }
+  for (; num < oldnum; --oldnum)
+    removeInputPort(getInputPort(oldnum-1));
 }
 
 } // namespace OpenFDM
