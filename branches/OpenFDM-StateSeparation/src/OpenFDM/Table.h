@@ -6,7 +6,6 @@
 #define OpenFDM_Table_H
 
 #include "TableData.h"
-#include "Model.h"
 #include "SimpleDirectModel.h"
 
 namespace OpenFDM {
