@@ -8,6 +8,7 @@
 #include <OpenFDM/GroupOutput.h>
 #include <OpenFDM/LibraryNode.h>
 #include <OpenFDM/LibraryModel.h>
+#include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
 
@@ -121,11 +122,18 @@ Node* buildContinousExample()
   Group::NodeId delay = group->addChild(new Delay("D"));
   Group::NodeId outputDelay = group->addChild(new Output("OD"));
 
+  Summer* summer = new Summer("S");
+  summer->addInputPort("input0");
+  summer->addInputPort("input1");
+  Group::NodeId summerId = group->addChild(summer);
+
   group->connect(integrator1, "output", integrator2, "input");
   group->connect(integrator2, "output", gain, "input");
   group->connect(gain, "output", integrator1, "input");
+  group->connect(gain, "output", summerId, "input0");
+  group->connect(gain, "output", summerId, "input1");
   group->connect(integrator2, "output", output, "input");
-  group->connect(gain, "output", delay, "input");
+  group->connect(summerId, "output", delay, "input");
   group->connect(delay, "output", outputDelay, "input");
 
   Group::NodeId groupOutputNode = group->addChild(new GroupOutput("GIO"));

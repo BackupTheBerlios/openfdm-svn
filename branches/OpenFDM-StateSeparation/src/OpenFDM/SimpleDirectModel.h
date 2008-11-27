@@ -34,6 +34,8 @@ public:
     virtual ~Context();
     
     virtual const SimpleDirectModel& getNode() const;
+    virtual const PortValue* getPortValue(const PortInfo&) const;
+    virtual void setPortValue(const PortInfo&, PortValue*);
     
     virtual void initOutput(const /*Init*/Task&);
     virtual void output(const Task&);

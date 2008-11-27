@@ -28,6 +28,24 @@ SimpleDirectModel::Context::getNode() const
 {
   return *mModel;
 }
+
+const PortValue*
+SimpleDirectModel::Context::getPortValue(const PortInfo& portInfo) const
+{
+  if (mModel->mOutputPort == &portInfo)
+    return mOutputValue;
+  OpenFDMAssert(mInputValues.size() == mModel->mInputPorts.size());
+  for (unsigned i = 0; i < mInputValues.size(); ++i)
+    if (mModel->mInputPorts[i] == &portInfo)
+      return mInputValues[i];
+  return 0;
+}
+
+void
+SimpleDirectModel::Context::setPortValue(const PortInfo& i, PortValue* v)
+{
+  OpenFDMAssert(false);
+}
     
 void
 SimpleDirectModel::Context::initOutput(const /*Init*/Task&)
@@ -119,28 +137,7 @@ SimpleDirectModel::newModelContext(PortValueList& portValueList) const
     }
   }
   
-  SharedPtr<Context> context;
-  context = new Context(this, inputValues, outputPortValue);
-  /// FIXME, this is for legacy lport value stuff ...
-  for (unsigned i = 0; i < getNumPorts(); ++i) {
-    PortValue* portValue = portValueList.getPortValue(i);
-    if (!portValue) {
-      Log(Model, Error) << "No port value given for model \"" << getName()
-                        << "\" and port \"" << getPort(i)->getName()
-                        << "\"" << endl;
-      return 0;
-    }
-    context->setPortValue(*getPort(i), portValue);
-  }
-  
-  /// FIXME, should not need to do that either ...
-  if (!context->allocStates()) {
-    Log(Model, Warning) << "Could not alloc for model \""
-                        << getName() << "\"" << endl;
-    return 0;
-  }
-  
-  return context.release();
+  return new Context(this, inputValues, outputPortValue);
 }
 
 } // namespace OpenFDM
