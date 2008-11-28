@@ -94,6 +94,13 @@ Integrator::setInitialValue(const Matrix& initialValue)
   mInitialValue = initialValue;
 }
 
+void
+Integrator::setInitialValue(const real_type& initialValue)
+{
+  mInitialValue.resize(1, 1);
+  mInitialValue(0, 0) = initialValue;
+}
+
 const Matrix&
 Integrator::getInitialValue() const
 {

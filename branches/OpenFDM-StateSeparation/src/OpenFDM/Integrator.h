@@ -31,6 +31,7 @@ public:
                           ContinousStateValueVector& deriv) const;
 
   void setInitialValue(const Matrix& initialValue);
+  void setInitialValue(const real_type& initialValue);
   const Matrix& getInitialValue() const;
 
   void setEnableInitialValuePort(bool enable);
