@@ -35,12 +35,7 @@ int main()
 
   Sensor* sensor = new Sensor("Sensor");
   sensor->setPosition(mass->getPosition());
-  sensor->setEnablePosition(true);
-  sensor->setEnableOrientation(true);
-  sensor->setEnableEulerAngles(true);
-  sensor->setEnableLinearVelocity(true);
-  sensor->setEnableAngularVelocity(true);
-  sensor->setEnableCentrifugalAcceleration(true);
+  sensor->setEnableAll(true);
   Group::NodeId sensorId = group->addChild(sensor);
 
   group->connect(fixedRootJointId, 0, rotationalJoint1Id, 0);

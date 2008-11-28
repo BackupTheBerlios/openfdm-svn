@@ -4,6 +4,7 @@
 #include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/RevoluteJoint.h>
 #include <OpenFDM/RigidBody.h>
+#include <OpenFDM/Sensor.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
 
@@ -20,12 +21,23 @@ Node* buildSimpleMechanicExample()
   /// paris pendulum: coriolis
 
   SharedPtr<Group> group = new Group("G");
-  Group::NodeId rootJoint = group->addChild(new MobileRootJoint("Root Joint"));
-  Group::NodeId rigidBody = group->addChild(new RigidBody("Rigid Body"));
-  Group::NodeId mass = group->addChild(new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1)));
 
-  group->connect(rootJoint, "link", rigidBody, "link0");
-  group->connect(rigidBody, "link1", mass, "link");
+  MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
+  Group::NodeId rootJointId = group->addChild(mobileRootJoint);
+  RigidBody* rigidBody = new RigidBody("Rigid Body");
+  rigidBody->addLink("sensorLink");
+  Group::NodeId rigidBodyId = group->addChild(rigidBody);
+  Mass* mass = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
+  Group::NodeId massId = group->addChild(mass);
+
+  Sensor* sensor = new Sensor("Sensor");
+  sensor->setPosition(mass->getPosition());
+  sensor->setEnableAll(true);
+  Group::NodeId sensorId = group->addChild(sensor);
+
+  group->connect(rootJointId, "link", rigidBodyId, "link0");
+  group->connect(rigidBodyId, "link1", massId, "link");
+  group->connect(rigidBodyId, "sensorLink", sensorId, "link");
 
   return group.release();
 }
@@ -33,27 +45,48 @@ Node* buildSimpleMechanicExample()
 Node* buildSimpleMechanicExample2()
 {
   SharedPtr<Group> group = new Group("G");
-  Group::NodeId rootJoint = group->addChild(new MobileRootJoint("Root Joint"));
-  RigidBody *body = new RigidBody("Rigid Body");
-  body->addLink("link2");
-  Group::NodeId rigidBody = group->addChild(body);
+
+  MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
+  Group::NodeId rootJointId = group->addChild(mobileRootJoint);
+
+  RigidBody *rigidBody = new RigidBody("Rigid Body");
+  rigidBody->addLink("link2");
+  rigidBody->addLink("sensorLink");
+  Group::NodeId rigidBodyId = group->addChild(rigidBody);
   InertiaMatrix inertia(1, 0, 0, 1, 0, 1);
-  Group::NodeId mass = group->addChild(new Mass("Mass", 1, inertia));
+  Mass* mass = new Mass("Mass", 1, inertia);
+  Group::NodeId massId = group->addChild(mass);
   RevoluteJoint* revoluteJoint = new RevoluteJoint("Revolute Joint");
   revoluteJoint->setEnableExternalForce(true);
-  Group::NodeId revolute = group->addChild(revoluteJoint);
-  Group::NodeId rigidBody2 = group->addChild(new RigidBody("Rigid Body 2"));
-  Group::NodeId mass2 = group->addChild(new Mass("Mass 2", 1, inertia));
+  Group::NodeId revoluteId = group->addChild(revoluteJoint);
+  RigidBody *rigidBody2 = new RigidBody("Rigid Body 2");
+  rigidBody2->addLink("sensorLink");
+  Group::NodeId rigidBody2Id = group->addChild(rigidBody2);
+  Mass* mass2 = new Mass("Mass 2", 1, inertia);
+  Group::NodeId mass2Id = group->addChild(mass2);
 
-  group->connect(rootJoint, "link", rigidBody, "link0");
-  group->connect(rigidBody, "link1", mass, "link");
-  group->connect(rigidBody, "link2", revolute, "link0");
-  group->connect(revolute, "link1", rigidBody2, "link0");
-  group->connect(rigidBody2, "link1", mass2, "link");
+  Sensor* sensor = new Sensor("Sensor");
+  sensor->setPosition(mass->getPosition());
+  sensor->setEnableAll(true);
+  Group::NodeId sensorId = group->addChild(sensor);
 
-  Group::NodeId jointForce = group->addChild(new ConstModel("Joint Force", 1));
+  Sensor* sensor2 = new Sensor("Sensor 2");
+  sensor2->setPosition(mass2->getPosition());
+  sensor2->setEnableAll(true);
+  Group::NodeId sensorId2 = group->addChild(sensor2);
 
-  group->connect(jointForce, "output", revolute, "force");
+  group->connect(rootJointId, "link", rigidBodyId, "link0");
+  group->connect(rigidBodyId, "link1", massId, "link");
+  group->connect(rigidBodyId, "link2", revoluteId, "link0");
+  group->connect(revoluteId, "link1", rigidBody2Id, "link0");
+  group->connect(rigidBody2Id, "link1", mass2Id, "link");
+  group->connect(rigidBodyId, "sensorLink", sensorId, "link");
+  group->connect(rigidBody2Id, "sensorLink", sensorId2, "link");
+
+  ConstModel* jointForce = new ConstModel("Joint Force", 1);
+  Group::NodeId jointForceId = group->addChild(jointForce);
+
+  group->connect(jointForceId, "output", revoluteId, "force");
 
   return group.release();
 }
