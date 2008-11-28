@@ -95,22 +95,31 @@ void
 Sensor::acceleration(const Task&, const ContinousStateValueVector&,
                      PortValueList& portValues, const Matrix&, Vector&) const
 {
+  const Environment* environment;
+  environment = portValues[mMechanicLink].getEnvironment();
   const Frame& frame = portValues[mMechanicLink].getFrame();
 
   // FIXME, for now relative position
   Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
 
-  if (getEnableCentrifugalAcceleration()) {
+  bool enableCentrifugalAcceleration = getEnableCentrifugalAcceleration();
+  bool enableLoad = getEnableLoad();
+  if (enableCentrifugalAcceleration || enableLoad) {
     Vector6 spatialVel = motionTo(position, frame.getSpVel());
     Vector6 spatialAccel = motionTo(position, frame.getSpAccel());
     Vector3 centrifugalAccel = spatialAccel.getLinear();
     centrifugalAccel += cross(spatialVel.getAngular(), spatialVel.getLinear());
 
-    portValues[mCentrifugalAccelerationPort] = centrifugalAccel;
+    if (enableCentrifugalAcceleration)
+      portValues[mCentrifugalAccelerationPort] = centrifugalAccel;
+    if (enableLoad) {
+      // May be cache that from the velocity step??
+      Vector3 refPosition = frame.posToRef(position);
+      Vector3 gravity = environment->getGravityAcceleration(refPosition);
+      gravity = frame.rotFromRef(gravity);
+      portValues[mLoadPort] = centrifugalAccel - gravity;
+    }
   }
-
-//   if (getEnableLoadAcceleration())
-//     portValues[mLoadAccelerationPort] = centrifugalAccel + gravity;
 }
 
 void
@@ -230,6 +239,23 @@ Sensor::getEnableCentrifugalAcceleration() const
 }
 
 void
+Sensor::setEnableLoad(bool enable)
+{
+  if (enable == getEnableLoad())
+    return;
+  if (enable)
+    mLoadPort = MatrixOutputPort(this, "load", Size(3, 1), true);
+  else
+    mLoadPort.clear();
+}
+
+bool
+Sensor::getEnableLoad() const
+{
+  return !mLoadPort.empty();
+}
+
+void
 Sensor::setEnableWindVelocity(bool enable)
 {
   if (enable == getEnableWindVelocity())
@@ -278,6 +304,21 @@ bool
 Sensor::getEnablePressure() const
 {
   return !mPressurePort.empty();
+}
+
+void
+Sensor::setEnableAll(bool enable)
+{
+  setEnablePosition(enable);
+  setEnableOrientation(enable);
+  setEnableEulerAngles(enable);
+  setEnableLinearVelocity(enable);
+  setEnableAngularVelocity(enable);
+  setEnableCentrifugalAcceleration(enable);
+  setEnableLoad(enable);
+  setEnableWindVelocity(enable);
+  setEnableTemperature(enable);
+  setEnablePressure(enable);
 }
 
 } // namespace OpenFDM

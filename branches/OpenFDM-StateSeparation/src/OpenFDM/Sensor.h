@@ -60,6 +60,11 @@ public:
   /// Get availabilty of the linear acceleration output port
   bool getEnableCentrifugalAcceleration() const;
 
+  /// Set availabilty of the load output port
+  void setEnableLoad(bool enable);
+  /// Get availabilty of the load output port
+  bool getEnableLoad() const;
+
 
   /// Set availabilty of the wind velocity output port
   void setEnableWindVelocity(bool enable);
@@ -77,6 +82,10 @@ public:
   /// Get availabilty of the pressure output port
   bool getEnablePressure() const;
 
+  /// Set availabilty of all output ports
+  /// This is mostly for convinience in testing
+  void setEnableAll(bool enable);
+
 private:
   MechanicLink mMechanicLink;
 
@@ -90,6 +99,7 @@ private:
   MatrixOutputPort mAngularVelocityPort;
 
   MatrixOutputPort mCentrifugalAccelerationPort;
+  MatrixOutputPort mLoadPort;
 
   MatrixOutputPort mWindVelocityPort;
 
