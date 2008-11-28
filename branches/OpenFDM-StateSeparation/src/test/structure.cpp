@@ -113,9 +113,7 @@ Node* buildContinousExample()
   SharedPtr<Group> group = new Group("G0");
   Group::NodeId gain = group->addChild(new Gain("gain", -1));
   Integrator* i1 = new Integrator("I1");
-  Matrix v(1, 1);
-  v(0, 0) = 1;
-  i1->setInitialValue(v);
+  i1->setInitialValue(1);
   Group::NodeId integrator1 = group->addChild(i1);
   Group::NodeId integrator2 = group->addChild(new Integrator("I2"));
   Group::NodeId output = group->addChild(new Output("O"));

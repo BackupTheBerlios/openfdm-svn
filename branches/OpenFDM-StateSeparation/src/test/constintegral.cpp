@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <OpenFDM/ConstModel.h>
+#include <OpenFDM/Group.h>
 #include <OpenFDM/Integrator.h>
 #include <OpenFDM/Output.h>
 #include <OpenFDM/SimulationTime.h>
@@ -17,49 +18,43 @@ using namespace OpenFDM;
 int
 main(int argc, char *argv[])
 {
-  real_type rate = 0.1;
+  real_type rate = 0.01;
 
-  SharedPtr<System> system = new System("Constant Integration");
+  SharedPtr<Group> group = new Group("Group");
 
-  Matrix m(1, 1);
-  m(0, 0) = 1;
-
-  ConstModel* constModel = new ConstModel("Constant", m);
-  system->addModel(constModel);
+  ConstModel* constModel = new ConstModel("Constant", 1);
+  Group::NodeId constModelId = group->addChild(constModel);
 
   Integrator* integrator = new Integrator("Integrator");
-  system->addModel(integrator);
-  m(0, 0) = 0;
-  integrator->setInitialValue(m);
-
-  Connection::connect(integrator->getInputPort(0),
-                      constModel->getOutputPort(0));
+  integrator->setInitialValue(0);
+  Group::NodeId integratorId = group->addChild(integrator);
+  group->connect(constModelId, "output", integratorId, "input");
 
   SimulationTime* simulationTime = new SimulationTime("Simulation Time");
-  system->addModel(simulationTime);
+  Group::NodeId simulationTimeId = group->addChild(simulationTime);
 
   Summer* summer = new Summer("Error to exact Solution");
-  system->addModel(summer);
+  Group::NodeId summerId = group->addChild(summer);
   summer->setNumSummands(2);
   summer->setInputSign(0, Summer::Plus);
-  Connection::connect(simulationTime->getOutputPort(0),
-                      summer->getInputPort(0));
+  group->connect(simulationTimeId, "output", summerId, "input0");
   summer->setInputSign(1, Summer::Minus);
-  Connection::connect(integrator->getOutputPort(0),
-                      summer->getInputPort(1));
+  group->connect(integratorId, "output", summerId, "input1");
+
 
   Output* output = new Output("Error Output");
   SharedPtr<ErrorCollectorCallback> errors;
   errors = new ErrorCollectorCallback;
   output->setCallback(errors);
-  output->addSampleTime(rate);
-  system->addModel(output);
-  Connection::connect(output->getInputPort(0), summer->getOutputPort(0));
+//   output->addSampleTime(rate);
+  Group::NodeId outputId = group->addChild(output);
+  group->connect(summerId, "output", outputId, "input");
 
-  if (!system->init()) {
-    std::cout << "Could not initialize the system" << std::endl;
+  SharedPtr<System> system = new System("Constant Integration");
+  system->setNode(group);
+
+  if (!system->init())
     return EXIT_FAILURE;
-  }
 
   system->simulate(10);
 

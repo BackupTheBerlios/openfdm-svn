@@ -6,6 +6,7 @@
 #include <iostream>
 #include <OpenFDM/DoPri5.h>
 #include <OpenFDM/Gain.h>
+#include <OpenFDM/Group.h>
 #include <OpenFDM/Integrator.h>
 #include <OpenFDM/Output.h>
 #include <OpenFDM/SimulationTime.h>
@@ -21,96 +22,79 @@ main(int argc, char *argv[])
 {
   real_type omega = 2;
 
-  SharedPtr<System> system = new System("Harmonic Oszilator");
-  system->addSampleTime(real_type(1)/real_type(100));
-  system->setTimestepper(new DoPri5);
-  
-  Integrator* integrator0 = new Integrator("Acceleration Integrator");
-  Matrix initialValue(1, 1);
-  initialValue(0, 0) = 0;
-  integrator0->setInitialValue(initialValue);
-  system->addModel(integrator0);
+  SharedPtr<Group> group = new Group("Group");
 
-  Integrator* integrator1 = new Integrator("Velocity Integrator");
-  initialValue(0, 0) = 1;
-  integrator1->setInitialValue(initialValue);
-  system->addModel(integrator1);
+  // Build up a harmonic oszilator
+  Group::NodeId gainId = group->addChild(new Gain("gain", -omega*omega));
+  Integrator* integrator0 = new Integrator("Velocity Integrator");
+  integrator0->setInitialValue(omega);
+  Group::NodeId integrator0Id = group->addChild(integrator0);
+  Integrator* integrator1 = new Integrator("Position Integrator");
+  integrator1->setInitialValue(0);
+  Group::NodeId integrator1Id = group->addChild(integrator1);
 
-  Gain* gain = new Gain("Gain");
-  gain->setGain(-omega*omega);
-  system->addModel(gain);
+  group->connect(gainId, "output", integrator0Id, "input");
+  group->connect(integrator0Id, "output", integrator1Id, "input");
+  group->connect(integrator1Id, "output", gainId, "input");
 
-  Connection::connect(gain->getInputPort(0),
-                      integrator1->getOutputPort(0));
-  Connection::connect(integrator1->getInputPort(0),
-                      integrator0->getOutputPort(0));
-  Connection::connect(integrator0->getInputPort(0),
-                      gain->getOutputPort(0));
-
+  // Build up the exact solution
   SimulationTime* simulationTime = new SimulationTime("Simulation Time");
-  system->addModel(simulationTime);
+  Group::NodeId simulationTimeId = group->addChild(simulationTime);
 
-  gain = new Gain("Cosinus Input Gain");
-  system->addModel(gain);
-  gain->setGain(omega);
-  Connection::connect(gain->getInputPort(0),
-                      simulationTime->getOutputPort(0));
+  Gain* cosInputGain = new Gain("Cosinus Input Gain", omega);
+  Group::NodeId cosInputGainId = group->addChild(cosInputGain);
+  group->connect(simulationTimeId, "output", cosInputGainId, "input");
 
-  UnaryFunction* cosFunction
-    = new UnaryFunction("Exact Pos Solution", UnaryFunction::Cos);
-  system->addModel(cosFunction);
-  Connection::connect(cosFunction->getInputPort(0),
-                      gain->getOutputPort(0));
+  UnaryFunction* cosFunction;
+  cosFunction = new UnaryFunction("Exact Vel Solution", UnaryFunction::Cos);
+  Group::NodeId cosFunctionId = group->addChild(cosFunction);
+  group->connect(cosInputGainId, "output", cosFunctionId, "input");
 
-  UnaryFunction* sinFunction
-    = new UnaryFunction("Exact Vel Solution", UnaryFunction::Sin);
-  system->addModel(sinFunction);
-  Connection::connect(sinFunction->getInputPort(0),
-                      gain->getOutputPort(0));
+  Gain* velOutputGain = new Gain("Velocity Output Gain", omega);
+  Group::NodeId velOutputGainId = group->addChild(velOutputGain);
+  group->connect(cosFunctionId, "output", velOutputGainId, "input");
 
-  gain = new Gain("Cosinus Output Gain");
-  system->addModel(gain);
-  gain->setGain(-omega);
-  Connection::connect(gain->getInputPort(0),
-                      sinFunction->getOutputPort(0));
+  UnaryFunction* sinFunction;
+  sinFunction = new UnaryFunction("Exact Pos Solution", UnaryFunction::Sin);
+  Group::NodeId sinFunctionId = group->addChild(sinFunction);
+  group->connect(cosInputGainId, "output", sinFunctionId, "input");
 
 
-  Summer* summer0 = new Summer("Position Error to exact Solution");
-  system->addModel(summer0);
+  // Now build the differences
+
+  Summer* summer0 = new Summer("Velocity Error to exact Solution");
+  Group::NodeId summer0Id = group->addChild(summer0);
   summer0->setNumSummands(2);
   summer0->setInputSign(0, Summer::Plus);
-  Connection::connect(cosFunction->getOutputPort(0),
-                      summer0->getInputPort(0));
+  group->connect(velOutputGainId, "output", summer0Id, "input0");
   summer0->setInputSign(1, Summer::Minus);
-  Connection::connect(integrator1->getOutputPort(0),
-                      summer0->getInputPort(1));
+  group->connect(integrator0Id, "output", summer0Id, "input1");
 
-  Output* output = new Output("Position Error Output");
-  SharedPtr<ErrorCollectorCallback> posErrorCallback;
-  posErrorCallback = new ErrorCollectorCallback;
-  output->setCallback(posErrorCallback);
-  output->addSampleTime(real_type(1)/real_type(10));
-  system->addModel(output);
-  Connection::connect(output->getInputPort(0), summer0->getOutputPort(0));
-
-
-  Summer* summer1 = new Summer("Velocity Error to exact Solution");
-  system->addModel(summer1);
-  summer1->setNumSummands(2);
-  summer1->setInputSign(0, Summer::Plus);
-  Connection::connect(gain->getOutputPort(0),
-                      summer1->getInputPort(0));
-  summer1->setInputSign(1, Summer::Minus);
-  Connection::connect(integrator0->getOutputPort(0),
-                      summer1->getInputPort(1));
-
-  output = new Output("Velocity Error Output");
+  Output* output0 = new Output("Velocity Error Output");
   SharedPtr<ErrorCollectorCallback> velErrorCallback;
   velErrorCallback = new ErrorCollectorCallback;
-  output->setCallback(velErrorCallback);
-  output->addSampleTime(real_type(1)/real_type(10));
-  system->addModel(output);
-  Connection::connect(output->getInputPort(0), summer1->getOutputPort(0));
+  output0->setCallback(velErrorCallback);
+  Group::NodeId output0Id = group->addChild(output0);
+  group->connect(summer0Id, "output", output0Id, "input");
+
+
+  Summer* summer1 = new Summer("Position Error to exact Solution");
+  Group::NodeId summer1Id = group->addChild(summer1);
+  summer1->setNumSummands(2);
+  summer1->setInputSign(0, Summer::Plus);
+  group->connect(sinFunctionId, "output", summer1Id, "input0");
+  summer1->setInputSign(1, Summer::Minus);
+  group->connect(integrator1Id, "output", summer1Id, "input1");
+
+  Output* output1 = new Output("Position Error Output");
+  SharedPtr<ErrorCollectorCallback> posErrorCallback;
+  posErrorCallback = new ErrorCollectorCallback;
+  output1->setCallback(posErrorCallback);
+  Group::NodeId output1Id = group->addChild(output1);
+  group->connect(summer1Id, "output", output1Id, "input");
+
+  SharedPtr<System> system = new System("Harmonic Oszilator");
+  system->setNode(group);
 
   if (!system->init()) {
     std::cout << "Could not initialize the system" << std::endl;
