@@ -64,21 +64,23 @@ Sensor::velocity(const Task& task, const ContinousStateValueVector&,
   // Velocity related sensing
   bool enableAngularVelocity = getEnableAngularVelocity();
   bool enableLinearVelocity = getEnableLinearVelocity();
-  if (enableAngularVelocity || enableLinearVelocity) {
+  bool enableWindVelocity = getEnableWindVelocity();
+  if (enableAngularVelocity || enableLinearVelocity || enableWindVelocity) {
     Vector6 refVelocity = frame.getRefVelAt(position);
     if (enableAngularVelocity)
       portValues[mAngularVelocityPort] = refVelocity.getAngular();
     
     if (enableLinearVelocity)
       portValues[mLinearVelocityPort] = refVelocity.getLinear();
+
+    // Wind sensing
+    if (enableWindVelocity) {
+      Vector6 wind = environment->getWindVelocity(task.getTime(), position);
+      wind -= refVelocity;
+      portValues[mWindVelocityPort] = frame.rotFromRef(wind.getLinear());
+    }
   }
 
-  // Wind sensing
-  if (getEnableWindVelocity()) {
-    Vector6 wind = environment->getWindVelocity(task.getTime(), position);
-    portValues[mWindVelocityPort] = frame.rotFromRef(wind.getLinear());
-  }
- 
   // Atmosphere related sensing
   bool enableTemperature = getEnableTemperature();
   bool enablePressure = getEnablePressure();
