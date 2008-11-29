@@ -6,22 +6,39 @@
 #include <OpenFDM/Sensor.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
-// #include <OpenFDM/Planet.h>
+#include <OpenFDM/EllipticPlanet.h>
+#include <OpenFDM/CentralMassGravity.h>
 
 using namespace OpenFDM;
 
+class EarthInertial : public AbstractInertial {
+public:
+  virtual Vector3 getAngularVelocity(const real_type& t) const
+  { return Vector3(0, 0, pi2/(24*60*60)); }
+  virtual Vector6 getAcceleration(const real_type& t) const
+  { return Vector6::zeros(); }
+};
+
 int main()
 {
+  SharedPtr<EllipticPlanet> planet = new EllipticPlanet;
+
   // Model of the paris pendulum or foucault pendulum to test coriolis effects.
 
+  // N 48deg 50.781 E 2deg 20.709
+  // 28 kg, 67 meters pendulum
+  // Deviation 11deg/h
+  // 16,5s cycle time(?back and forth?)
+
   // Position of the pendulum
-//   Geocentric geocentric()
+  Geodetic geodetic(rad2deg*(48 + 50.781/60), rad2deg*(2 + 20.709/60), 0);
   // Test the direction of the velocity vector projected to the ground plane
 
   // FIXME, need usable environment stuff like gravity first ...
   SharedPtr<Group> group = new Group("Foucault");
   FixedRootJoint* fixedRootJoint = new FixedRootJoint("Root");
-  fixedRootJoint->setPosition(Vector3(0, 0, 1));
+  fixedRootJoint->setPosition(planet->toCart(geodetic));
+  fixedRootJoint->setOrientation(planet->getGeodHLOrientation(geodetic));
   Group::NodeId fixedRootJointId = group->addChild(fixedRootJoint);
   RotationalJoint* rotationalJoint1 = new RotationalJoint("Rotational Joint 1");
   Group::NodeId rotationalJoint1Id = group->addChild(rotationalJoint1);
@@ -29,8 +46,8 @@ int main()
   rigidBody1->addLink("sensorLink");
   Group::NodeId rigidBody1Id = group->addChild(rigidBody1);
 
-  Mass* mass = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
-  mass->setPosition(Vector3(1, 1, 0));
+  Mass* mass = new Mass("Mass", 28, InertiaMatrix(1, 0, 0, 1, 0, 1));
+  mass->setPosition(Vector3(3, 0, 67));
   Group::NodeId massId = group->addChild(mass);
 
   Sensor* sensor = new Sensor("Sensor");
@@ -45,12 +62,18 @@ int main()
 
   SharedPtr<System> system = new System("System", group);
 
+  SharedPtr<EarthInertial> inertial = new EarthInertial;
+  SharedPtr<CentralMassGravity> gravity = new CentralMassGravity;
+  system->getEnvironment()->setInertial(inertial);
+  system->getEnvironment()->setPlanet(planet);
+  system->getEnvironment()->setGravity(gravity);
   system->attach(SystemOutput::newDefaultSystemOutput("foucault.h5"));
 
   if (!system->init())
     return 1;
 
 //   system->simulate(24*60*60);
+//   system->simulate(60*60);
   system->simulate(60);
 
   return 0;
