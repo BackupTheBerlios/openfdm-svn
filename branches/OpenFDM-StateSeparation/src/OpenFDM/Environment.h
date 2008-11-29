@@ -24,6 +24,36 @@ public:
   Environment();
   virtual ~Environment();
 
+  void setInertial(const AbstractInertial* inertial)
+  { mInertial = inertial; }
+  const AbstractInertial* getInertial()
+  { return mInertial; }
+
+  void setGravity(const AbstractGravity* gravity)
+  { mGravity = gravity; }
+  const AbstractGravity* getGravity()
+  { return mGravity; }
+
+  void setWind(const AbstractWind* wind)
+  { mWind = wind; }
+  const AbstractWind* getWind()
+  { return mWind; }
+
+  void setPlanet(const AbstractPlanet* planet)
+  { mPlanet = planet; }
+  const AbstractPlanet* getPlanet()
+  { return mPlanet; }
+
+  void setAtmosphere(const AbstractAtmosphere* atmosphere)
+  { mAtmosphere = atmosphere; }
+  const AbstractAtmosphere* getAtmosphere()
+  { return mAtmosphere; }
+
+  void setGround(const AbstractGround* ground)
+  { mGround = ground; }
+  const AbstractGround* getGround()
+  { return mGround; }
+
   ///////////////////////////////////////////////////////////////////////////
   // Inertial related
   // FIXME may be this can be split out???
