@@ -24,7 +24,7 @@ OpenFDMCoreHEADERS = \
   Assert.h \
   Atomic.h \
   BoolStateInfo.h \
-  CentralMassGravity.cpp \
+  CentralMassGravity.h \
   ConstNodeVisitor.h \
   ContinousStateInfo.h \
   ContinousStateInfoVector.h \
@@ -143,6 +143,7 @@ OpenFDMCoreSOURCES = \
   Assert.cpp \
   AtmosphereSTD1976.cpp \
   Atomic.cpp \
+  CentralMassGravity.cpp \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
   DoPri5.cpp \
@@ -199,7 +200,6 @@ OpenFDMModelsHEADERS = \
   Bias.h \
   BinaryFunction.h \
   CartesianJoint.h \
-  CentralMassGravity.h \
   ConstModel.h \
   Contact.h \
   DeadBand.h \
