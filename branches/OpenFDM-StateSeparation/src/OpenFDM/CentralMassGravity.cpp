@@ -9,7 +9,6 @@
 #include "Unit.h"
 #include "Vector.h"
 #include "Quaternion.h"
-#include "Gravity.h"
 
 namespace OpenFDM {
 
