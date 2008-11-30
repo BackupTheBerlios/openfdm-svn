@@ -265,11 +265,11 @@ OpenFDMModelsSOURCES = \
   SimulationTime.cpp \
   Summer.cpp \
   Table.cpp \
+  TimeDerivative.cpp \
   UnaryFunction.cpp \
   UnitConversion.cpp
 
 #   DiscBrake.cpp \
-#   TimeDerivative.cpp \
 #   TransferFunction.cpp \
 #
 

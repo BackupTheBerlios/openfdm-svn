@@ -7,6 +7,7 @@
 
 #include "Types.h"
 #include "Model.h"
+#include "TemplateDiscreteStateInfo.h"
 
 namespace OpenFDM {
 
@@ -16,20 +17,24 @@ public:
   TimeDerivative(const std::string& name);
   virtual ~TimeDerivative(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-  virtual void update(const TaskInfo& taskInfo);
-
-  const Matrix& getDerivativeOutput(void) const;
+  virtual bool alloc(ModelContext&) const;
+  virtual void init(const Task&,DiscreteStateValueVector& discreteState,
+                    ContinousStateValueVector&, const PortValueList&) const;
+  virtual void output(const Task&,const DiscreteStateValueVector& discreteState,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
+  virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      const PortValueList&) const;
 
 private:
-  /// Holds the current output.
-  Matrix mDerivativeOutput;
-  Matrix mPastInput;
-  double mDt;
+  typedef TemplateDiscreteStateInfo<Matrix> MatrixStateInfo;
 
-  /// The input port handle
-  MatrixPortHandle mInputPort;
+  MatrixInputPort mInputPort;
+  MatrixOutputPort mOutputPort;
+  SharedPtr<MatrixStateInfo> mDerivativeStateInfo;
+  SharedPtr<MatrixStateInfo> mOldValueStateInfo;
+  SharedPtr<MatrixStateInfo> mOldTStateInfo;
 };
 
 } // namespace OpenFDM

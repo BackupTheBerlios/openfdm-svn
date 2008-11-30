@@ -5,6 +5,7 @@
 #include "TimeDerivative.h"
 
 #include "Assert.h"
+#include "Task.h"
 
 namespace OpenFDM {
 
@@ -12,13 +13,16 @@ BEGIN_OPENFDM_OBJECT_DEF(TimeDerivative, Model)
   END_OPENFDM_OBJECT_DEF
 
 TimeDerivative::TimeDerivative(const std::string& name) :
-  Model(name)
+  Model(name),
+  mInputPort(newMatrixInputPort("input", false)),
+  mOutputPort(newMatrixOutputPort("output"))
 {
-  setDirectFeedThrough(true);
-  setNumInputPorts(1);
-
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &TimeDerivative::getDerivativeOutput);
+  mDerivativeStateInfo = new MatrixStateInfo;
+  addDiscreteStateInfo(mDerivativeStateInfo);
+  mOldValueStateInfo = new MatrixStateInfo;
+  addDiscreteStateInfo(mOldValueStateInfo);
+  mOldTStateInfo = new MatrixStateInfo;
+  addDiscreteStateInfo(mOldTStateInfo);
 }
 
 TimeDerivative::~TimeDerivative(void)
@@ -26,57 +30,82 @@ TimeDerivative::~TimeDerivative(void)
 }
 
 bool
-TimeDerivative::init(void)
+TimeDerivative::alloc(ModelContext& leafContext) const
 {
-  mInputPort = getInputPort(0)->toMatrixPortHandle();
-  if (!mInputPort.isConnected()) {
-    Log(Model, Error) << "Initialization of TimeDerivative model \""
-                      << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
+  Size sz = size(leafContext.getPortValueList()[mInputPort]);
+  Log(Initialization, Debug)
+    << "Size for Integrator is detemined by the initial input "
+    << "port with size: " << trans(sz) << std::endl;
+  if (!leafContext.getPortValueList().setOrCheckPortSize(mOutputPort, sz)) {
+    Log(Initialization, Error)
+      << "Size for input port does not match!" << std::endl;
     return false;
   }
-
-  mDerivativeOutput.resize(mInputPort.getMatrixValue());
-
-  // Set a mark for the first step.
-  mDt = 0.0;
-
-  return Model::init();
+  return true;
 }
 
 void
-TimeDerivative::output(const TaskInfo&)
+TimeDerivative::init(const Task& task, DiscreteStateValueVector& discreteState,
+                     ContinousStateValueVector&,
+                     const PortValueList& portValues) const
 {
-  // If we are here at the first time, dt is set to zero.
-  // So, computing a derivative is not possible in the first step.
-  // Prepare zero output in this case.
-  if (mDt != 0.0) {
-    OpenFDMAssert(size(mInputPort.getMatrixValue()) == size(mPastInput));
-    if (size(mInputPort.getMatrixValue()) == size(mPastInput)) {
-      mDerivativeOutput = mInputPort.getMatrixValue() - mPastInput;
-      mDerivativeOutput *= 1/mDt;
-    }
+  Size sz = size(portValues[mInputPort]);
+  discreteState[*mDerivativeStateInfo].resize(sz(0), sz(1));
+  discreteState[*mDerivativeStateInfo].clear();
+  discreteState[*mOldValueStateInfo].resize(sz(0), sz(1));
+  discreteState[*mOldValueStateInfo] = portValues[mInputPort];
+  discreteState[*mOldTStateInfo].resize(1, 1);
+  discreteState[*mOldTStateInfo](0, 0) = task.getTime();
+}
+
+void
+TimeDerivative::output(const Task& task,
+                       const DiscreteStateValueVector& discreteState,
+                       const ContinousStateValueVector&,
+                       PortValueList& portValues) const
+{
+  real_type tOld = discreteState[*mOldTStateInfo](0, 0);
+  real_type dt = task.getTime() - tOld;
+  real_type dtMin = sqrt(Limits<real_type>::epsilon());
+  if (dt < dtMin) {
+    // For times very near at tOld, just use the old derivative
+    portValues[mOutputPort] = discreteState[*mDerivativeStateInfo];
   } else {
-    mDerivativeOutput.resize(mInputPort.getMatrixValue());
-    mDerivativeOutput.clear();
+    // The numerical derivative
+    Matrix deriv = portValues[mInputPort] - discreteState[*mOldValueStateInfo];
+    deriv *= 1/dt;
+
+    if (dt < 2*dtMin) {
+      // For times where numerical derivative starts having a value beyond
+      // roundoff interpolate between the old and the numerical derivative
+      portValues[mOutputPort]
+        = interpolate(dt, dtMin, discreteState[*mDerivativeStateInfo],
+                      2*dtMin, deriv);
+    } else {
+      // For times where numerical derivative provides valid values use the
+      // numerical derivative
+      portValues[mOutputPort] = deriv;
+    }
   }
 }
 
 void
-TimeDerivative::update(const TaskInfo& taskInfo)
+TimeDerivative::update(const DiscreteTask& discreteTask,
+                       DiscreteStateValueVector& discreteState,
+                       const ContinousStateValueVector&,
+                       const PortValueList& portValues) const
 {
-  // FIXME
-  real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
-  // Updating is just storing required information for the next output step.
-  mPastInput = mInputPort.getMatrixValue();
-  mDt = dt;
-}
+  // Just compute the derivative.
+  real_type tOld = discreteState[*mOldTStateInfo](0, 0);
+  real_type dt = discreteTask.getTime() - tOld;
+  if (Limits<real_type>::safe_min() < fabs(dt)) {
+    discreteState[*mDerivativeStateInfo]
+      = (1/dt)*(portValues[mInputPort] - discreteState[*mOldValueStateInfo]);
+  }
 
-const Matrix&
-TimeDerivative::getDerivativeOutput(void) const
-{
-  return mDerivativeOutput;
+  // Store the old value and this current stepsize
+  discreteState[*mOldValueStateInfo] = portValues[mInputPort];
+  discreteState[*mOldTStateInfo](0, 0) = discreteTask.getTime();
 }
 
 } // namespace OpenFDM
