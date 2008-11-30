@@ -14,30 +14,33 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Bias, UnaryModel)
+BEGIN_OPENFDM_OBJECT_DEF(Bias, SimpleDirectModel)
   DEF_OPENFDM_PROPERTY(Matrix, Bias, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Bias::Bias(const std::string& name, const real_type& bias) :
-  UnaryModel(name)
+  SimpleDirectModel(name)
 {
   setBias(bias);
+  addInputPort("input");
 }
 
 Bias::~Bias(void)
 {
 }
   
-ModelContext*
-Bias::newModelContext(PortValueList& portValueList) const
-{
-  return UnaryModel::newModelContext(this, portValueList);
-}
-
 void
-Bias::output(const Matrix& inputValue, Matrix& outputValue) const
+Bias::output(Context& context) const
 {
-  outputValue = mBias + inputValue;
+  Size sz = size(context.getInputValue(0));
+  // FIXME: can we check that in advance???
+  OpenFDMAssert(sz == size(mBias));
+  for (unsigned j = 0; j < sz(0); ++j) {
+    for (unsigned k = 0; k < sz(1); ++k) {
+      context.getOutputValue()(j, k)
+        = mBias(j, k) + context.getInputValue(0)(j, k);
+    }
+  }
 }
 
 const Matrix&

@@ -6,13 +6,13 @@
 #define OpenFDM_UnaryFunction_H
 
 #include <string>
-#include "UnaryModel.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
 /// Class representing a model with exactly one input.
-class UnaryFunction : public UnaryModel {
-  OPENFDM_OBJECT(UnaryFunction, UnaryModel);
+class UnaryFunction : public SimpleDirectModel {
+  OPENFDM_OBJECT(UnaryFunction, SimpleDirectModel);
 public:
   enum Type {
     Abs,
@@ -35,8 +35,7 @@ public:
   UnaryFunction(const std::string& name, const Type& type);
   virtual ~UnaryFunction(void);
 
-  ModelContext* newModelContext(PortValueList&) const;
-  void output(const Matrix& inputValue, Matrix& outputValue) const;
+  void output(Context& context) const;
 
   void setType(const Type& type);
   const Type& getType(void) const;

@@ -8,81 +8,77 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(UnaryFunction, UnaryModel)
+BEGIN_OPENFDM_OBJECT_DEF(UnaryFunction, SimpleDirectModel)
   END_OPENFDM_OBJECT_DEF
 
 UnaryFunction::UnaryFunction(const std::string& name, const Type& type) :
-  UnaryModel(name),
+  SimpleDirectModel(name),
   mType(type)
 {
+  addInputPort("input");
 }
 
 UnaryFunction::~UnaryFunction(void)
 {
 }
 
-ModelContext*
-UnaryFunction::newModelContext(PortValueList& portValueList) const
-{
-  return UnaryModel::newModelContext(this, portValueList);
-}
-
 void
-UnaryFunction::output(const Matrix& inputValue, Matrix& outputValue) const
+UnaryFunction::output(Context& context) const
 {
   // FIXME, optimize, move that into a proper context ...
   // For now make it work
-  Size sz = size(inputValue);
+  Size sz = size(context.getInputValue(0));
   for (unsigned j = 0; j < sz(1); ++j) {
     for (unsigned i = 0; i < sz(0); ++i) {
       switch (mType) {
       case Abs:
-        outputValue(i, j) = fabs(inputValue(i, j));
+        context.getOutputValue()(i, j) = fabs(context.getInputValue(0)(i, j));
         break;
       case Acos:
-        outputValue(i, j) = acos(inputValue(i, j));
+        context.getOutputValue()(i, j) = acos(context.getInputValue(0)(i, j));
         break;
       case Asin:
-        outputValue(i, j) = asin(inputValue(i, j));
+        context.getOutputValue()(i, j) = asin(context.getInputValue(0)(i, j));
         break;
       case Atan:
-        outputValue(i, j) = atan(inputValue(i, j));
+        context.getOutputValue()(i, j) = atan(context.getInputValue(0)(i, j));
         break;
       case Ceil:
-        outputValue(i, j) = ceil(inputValue(i, j));
+        context.getOutputValue()(i, j) = ceil(context.getInputValue(0)(i, j));
         break;
       case Cos:
-        outputValue(i, j) = cos(inputValue(i, j));
+        context.getOutputValue()(i, j) = cos(context.getInputValue(0)(i, j));
         break;
       case Exp:
-        outputValue(i, j) = exp(inputValue(i, j));
+        context.getOutputValue()(i, j) = exp(context.getInputValue(0)(i, j));
         break;
       case Floor:
-        outputValue(i, j) = floor(inputValue(i, j));
+        context.getOutputValue()(i, j) = floor(context.getInputValue(0)(i, j));
         break;
       case Log:
-        outputValue(i, j) = log(inputValue(i, j));
+        context.getOutputValue()(i, j) = log(context.getInputValue(0)(i, j));
         break;
       case Log10:
-        outputValue(i, j) = log10(inputValue(i, j));
+        context.getOutputValue()(i, j) = log10(context.getInputValue(0)(i, j));
         break;
       case Minus:
-        outputValue(i, j) = -inputValue(i, j);
+        context.getOutputValue()(i, j) = -context.getInputValue(0)(i, j);
         break;
       case Sin:
-        outputValue(i, j) = sin(inputValue(i, j));
+        context.getOutputValue()(i, j) = sin(context.getInputValue(0)(i, j));
         break;
       case Sqr:
-        outputValue(i, j) = inputValue(i, j)*inputValue(i, j);
+        context.getOutputValue()(i, j)
+          = context.getInputValue(0)(i, j)*context.getInputValue(0)(i, j);
         break;
       case Sqrt:
-        outputValue(i, j) = sqrt(inputValue(i, j));
+        context.getOutputValue()(i, j) = sqrt(context.getInputValue(0)(i, j));
         break;
       case Tan:
-        outputValue(i, j) = tan(inputValue(i, j));
+        context.getOutputValue()(i, j) = tan(context.getInputValue(0)(i, j));
         break;
       default:
-        outputValue(i, j) = inputValue(i, j);
+        context.getOutputValue()(i, j) = context.getInputValue(0)(i, j);
         break;
       }
     }

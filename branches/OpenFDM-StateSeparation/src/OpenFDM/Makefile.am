@@ -239,7 +239,6 @@ OpenFDMModelsHEADERS = \
   TimeDerivative.h \
   TransferFunction.h \
   UnaryFunction.h \
-  UnaryModel.h \
   UnitConversion.h \
   UniversalJoint.h \
   WheelContact.h
@@ -267,7 +266,6 @@ OpenFDMModelsSOURCES = \
   Summer.cpp \
   Table.cpp \
   UnaryFunction.cpp \
-  UnaryModel.cpp \
   UnitConversion.cpp
 
 #   DiscBrake.cpp \

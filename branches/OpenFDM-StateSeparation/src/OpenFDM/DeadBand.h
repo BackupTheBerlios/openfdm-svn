@@ -7,19 +7,17 @@
 
 #include <string>
 
-#include "UnaryModel.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
-class DeadBand : public UnaryModel {
-  OPENFDM_OBJECT(DeadBand, UnaryModel);
+class DeadBand : public SimpleDirectModel {
+  OPENFDM_OBJECT(DeadBand, SimpleDirectModel);
 public:
   DeadBand(const std::string& name, const real_type& width = real_type(0));
   virtual ~DeadBand(void);
 
-  ModelContext* newModelContext(PortValueList&) const;
-
-  void output(const Matrix& inputValue, Matrix& outputValue) const;
+  void output(Context& context) const;
 
   const real_type& getWidth(void) const;
   void setWidth(const real_type& width);

@@ -8,12 +8,12 @@
 #include <string>
 
 #include "Unit.h"
-#include "UnaryModel.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
-class UnitConversion : public UnaryModel {
-  OPENFDM_OBJECT(UnitConversion, UnaryModel);
+class UnitConversion : public SimpleDirectModel {
+  OPENFDM_OBJECT(UnitConversion, SimpleDirectModel);
 public:
   enum Type {
     UnitToBaseUnit,
@@ -23,8 +23,7 @@ public:
   UnitConversion(const std::string& name, const Type& type, const Unit& unit);
   virtual ~UnitConversion(void);
 
-  ModelContext* newModelContext(PortValueList&) const;
-  void output(const Matrix& inputValue, Matrix& outputValue) const;
+  void output(Context& context) const;
 
   void setType(const Type& type);
   const Type& getType(void) const;

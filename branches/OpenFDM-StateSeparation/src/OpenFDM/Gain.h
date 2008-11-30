@@ -7,20 +7,18 @@
 
 #include <string>
 
-#include "UnaryModel.h"
+#include "SimpleDirectModel.h"
 #include "ModelContext.h"
 
 namespace OpenFDM {
 
-class Gain : public UnaryModel {
-  OPENFDM_OBJECT(Gain, UnaryModel);
+class Gain : public SimpleDirectModel {
+  OPENFDM_OBJECT(Gain, SimpleDirectModel);
 public:
   Gain(const std::string& name, const real_type& gain = real_type(1));
   virtual ~Gain(void);
 
-  ModelContext* newModelContext(PortValueList&) const;
-
-  void output(const Matrix& inputValue, Matrix& outputValue) const;
+  void output(Context& context) const;
 
   const real_type& getGain(void) const;
   void setGain(const real_type& gain);

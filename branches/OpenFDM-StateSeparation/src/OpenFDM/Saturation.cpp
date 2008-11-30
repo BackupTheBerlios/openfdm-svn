@@ -8,34 +8,31 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Saturation, UnaryModel)
+BEGIN_OPENFDM_OBJECT_DEF(Saturation, SimpleDirectModel)
   DEF_OPENFDM_PROPERTY(Matrix, MinSaturation, Serialized)
   DEF_OPENFDM_PROPERTY(Matrix, MaxSaturation, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Saturation::Saturation(const std::string& name) :
-  UnaryModel(name)
+  SimpleDirectModel(name)
 {
+  addInputPort("input");
 }
 
 Saturation::~Saturation(void)
 {
 }
   
-ModelContext*
-Saturation::newModelContext(PortValueList& portValueList) const
-{
-  return UnaryModel::newModelContext(this, portValueList);
-}
-
 void
-Saturation::output(const Matrix& inputValue, Matrix& outputValue) const
+Saturation::output(Context& context) const
 {
-  outputValue = inputValue;
+  context.getOutputValue() = context.getInputValue(0);
   if (0 < rows(mMaxSaturation) && 0 < cols(mMaxSaturation))
-    outputValue = LinAlg::min(outputValue, mMaxSaturation);
+    context.getOutputValue()
+      = LinAlg::min(context.getOutputValue(), mMaxSaturation);
   if (0 < rows(mMinSaturation) && 0 < cols(mMinSaturation))
-    outputValue = LinAlg::max(outputValue, mMinSaturation);
+    context.getOutputValue()
+      = LinAlg::max(context.getOutputValue(), mMinSaturation);
 }
 
 const Matrix&

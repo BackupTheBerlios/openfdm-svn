@@ -6,34 +6,29 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(UnitConversion, UnaryModel)
+BEGIN_OPENFDM_OBJECT_DEF(UnitConversion, SimpleDirectModel)
   END_OPENFDM_OBJECT_DEF
 
 UnitConversion::UnitConversion(const std::string& name, const Type& type,
                                const Unit& unit) :
-  UnaryModel(name),
+  SimpleDirectModel(name),
   mType(type),
   mUnit(unit)
 {
+  addInputPort("input");
 }
 
 UnitConversion::~UnitConversion(void)
 {
 }
 
-ModelContext*
-UnitConversion::newModelContext(PortValueList& portValueList) const
-{
-  return UnaryModel::newModelContext(this, portValueList);
-}
-
 void
-UnitConversion::output(const Matrix& inputValue, Matrix& outputValue) const
+UnitConversion::output(Context& context) const
 {
   if (mType == UnitToBaseUnit) {
-    outputValue = mUnit.convertFrom(inputValue);
+    context.getOutputValue() = mUnit.convertFrom(context.getInputValue(0));
   } else {
-    outputValue = mUnit.convertTo(inputValue);
+    context.getOutputValue() = mUnit.convertTo(context.getInputValue(0));
   }
 }
 

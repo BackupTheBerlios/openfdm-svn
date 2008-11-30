@@ -7,18 +7,17 @@
 
 #include <string>
 
-#include "UnaryModel.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
-class Bias : public UnaryModel {
-  OPENFDM_OBJECT(Bias, UnaryModel);
+class Bias : public SimpleDirectModel {
+  OPENFDM_OBJECT(Bias, SimpleDirectModel);
 public:
   Bias(const std::string& name, const real_type& bias = real_type(0));
   virtual ~Bias(void);
 
-  ModelContext* newModelContext(PortValueList&) const;
-  void output(const Matrix& inputValue, Matrix& outputValue) const;
+  void output(Context& context) const;
 
   const Matrix& getBias(void) const;
   void setBias(const Matrix& bias);

@@ -8,32 +8,29 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(DeadBand, UnaryModel)
+BEGIN_OPENFDM_OBJECT_DEF(DeadBand, SimpleDirectModel)
   DEF_OPENFDM_PROPERTY(Real, Width, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 DeadBand::DeadBand(const std::string& name, const real_type& width) :
-  UnaryModel(name),
+  SimpleDirectModel(name),
   mWidth(width)
 {
+  addInputPort("input");
 }
 
 DeadBand::~DeadBand(void)
 {
 }
   
-ModelContext*
-DeadBand::newModelContext(PortValueList& portValueList) const
-{
-  return UnaryModel::newModelContext(this, portValueList);
-}
-
 void
-DeadBand::output(const Matrix& inputValue, Matrix& outputValue) const
+DeadBand::output(Context& context) const
 {
-  for (unsigned i = 0; i < rows(inputValue); ++i)
-    for (unsigned j = 0; j < cols(inputValue); ++j)
-      outputValue(i, j) = deadBand(inputValue(i, j), mWidth);
+  Size sz = size(context.getInputValue(0));
+  for (unsigned i = 0; i < sz(0); ++i)
+    for (unsigned j = 0; j < sz(1); ++j)
+      context.getOutputValue()(i, j)
+        = deadBand(context.getInputValue(0)(i, j), mWidth);
 }
 
 const real_type&
