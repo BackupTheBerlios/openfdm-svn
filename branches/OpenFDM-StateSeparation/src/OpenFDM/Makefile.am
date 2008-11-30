@@ -199,6 +199,7 @@ OpenFDMModelsHEADERS = \
   AtmosphereSTD1976.h \
   Bias.h \
   BinaryFunction.h \
+  BreakPointLookup.h \
   CartesianJoint.h \
   ConstModel.h \
   Contact.h \
@@ -247,6 +248,7 @@ OpenFDMModelsSOURCES = \
   AirSpring.cpp \
   Bias.cpp \
   BinaryFunction.cpp \
+  BreakPointLookup.cpp \
   ConstModel.cpp \
   DeadBand.cpp \
   Delay.cpp \
