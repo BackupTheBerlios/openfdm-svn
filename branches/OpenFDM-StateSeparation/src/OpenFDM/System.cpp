@@ -115,7 +115,8 @@ public:
   }
 
   void appendModelContext(const SampleTime& sampleTime,
-                          ModelContext* modelContext, unsigned listIndex)
+                          AbstractModelContext* modelContext,
+                          unsigned listIndex)
   {
     // The init task contains them all
     mInitTask->mModelContextList[listIndex].push_back(modelContext);
@@ -532,12 +533,12 @@ public:
     virtual AbstractNodeInstance* newNodeInstance()
     { return new LeafInstance(mSampleTime, mModelContext); }
 
-    ModelContext* getModelContext()
+    AbstractModelContext* getModelContext()
     { return mModelContext; }
 
   private:
     SharedPtr<const AbstractModel> mModel;
-    SharedPtr<ModelContext> mModelContext;
+    SharedPtr<AbstractModelContext> mModelContext;
   };
   struct MechanicInstanceData : public InstanceData {
     MechanicInstanceData(const MechanicNode& mechanicNode,

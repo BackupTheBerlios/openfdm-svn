@@ -19,13 +19,7 @@ public:
   virtual const Node& getNode() const = 0;
 
   /// Port value accessors for System external usage.
-  virtual const PortValue* getPortValue(const PortInfo&) const;
-
-  /// Set port value for the given port.
-  virtual void setPortValue(const PortInfo&, PortValue*);
-
-protected:
-  PortValueList mPortValueList;
+  virtual const PortValue* getPortValue(const PortInfo&) const = 0;
 };
 
 } // namespace OpenFDM

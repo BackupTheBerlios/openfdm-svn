@@ -42,12 +42,18 @@ SimpleDirectModel::Context::getPortValue(const PortInfo& portInfo) const
   return 0;
 }
 
-void
-SimpleDirectModel::Context::setPortValue(const PortInfo& i, PortValue* v)
+ContinousStateValue*
+SimpleDirectModel::Context::getStateValue(const ContinousStateInfo&)
 {
-  OpenFDMAssert(false);
+  return 0;
 }
-    
+
+ContinousStateValue*
+SimpleDirectModel::Context::getStateDerivative(const ContinousStateInfo&)
+{
+  return 0;
+}
+
 void
 SimpleDirectModel::Context::initOutput(const /*Init*/Task&)
 {
@@ -83,7 +89,7 @@ SimpleDirectModel::~SimpleDirectModel()
 {
 }
 
-ModelContext*
+AbstractModelContext*
 SimpleDirectModel::newModelContext(PortValueList& portValueList) const
 {
   if (mInputPorts.empty()) {

@@ -31,11 +31,11 @@ public:
   { return PortId(mOutputPort); }
 
   class Context;
-  virtual ModelContext* newModelContext(PortValueList& portValueList) const;
+  virtual AbstractModelContext* newModelContext(PortValueList& portValueList) const;
   virtual void output(Context& context) const = 0;
 
   typedef std::vector<SharedPtr<const NumericPortValue> > InputValueVector;
-  class Context : public ModelContext {
+  class Context : public AbstractModelContext {
   public:
     Context(const SimpleDirectModel* model, const InputValueVector& inputValues,
             NumericPortValue* outputValue);
@@ -43,7 +43,9 @@ public:
     
     virtual const SimpleDirectModel& getNode() const;
     virtual const PortValue* getPortValue(const PortInfo&) const;
-    virtual void setPortValue(const PortInfo&, PortValue*);
+
+    virtual ContinousStateValue* getStateValue(const ContinousStateInfo&);
+    virtual ContinousStateValue* getStateDerivative(const ContinousStateInfo&);
     
     virtual void initOutput(const /*Init*/Task&);
     virtual void output(const Task&);

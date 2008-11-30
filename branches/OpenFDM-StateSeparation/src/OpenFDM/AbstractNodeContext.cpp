@@ -14,17 +14,4 @@ AbstractNodeContext::~AbstractNodeContext()
 {
 }
 
-const PortValue*
-AbstractNodeContext::getPortValue(const PortInfo& portInfo) const
-{
-  return mPortValueList.getPortValue(portInfo);
-}
-
-void
-AbstractNodeContext::setPortValue(const PortInfo& portInfo,
-                                  PortValue* portValue)
-{
-  mPortValueList.setPortValue(portInfo.getIndex(), portValue);
-}
-
 } // namespace OpenFDM

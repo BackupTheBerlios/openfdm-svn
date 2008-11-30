@@ -12,7 +12,7 @@
 
 namespace OpenFDM {
 
-class ModelContext;
+class AbstractModelContext;
 class PortValueList;
 
 class AbstractModel : public LeafNode {
@@ -24,7 +24,7 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual ModelContext* newModelContext(PortValueList&) const = 0;
+  virtual AbstractModelContext* newModelContext(PortValueList&) const = 0;
 };
 
 } // namespace OpenFDM

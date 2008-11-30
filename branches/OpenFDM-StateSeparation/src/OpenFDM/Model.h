@@ -12,6 +12,7 @@
 #include "AbstractModel.h"
 #include "MatrixInputPort.h"
 #include "MatrixOutputPort.h"
+#include "ModelContext.h"
 #include "RealInputPort.h"
 #include "RealOutputPort.h"
 
