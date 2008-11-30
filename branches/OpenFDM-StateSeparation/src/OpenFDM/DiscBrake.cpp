@@ -16,93 +16,58 @@ BEGIN_OPENFDM_OBJECT_DEF(DiscBrake, Model)
 DiscBrake::DiscBrake(const std::string& name) :
   Model(name),
   mMinForce(0),
-  mMaxForce(1)
+  mMaxForce(1),
+  mSigma(100),
+  mZStateInfo(new Vector1StateInfo),
+  mBrakeInputPort(this, "brakeInput", true),
+  mVelocityPort(this, "velocity", true),
+  mForcePort(this, "force")
 {
-  setDirectFeedThrough(true);
-
-  setNumContinousStates(1);
-
-  setNumInputPorts(2);
-  setInputPortName(0, "brakePressure");
-  setInputPortName(1, "velocity");
-  
-  setNumOutputPorts(1);
-  setOutputPort(0, "force", this, &DiscBrake::getForce);
+  addContinousStateInfo(mZStateInfo);
 }
 
 DiscBrake::~DiscBrake(void)
 {
 }
 
-bool
-DiscBrake::init(void)
+void
+DiscBrake::init(const Task&, DiscreteStateValueVector&,
+                ContinousStateValueVector& state, const PortValueList&) const
 {
-  mBrakePressurePort = getInputPort(0)->toRealPortHandle();
-  if (!mBrakePressurePort.isConnected()) {
-    Log(Model, Error) << "Initialization of DiscBrake model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
-  mVelocityPort = getInputPort(1)->toRealPortHandle();
-  if (!mVelocityPort.isConnected()) {
-    Log(Model, Error) << "Initialization of DiscBrake model \"" << getName()
-                      << "\" failed: Input port \"" << getInputPortName(1)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
-  // start with zero friction force
-  mZ = 0;
-
-  return Model::init();
+  state[*mZStateInfo](0, 0) = 0;
 }
 
 void
-DiscBrake::output(const TaskInfo& taskInfo)
+DiscBrake::output(const Task&, const DiscreteStateValueVector&,
+                  const ContinousStateValueVector& state,
+                  PortValueList& portValues) const
 {
-  real_type sigma = 100;
-  real_type brakeInput = mBrakePressurePort.getRealValue();
-  real_type vel = mVelocityPort.getRealValue();
-  // with this sigma the model is already very crisp and reaches the
+  real_type brakeInput = portValues[mBrakeInputPort];
+  real_type z = state[*mZStateInfo](0, 0);
+  // now the output force, modulate with the brake input
+  portValues[mForcePort] = -interpolate(brakeInput, real_type(0), mMinForce,
+                                        real_type(1), mMaxForce)*mSigma*z;
+}
+
+void
+DiscBrake::derivative(const DiscreteStateValueVector&,
+                      const ContinousStateValueVector& state,
+                      const PortValueList& portValues,
+                      ContinousStateValueVector& deriv) const
+{
+  real_type z = state[*mZStateInfo](0, 0);
+  real_type vel = portValues[mVelocityPort];
+  // with this mSigma the model is already very crisp and reaches the
   // maximum force relatively fast, thus we do not need to make it even faster
   // with higher speeds
 //   vel = saturate(vel, real_type(1));
   vel = smoothSaturate(vel, real_type(1));
   // the time derivative of the friction state
-  mZDeriv = vel - sigma*fabs(vel)*mZ;
+  real_type zDeriv = vel - mSigma*fabs(vel)*z;
   // this is to limit the stiffness of this model
-//   mZDeriv = saturate(mZDeriv, real_type(10));
-  mZDeriv = smoothSaturate(mZDeriv, real_type(10));
-  // now the output force, modulate with the brake input
-  mForce = -interpolate(brakeInput,
-                        real_type(0), mMinForce,
-                        real_type(1), mMaxForce)*sigma*mZ;
-}
-
-void
-DiscBrake::setState(const StateStream& state)
-{
-  state.readSubState(mZ);
-}
-
-void
-DiscBrake::getState(StateStream& state) const
-{
-  state.writeSubState(mZ);
-}
-
-void
-DiscBrake::getStateDeriv(StateStream& stateDeriv)
-{
-  stateDeriv.writeSubState(mZDeriv);
-}
-
-const real_type&
-DiscBrake::getForce(void) const
-{
-  return mForce;
+//   zDeriv = saturate(zDeriv, real_type(10));
+  zDeriv = smoothSaturate(zDeriv, real_type(10));
+  deriv[*mZStateInfo](0, 0) = zDeriv;
 }
 
 const real_type&

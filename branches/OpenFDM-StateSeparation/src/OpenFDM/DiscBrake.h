@@ -19,14 +19,15 @@ public:
   DiscBrake(const std::string& name);
   virtual ~DiscBrake(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo& taskInfo);
-
-  virtual void setState(const StateStream& state);
-  virtual void getState(StateStream& state) const;
-  virtual void getStateDeriv(StateStream& stateDeriv);
-
-  const real_type& getForce(void) const;
+  virtual void init(const Task&,DiscreteStateValueVector&,
+                    ContinousStateValueVector&, const PortValueList&) const;
+  virtual void output(const Task&, const DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
+  virtual void derivative(const DiscreteStateValueVector&,
+                          const ContinousStateValueVector&,
+                          const PortValueList&,
+                          ContinousStateValueVector&) const;
 
   const real_type& getMinForce(void) const;
   void setMinForce(const real_type& minForce);
@@ -34,22 +35,26 @@ public:
   const real_type& getMaxForce(void) const;
   void setMaxForce(const real_type& maxForce);
 
+  const real_type& getSigma(void) const;
+  void setSigma(const real_type& sigma);
+
 private:
-  /// The output brake force
-  real_type mForce;
-  /// The frictions state
-  real_type mZ;
-  /// The frictions stes derivative
-  real_type mZDeriv;
   /// The maximum force when brakes are applied
   real_type mMaxForce;
   /// The maximum force when brakes are not applied
   real_type mMinForce;
+  /// The stiffness of the friction model
+  real_type mSigma;
 
-  /// The intput port which must provide the position
-  RealPortHandle mBrakePressurePort;
-  /// The intput port which must provide the velocity
-  RealPortHandle mVelocityPort;
+  // State of this model
+  SharedPtr<Vector1StateInfo> mZStateInfo;
+
+  /// The input port which must provide brake input
+  RealInputPort mBrakeInputPort;
+  /// The input port which must provide the velocity
+  RealInputPort mVelocityPort;
+  /// The resulting force output
+  RealOutputPort mForcePort;
 };
 
 } // namespace OpenFDM

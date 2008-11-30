@@ -251,6 +251,7 @@ OpenFDMModelsSOURCES = \
   ConstModel.cpp \
   DeadBand.cpp \
   Delay.cpp \
+  DiscBrake.cpp \
   DiscreteIntegrator.cpp \
   Gain.cpp \
   Input.cpp \
@@ -269,7 +270,6 @@ OpenFDMModelsSOURCES = \
   UnaryFunction.cpp \
   UnitConversion.cpp
 
-#   DiscBrake.cpp \
 #   TransferFunction.cpp \
 #
 
@@ -289,12 +289,13 @@ OpenFDMMechanicSOURCES = \
 #   Contact.cpp \
 #   ExternalForceModel.cpp \
 #   Force.cpp \
-#   Launchbar.cpp \
 #   SimpleContact.cpp \
 #   SimpleGear.cpp \
-#   Tailhook.cpp \
 #   Tank.cpp \
 #   WheelContact.cpp
+
+#   Launchbar.cpp \
+#   Tailhook.cpp \
 #
 
 nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
