@@ -20,7 +20,7 @@ public:
 
   virtual void initDesignPosition(PortValueList&) const;
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, Matrix&) const;
+                            PortValueList&) const;
 
   const InertiaMatrix& getInertia(void) const;
   void setInertia(const InertiaMatrix& inertia);

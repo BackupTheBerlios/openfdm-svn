@@ -36,7 +36,7 @@ Mass::initDesignPosition(PortValueList&) const
 
 void
 Mass::articulation(const Task&, const ContinousStateValueVector&,
-                   PortValueList& portValues, Matrix&) const
+                   PortValueList& portValues) const
 {
   const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();

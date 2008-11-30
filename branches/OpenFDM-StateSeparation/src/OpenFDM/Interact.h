@@ -36,14 +36,14 @@ public:
                         PortValueList&) const
   { }
   virtual void articulation(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, Matrix&) const
+                            PortValueList&) const
   { }
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, const Matrix&, Vector&) const
+                            PortValueList&) const
   { }
-  virtual void derivative(const DiscreteStateValueVector&,
+  virtual void derivative(const Task&, const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
-                          const PortValueList&, const Vector&,
+                          const PortValueList&,
                           ContinousStateValueVector&) const
   { }
 

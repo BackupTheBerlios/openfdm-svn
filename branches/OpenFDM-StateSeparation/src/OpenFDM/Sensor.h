@@ -23,7 +23,7 @@ public:
   virtual void velocity(const Task&, const ContinousStateValueVector&,
                         PortValueList&) const;
   virtual void acceleration(const Task&, const ContinousStateValueVector&,
-                            PortValueList&, const Matrix&, Vector&) const;
+                            PortValueList&) const;
 
   /// Set the position of the sensor in design coordinates
   void setPosition(const Vector3& position);

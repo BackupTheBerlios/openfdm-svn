@@ -95,7 +95,7 @@ Sensor::velocity(const Task& task, const ContinousStateValueVector&,
 
 void
 Sensor::acceleration(const Task&, const ContinousStateValueVector&,
-                     PortValueList& portValues, const Matrix&, Vector&) const
+                     PortValueList& portValues) const
 {
   const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();

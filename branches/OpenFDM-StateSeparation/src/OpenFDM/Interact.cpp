@@ -38,27 +38,23 @@ public:
   }
   virtual void articulation(const Task& task)
   {
-    mInteract->articulation(task, mContinousState, mPortValueList, hIh);
+    mInteract->articulation(task, mContinousState, mPortValueList);
   }
   virtual void accelerations(const Task& task)
   {
-    mInteract->acceleration(task, mContinousState, mPortValueList, hIh, velDot);
+    mInteract->acceleration(task, mContinousState, mPortValueList);
   }
 
-  virtual void derivative(const Task&)
+  virtual void derivative(const Task& task)
   {
-    mInteract->derivative(mDiscreteState, mContinousState, mPortValueList,
-                              velDot, mContinousStateDerivative);
+    mInteract->derivative(task, mDiscreteState, mContinousState, mPortValueList,
+                          mContinousStateDerivative);
   }
  
   virtual void update(const DiscreteTask&)
   { }
 
 private:
-  // Stores some values persistent accross velocity/articulation/acceleration
-  Matrix hIh;
-  Vector velDot;
-
   SharedPtr<const Interact> mInteract;
 };
 
