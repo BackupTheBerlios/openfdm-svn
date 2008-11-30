@@ -99,7 +99,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Table3D, SimpleDirectModel)
 Table3D::Table3D(const std::string& name) :
   SimpleDirectModel(name)
 {
-  setNumInputPorts(2);
+  setNumInputPorts(3);
 }
 
 Table3D::~Table3D(void)
