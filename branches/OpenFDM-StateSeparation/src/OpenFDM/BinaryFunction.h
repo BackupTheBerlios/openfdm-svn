@@ -6,13 +6,13 @@
 #define OpenFDM_BinaryFunction_H
 
 #include <string>
-#include "Model.h"
+#include "SimpleDirectModel.h"
 
 namespace OpenFDM {
 
 /// Class representing a model with exactly two inputs.
-class BinaryFunction : public Model {
-  OPENFDM_OBJECT(BinaryFunction, Model);
+class BinaryFunction : public SimpleDirectModel {
+  OPENFDM_OBJECT(BinaryFunction, SimpleDirectModel);
 public:
   enum Type {
     Atan2,
@@ -23,19 +23,12 @@ public:
   BinaryFunction(const std::string& name, Type type);
   virtual ~BinaryFunction(void);
 
-  virtual bool alloc(ModelContext&) const;
-  virtual void output(const Task&, const DiscreteStateValueVector&,
-                      const ContinousStateValueVector&,
-                      PortValueList& portValues) const;
+  virtual void output(Context& context) const;
 
   void setType(const Type& type);
   const Type& getType(void) const;
 
 private:
-  MatrixInputPort mInput0Port;
-  MatrixInputPort mInput1Port;
-  MatrixOutputPort mOutputPort;
-  
   Type mType;
 };
 
