@@ -36,14 +36,14 @@ void Group::traverse(NodeVisitor& visitor)
 {
   ChildList::const_iterator i;
   for (i = _childList.begin(); i != _childList.end(); ++i)
-    (*i)->node->accept(visitor);
+    (*i)->accept(visitor);
 }
 
 void Group::traverse(ConstNodeVisitor& visitor) const
 {
   ChildList::const_iterator i;
   for (i = _childList.begin(); i != _childList.end(); ++i)
-    (*i)->node->accept(visitor);
+    (*i)->accept(visitor);
 }
 
 Group::NodeId
@@ -53,8 +53,8 @@ Group::addChild(const SharedPtr<Node>& node)
     return NodeId();
   if (!node->addParent(this))
     return NodeId();
-  _childList.push_back(new Child(this, node));
-  return NodeId(_childList.back());
+  _childList.push_back(node);
+  return node.get();
 }
 
 unsigned
@@ -66,13 +66,8 @@ Group::getNumChildren() const
 unsigned
 Group::getChildNumber(const NodeId& nodeId) const
 {
-  SharedPtr<Child> child = nodeId._child.lock();
-  if (!child)
-    return ~0u;
-  if (child->group.lock() != this)
-    return ~0u;
   ChildList::const_iterator i;
-  i = std::find(_childList.begin(), _childList.end(), child);
+  i = std::find(_childList.begin(), _childList.end(), nodeId);
   if (i == _childList.end())
     return ~0u;
   return std::distance(_childList.begin(), i);
@@ -83,7 +78,7 @@ Group::getChild(unsigned i)
 {
   if (_childList.size() <= i)
     return 0;
-  return _childList[i]->node;
+  return _childList[i];
 }
 
 SharedPtr<const Node>
@@ -91,32 +86,19 @@ Group::getChild(unsigned i) const
 {
   if (_childList.size() <= i)
     return 0;
-  return _childList[i]->node;
+  return _childList[i];
 }
 
 SharedPtr<Node>
 Group::getChild(const NodeId& nodeId)
 {
-  SharedPtr<Child> child = nodeId._child.lock();
-  if (!child)
-    return 0;
-  // Check if it belongs to this current group
-  if (child->group.lock() != this)
-    return 0;
-  return child->node;
+  return getChild(getChildNumber(nodeId));
 }
 
 SharedPtr<const Node>
 Group::getChild(const NodeId& nodeId) const
 {
-  SharedPtr<Child> child = nodeId._child.lock();
-  if (!child)
-    return 0;
-  // Check if it belongs to this current group
-  SharedPtr<Group> group = child->group.lock();
-  if (group != this)
-    return 0;
-  return child->node;
+  return getChild(getChildNumber(nodeId));
 }
 
 } // namespace OpenFDM

@@ -18,7 +18,7 @@ namespace OpenFDM {
 class Group : public Node {
   OPENFDM_OBJECT(Group, Node);
 public:
-  class NodeId;
+  typedef const Node* NodeId;
 
   Group(const std::string& name);
   virtual ~Group();
@@ -36,12 +36,12 @@ public:
 
   bool connect(const NodeId& nodeId0, const std::string& portName0,
                const NodeId& nodeId1, const std::string& portName1)
-  { return connect(nodeId0, nodeId0.getPortId(portName0),
-                   nodeId1, nodeId1.getPortId(portName1)); }
+  { return connect(nodeId0, PortId(nodeId0->getPort(portName0)),
+                   nodeId1, PortId(nodeId1->getPort(portName1))); }
   bool connect(const NodeId& nodeId0, unsigned portNum0,
                const NodeId& nodeId1, unsigned portNum1)
-  { return connect(nodeId0, nodeId0.getPortId(portNum0),
-                   nodeId1, nodeId1.getPortId(portNum1)); }
+  { return connect(nodeId0, PortId(nodeId0->getPort(portNum0)),
+                   nodeId1, PortId(nodeId1->getPort(portNum1))); }
 
   bool connect(const NodeId& nodeId0, const PortId& portId0,
                const NodeId& nodeId1, const PortId& portId1)
@@ -74,7 +74,6 @@ public:
 
     return true;
   }
-
 
   unsigned getNumConnects() const
   { return _connectList.size(); }
@@ -113,56 +112,6 @@ private:
   unsigned getChildNumber(const NodeId& nodeId) const;
   SharedPtr<Node> getChild(const NodeId& nodeId);
   SharedPtr<const Node> getChild(const NodeId& nodeId) const;
-  class Child;
-public:
-  class NodeId {
-    // FIXME a node ID has an associated name and that is unique. That should
-    // be the blocks name where it can be referenced. May be the NodeId should
-    // just contain that string??
-    // A serialized group can refere these names.
-    // May be the same should happen with portid's???
-    //
-    // Remove the name from the Object.
-    // Store Connects as seperate objects
-  public:
-    NodeId() {}
-    PortId getPortId(unsigned i) const
-    {
-      SharedPtr<Child> child = _child.lock();
-      if (!child)
-        return PortId();
-      SharedPtr<Node> node = child->node;
-      if (!node)
-        return PortId();
-      return node->getPortId(i);
-    }
-    PortId getPortId(const std::string& name) const
-    {
-      SharedPtr<Child> child = _child.lock();
-      if (!child)
-        return PortId();
-      SharedPtr<Node> node = child->node;
-      if (!node)
-        return PortId();
-      return node->getPortId(name);
-    }
-
-  private:
-    friend class Group;
-    NodeId(const SharedPtr<Child>& child) : _child(child) {}
-    WeakPtr<Child> _child;
-  };
-
-private:
-
-  struct Child : public WeakReferenced {
-    Child(Group* _group, Node* _node) :
-      group(_group), node(_node)
-    { }
-    WeakPtr<Group> group;
-    SharedPtr<Node> node;
-    // name extension to make name uniqe?
-  };
 
   struct Connect : public WeakReferenced {
     NodeId _nodeId0;
@@ -178,7 +127,7 @@ private:
   typedef std::vector<SharedPtr<Connect> > ConnectList;
   ConnectList _connectList;
 
-  typedef std::vector<SharedPtr<Child> > ChildList;
+  typedef std::vector<SharedPtr<Node> > ChildList;
   ChildList _childList;
 };
 
