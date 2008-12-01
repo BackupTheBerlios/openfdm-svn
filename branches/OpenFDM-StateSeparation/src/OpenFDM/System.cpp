@@ -1300,6 +1300,16 @@ protected:
       if (!(*j)->createModelContext())
         return false;
     }
+    for (j = mVelocityModelInstanceDataList.begin();
+         j != mVelocityModelInstanceDataList.end(); ++j) {
+      if (!(*j)->createModelContext())
+        return false;
+    }
+    for (j = mAccelerationModelInstanceDataList.begin();
+         j != mAccelerationModelInstanceDataList.end(); ++j) {
+      if (!(*j)->createModelContext())
+        return false;
+    }
 
     MechanicInstanceDataList::const_iterator k;
     for (k = mMechanicInstanceDataList.begin();
