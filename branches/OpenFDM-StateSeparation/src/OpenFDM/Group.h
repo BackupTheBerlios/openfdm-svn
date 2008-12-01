@@ -112,7 +112,7 @@ public:
 
 private:
 
-  struct Connect : public WeakReferenced {
+  struct Connect : public Referenced {
     WeakPtr<const PortInfo> mPortInfo0;
     WeakPtr<const PortInfo> mPortInfo1;
 
