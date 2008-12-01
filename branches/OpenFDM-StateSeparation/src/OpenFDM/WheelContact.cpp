@@ -5,14 +5,12 @@
 #include "WheelContact.h"
 
 #include "LogStream.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Frame.h"
-#include "Force.h"
+#include "PortValueList.h"
+#include "Task.h"
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(WheelContact, ExternalForce)
+BEGIN_OPENFDM_OBJECT_DEF(WheelContact, Interact)
   DEF_OPENFDM_PROPERTY(Real, WheelRadius, Serialized)
   DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
 /// FIXME want to have similar names than with linearspringdamper
@@ -20,63 +18,57 @@ BEGIN_OPENFDM_OBJECT_DEF(WheelContact, ExternalForce)
   DEF_OPENFDM_PROPERTY(Real, FrictionCoeficient, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-WheelContact::WheelContact(const std::string& name)
-  : ExternalForce(name)
+WheelContact::WheelContact(const std::string& name) :
+  Interact(name),
+  mMechanicLink(newMechanicLink("link"))
 {
   mWheelRadius = 0.3;
   mSpringConstant = 0;
   mSpringDamping = 0;
   mFrictionCoeficient = 0.8;
-
-  // FIXME??
-  addSampleTime(SampleTime::PerTimestep);
-  addSampleTime(SampleTime::Continous);
 }
 
 WheelContact::~WheelContact(void)
 {
 }
 
-bool
-WheelContact::init(void)
-{
-  return ExternalForce::init();
-}
-
 void
-WheelContact::output(const TaskInfo& taskInfo)
+WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
+                           PortValueList& portValues) const
 {
-  if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
-                          SampleTime::PerTimestep)) {
-    Log(Model, Debug) << "WheelContact::output(): \"" << getName()
-                      << "\" computing ground plane below" << endl;
-    getGround(taskInfo.getTime());
-  }
+  const Environment* environment;
+  environment = portValues[mMechanicLink].getEnvironment();
+
+  const Frame& frame = portValues[mMechanicLink].getFrame();
+
+  // FIXME, for now relative position
+  Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
+  Vector3 refPos = frame.posToRef(position);
+
+  GroundValues groundValues = environment->getGroundPlane(task.getTime(), refPos);
 
   // Transform the plane equation to the local frame.
-  Plane lp = mMountFrame->planeFromRef(mGroundVal.plane);
+  Plane lp = frame.planeFromRef(groundValues.plane);
   
   // Get the intersection length.
   real_type distHubGround = fabs(lp.getDist(Vector3::zeros()));
   real_type compressLength = mWheelRadius - distHubGround;
   
   // Don't bother if we do not intersect the ground.
-  if (compressLength < 0) {
-    setForce(Vector6::zeros());
+  if (compressLength < 0)
     return;
-  }
 
   Vector3 contactPoint = distHubGround*lp.getNormal();
   
   // The velocity of the ground patch in the current frame.
-  Vector6 groundVel(mMountFrame->rotFromRef(mGroundVal.vel.getAngular()),
-                    mMountFrame->rotFromRef(mGroundVal.vel.getLinear()));
-  groundVel -= mMountFrame->getRefVel();
+  Vector6 groundVel(frame.rotFromRef(groundValues.vel.getAngular()),
+                    frame.rotFromRef(groundValues.vel.getLinear()));
+  groundVel -= frame.getRefVel();
   // Now get the relative velocity of the ground wrt the hub
   Vector6 relVel = - groundVel;
-//   Log(Model,Error) << trans(mMountFrame->getRelVel()) << " "
+//   Log(Model,Error) << trans(frame.getRelVel()) << " "
 //                    << trans(groundVel) << " "
-//                    << trans(mMountFrame->motionToParent(relVel)) << endl;
+//                    << trans(frame.motionToParent(relVel)) << endl;
 
 
   // The velocity perpandicular to the plane.
@@ -115,7 +107,7 @@ WheelContact::output(const TaskInfo& taskInfo)
 
   // Get the friction force.
   Vector2 fricForce = computeFrictionForce(normForce, wheelVel,
-                                           omegaR, mGroundVal.friction);
+                                           omegaR, groundValues.friction);
   
   // The resulting force is the sum of both.
   // The minus sign is because of the direction of the surface normal.
@@ -123,7 +115,8 @@ WheelContact::output(const TaskInfo& taskInfo)
     - normForce*lp.getNormal();
   
   // We don't have an angular moment.
-  setForce(forceFrom(contactPoint, force));
+  force = -force;
+  portValues[mMechanicLink].applyForce(forceFrom(contactPoint, force));
 }
 
 real_type
@@ -156,19 +149,25 @@ WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
   return (-friction*mFrictionCoeficient*normForce)*slip;
 }
 
-void
-WheelContact::setEnvironment(Environment* environment)
+// void
+// WheelContact::getGround(real_type t)
+// {
+//   // Get the position of the contact in the reference system.
+//   Vector3 pos = frame.posToRef(Vector3::zeros());
+//   // Query for the ground parameters at this point.
+//   groundValues = mEnvironment->getGround()->getGroundPlane(t, pos);
+// }
+
+const Vector3&
+WheelContact::getPosition(void) const
 {
-  mEnvironment = environment;
+  return mPosition;
 }
 
 void
-WheelContact::getGround(real_type t)
+WheelContact::setPosition(const Vector3& position)
 {
-  // Get the position of the contact in the reference system.
-  Vector3 pos = mMountFrame->posToRef(Vector3::zeros());
-  // Query for the ground parameters at this point.
-  mGroundVal = mEnvironment->getGround()->getGroundPlane(t, pos);
+  mPosition = position;
 }
 
 } // namespace OpenFDM

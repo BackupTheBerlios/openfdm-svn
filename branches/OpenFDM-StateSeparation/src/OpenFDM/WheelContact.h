@@ -5,24 +5,19 @@
 #ifndef OpenFDM_WheelContact_H
 #define OpenFDM_WheelContact_H
 
-#include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Frame.h"
-#include "Force.h"
-#include "Ground.h"
-#include "Environment.h"
+#include "Interact.h"
 
 namespace OpenFDM {
 
-class WheelContact : public ExternalForce {
-  OPENFDM_OBJECT(WheelContact, ExternalForce);
+class WheelContact : public Interact {
+  OPENFDM_OBJECT(WheelContact, Interact);
 public:
   WheelContact(const std::string& name);
   virtual ~WheelContact(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  virtual void initDesignPosition(PortValueList&) const {}
+  virtual void articulation(const Task&, const ContinousStateValueVector&,
+                            PortValueList& portValues) const;
 
   // Compute the plane normal force.
   virtual real_type
@@ -32,6 +27,11 @@ public:
   virtual Vector2
   computeFrictionForce(real_type normForce, const Vector2& vel,
                        real_type omegaR, real_type friction) const;
+
+  /** Set a position offset for the inertia given.
+   */
+  const Vector3& getPosition(void) const;
+  void setPosition(const Vector3& position);
 
   void setWheelRadius(const real_type& wheelRadius)
   { mWheelRadius = wheelRadius; }
@@ -53,15 +53,10 @@ public:
   const real_type& getFrictionCoeficient(void) const
   { return mFrictionCoeficient; }
 
-protected:
-  virtual void setEnvironment(Environment* environment);
-
 private:
-  void getGround(real_type t);
+  MechanicLink mMechanicLink;
 
-  GroundValues mGroundVal;
-  SharedPtr<Environment> mEnvironment;
-
+  Vector3 mPosition;
   real_type mWheelRadius;
   real_type mSpringConstant;
   real_type mSpringDamping;

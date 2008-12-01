@@ -282,15 +282,15 @@ OpenFDMMechanicSOURCES = \
   RevoluteJoint.cpp \
   RotationalJoint.cpp \
   Sensor.cpp \
-  UniversalJoint.cpp
+  UniversalJoint.cpp \
+  WheelContact.cpp
 
 #   AeroForce.cpp \
 #   Contact.cpp \
 #   Force.cpp \
 #   SimpleContact.cpp \
 #   SimpleGear.cpp \
-#   Tank.cpp \
-#   WheelContact.cpp
+#   Tank.cpp
 
 #   Launchbar.cpp \
 #   Tailhook.cpp \
