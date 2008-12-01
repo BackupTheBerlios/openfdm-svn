@@ -21,36 +21,47 @@ public:
   Group(const std::string& name);
   virtual ~Group();
 
+  /// Methods for the visitors.
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
+  /// Traverse this groups children with a visitor
   void traverse(NodeVisitor& visitor);
   void traverse(ConstNodeVisitor& visitor) const;
 
+  /// Add a new child. Returns the number of this child wthin the group
+  /// on success else ~0u is returned.
   unsigned addChild(const SharedPtr<Node>& node);
+  /// Remove the given child. Returns the true on success.
   bool removeChild(const Node* node);
+  /// Returns the number of children
   unsigned getNumChildren() const;
+  /// Get child at index i.
   SharedPtr<Node> getChild(unsigned i);
+  /// Get child at index i.
   SharedPtr<const Node> getChild(unsigned i) const;
+  /// Get child number of the given node. If the node is not contained in
+  /// the group ~0u is returned.
   unsigned getChildNumber(const Node* node) const;
 
+  bool isChildPort(const PortInfo* portInfo) const
+  {
+    if (!portInfo)
+      return false;
+    SharedPtr<const Node> node = portInfo->getNode();
+    if (!node)
+      return false;
+    if (!node->isChildOf(this))
+      return false;
+    return true;
+  }
+  
   bool connect(const PortInfo* port0, const PortInfo* port1)
   {
     // Make sure the models belong to this group
-    if (!port0)
+    if (!isChildPort(port0))
       return false;
-    SharedPtr<const Node> child0 = port0->getNode();
-    if (!child0)
-      return false;
-    if (!child0->isChildOf(this))
-      return false;
-
-    if (!port1)
-      return false;
-    SharedPtr<const Node> child1 = port1->getNode();
-    if (!child1)
-      return false;
-    if (!child1->isChildOf(this))
+    if (!isChildPort(port1))
       return false;
 
     // Just a crude first time check if this will work in principle.
