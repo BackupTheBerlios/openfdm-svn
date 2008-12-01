@@ -18,8 +18,6 @@ namespace OpenFDM {
 class Group : public Node {
   OPENFDM_OBJECT(Group, Node);
 public:
-  typedef const Node* NodeId;
-
   Group(const std::string& name);
   virtual ~Group();
 
@@ -29,24 +27,12 @@ public:
   void traverse(NodeVisitor& visitor);
   void traverse(ConstNodeVisitor& visitor) const;
 
-  NodeId addChild(const SharedPtr<Node>& node);
+  unsigned addChild(const SharedPtr<Node>& node);
+  bool removeChild(const Node* node);
   unsigned getNumChildren() const;
   SharedPtr<Node> getChild(unsigned i);
   SharedPtr<const Node> getChild(unsigned i) const;
   unsigned getChildNumber(const Node* node) const;
-
-  bool connect(const NodeId& nodeId0, const std::string& portName0,
-               const NodeId& nodeId1, const std::string& portName1)
-    OpenFDM_DEPRECATED
-  {
-    return connect(nodeId0->getPort(portName0), nodeId1->getPort(portName1));
-  }
-  bool connect(const NodeId& nodeId0, unsigned portNum0,
-               const NodeId& nodeId1, unsigned portNum1)
-    OpenFDM_DEPRECATED
-  {
-    return connect(nodeId0->getPort(portNum0), nodeId1->getPort(portNum1));
-  }
 
   bool connect(const PortInfo* port0, const PortInfo* port1)
   {

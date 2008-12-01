@@ -46,15 +46,26 @@ void Group::traverse(ConstNodeVisitor& visitor) const
     (*i)->accept(visitor);
 }
 
-Group::NodeId
+unsigned
 Group::addChild(const SharedPtr<Node>& node)
 {
   if (!node)
-    return NodeId();
+    return ~0u;
   if (!node->addParent(this))
-    return NodeId();
+    return ~0u;
   _childList.push_back(node);
-  return node.get();
+  return _childList.size() - 1;
+}
+
+bool
+Group::removeChild(const Node* node)
+{
+  ChildList::iterator i;
+  i = std::find(_childList.begin(), _childList.end(), node);
+  if (i == _childList.end())
+    return false;
+  _childList.erase(i);
+  return true;
 }
 
 unsigned

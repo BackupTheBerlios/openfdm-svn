@@ -174,6 +174,12 @@ Node::addParent(Node* parent)
 {
   if (!parent)
     return false;
+  ParentList::const_iterator i;
+  for (i = mParentList.begin(); i != mParentList.end(); ++i) {
+    SharedPtr<const Node> lockedParent = i->lock();
+    if (parent == lockedParent)
+      return false;
+  }
   mParentList.push_back(parent);
   return true;
 }
@@ -183,7 +189,7 @@ Node::removeParent(Node* parent)
 {
   ParentList::iterator i;
   for (i = mParentList.begin(); i != mParentList.end();) {
-    SharedPtr<Node> lockedParent = i->lock();
+    SharedPtr<const Node> lockedParent = i->lock();
     if (parent == lockedParent)
       i = mParentList.erase(i);
     else
