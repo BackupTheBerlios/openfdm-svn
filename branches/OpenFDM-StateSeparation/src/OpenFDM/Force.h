@@ -22,64 +22,6 @@ public:
 
 };
 
-class ExternalForce : public Force {
-  OPENFDM_OBJECT(ExternalForce, Force);
-public:
-  ExternalForce(const std::string& name) :
-    Force(name, 1),
-    mForce(0, 0, 0, 0, 0, 0)
-  {
-    mMountFrame = new FreeFrame(name);
-  }
-  virtual ~ExternalForce(void) {}
-
-  virtual void recheckTopology(void)
-  {
-    if (!getParentRigidBody(0))
-      return;
-  
-    // check for the frames
-    Frame* frame = getParentRigidBody(0)->getFrame();
-    if (!frame)
-      return;
-    if (!mMountFrame->isDirectChildFrameOf(frame))
-      frame->addChildFrame(mMountFrame);
-  }
-
-  // Needs to call applyForce once ...
-  virtual void interactWith(RigidBody* rigidBody)
-  {
-    OpenFDMAssert(rigidBody->getFrame()->isDirectParentFrameOf(mMountFrame));
-    rigidBody->applyForce(mMountFrame->forceToParent(mForce));
-  }
-
-  const Vector3& getPosition(void) const
-  { return mMountFrame->getPosition(); }
-  void setPosition(const Vector3& pos)
-  { mMountFrame->setPosition(pos); }
-
-  const Quaternion& getOrientation(void) const
-  { return mMountFrame->getOrientation(); }
-  void setOrientation(const Quaternion& pos)
-  { mMountFrame->setOrientation(pos); }
-
-  const Vector6& getForce(void) const
-  { return mForce; }
-
-protected:
-  /** Sets the force contribution of this force element.
-   * Sets the force contribution of this current force element to
-   * the parent rigid body to force.
-   */
-  void setForce(const Vector6& force)
-  { mForce = force; }
-
-  SharedPtr<FreeFrame> mMountFrame;
-
-private:
-  Vector6 mForce;
-};
-
 class InternalForce : public Force {
   OPENFDM_OBJECT(InternalForce, Force);
 public:

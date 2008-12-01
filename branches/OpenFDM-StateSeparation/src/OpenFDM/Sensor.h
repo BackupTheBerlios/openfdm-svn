@@ -86,7 +86,7 @@ public:
   /// This is mostly for convinience in testing
   void setEnableAll(bool enable);
 
-private:
+protected:
   MechanicLink mMechanicLink;
 
   Vector3 mPosition;
