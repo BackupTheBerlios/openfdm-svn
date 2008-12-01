@@ -36,13 +36,13 @@ main(int argc, char *argv[])
   system->setNode(group);
   
   SimulationTime* simulationTime = new SimulationTime("Simulation Time");
-  Group::NodeId simTimeId = group->addChild(simulationTime);
+  group->addChild(simulationTime);
 
   Output* output = new Output("Simulation Time Output");
-  Group::NodeId outputId = group->addChild(output);
+  group->addChild(output);
   SharedPtr<CollectOutputCallback> simTimeCallback = new CollectOutputCallback;
   output->setCallback(simTimeCallback);
-  if (!group->connect(simTimeId, "output", outputId, "input")) {
+  if (!group->connect(simTime->getPort("output"), output->getPort("input"))) {
     std::cout << "Could not connect ports" << std::endl;
     return EXIT_FAILURE;
   }

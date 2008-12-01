@@ -23,21 +23,21 @@ Node* buildSimpleMechanicExample()
   SharedPtr<Group> group = new Group("G");
 
   MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
-  Group::NodeId rootJointId = group->addChild(mobileRootJoint);
+  group->addChild(mobileRootJoint);
   RigidBody* rigidBody = new RigidBody("Rigid Body");
   rigidBody->addLink("sensorLink");
-  Group::NodeId rigidBodyId = group->addChild(rigidBody);
+  group->addChild(rigidBody);
   Mass* mass = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
-  Group::NodeId massId = group->addChild(mass);
+  group->addChild(mass);
 
   Sensor* sensor = new Sensor("Sensor");
   sensor->setPosition(mass->getPosition());
   sensor->setEnableAll(true);
-  Group::NodeId sensorId = group->addChild(sensor);
+  group->addChild(sensor);
 
-  group->connect(rootJointId, "link", rigidBodyId, "link0");
-  group->connect(rigidBodyId, "link1", massId, "link");
-  group->connect(rigidBodyId, "sensorLink", sensorId, "link");
+  group->connect(mobileRootJoint->getPort("link"), rigidBody->getPort("link0"));
+  group->connect(rigidBody->getPort("link1"), mass->getPort("link"));
+  group->connect(rigidBody->getPort("sensorLink"), sensor->getPort("link"));
 
   return group.release();
 }
@@ -47,46 +47,46 @@ Node* buildSimpleMechanicExample2()
   SharedPtr<Group> group = new Group("G");
 
   MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
-  Group::NodeId rootJointId = group->addChild(mobileRootJoint);
+  group->addChild(mobileRootJoint);
 
   RigidBody *rigidBody = new RigidBody("Rigid Body");
   rigidBody->addLink("link2");
   rigidBody->addLink("sensorLink");
-  Group::NodeId rigidBodyId = group->addChild(rigidBody);
+  group->addChild(rigidBody);
   InertiaMatrix inertia(1, 0, 0, 1, 0, 1);
   Mass* mass = new Mass("Mass", 1, inertia);
-  Group::NodeId massId = group->addChild(mass);
+  group->addChild(mass);
   RevoluteJoint* revoluteJoint = new RevoluteJoint("Revolute Joint");
   revoluteJoint->setEnableExternalForce(true);
-  Group::NodeId revoluteId = group->addChild(revoluteJoint);
+  group->addChild(revoluteJoint);
   RigidBody *rigidBody2 = new RigidBody("Rigid Body 2");
   rigidBody2->addLink("sensorLink");
-  Group::NodeId rigidBody2Id = group->addChild(rigidBody2);
+  group->addChild(rigidBody2);
   Mass* mass2 = new Mass("Mass 2", 1, inertia);
-  Group::NodeId mass2Id = group->addChild(mass2);
+  group->addChild(mass2);
 
   Sensor* sensor = new Sensor("Sensor");
   sensor->setPosition(mass->getPosition());
   sensor->setEnableAll(true);
-  Group::NodeId sensorId = group->addChild(sensor);
+  group->addChild(sensor);
 
   Sensor* sensor2 = new Sensor("Sensor 2");
   sensor2->setPosition(mass2->getPosition());
   sensor2->setEnableAll(true);
-  Group::NodeId sensorId2 = group->addChild(sensor2);
+  group->addChild(sensor2);
 
-  group->connect(rootJointId, "link", rigidBodyId, "link0");
-  group->connect(rigidBodyId, "link1", massId, "link");
-  group->connect(rigidBodyId, "link2", revoluteId, "link0");
-  group->connect(revoluteId, "link1", rigidBody2Id, "link0");
-  group->connect(rigidBody2Id, "link1", mass2Id, "link");
-  group->connect(rigidBodyId, "sensorLink", sensorId, "link");
-  group->connect(rigidBody2Id, "sensorLink", sensorId2, "link");
+  group->connect(mobileRootJoint->getPort("link"), rigidBody->getPort("link0"));
+  group->connect(rigidBody->getPort("link1"), mass->getPort("link"));
+  group->connect(rigidBody->getPort("link2"), revoluteJoint->getPort("link0"));
+  group->connect(revoluteJoint->getPort("link1"), rigidBody2->getPort("link0"));
+  group->connect(rigidBody2->getPort("link1"), mass2->getPort("link"));
+  group->connect(rigidBody->getPort("sensorLink"), sensor->getPort("link"));
+  group->connect(rigidBody2->getPort("sensorLink"), sensor2->getPort("link"));
 
   ConstModel* jointForce = new ConstModel("Joint Force", 1);
-  Group::NodeId jointForceId = group->addChild(jointForce);
+  group->addChild(jointForce);
 
-  group->connect(jointForceId, "output", revoluteId, "force");
+  group->connect(jointForce->getPort("output"), revoluteJoint->getPort("force"));
 
   return group.release();
 }

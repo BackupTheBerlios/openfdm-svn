@@ -23,23 +23,23 @@ main(int argc, char *argv[])
   SharedPtr<Group> group = new Group("Group");
 
   ConstModel* constModel = new ConstModel("Constant", 1);
-  Group::NodeId constModelId = group->addChild(constModel);
+  group->addChild(constModel);
 
   Integrator* integrator = new Integrator("Integrator");
   integrator->setInitialValue(0);
-  Group::NodeId integratorId = group->addChild(integrator);
-  group->connect(constModelId, "output", integratorId, "input");
+  group->addChild(integrator);
+  group->connect(constModel->getPort("output"), integrator->getPort("input"));
 
   SimulationTime* simulationTime = new SimulationTime("Simulation Time");
-  Group::NodeId simulationTimeId = group->addChild(simulationTime);
+  group->addChild(simulationTime);
 
   Summer* summer = new Summer("Error to exact Solution");
-  Group::NodeId summerId = group->addChild(summer);
+  group->addChild(summer);
   summer->setNumSummands(2);
   summer->setInputSign(0, Summer::Plus);
-  group->connect(simulationTimeId, "output", summerId, "input0");
+  group->connect(simulationTime->getPort("output"), summer->getPort("input0"));
   summer->setInputSign(1, Summer::Minus);
-  group->connect(integratorId, "output", summerId, "input1");
+  group->connect(integrator->getPort("output"), summer->getPort("input1"));
 
 
   Output* output = new Output("Error Output");
@@ -47,8 +47,8 @@ main(int argc, char *argv[])
   errors = new ErrorCollectorCallback;
   output->setCallback(errors);
 //   output->addSampleTime(rate);
-  Group::NodeId outputId = group->addChild(output);
-  group->connect(summerId, "output", outputId, "input");
+  group->addChild(output);
+  group->connect(summer->getPort("output"), output->getPort("input"));
 
   SharedPtr<System> system = new System("Constant Integration");
   system->setNode(group);

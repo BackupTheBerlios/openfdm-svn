@@ -39,26 +39,26 @@ int main()
   FixedRootJoint* fixedRootJoint = new FixedRootJoint("Root");
   fixedRootJoint->setPosition(planet->toCart(geodetic));
   fixedRootJoint->setOrientation(planet->getGeodHLOrientation(geodetic));
-  Group::NodeId fixedRootJointId = group->addChild(fixedRootJoint);
+  group->addChild(fixedRootJoint);
   RotationalJoint* rotationalJoint1 = new RotationalJoint("Rotational Joint 1");
-  Group::NodeId rotationalJoint1Id = group->addChild(rotationalJoint1);
+  group->addChild(rotationalJoint1);
   RigidBody* rigidBody1 = new RigidBody("Rigid Body 1");
   rigidBody1->addLink("sensorLink");
-  Group::NodeId rigidBody1Id = group->addChild(rigidBody1);
+  group->addChild(rigidBody1);
 
   Mass* mass = new Mass("Mass", 28, InertiaMatrix(1, 0, 0, 1, 0, 1));
   mass->setPosition(Vector3(3, 0, 67));
-  Group::NodeId massId = group->addChild(mass);
+  group->addChild(mass);
 
   Sensor* sensor = new Sensor("Sensor");
   sensor->setPosition(mass->getPosition());
   sensor->setEnableAll(true);
-  Group::NodeId sensorId = group->addChild(sensor);
+  group->addChild(sensor);
 
-  group->connect(fixedRootJointId, 0, rotationalJoint1Id, 0);
-  group->connect(rotationalJoint1Id, 1, rigidBody1Id, 0);
-  group->connect(rigidBody1Id, 1, massId, 0);
-  group->connect(rigidBody1Id, "sensorLink", sensorId, "link");
+  group->connect(fixedRootJoint->getPort(0), rotationalJoint1->getPort(0));
+  group->connect(rotationalJoint1->getPort(1), rigidBody1->getPort(0));
+  group->connect(rigidBody1->getPort(1), mass->getPort(0));
+  group->connect(rigidBody1->getPort("sensorLink"), sensor->getPort("link"));
 
   SharedPtr<System> system = new System("System", group);
 

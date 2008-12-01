@@ -18,8 +18,9 @@ using namespace OpenFDM;
 bool testSelfReferencingDirectInput()
 {
   SharedPtr<Group> group = new Group("Group");
-  Group::NodeId gain = group->addChild(new Gain("Gain"));
-  group->connect(gain, "output", gain, "input");
+  Gain* gain = new Gain("Gain");
+  group->addChild(gain);
+  group->connect(gain->getPort("output"), gain->getPort("input"));
 
   SharedPtr<System> system = new System("Self referencing Gain");
   system->setNode(group);
@@ -36,10 +37,12 @@ bool testSelfReferencingDirectInput()
 bool testCyclicDependency()
 {
   SharedPtr<Group> group = new Group("Group");
-  Group::NodeId gain1 = group->addChild(new Gain("Gain 1"));
-  Group::NodeId gain2 = group->addChild(new Gain("Gain 2"));
-  group->connect(gain1, "output", gain2, "input");
-  group->connect(gain2, "output", gain1, "input");
+  Gain* gain1 = new Gain("Gain 1");
+  group->addChild(gain1);
+  Gain* gain2 = new Gain("Gain 1");
+  group->addChild(gain2);
+  group->connect(gain1->getPort("output"), gain2->getPort("input"));
+  group->connect(gain2->getPort("output"), gain1->getPort("input"));
 
   SharedPtr<System> system = new System("Cyclic loop");
   system->setNode(group);
@@ -56,13 +59,15 @@ bool testCyclicDependency()
 bool testCyclicDependencyWithGroup1()
 {
   SharedPtr<Group> group1 = new Group("Group 1");
-  Group::NodeId groupInput1 = group1->addChild(new GroupInput("Input 1"));
-  Group::NodeId groupOutput1 = group1->addChild(new GroupOutput("Output 1"));
-  group1->connect(groupInput1, "output", groupOutput1, "input");
+  GroupInput* groupInput = new GroupInput("Input 1");
+  group1->addChild(groupInput);
+  GroupOutput* groupOutput = new GroupOutput("Output 1");
+  group1->addChild(groupOutput);
+  group1->connect(groupInput->getPort("output"), groupOutput->getPort("input"));
 
   SharedPtr<Group> group = new Group("Group");
-  Group::NodeId groupId1 = group->addChild(group1);
-  group->connect(groupId1, "output", groupId1, "input");
+  group->addChild(group1);
+  group->connect(group1->getPort("output"), group1->getPort("input"));
 
   SharedPtr<System> system = new System("Cyclic loop through groups");
   system->setNode(group);
@@ -78,24 +83,30 @@ bool testCyclicDependencyWithGroup1()
 bool testCyclicDependencyWithGroup2()
 {
   SharedPtr<Group> group1 = new Group("Group 1");
-  Group::NodeId groupInput1 = group1->addChild(new GroupInput("Input 1"));
-  Group::NodeId gain1 = group1->addChild(new Gain("Gain 1"));
-  Group::NodeId groupOutput1 = group1->addChild(new GroupOutput("Output 1"));
-  group1->connect(groupInput1, "output", gain1, "input");
-  group1->connect(gain1, "output", groupOutput1, "input");
+  GroupInput* groupInput1 = new GroupInput("Input 1");
+  group1->addChild(groupInput1);
+  Gain* gain1 = new Gain("Gain 1");
+  group1->addChild(gain1);
+  GroupOutput* groupOutput1 = new GroupOutput("Output 1");
+  group1->addChild(groupOutput1);
+  group1->connect(groupInput1->getPort("output"), gain1->getPort("input"));
+  group1->connect(gain1->getPort("output"), groupOutput1->getPort("input"));
 
   SharedPtr<Group> group2 = new Group("Group 2");
-  Group::NodeId groupInput2 = group2->addChild(new GroupInput("Input 2"));
-  Group::NodeId gain2 = group2->addChild(new Gain("Gain 2"));
-  Group::NodeId groupOutput2 = group2->addChild(new GroupOutput("Output 2"));
-  group2->connect(groupInput2, "output", gain2, "input");
-  group2->connect(gain2, "output", groupOutput2, "input");
+  GroupInput* groupInput2 = new GroupInput("Input 2");
+  group2->addChild(groupInput2);
+  Gain* gain2 = new Gain("Gain 2");
+  group2->addChild(gain2);
+  GroupOutput* groupOutput2 = new GroupOutput("Output 2");
+  group2->addChild(groupOutput2);
+  group2->connect(groupInput2->getPort("output"), gain2->getPort("input"));
+  group2->connect(gain2->getPort("output"), groupOutput2->getPort("input"));
 
   SharedPtr<Group> group = new Group("Group");
-  Group::NodeId groupId1 = group->addChild(group1);
-  Group::NodeId groupId2 = group->addChild(group2);
-  group->connect(groupId1, "output", groupId2, "input");
-  group->connect(groupId2, "output", groupId1, "input");
+  group->addChild(group1);
+  group->addChild(group2);
+  group->connect(group1->getPort("output"), group2->getPort("input"));
+  group->connect(group2->getPort("output"), group1->getPort("input"));
 
   SharedPtr<System> system = new System("Cyclic loop through groups");
   system->setNode(group);
@@ -106,84 +117,6 @@ bool testCyclicDependencyWithGroup2()
     return false;
   }
   return true;
-}
-
-Node* buildContinousExample()
-{
-  SharedPtr<Group> group = new Group("G0");
-  Group::NodeId gain = group->addChild(new Gain("gain", -1));
-  Integrator* i1 = new Integrator("I1");
-  i1->setInitialValue(1);
-  Group::NodeId integrator1 = group->addChild(i1);
-  Group::NodeId integrator2 = group->addChild(new Integrator("I2"));
-  Group::NodeId output = group->addChild(new Output("O"));
-  Group::NodeId delay = group->addChild(new Delay("D"));
-  Group::NodeId outputDelay = group->addChild(new Output("OD"));
-
-  Summer* summer = new Summer("S");
-  Group::NodeId summerId = group->addChild(summer);
-
-  group->connect(integrator1, "output", integrator2, "input");
-  group->connect(integrator2, "output", gain, "input");
-  group->connect(gain, "output", integrator1, "input");
-  group->connect(gain, "output", summerId, "input0");
-  group->connect(gain, "output", summerId, "input1");
-  group->connect(integrator2, "output", output, "input");
-  group->connect(summerId, "output", delay, "input");
-  group->connect(delay, "output", outputDelay, "input");
-
-  Group::NodeId groupOutputNode = group->addChild(new GroupOutput("GIO"));
-  group->connect(integrator2, "output", groupOutputNode, "input");
-
-  SharedPtr<Group> topGroup = new Group("G1");
-  Group::NodeId child = topGroup->addChild(group);
-
-  Group::NodeId output0 = topGroup->addChild(new Output("Output"));
-  topGroup->connect(child, 0, output0, 0);
-
-  return topGroup.release();
-}
-
-Node* buildDiscreteExample()
-{
-  SharedPtr<Group> group = new Group("G0");
-  Group::NodeId gain = group->addChild(new Gain("gain", -1));
-  DiscreteIntegrator* di1 = new DiscreteIntegrator("I1");
-  Matrix v(1, 1);
-  v(0, 0) = 10;
-  di1->setInitialValue(v);
-  Group::NodeId integrator1 = group->addChild(di1);
-  Group::NodeId integrator2 = group->addChild(new DiscreteIntegrator("I2"));
-  Group::NodeId output = group->addChild(new Output("O"));
-  Group::NodeId delay = group->addChild(new Delay("D"));
-  Group::NodeId outputDelay = group->addChild(new Output("OD"));
-
-  group->connect(integrator1, "output", integrator2, "input");
-  group->connect(integrator2, "output", gain, "input");
-  group->connect(gain, "output", integrator1, "input");
-  group->connect(integrator2, "output", output, "input");
-  group->connect(gain, "output", delay, "input");
-  group->connect(delay, "output", outputDelay, "input");
-
-  return group.release();
-}
-
-Node* buildLibraryNodeExample()
-{
-  SharedPtr<Node> node = buildDiscreteExample();
-  SharedPtr<LibraryModel> libraryModel = new LibraryModel("Library Model");
-  libraryModel->setNode(node);
-  
-  SharedPtr<LibraryNode> libraryNode1 = new LibraryNode("Library Node 1");
-  libraryNode1->setLibraryModel(libraryModel);
-
-  SharedPtr<LibraryNode> libraryNode2 = new LibraryNode("Library Node 2");
-  libraryNode2->setLibraryModel(libraryModel);
-
-  SharedPtr<Group> group = new Group("Group");
-  group->addChild(libraryNode1);
-  group->addChild(libraryNode2);
-  return group.release();
 }
 
 int main()
@@ -203,18 +136,6 @@ int main()
     return EXIT_FAILURE;
   if (!testCyclicDependencyWithGroup2())
     return EXIT_FAILURE;
-
-
-  SharedPtr<System> system = new System("System", buildContinousExample());
-//   SharedPtr<System> system = new System("System", buildDiscreteExample());
-//   SharedPtr<System> system = new System("System", buildLibraryNodeExample());
-
-  system->attach(SystemOutput::newDefaultSystemOutput("system.h5"));
-
-  if (!system->init())
-    return 1;
-
-  system->simulate(10);
 
   std::cout << "PASSED" << std::endl;
 
