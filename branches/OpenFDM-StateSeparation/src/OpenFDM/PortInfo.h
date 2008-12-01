@@ -20,8 +20,6 @@ namespace OpenFDM {
 // Naming:
 // PortInfo - The meta data used to see what kind of port we have
 // PortValue - The ports value during simulation
-// PortHandle?? Hmmm??
-// Port : NodeId, PortId ???
 
 class ConstNodeVisitor;
 class Node;
