@@ -33,32 +33,38 @@ public:
   unsigned getNumChildren() const;
   SharedPtr<Node> getChild(unsigned i);
   SharedPtr<const Node> getChild(unsigned i) const;
+  unsigned getChildNumber(const Node* node) const;
 
   bool connect(const NodeId& nodeId0, const std::string& portName0,
                const NodeId& nodeId1, const std::string& portName1)
-  { return connect(nodeId0, PortId(nodeId0->getPort(portName0)),
-                   nodeId1, PortId(nodeId1->getPort(portName1))); }
+    OpenFDM_DEPRECATED
+  {
+    return connect(nodeId0->getPort(portName0), nodeId1->getPort(portName1));
+  }
   bool connect(const NodeId& nodeId0, unsigned portNum0,
                const NodeId& nodeId1, unsigned portNum1)
-  { return connect(nodeId0, PortId(nodeId0->getPort(portNum0)),
-                   nodeId1, PortId(nodeId1->getPort(portNum1))); }
+    OpenFDM_DEPRECATED
+  {
+    return connect(nodeId0->getPort(portNum0), nodeId1->getPort(portNum1));
+  }
 
-  bool connect(const NodeId& nodeId0, const PortId& portId0,
-               const NodeId& nodeId1, const PortId& portId1)
+  bool connect(const PortInfo* port0, const PortInfo* port1)
   {
     // Make sure the models belong to this group
-    SharedPtr<Node> child0 = getChild(nodeId0);
-    if (!child0)
-      return false;
-    SharedPtr<Node> child1 = getChild(nodeId1);
-    if (!child1)
-      return false;
-
-    SharedPtr<const PortInfo> port0 = child0->getPort(portId0);
     if (!port0)
       return false;
-    SharedPtr<const PortInfo> port1 = child1->getPort(portId1);
+    SharedPtr<const Node> child0 = port0->getNode();
+    if (!child0)
+      return false;
+    if (!child0->isChildOf(this))
+      return false;
+
     if (!port1)
+      return false;
+    SharedPtr<const Node> child1 = port1->getNode();
+    if (!child1)
+      return false;
+    if (!child1->isChildOf(this))
       return false;
 
     // Just a crude first time check if this will work in principle.
@@ -66,10 +72,8 @@ public:
       return false;
 
     SharedPtr<Connect> connect = new Connect;
-    connect->_portId0 = portId0;
-    connect->_nodeId0 = nodeId0;
-    connect->_portId1 = portId1;
-    connect->_nodeId1 = nodeId1;
+    connect->mPortInfo0 = port0;
+    connect->mPortInfo1 = port1;
     _connectList.push_back(connect);
 
     return true;
@@ -82,13 +86,13 @@ public:
   {
     if (getNumConnects() <= i)
       return ~0u;
-    return getChildNumber(_connectList[i]->_nodeId0);
+    return getChildNumber(_connectList[i]->mPortInfo0.lock()->getNode());
   }
   unsigned getConnectNodeIndex1(unsigned i) const
   {
     if (getNumConnects() <= i)
       return ~0u;
-    return getChildNumber(_connectList[i]->_nodeId1);
+    return getChildNumber(_connectList[i]->mPortInfo1.lock()->getNode());
   }
 
   SharedPtr<const PortInfo>
@@ -96,29 +100,21 @@ public:
   {
     if (getNumConnects() <= i)
       return 0;
-    SharedPtr<const Node> node = getChild(_connectList[i]->_nodeId0);
-    return node->getPort(_connectList[i]->_portId0);
+    return _connectList[i]->mPortInfo0.lock();
   }
   SharedPtr<const PortInfo>
   getConnectPortInfo1(unsigned i) const
   {
     if (getNumConnects() <= i)
       return 0;
-    SharedPtr<const Node> node = getChild(_connectList[i]->_nodeId1);
-    return node->getPort(_connectList[i]->_portId1);
+    return _connectList[i]->mPortInfo1.lock();
   }
 
 private:
-  unsigned getChildNumber(const NodeId& nodeId) const;
-  SharedPtr<Node> getChild(const NodeId& nodeId);
-  SharedPtr<const Node> getChild(const NodeId& nodeId) const;
 
   struct Connect : public WeakReferenced {
-    NodeId _nodeId0;
-    PortId _portId0;
-
-    NodeId _nodeId1;
-    PortId _portId1;
+    WeakPtr<const PortInfo> mPortInfo0;
+    WeakPtr<const PortInfo> mPortInfo1;
 
     // Where the line in the gui will be ...??
     // std::list<Vector2> _positions;

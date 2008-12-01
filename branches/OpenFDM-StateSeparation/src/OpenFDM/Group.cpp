@@ -64,10 +64,10 @@ Group::getNumChildren() const
 }
 
 unsigned
-Group::getChildNumber(const NodeId& nodeId) const
+Group::getChildNumber(const Node* node) const
 {
   ChildList::const_iterator i;
-  i = std::find(_childList.begin(), _childList.end(), nodeId);
+  i = std::find(_childList.begin(), _childList.end(), node);
   if (i == _childList.end())
     return ~0u;
   return std::distance(_childList.begin(), i);
@@ -87,18 +87,6 @@ Group::getChild(unsigned i) const
   if (_childList.size() <= i)
     return 0;
   return _childList[i];
-}
-
-SharedPtr<Node>
-Group::getChild(const NodeId& nodeId)
-{
-  return getChild(getChildNumber(nodeId));
-}
-
-SharedPtr<const Node>
-Group::getChild(const NodeId& nodeId) const
-{
-  return getChild(getChildNumber(nodeId));
 }
 
 } // namespace OpenFDM
