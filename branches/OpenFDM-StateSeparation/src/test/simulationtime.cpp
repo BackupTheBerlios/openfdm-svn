@@ -42,7 +42,7 @@ main(int argc, char *argv[])
   group->addChild(output);
   SharedPtr<CollectOutputCallback> simTimeCallback = new CollectOutputCallback;
   output->setCallback(simTimeCallback);
-  if (!group->connect(simTime->getPort("output"), output->getPort("input"))) {
+  if (!group->connect(simulationTime->getPort("output"), output->getPort("input"))) {
     std::cout << "Could not connect ports" << std::endl;
     return EXIT_FAILURE;
   }
