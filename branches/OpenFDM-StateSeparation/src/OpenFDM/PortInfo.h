@@ -45,6 +45,9 @@ public:
   virtual void accept(NodeVisitor& visitor) const;
   virtual void accept(ConstNodeVisitor& visitor) const;
 
+  SharedPtr<const Node> getNode() const
+  { return mNode.lock(); }
+
   bool getOptional() const { return mOptional; }
   void setOptional(bool optional) { mOptional = optional; }
 
