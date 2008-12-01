@@ -105,12 +105,6 @@ main(int argc, char *argv[])
   std::cout << "Signaling NaN = " << Limits<real_type>::signaling_NaN() << std::endl;
   std::cout << "Denormlized Min = " << Limits<real_type>::denorm_min() << std::endl;
 
-  if (eps != Limits<real_type>::epsilon())
-    return EXIT_FAILURE;
-  if (min != Limits<real_type>::min())
-    return EXIT_FAILURE;
-  if (max != Limits<real_type>::max())
-    return EXIT_FAILURE;
 
   return EXIT_SUCCESS;
 }
