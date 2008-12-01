@@ -121,7 +121,10 @@ public:
 
   ///////////////////////////////////////////////////////////////////////////
   // Intersection interaction related
-
+  GroundValues getGroundPlane(const real_type& t, const Vector3& pos) const
+  {
+    return mGround->getGroundPlane(*this, t, pos);
+  }
 
 private:
   SharedPtr<const AbstractInertial> mInertial;
