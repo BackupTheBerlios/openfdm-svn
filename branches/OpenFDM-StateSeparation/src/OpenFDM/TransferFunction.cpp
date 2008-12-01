@@ -5,6 +5,8 @@
 #include "TransferFunction.h"
 
 #include "Assert.h"
+#include "Task.h"
+#include "ModelContext.h"
 #include "LogStream.h"
 
 namespace OpenFDM {
@@ -16,17 +18,13 @@ BEGIN_OPENFDM_OBJECT_DEF(DiscreteTransferFunction, Model)
 
 DiscreteTransferFunction::DiscreteTransferFunction(const std::string& name) :
   Model(name),
+  mInputPort(newRealInputPort("input", true)),
+  mOutputPort(newRealOutputPort("output")),
   mDen(1),
   mNum(1)
 {
   mNum(0) = 1;
   mDen(0) = 1;
-
-  setDirectFeedThrough(true);
-
-  setNumInputPorts(1);
-  setNumOutputPorts(1);
-  setOutputPort(0, "output", this, &DiscreteTransferFunction::getOutput);
 }
 
 DiscreteTransferFunction::~DiscreteTransferFunction(void)
@@ -58,17 +56,8 @@ DiscreteTransferFunction::getNumerator(void) const
 }
 
 bool
-DiscreteTransferFunction::init(void)
+DiscreteTransferFunction::alloc(ModelContext& context) const
 {
-  mInputPort = getInputPort(0)->toRealPortHandle();
-  if (!mInputPort.isConnected()) {
-    Log(Model, Error) << "Initialization of DiscreteTransferFunction model \""
-                      << getName()
-                      << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
-    return false;
-  }
-
   mNumNorm.resize(0);
   mDenNorm.resize(0);
   mD = 0;
@@ -123,65 +112,62 @@ DiscreteTransferFunction::init(void)
                    << ", denominator: " << trans(mDenNorm)
                    << ", direct factor: " << mD << endl;
 
-  /// Start with zero state ...
-  mState.resize(rows(mDenNorm));
-  mState.clear();
-  setNumDiscreteStates(rows(mDenNorm));
-
-  return Model::init();
+  return true;
 }
 
 void
-DiscreteTransferFunction::output(const TaskInfo&)
+DiscreteTransferFunction::init(const Task&,
+                               DiscreteStateValueVector& discreteState,
+                               ContinousStateValueVector&,
+                               const PortValueList& portValues) const
+{
+  /// Start with zero state ...
+  discreteState[*mMatrixStateInfo].resize(rows(mDenNorm), 1);
+  discreteState[*mMatrixStateInfo].clear();
+}
+
+void
+DiscreteTransferFunction::output(const Task&,
+                                 const DiscreteStateValueVector& discreteState,
+                                 const ContinousStateValueVector&,
+                                 PortValueList& portValues) const
 {
   // Compute the output ...
-  real_type input = mInputPort.getRealValue();
-  mOutput = dot(mNumNorm, mState) + mD*input;
+  real_type input = portValues[mInputPort];
+  // FIXME, precompute this dot product in the update step
+  real_type output;
+  output = dot(mNumNorm, Vector(discreteState[*mMatrixStateInfo])) + mD*input;
+  portValues[mOutputPort] = output;
 }
 
 void
-DiscreteTransferFunction::update(const TaskInfo& taskInfo)
+DiscreteTransferFunction::update(const DiscreteTask& discreteTask,
+                                 DiscreteStateValueVector& discreteState,
+                                 const ContinousStateValueVector&,
+                                 const PortValueList& portValues) const
 {
-  // FIXME: make sure this is the only dt ...
-  real_type dt = (*taskInfo.getSampleTimeSet().begin()).getSampleTime();
+  real_type dt = discreteTask.getStepsize();
 
-  if (0 < rows(mState)) {
+  Vector state = discreteState[*mMatrixStateInfo];
+  if (0 < rows(state)) {
     // FIXME: use exponential integration scheme here ...
     // looks very benificial, since it is exact here!
-    real_type input = mInputPort.getRealValue();
-    if (mState.size() == 1) {
+    real_type input = portValues[mInputPort];
+    if (state.size() == 1) {
       /// On dimensional exponetial integrator ...
-      real_type z = -dt*dot(mDenNorm, mState);
+      real_type z = -dt*dot(mDenNorm, state);
       // Well, pade approximation is the right thing, but for now ...
       if (fabs(exp(z) - 1) <= sqrt(Limits<real_type>::epsilon()))
-        mState(0) += dt*(input + z);
+        state(0) += dt*(input + z);
       else
-        mState(0) += dt*(exp(z)-1)/z * (input + z);
+        state(0) += dt*(exp(z)-1)/z * (input + z);
     } else {
-      Vector tmpState(mState);
-      mState(0) += dt*(input - dot(mDenNorm, tmpState));
-      for (unsigned i = 1; i < rows(mState); ++i)
-        mState(i) += dt*tmpState(i-1);
+      Vector tmpState(state);
+      state(0) += dt*(input - dot(mDenNorm, tmpState));
+      for (unsigned i = 1; i < rows(state); ++i)
+        state(i) += dt*tmpState(i-1);
     }
   }
-}
-
-void
-DiscreteTransferFunction::setDiscreteState(const StateStream& state)
-{
-  state.readSubState(mState);
-}
-
-void
-DiscreteTransferFunction::getDiscreteState(StateStream& state) const
-{
-  state.writeSubState(mState);
-}
-
-const real_type&
-DiscreteTransferFunction::getOutput(void) const
-{
-  return mOutput;
 }
 
 }

@@ -267,11 +267,9 @@ OpenFDMModelsSOURCES = \
   Summer.cpp \
   Table.cpp \
   TimeDerivative.cpp \
+  TransferFunction.cpp \
   UnaryFunction.cpp \
   UnitConversion.cpp
-
-#   TransferFunction.cpp \
-#
 
 OpenFDMMechanicSOURCES = \
   Joint.cpp \

@@ -8,6 +8,7 @@
 #include "Types.h"
 #include "Vector.h"
 #include "Model.h"
+#include "TemplateDiscreteStateInfo.h"
 
 namespace OpenFDM {
 
@@ -17,6 +18,16 @@ public:
   /// As always, we need a name in the constructor
   DiscreteTransferFunction(const std::string& name);
   virtual ~DiscreteTransferFunction(void);
+
+  virtual bool alloc(ModelContext&) const;
+  virtual void init(const Task&,DiscreteStateValueVector& discreteState,
+                    ContinousStateValueVector&, const PortValueList&) const;
+  virtual void output(const Task&,const DiscreteStateValueVector& discreteState,
+                      const ContinousStateValueVector&,
+                      PortValueList& portValues) const;
+  virtual void update(const DiscreteTask&, DiscreteStateValueVector&,
+                      const ContinousStateValueVector&,
+                      const PortValueList&) const;
 
   /// Sets the coefficients for the denominator polynomial starting with the
   /// highest power's coefficient in the first vector element
@@ -34,34 +45,24 @@ public:
   /// highest power's coefficient in the first vector element
   const Vector& getNumerator(void) const;
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
-  virtual void update(const TaskInfo& taskInfo);
-
-  /// This one can have discrete states
-  virtual void setDiscreteState(const StateStream& state);
-  virtual void getDiscreteState(StateStream& state) const;
-
-  const real_type& getOutput(void) const;
-
 private:
-  /// Holds the current output.
-  real_type mOutput;
+//   MatrixInputPort mInputPort;
+//   MatrixOutputPort mOutputPort;
+  RealOutputPort mOutputPort;
+  RealInputPort mInputPort;
+  typedef TemplateDiscreteStateInfo<Matrix> MatrixStateInfo;
+  SharedPtr<MatrixStateInfo> mMatrixStateInfo;
+
   /// Holds the denominator
   Vector mDen;
   /// Holds the numerator
   Vector mNum;
 
   /// Holds the normalized numerator and denominators
-  Vector mDenNorm;
-  Vector mNumNorm;
-  real_type mD;
-  /// Holds the interal discrete state
-  Vector mState;
-
-  /// Holds the handle to the input port
-  RealPortHandle mInputPort;
-  /// FIXME, at the moment only explicit integration ...
+  /// FIXME, avoid the mutable ...
+  mutable Vector mDenNorm;
+  mutable Vector mNumNorm;
+  mutable real_type mD;
 };
 
 } // namespace OpenFDM
