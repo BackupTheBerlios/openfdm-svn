@@ -5,6 +5,7 @@
 #include "Node.h"
 
 #include "ConstNodeVisitor.h"
+#include "Group.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {
@@ -88,6 +89,18 @@ Node::getParent(unsigned i)
   if (mParentList.size() <= i)
     return 0;
   return mParentList[i];
+}
+
+bool
+Node::isChildOf(const Group* group) const
+{
+  ParentList::const_iterator i;
+  for (i = mParentList.begin(); i != mParentList.end(); ++i) {
+    SharedPtr<const Node> node = i->lock();
+    if (node == group)
+      return true;
+  }
+  return false;
 }
 
 SharedPtr<const PortInfo>

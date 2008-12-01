@@ -41,6 +41,7 @@ public:
   { return mParentList.size(); }
   WeakPtr<const Node> getParent(unsigned i) const;
   WeakPtr<Node> getParent(unsigned i);
+  bool isChildOf(const Group* group) const;
 
   SharedPtr<const PortInfo> getPort(const PortId& portId) const;
   SharedPtr<const PortInfo> getPort(unsigned index) const;
