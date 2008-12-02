@@ -11,6 +11,8 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(WheelContact, Interact)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   DEF_OPENFDM_PROPERTY(Real, WheelRadius, Serialized)
   DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
 /// FIXME want to have similar names than with linearspringdamper
@@ -20,7 +22,9 @@ BEGIN_OPENFDM_OBJECT_DEF(WheelContact, Interact)
 
 WheelContact::WheelContact(const std::string& name) :
   Interact(name),
-  mMechanicLink(newMechanicLink("link"))
+  mMechanicLink(newMechanicLink("link")),
+  mPosition(0, 0, 0),
+  mAxis(0, 1, 0)
 {
   mWheelRadius = 0.3;
   mSpringConstant = 0;
@@ -97,7 +101,7 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
   // The wheel coordinates x axis is defined by the forward orientation
   // of the wheel, the z axis points perpandicular to the ground
   // plane downwards.
-  Vector3 forward = normalize(cross(Vector3::unit(1), lp.getNormal()));
+  Vector3 forward = normalize(cross(mAxis, lp.getNormal()));
   Vector3 side = normalize(cross(lp.getNormal(), forward));
 
   // Transformed velocity to the ground plane
@@ -170,6 +174,20 @@ void
 WheelContact::setPosition(const Vector3& position)
 {
   mPosition = position;
+}
+
+const Vector3&
+WheelContact::getAxis(void) const
+{
+  return mAxis;
+}
+
+void
+WheelContact::setAxis(const Vector3& axis)
+{
+  if (norm(axis) <= Limits<real_type>::safe_min())
+    return;
+  mAxis = normalize(axis);
 }
 
 } // namespace OpenFDM

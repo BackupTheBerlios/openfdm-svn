@@ -28,16 +28,25 @@ public:
   computeFrictionForce(real_type normForce, const Vector2& vel,
                        real_type omegaR, real_type friction) const;
 
-  /** Set a position offset for the inertia given.
+  /** Set a position for the wheel axis position.
    */
   const Vector3& getPosition(void) const;
   void setPosition(const Vector3& position);
 
+  /** Set wheel axis direction.
+   */
+  const Vector3& getAxis(void) const;
+  void setAxis(const Vector3& axis);
+
+  /** Set wheel radius.
+   */
   void setWheelRadius(const real_type& wheelRadius)
   { mWheelRadius = wheelRadius; }
   const real_type& getWheelRadius(void) const
   { return mWheelRadius; }
 
+  /** Stuff that should move into the tire force implementation.
+   */
   void setSpringConstant(const real_type& springConstant)
   { mSpringConstant = springConstant; }
   const real_type& getSpringConstant(void) const
@@ -57,7 +66,9 @@ private:
   MechanicLink mMechanicLink;
 
   Vector3 mPosition;
+  Vector3 mAxis;
   real_type mWheelRadius;
+
   real_type mSpringConstant;
   real_type mSpringDamping;
   real_type mFrictionCoeficient;
