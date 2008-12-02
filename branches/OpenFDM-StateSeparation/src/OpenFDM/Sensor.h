@@ -82,6 +82,11 @@ public:
   /// Get availabilty of the pressure output port
   bool getEnablePressure() const;
 
+  /// Set availabilty of the pressure output port
+  void setEnableAboveGroundLevel(bool enable);
+  /// Get availabilty of the pressure output port
+  bool getEnableAboveGroundLevel() const;
+
   /// Set availabilty of all output ports
   /// This is mostly for convinience in testing
   void setEnableAll(bool enable);
@@ -106,6 +111,8 @@ protected:
   RealOutputPort mTemperaturePort;
   RealOutputPort mPressurePort;
 //   RealOutputPort mDensityPort;
+
+  RealOutputPort mAboveGroundLevelPort;
 };
 
 } // namespace OpenFDM

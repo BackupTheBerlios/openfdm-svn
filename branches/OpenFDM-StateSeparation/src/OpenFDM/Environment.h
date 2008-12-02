@@ -110,6 +110,17 @@ public:
     // Then we know the plane ...
     return Plane(unitDown, groundOff);
   }
+  real_type getAboveGroundLevel(const real_type& t, const Vector3& position) const
+  {
+    // Get the unit down vector.
+    Vector3 unitDown = getHorizontalLocalDown(position);
+    GroundValues groundValues = getGroundPlane(t, position);
+    Vector3 intersectPoint;
+    if (groundValues.plane.intersectLine(position, unitDown, intersectPoint))
+      return norm(intersectPoint);
+    else
+      return Limits<real_type>::max();
+  }
 
   ///////////////////////////////////////////////////////////////////////////
   // Atmosphere sensing related

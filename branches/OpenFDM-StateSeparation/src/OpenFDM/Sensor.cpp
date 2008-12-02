@@ -22,6 +22,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Sensor, Interact)
   DEF_OPENFDM_PROPERTY(Bool, EnableWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnablePressure, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableAboveGroundLevel, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Sensor::Sensor(const std::string& name) :
@@ -90,6 +91,12 @@ Sensor::velocity(const Task& task, const ContinousStateValueVector&,
       portValues[mTemperaturePort] = data.temperature;
     if (enablePressure)
       portValues[mPressurePort] = data.pressure;
+  }
+
+  if (getEnableAboveGroundLevel()) {
+    real_type agl;
+    agl = environment->getAboveGroundLevel(task.getTime(), refPosition);
+    portValues[mAboveGroundLevelPort] = agl;
   }
 }
 
@@ -309,6 +316,23 @@ Sensor::getEnablePressure() const
 }
 
 void
+Sensor::setEnableAboveGroundLevel(bool enable)
+{
+  if (enable == getEnableAboveGroundLevel())
+    return;
+  if (enable)
+    mAboveGroundLevelPort = RealOutputPort(this, "aboveGroundLevel");
+  else
+    mAboveGroundLevelPort.clear();
+}
+
+bool
+Sensor::getEnableAboveGroundLevel() const
+{
+  return !mAboveGroundLevelPort.empty();
+}
+
+void
 Sensor::setEnableAll(bool enable)
 {
   setEnablePosition(enable);
@@ -321,6 +345,7 @@ Sensor::setEnableAll(bool enable)
   setEnableWindVelocity(enable);
   setEnableTemperature(enable);
   setEnablePressure(enable);
+  setEnableAboveGroundLevel(enable);
 }
 
 } // namespace OpenFDM
