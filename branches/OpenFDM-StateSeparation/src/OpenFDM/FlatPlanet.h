@@ -33,6 +33,10 @@ public:
   /** Transform geodetic coordinates to cartesian coordinates.
    */
   virtual Vector3 toCart(const Geodetic& geod) const;
+
+  /** Orientation of the Geodetic horizontal local frame.
+   */
+  virtual Quaternion getGeodHLOrientation(const Geodetic& pos) const;
 };
 
 } // namespace OpenFDM

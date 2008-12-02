@@ -34,4 +34,10 @@ FlatPlanet::toCart(const Geodetic& geod) const
                  -geod.altitude);
 }
 
+Quaternion
+FlatPlanet::getGeodHLOrientation(const Geodetic&) const
+{
+  return Quaternion::unit();
+}
+
 } // namespace OpenFDM

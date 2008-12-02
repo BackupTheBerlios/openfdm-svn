@@ -83,7 +83,7 @@ public:
 
   /** Orientation of the Geodetic horizontal local frame.
    */
-  Quaternion getGeodHLOrientation(const Geodetic& pos) const;
+  virtual Quaternion getGeodHLOrientation(const Geodetic& pos) const;
 
   /** Orientation of the Geodetic horizontal local frame.
    */

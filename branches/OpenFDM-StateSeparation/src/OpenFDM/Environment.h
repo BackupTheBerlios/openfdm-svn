@@ -92,7 +92,7 @@ protected:
   Vector3 getHorizontalLocalDown(const Vector3& position) const
   {
     Quaternion hlOr = mPlanet->getGeodHLOrientation(position);
-    return hlOr.backTransform(Vector3::unit(3));
+    return hlOr.backTransform(Vector3::unit(2));
   }
   Vector3 getHorizontalLocalOffset(const Vector3& position) const
   {
@@ -110,14 +110,14 @@ public:
     // Then we know the plane ...
     return Plane(unitDown, groundOff);
   }
-  real_type getAboveGroundLevel(const real_type& t, const Vector3& position) const
+  real_type getAboveGroundLevel(const real_type& t, const Vector3& pos) const
   {
     // Get the unit down vector.
-    Vector3 unitDown = getHorizontalLocalDown(position);
-    GroundValues groundValues = getGroundPlane(t, position);
+    Vector3 unitDown = getHorizontalLocalDown(pos);
+    GroundValues groundValues = getGroundPlane(t, pos);
     Vector3 intersectPoint;
-    if (groundValues.plane.intersectLine(position, unitDown, intersectPoint))
-      return norm(intersectPoint);
+    if (groundValues.plane.intersectLine(pos, unitDown, intersectPoint))
+      return dot(unitDown, intersectPoint - pos);
     else
       return Limits<real_type>::max();
   }
