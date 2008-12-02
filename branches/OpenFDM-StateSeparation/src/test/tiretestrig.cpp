@@ -47,7 +47,7 @@ main(int argc, char *argv[])
   // First build up the mechanical system
   FixedRootJoint* fixedRootJoint = new FixedRootJoint("Fixed Root Joint");
   group->addChild(fixedRootJoint);
-  fixedRootJoint->setPosition(Vector3(0, 0, 1));
+  fixedRootJoint->setPosition(Vector3(0, 0, -1));
 
   PrismaticJoint* prismaticJoint = new PrismaticJoint("Normal Force joint");
   prismaticJoint->setAxis(Vector3::unit(2));
@@ -68,7 +68,7 @@ main(int argc, char *argv[])
  
   LinearSpringDamper* strutDamper = new LinearSpringDamper("Strut Damper");
   strutDamper->setSpringConstant(0);
-  strutDamper->setDamperConstant(-30);
+  strutDamper->setDamperConstant(30);
   group->addChild(strutDamper);
   group->connect(normalForceSum->getPort("input1"),
                  strutDamper->getPort("force"));
@@ -136,7 +136,7 @@ main(int argc, char *argv[])
   
   WheelContact* wheelContact = new WheelContact("Wheel Contact");
   wheelContact->setWheelRadius(0.3);
-  wheelContact->setSpringConstant(1000);
+  wheelContact->setSpringConstant(20000);
   wheelContact->setSpringDamping(sqrt(wheelContact->getSpringConstant())/10);
   group->addChild(wheelContact);
   rimAndTire->addLink("link2");
