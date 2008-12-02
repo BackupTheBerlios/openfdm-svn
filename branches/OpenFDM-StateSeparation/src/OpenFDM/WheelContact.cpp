@@ -43,12 +43,23 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
 
   // FIXME, for now relative position
   Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
-  Vector3 refPos = frame.posToRef(position);
 
+  // FIXME, frame is constant in its parameters move into a useful context.
+  // Can also make use of that in the Sensor and so on..
+  // Also need Coordinate systems within a frame
+  Frame mountFrame;
+  mountFrame.setPosAndVel(frame, position,
+                          Quaternion::unit(), Vector6::zeros());
+  mountFrame.setAccel(frame, Vector6::zeros());
+
+  // This might go into the environment???
+  // Query at a position wrt a coordinate system
+  Vector3 refPos = frame.posToRef(position);
+  // Vector3 refPos = mountFrame.posToRef(Vector3::zeros());
   GroundValues groundValues = environment->getGroundPlane(task.getTime(), refPos);
 
   // Transform the plane equation to the local frame.
-  Plane lp = frame.planeFromRef(groundValues.plane);
+  Plane lp = mountFrame.planeFromRef(groundValues.plane);
   
   // Get the intersection length.
   real_type distHubGround = fabs(lp.getDist(Vector3::zeros()));
@@ -61,14 +72,14 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
   Vector3 contactPoint = distHubGround*lp.getNormal();
   
   // The velocity of the ground patch in the current frame.
-  Vector6 groundVel(frame.rotFromRef(groundValues.vel.getAngular()),
-                    frame.rotFromRef(groundValues.vel.getLinear()));
-  groundVel -= frame.getRefVel();
+  Vector6 groundVel(mountFrame.rotFromRef(groundValues.vel.getAngular()),
+                    mountFrame.rotFromRef(groundValues.vel.getLinear()));
+  groundVel -= mountFrame.getRefVel();
   // Now get the relative velocity of the ground wrt the hub
   Vector6 relVel = - groundVel;
-//   Log(Model,Error) << trans(frame.getRelVel()) << " "
+//   Log(Model,Error) << trans(mountFrame.getRelVel()) << " "
 //                    << trans(groundVel) << " "
-//                    << trans(frame.motionToParent(relVel)) << endl;
+//                    << trans(mountFrame.motionToParent(relVel)) << endl;
 
 
   // The velocity perpandicular to the plane.
@@ -83,7 +94,7 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
   
   // Get a transform from the current frames coordinates into
   // wheel coordinates.
-  // The wheel coordinates x asxis is defined by the forward orientation
+  // The wheel coordinates x axis is defined by the forward orientation
   // of the wheel, the z axis points perpandicular to the ground
   // plane downwards.
   Vector3 forward = normalize(cross(Vector3::unit(1), lp.getNormal()));
