@@ -28,8 +28,8 @@ class MovingGround : public AbstractGround {
 public:
   MovingGround(const Vector3& linearVelocity) : mVelocity(linearVelocity)
   { }
-  virtual GroundValues getGroundPlane(const Environment&, const real_type& t,
-                                      const Vector3& refPos) const
+  virtual GroundValues getGroundPlane(const Environment&, const real_type&,
+                                      const Vector3&) const
   {
     return GroundValues(Plane(Vector3(0, 0, -1), Vector3::zeros()),
                         Vector6(Vector3::zeros(), mVelocity),
@@ -51,13 +51,13 @@ main(int argc, char *argv[])
 
   PrismaticJoint* prismaticJoint = new PrismaticJoint("Normal Force joint");
   prismaticJoint->setAxis(Vector3::unit(2));
+  prismaticJoint->setEnableExternalForce(true);
   group->addChild(prismaticJoint);
 
   Summer* normalForceSum = new Summer("Normal Force Sum");
   normalForceSum->setNumSummands(2);
-  normalForceSum->setInputSign(0, Summer::Minus);
   group->addChild(normalForceSum);
-  group->connect(prismaticJoint->getPort("input"),
+  group->connect(prismaticJoint->getPort("force"),
                  normalForceSum->getPort("output"));
 
   ConstModel* normalForce = new ConstModel("Normal force");
@@ -68,7 +68,7 @@ main(int argc, char *argv[])
  
   LinearSpringDamper* strutDamper = new LinearSpringDamper("Strut Damper");
   strutDamper->setSpringConstant(0);
-  strutDamper->setDamperConstant(30);
+//   strutDamper->setDamperConstant(30);
   group->addChild(strutDamper);
   group->connect(normalForceSum->getPort("input1"),
                  strutDamper->getPort("force"));
@@ -136,7 +136,7 @@ main(int argc, char *argv[])
   
   WheelContact* wheelContact = new WheelContact("Wheel Contact");
   wheelContact->setWheelRadius(0.3);
-  wheelContact->setSpringConstant(20000);
+  wheelContact->setSpringConstant(100000);
   wheelContact->setSpringDamping(sqrt(wheelContact->getSpringConstant())/10);
   group->addChild(wheelContact);
   rimAndTire->addLink("link2");
