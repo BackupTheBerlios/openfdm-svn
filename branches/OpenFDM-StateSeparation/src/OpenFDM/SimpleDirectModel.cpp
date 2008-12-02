@@ -122,7 +122,7 @@ SimpleDirectModel::newModelContext(PortValueList& portValueList) const
       if (sz(j) == 0) {
         sz(j) = sz2(j);
       } else {
-        if (sz(j) != sz2(j)) {
+        if (sz2(j) != 0 && sz(j) != sz2(j)) {
           Log(Initialization, Info)
             << "Port size " << j << " does not match for model \""
             << getName() << "\"!" << std::endl;
