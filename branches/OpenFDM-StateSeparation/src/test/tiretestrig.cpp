@@ -68,7 +68,7 @@ main(int argc, char *argv[])
  
   LinearSpringDamper* strutDamper = new LinearSpringDamper("Strut Damper");
   strutDamper->setSpringConstant(0);
-//   strutDamper->setDamperConstant(30);
+  strutDamper->setDamperConstant(30);
   group->addChild(strutDamper);
   group->connect(normalForceSum->getPort("input1"),
                  strutDamper->getPort("force"));
@@ -151,7 +151,7 @@ main(int argc, char *argv[])
   if (!system->init())
     return 1;
 
-  system->simulate(60);
+  system->simulate(10);
   
   return EXIT_SUCCESS;
 }

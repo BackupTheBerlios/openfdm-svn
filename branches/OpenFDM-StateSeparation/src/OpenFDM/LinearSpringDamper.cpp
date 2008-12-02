@@ -39,7 +39,7 @@ LinearSpringDamper::output(const Task&, const DiscreteStateValueVector&,
   real_type position = portValues[mPositionPort];
   real_type vel = portValues[mVelocityPort];
   real_type displacement = position - mSpringReference;
-  portValues[mForcePort] = mSpringConstant*displacement + vel*mDamperConstant;
+  portValues[mForcePort] = mSpringConstant*displacement - vel*mDamperConstant;
 }
 
 const real_type&
