@@ -149,15 +149,6 @@ WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
   return (-friction*mFrictionCoeficient*normForce)*slip;
 }
 
-// void
-// WheelContact::getGround(real_type t)
-// {
-//   // Get the position of the contact in the reference system.
-//   Vector3 pos = frame.posToRef(Vector3::zeros());
-//   // Query for the ground parameters at this point.
-//   groundValues = mEnvironment->getGround()->getGroundPlane(t, pos);
-// }
-
 const Vector3&
 WheelContact::getPosition(void) const
 {
