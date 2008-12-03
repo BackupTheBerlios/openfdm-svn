@@ -22,6 +22,8 @@ BEGIN_OPENFDM_OBJECT_DEF(Sensor, Interact)
   DEF_OPENFDM_PROPERTY(Bool, EnableWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnablePressure, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableDensity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableSoundSpeed, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAltitude, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAboveGroundLevel, Serialized)
   END_OPENFDM_OBJECT_DEF
@@ -85,20 +87,30 @@ Sensor::velocity(const Task& task, const ContinousStateValueVector&,
 
   // Atmosphere related sensing
   bool enableAltitude = getEnableAltitude();
+  
   bool enableTemperature = getEnableTemperature();
   bool enablePressure = getEnablePressure();
-  if (enableAltitude || enableTemperature || enablePressure) {
+  bool enableDensity = getEnableDensity();
+  bool enableSoundSpeed = getEnableSoundSpeed();
+  bool enableAtmosphere = (enableTemperature || enablePressure ||
+                           enableDensity || enableSoundSpeed);
+  if (enableAltitude || enableAtmosphere) {
     real_type altitude = environment->getAltitude(refPosition);
     if (enableAltitude)
       portValues[mAltitudePort] = altitude;
 
-    if (enableTemperature || enablePressure) {
-      AtmosphereData data
-        = environment->getAtmosphereData(task.getTime(), altitude);
+    if (enableAtmosphere) {
+      const AbstractAtmosphere* atmosphere = environment->getAtmosphere();
+      AtmosphereData data = atmosphere->getData(task.getTime(), altitude);
       if (enableTemperature)
         portValues[mTemperaturePort] = data.temperature;
       if (enablePressure)
         portValues[mPressurePort] = data.pressure;
+      if (enableDensity)
+        portValues[mDensityPort] = data.density;
+      if (enableSoundSpeed)
+        portValues[mSoundSpeedPort]
+          = atmosphere->getSoundSpeed(data.temperature);
     }
   }
 
@@ -325,6 +337,40 @@ Sensor::getEnablePressure() const
 }
 
 void
+Sensor::setEnableDensity(bool enable)
+{
+  if (enable == getEnableDensity())
+    return;
+  if (enable)
+    mDensityPort = RealOutputPort(this, "density");
+  else
+    mDensityPort.clear();
+}
+
+bool
+Sensor::getEnableDensity() const
+{
+  return !mDensityPort.empty();
+}
+
+void
+Sensor::setEnableSoundSpeed(bool enable)
+{
+  if (enable == getEnableSoundSpeed())
+    return;
+  if (enable)
+    mSoundSpeedPort = RealOutputPort(this, "soundSpeed");
+  else
+    mSoundSpeedPort.clear();
+}
+
+bool
+Sensor::getEnableSoundSpeed() const
+{
+  return !mSoundSpeedPort.empty();
+}
+
+void
 Sensor::setEnableAltitude(bool enable)
 {
   if (enable == getEnableAltitude())
@@ -371,6 +417,8 @@ Sensor::setEnableAll(bool enable)
   setEnableWindVelocity(enable);
   setEnableTemperature(enable);
   setEnablePressure(enable);
+  setEnableDensity(enable);
+  setEnableSoundSpeed(enable);
   setEnableAltitude(enable);
   setEnableAboveGroundLevel(enable);
 }

@@ -29,9 +29,9 @@ public:
   { return mGasConstant; }
 
   /// Returns the specific heat ratio
-  real_type getSpecificHeatRatio(real_type temperature) const
+  real_type getSpecificHeatRatio(const real_type& temperature) const
   { return getGamma(temperature); }
-  real_type getGamma(real_type temperature) const
+  real_type getGamma(const real_type& temperature) const
   {
     // Taken from SimTurbine, converted to kelvin
     real_type a = -4.48729540632e-12;
@@ -45,7 +45,7 @@ public:
   { return real_type(1.4); }
 
   /// Returns the specific heat constant
-  real_type getCp(real_type temperature) const
+  real_type getCp(const real_type& temperature) const
   {
     real_type gamma = getGamma(temperature);
     return getGasConstant()*gamma/(gamma-1);
@@ -58,7 +58,7 @@ public:
   }
 
   /// Returns the soundspeed for the given temperature
-  real_type getSoundSpeed(real_type temperature) const
+  real_type getSoundSpeed(const real_type& temperature) const
   { return sqrt(getGamma(temperature)*temperature*getGasConstant()); }
 
   // Get the atmosphere data for a given altitude alt.

@@ -82,6 +82,17 @@ public:
   /// Get availabilty of the pressure output port
   bool getEnablePressure() const;
 
+  /// Set availabilty of the density output port
+  void setEnableDensity(bool enable);
+  /// Get availabilty of the density output port
+  bool getEnableDensity() const;
+
+  /// Set availabilty of the sound speed output port
+  void setEnableSoundSpeed(bool enable);
+  /// Get availabilty of the sound speed output port
+  bool getEnableSoundSpeed() const;
+
+
   /// Set availabilty of the altitude output port
   void setEnableAltitude(bool enable);
   /// Get availabilty of the altitude output port
@@ -91,6 +102,7 @@ public:
   void setEnableAboveGroundLevel(bool enable);
   /// Get availabilty of the above ground level output port
   bool getEnableAboveGroundLevel() const;
+
 
   /// Set availabilty of all output ports
   /// This is mostly for convinience in testing
@@ -115,7 +127,8 @@ protected:
 
   RealOutputPort mTemperaturePort;
   RealOutputPort mPressurePort;
-//   RealOutputPort mDensityPort;
+  RealOutputPort mDensityPort;
+  RealOutputPort mSoundSpeedPort;
 
   RealOutputPort mAltitudePort;
   RealOutputPort mAboveGroundLevelPort;
