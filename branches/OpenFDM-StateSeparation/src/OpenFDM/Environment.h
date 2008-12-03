@@ -26,32 +26,32 @@ public:
 
   void setInertial(const AbstractInertial* inertial)
   { mInertial = inertial; }
-  const AbstractInertial* getInertial()
+  const AbstractInertial* getInertial() const
   { return mInertial; }
 
   void setGravity(const AbstractGravity* gravity)
   { mGravity = gravity; }
-  const AbstractGravity* getGravity()
+  const AbstractGravity* getGravity() const
   { return mGravity; }
 
   void setWind(const AbstractWind* wind)
   { mWind = wind; }
-  const AbstractWind* getWind()
+  const AbstractWind* getWind() const
   { return mWind; }
 
   void setPlanet(const AbstractPlanet* planet)
   { mPlanet = planet; }
-  const AbstractPlanet* getPlanet()
+  const AbstractPlanet* getPlanet() const
   { return mPlanet; }
 
   void setAtmosphere(const AbstractAtmosphere* atmosphere)
   { mAtmosphere = atmosphere; }
-  const AbstractAtmosphere* getAtmosphere()
+  const AbstractAtmosphere* getAtmosphere() const
   { return mAtmosphere; }
 
   void setGround(const AbstractGround* ground)
   { mGround = ground; }
-  const AbstractGround* getGround()
+  const AbstractGround* getGround() const
   { return mGround; }
 
   ///////////////////////////////////////////////////////////////////////////
