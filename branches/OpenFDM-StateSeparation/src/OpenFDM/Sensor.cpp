@@ -22,6 +22,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Sensor, Interact)
   DEF_OPENFDM_PROPERTY(Bool, EnableWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnablePressure, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableAltitude, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAboveGroundLevel, Serialized)
   END_OPENFDM_OBJECT_DEF
 
@@ -83,14 +84,22 @@ Sensor::velocity(const Task& task, const ContinousStateValueVector&,
   }
 
   // Atmosphere related sensing
+  bool enableAltitude = getEnableAltitude();
   bool enableTemperature = getEnableTemperature();
   bool enablePressure = getEnablePressure();
-  if (enableTemperature || enablePressure) {
-    AtmosphereData data = environment->getAtmosphereData(refPosition);
-    if (enableTemperature)
-      portValues[mTemperaturePort] = data.temperature;
-    if (enablePressure)
-      portValues[mPressurePort] = data.pressure;
+  if (enableAltitude || enableTemperature || enablePressure) {
+    real_type altitude = environment->getAltitude(refPosition);
+    if (enableAltitude)
+      portValues[mAltitudePort] = altitude;
+
+    if (enableTemperature || enablePressure) {
+      AtmosphereData data
+        = environment->getAtmosphereData(task.getTime(), altitude);
+      if (enableTemperature)
+        portValues[mTemperaturePort] = data.temperature;
+      if (enablePressure)
+        portValues[mPressurePort] = data.pressure;
+    }
   }
 
   if (getEnableAboveGroundLevel()) {
@@ -316,6 +325,23 @@ Sensor::getEnablePressure() const
 }
 
 void
+Sensor::setEnableAltitude(bool enable)
+{
+  if (enable == getEnableAltitude())
+    return;
+  if (enable)
+    mAltitudePort = RealOutputPort(this, "altitude");
+  else
+    mAltitudePort.clear();
+}
+
+bool
+Sensor::getEnableAltitude() const
+{
+  return !mAltitudePort.empty();
+}
+
+void
 Sensor::setEnableAboveGroundLevel(bool enable)
 {
   if (enable == getEnableAboveGroundLevel())
@@ -345,6 +371,7 @@ Sensor::setEnableAll(bool enable)
   setEnableWindVelocity(enable);
   setEnableTemperature(enable);
   setEnablePressure(enable);
+  setEnableAltitude(enable);
   setEnableAboveGroundLevel(enable);
 }
 

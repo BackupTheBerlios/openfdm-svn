@@ -82,9 +82,14 @@ public:
   /// Get availabilty of the pressure output port
   bool getEnablePressure() const;
 
-  /// Set availabilty of the pressure output port
+  /// Set availabilty of the altitude output port
+  void setEnableAltitude(bool enable);
+  /// Get availabilty of the altitude output port
+  bool getEnableAltitude() const;
+
+  /// Set availabilty of the above ground level output port
   void setEnableAboveGroundLevel(bool enable);
-  /// Get availabilty of the pressure output port
+  /// Get availabilty of the above ground level output port
   bool getEnableAboveGroundLevel() const;
 
   /// Set availabilty of all output ports
@@ -112,6 +117,7 @@ protected:
   RealOutputPort mPressurePort;
 //   RealOutputPort mDensityPort;
 
+  RealOutputPort mAltitudePort;
   RealOutputPort mAboveGroundLevelPort;
 };
 

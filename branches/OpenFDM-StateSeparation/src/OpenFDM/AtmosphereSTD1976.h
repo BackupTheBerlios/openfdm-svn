@@ -35,7 +35,7 @@ public:
   { mSlTemperature = temperature; }
 
   // Get the atmosphere data for a given height.
-  virtual AtmosphereData getData(const real_type& alt) const;
+  virtual AtmosphereData getData(const real_type&, const real_type& alt) const;
 private:
 
   static const real_type mHydrostaticConstant;

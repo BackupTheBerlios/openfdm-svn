@@ -62,7 +62,8 @@ public:
   { return sqrt(getGamma(temperature)*temperature*getGasConstant()); }
 
   // Get the atmosphere data for a given altitude alt.
-  virtual AtmosphereData getData(const real_type& alt) const;
+  virtual AtmosphereData
+  getData(const real_type& t, const real_type& alt) const;
 
 protected:
   AbstractAtmosphere(const real_type& gasConstant);

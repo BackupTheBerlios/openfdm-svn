@@ -101,6 +101,11 @@ protected:
     return mPlanet->toCart(geod);
   }
 public:
+  real_type getAltitude(const Vector3& position) const
+  {
+    Geodetic geod = mPlanet->toGeod(position);
+    return geod.altitude;
+  }
   Plane getHorizontalLocalPlane(const Vector3& position) const
   {
     // Get the unit down vector.
@@ -124,11 +129,9 @@ public:
 
   ///////////////////////////////////////////////////////////////////////////
   // Atmosphere sensing related
-  AtmosphereData getAtmosphereData(const Vector3& position) const
-  {
-    Geodetic geod = mPlanet->toGeod(position);
-    return mAtmosphere->getData(geod.altitude);
-  }
+  AtmosphereData
+  getAtmosphereData(const real_type& t, const real_type& altitude) const
+  { return mAtmosphere->getData(t, altitude); }
 
   ///////////////////////////////////////////////////////////////////////////
   // Intersection interaction related

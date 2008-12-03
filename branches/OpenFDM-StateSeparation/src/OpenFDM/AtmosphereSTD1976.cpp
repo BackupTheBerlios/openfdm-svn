@@ -41,7 +41,7 @@ AtmosphereSTD1976::~AtmosphereSTD1976(void)
 }
 
 AtmosphereData
-AtmosphereSTD1976::getData(const real_type& altitude) const
+AtmosphereSTD1976::getData(const real_type&, const real_type& altitude) const
 {
   real_type alt = altitude;
   // We cannot compute data for negative altitudes, just treat them as 0 alt

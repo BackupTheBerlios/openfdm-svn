@@ -16,7 +16,7 @@ AbstractAtmosphere::~AbstractAtmosphere(void)
 }
 
 AtmosphereData
-AbstractAtmosphere::getData(const real_type& alt) const
+AbstractAtmosphere::getData(const real_type&, const real_type& alt) const
 {
   AtmosphereData data;
   // Sea level pressure = 101325 N/m2
