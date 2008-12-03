@@ -36,12 +36,11 @@ public:
   void setCoord(const real_type& coord);
   const real_type& getCoord(void) const;
 
-  const Vector3& getRefPosition(void) const;
   const Vector6& getAirSpeed(void) const;
   const Vector3& getMach(void) const;
   const real_type& getTrueSpeed(void) const;
-  const real_type& getEquivalentAirSpeed(void) const;
-  const real_type& getCalibratedAirSpeed(void) const;
+//   const real_type& getEquivalentAirSpeed(void) const;
+//   const real_type& getCalibratedAirSpeed(void) const;
   const real_type& getDynamicPressure(void) const;
   const real_type& getAlpha(void) const;
   const real_type& getAlphaDot(void) const;
@@ -65,23 +64,6 @@ public:
   const real_type& getWingSpanOver2Speed(void) const;
   const real_type& getCoordOver2Speed(void) const;
   const real_type& getHOverWingSpan(void) const;
-
-  const real_type& getAltitude(void) const;
-  const real_type& getAboveGroundLevel(void) const;
-
-  const real_type& getPressure(void) const;
-  const real_type& getDensity(void) const;
-  const real_type& getSoundSpeed(void) const;
-  const real_type& getTemperature(void) const;
-
-
-  const real_type& getPressureSeaLevel(void) const;
-  const real_type& getDensitySeaLevel(void) const;
-  const real_type& getSoundSpeedSeaLevel(void) const;
-  const real_type& getTemperatureSeaLevel(void) const;
-
-  const Vector3& getUnitDown(void) const;
-  const Plane& getLocalGroundPlane(void) const;
 
 protected:
   virtual void setEnvironment(Environment* environment);

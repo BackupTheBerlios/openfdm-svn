@@ -31,9 +31,6 @@ AeroForce::AeroForce(const std::string& name)
   addOutputPort("wingArea", this, &AeroForce::getWingArea);
   addOutputPort("coord", this, &AeroForce::getCoord);
 
-  addOutputPort("altitude", this, &AeroForce::getAltitude);
-  addOutputPort("aboveGroundLevel", this, &AeroForce::getAboveGroundLevel);
-
   addOutputPort("trueSpeed", this, &AeroForce::getTrueSpeed);
   addOutputPort("dynamicPressure", this, &AeroForce::getDynamicPressure);
   addOutputPort("alpha", this, &AeroForce::getAlpha);
@@ -43,17 +40,13 @@ AeroForce::AeroForce(const std::string& name)
 //   addOutputPort("mach", this, &AeroForce::getMach);
   addOutputPort("machNumber", this, &AeroForce::getMachNumber);
   addOutputPort("trueSpeedUW", this, &AeroForce::getTrueSpeedUW);
+
   addOutputPort("wingSpanOver2Speed", this, &AeroForce::getWingSpanOver2Speed);
   addOutputPort("coordOver2Speed", this, &AeroForce::getCoordOver2Speed);
   addOutputPort("hOverWingSpan", this, &AeroForce::getHOverWingSpan);
 
-  addOutputPort("equivalentAirSpeed", this, &AeroForce::getEquivalentAirSpeed);
-  addOutputPort("calibratedAirSpeed", this, &AeroForce::getCalibratedAirSpeed);
-
-  addOutputPort("pressure", this, &AeroForce::getPressure);
-  addOutputPort("density", this, &AeroForce::getDensity);
-  addOutputPort("soundSpeed", this, &AeroForce::getSoundSpeed);
-  addOutputPort("temperature", this, &AeroForce::getTemperature);
+//   addOutputPort("equivalentAirSpeed", this, &AeroForce::getEquivalentAirSpeed);
+//   addOutputPort("calibratedAirSpeed", this, &AeroForce::getCalibratedAirSpeed);
 
   addOutputPort("u", this, &AeroForce::getBodyU);
   addOutputPort("v", this, &AeroForce::getBodyV);
@@ -183,19 +176,6 @@ AeroForce::getCoord(void) const
   return mCoord;
 }
 
-const Vector3&
-AeroForce::getRefPosition(void) const
-{
-  if (mDirtyRefPosition) {
-    // Get the position in the earth centered coordinate frame.
-    mRefPosition = mMountFrame->getRefPosition();
-    mDirtyRefPosition = false;
-  }
-  Log(ArtBody, Debug3) << "AeroForce::getRefPosition()"
-                       << trans(mRefPosition) << endl;
-  return mRefPosition;
-}
-
 const Vector6&
 AeroForce::getAirSpeed(void) const
 {
@@ -235,25 +215,25 @@ AeroForce::getTrueSpeed(void) const
   return mTrueSpeed;
 }
 
-const real_type&
-AeroForce::getEquivalentAirSpeed(void) const
-{
-  if (mDirtyEquivalentAirSpeed)
-    computeCalEquAirspeed();
-  Log(ArtBody, Debug3) << "AeroForce::getEquivalentAirSpeed()"
-                       << mEquivalentAirSpeed << endl;
-  return mEquivalentAirSpeed;
-}
+// const real_type&
+// AeroForce::getEquivalentAirSpeed(void) const
+// {
+//   if (mDirtyEquivalentAirSpeed)
+//     computeCalEquAirspeed();
+//   Log(ArtBody, Debug3) << "AeroForce::getEquivalentAirSpeed()"
+//                        << mEquivalentAirSpeed << endl;
+//   return mEquivalentAirSpeed;
+// }
 
-const real_type&
-AeroForce::getCalibratedAirSpeed(void) const
-{
-  if (mDirtyCalibratedAirSpeed)
-    computeCalEquAirspeed();
-  Log(ArtBody, Debug3) << "AeroForce::getCalibratedAirSpeed()"
-                       << mCalibratedAirSpeed << endl;
-  return mCalibratedAirSpeed;
-}
+// const real_type&
+// AeroForce::getCalibratedAirSpeed(void) const
+// {
+//   if (mDirtyCalibratedAirSpeed)
+//     computeCalEquAirspeed();
+//   Log(ArtBody, Debug3) << "AeroForce::getCalibratedAirSpeed()"
+//                        << mCalibratedAirSpeed << endl;
+//   return mCalibratedAirSpeed;
+// }
 
 const real_type&
 AeroForce::getDynamicPressure(void) const
@@ -441,132 +421,6 @@ AeroForce::getHOverWingSpan(void) const
     mDirtyHOverWingSpan = false;
   }
   return mHOverWingSpan;
-}
-
-const real_type&
-AeroForce::getAltitude(void) const
-{
-  if (mDirtyAltitude) {
-    // Get the altitude for the atmosphere.
-    Geodetic geod = getPlanet()->toGeod(getRefPosition());
-
-    // Get the Athmosphere information at this position and the given time.
-    mAltitude = geod.altitude;
-    mDirtyAltitude = false;
-  }
-  Log(ArtBody, Debug3) << "AeroForce::getAltitude() " << mAltitude << endl;
-  return mAltitude;
-}
-
-const real_type&
-AeroForce::getAboveGroundLevel(void) const
-{
-  if (mDirtyAboveGroundLevel) {
-    // Compute the intersection point with the ground plane in down direction
-    Vector3 intersectPoint;
-    if (getLocalGroundPlane().intersectLine(getPosition(), getUnitDown(),
-                                            intersectPoint)) {
-      mAboveGroundLevel = norm(intersectPoint);
-    } else {
-      // Hmm, no intersection? down must be parallel to the plane
-      // FIXME, don't know what is best here
-      mAboveGroundLevel = 1000;
-    }
-    mDirtyAboveGroundLevel = false;
-  }
-  Log(ArtBody, Debug3) << "AeroForce::getAboveGroundLevel() "
-                       << mAboveGroundLevel << endl;
-  return mAboveGroundLevel;
-}
-
-const real_type&
-AeroForce::getPressure(void) const
-{
-  computeAtmosphere();
-  Log(ArtBody, Debug3) << "AeroForce::getPressure() "
-                       << mAtmos.pressure << endl;
-  return mAtmos.pressure;
-}
-
-const real_type&
-AeroForce::getDensity(void) const
-{
-  computeAtmosphere();
-  Log(ArtBody, Debug3) << "AeroForce::getDensity() "
-                       << mAtmos.density << endl;
-  return mAtmos.density;
-}
-
-const real_type&
-AeroForce::getSoundSpeed(void) const
-{
-  computeAtmosphere();
-  Log(ArtBody, Debug3) << "AeroForce::getSoundSpeed() "
-                       << mSoundSpeed << endl;
-  return mSoundSpeed;
-}
-
-const real_type&
-AeroForce::getTemperature(void) const
-{
-  computeAtmosphere();
-  Log(ArtBody, Debug3) << "AeroForce::getTemperature() "
-                       << mAtmos.temperature << endl;
-  return mAtmos.temperature;
-}
-
-const real_type&
-AeroForce::getPressureSeaLevel(void) const
-{
-  computeSLAtmosphere();
-  return mSLAtmos.pressure;
-}
-
-const real_type&
-AeroForce::getDensitySeaLevel(void) const
-{
-  computeSLAtmosphere();
-  return mSLAtmos.density;
-}
-
-const real_type&
-AeroForce::getSoundSpeedSeaLevel(void) const
-{
-  computeSLAtmosphere();
-  return mSLSoundSpeed;
-}
-
-const real_type&
-AeroForce::getTemperatureSeaLevel(void) const
-{
-  computeSLAtmosphere();
-  return mSLAtmos.temperature;
-}
-
-const Vector3&
-AeroForce::getUnitDown(void) const
-{
-  if (mDirtyUnitDown) {
-    // Compute the geodetic unit down vector at our current position.
-    // So we will need the orientation of the horizontal local frame at our
-    // current position.
-    Quaternion gcHL = getPlanet()->getGeocHLOrientation(getRefPosition());
-    // Transform that unit down vector to the current frame.
-    mUnitDown = mMountFrame->rotFromRef(gcHL.backTransform(Vector3::unit(2)));
-    mDirtyUnitDown = false;
-  }
-  return mUnitDown;
-}
-
-const Plane&
-AeroForce::getLocalGroundPlane(void) const
-{
-  if (mDirtyLocalGroundPlane) {
-    // Transform the plane equation to the local frame.
-    mLocalGroundPlane = mMountFrame->planeFromRef(mGroundVal.plane);
-    mDirtyLocalGroundPlane = false;
-  }
-  return mLocalGroundPlane;
 }
 
 void
