@@ -18,26 +18,10 @@ FlatPlanet::~FlatPlanet(void)
 {
 }
 
-Geodetic
-FlatPlanet::toGeod(const Vector3& cart) const
+Plane
+FlatPlanet::getHorizont(const Vector3& position) const
 {
-  return Geodetic(cart(0)/(111000*rad2deg),
-                  -cart(1)/(111000*rad2deg),
-                  -cart(2));
-}
-
-Vector3
-FlatPlanet::toCart(const Geodetic& geod) const
-{
-  return Vector3(111000*rad2deg*geod.latitude,
-                 -111000*rad2deg*geod.longitude,
-                 -geod.altitude);
-}
-
-Quaternion
-FlatPlanet::getGeodHLOrientation(const Geodetic&) const
-{
-  return Quaternion::unit();
+  return Plane(Vector3::unit(2), 0);
 }
 
 } // namespace OpenFDM

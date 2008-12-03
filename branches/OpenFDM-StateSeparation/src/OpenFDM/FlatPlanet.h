@@ -26,17 +26,10 @@ public:
    */
   virtual ~FlatPlanet(void);
 
-  /** Transform cartesian coordinates to geodetic coordinates.
+  /** Returns the horizontal plane at zero altitude.
+   *  Plane normal points downward.
    */
-  virtual Geodetic toGeod(const Vector3& cart) const;
-
-  /** Transform geodetic coordinates to cartesian coordinates.
-   */
-  virtual Vector3 toCart(const Geodetic& geod) const;
-
-  /** Orientation of the Geodetic horizontal local frame.
-   */
-  virtual Quaternion getGeodHLOrientation(const Geodetic& pos) const;
+  virtual Plane getHorizont(const Vector3& position) const;
 };
 
 } // namespace OpenFDM

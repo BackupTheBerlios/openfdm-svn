@@ -82,43 +82,14 @@ public:
 
   ///////////////////////////////////////////////////////////////////////////
   // Planet related
-  // FIXME: find out what we really need here, may be some kind of
-  // abstract horizontal local coordinates?
-  // Is responsible for altitude computations ...
-
-  // From the planet these are so far what we need.
-  // FIXME, invent an abstraction for that, may be optimize???
-protected:
-  Vector3 getHorizontalLocalDown(const Vector3& position) const
-  {
-    Quaternion hlOr = mPlanet->getGeodHLOrientation(position);
-    return hlOr.backTransform(Vector3::unit(2));
-  }
-  Vector3 getHorizontalLocalOffset(const Vector3& position) const
-  {
-    Geodetic geod = mPlanet->toGeod(position);
-    geod.altitude = 0;
-    return mPlanet->toCart(geod);
-  }
-public:
   real_type getAltitude(const Vector3& position) const
-  {
-    Geodetic geod = mPlanet->toGeod(position);
-    return geod.altitude;
-  }
+  { return - mPlanet->getHorizont(position).getDist(position); }
   Plane getHorizontalLocalPlane(const Vector3& position) const
-  {
-    // Get the unit down vector.
-    Vector3 unitDown = getHorizontalLocalDown(position);
-    // Get the distance from the planets center.
-    Vector3 groundOff = getHorizontalLocalOffset(position);
-    // Then we know the plane ...
-    return Plane(unitDown, groundOff);
-  }
+  { return mPlanet->getHorizont(position); }
   real_type getAboveGroundLevel(const real_type& t, const Vector3& pos) const
   {
     // Get the unit down vector.
-    Vector3 unitDown = getHorizontalLocalDown(pos);
+    Vector3 unitDown = mPlanet->getHorizont(pos).getNormal();
     GroundValues groundValues = getGroundPlane(t, pos);
     Vector3 intersectPoint;
     if (groundValues.plane.intersectLine(pos, unitDown, intersectPoint))
