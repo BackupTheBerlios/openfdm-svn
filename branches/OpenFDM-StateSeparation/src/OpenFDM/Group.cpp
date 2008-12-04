@@ -35,69 +35,131 @@ Group::accept(ConstNodeVisitor& visitor) const
 void Group::traverse(NodeVisitor& visitor)
 {
   ChildList::const_iterator i;
-  for (i = _childList.begin(); i != _childList.end(); ++i)
+  for (i = mChildList.begin(); i != mChildList.end(); ++i)
     (*i)->accept(visitor);
 }
 
 void Group::traverse(ConstNodeVisitor& visitor) const
 {
   ChildList::const_iterator i;
-  for (i = _childList.begin(); i != _childList.end(); ++i)
+  for (i = mChildList.begin(); i != mChildList.end(); ++i)
     (*i)->accept(visitor);
 }
 
 unsigned
-Group::addChild(const SharedPtr<Node>& node)
+Group::addChild(Node* node)
 {
   if (!node)
     return ~0u;
   if (!node->addParent(this))
     return ~0u;
-  _childList.push_back(node);
-  return _childList.size() - 1;
+  mChildList.push_back(node);
+  return mChildList.size() - 1;
 }
 
-bool
+void
 Group::removeChild(const Node* node)
 {
   ChildList::iterator i;
-  i = std::find(_childList.begin(), _childList.end(), node);
-  if (i == _childList.end())
-    return false;
-  _childList.erase(i);
-  return true;
+  i = std::find(mChildList.begin(), mChildList.end(), node);
+  if (i == mChildList.end())
+    return;
+  mChildList.erase(i);
+}
+
+void
+Group::removeChild(unsigned index)
+{
+  if (mChildList.size() <= index)
+    return;
+  ChildList::iterator i = mChildList.begin();
+  std::advance(i, index);
+  mChildList.erase(i);
 }
 
 unsigned
 Group::getNumChildren() const
 {
-  return _childList.size();
+  return mChildList.size();
 }
 
 unsigned
 Group::getChildNumber(const Node* node) const
 {
   ChildList::const_iterator i;
-  i = std::find(_childList.begin(), _childList.end(), node);
-  if (i == _childList.end())
+  i = std::find(mChildList.begin(), mChildList.end(), node);
+  if (i == mChildList.end())
     return ~0u;
-  return std::distance(_childList.begin(), i);
+  return std::distance(mChildList.begin(), i);
 }
 
-SharedPtr<Node>
+Node*
 Group::getChild(unsigned i)
 {
-  if (_childList.size() <= i)
+  if (mChildList.size() <= i)
     return 0;
-  return _childList[i];
+  return mChildList[i];
 }
 
-SharedPtr<const Node>
+const Node*
 Group::getChild(unsigned i) const
 {
-  if (_childList.size() <= i)
+  if (mChildList.size() <= i)
     return 0;
-  return _childList[i];
+  return mChildList[i];
 }
+
+unsigned
+Group::getNumConnects() const
+{
+  return mConnectList.size();
+}
+
+Connect*
+Group::getConnect(unsigned i)
+{
+  if (mConnectList.size() <= i)
+    return 0;
+  return mConnectList[i];
+}
+
+const Connect*
+Group::getConnect(unsigned i) const
+{
+  if (mConnectList.size() <= i)
+    return 0;
+  return mConnectList[i];
+}
+
+void
+Group::removeConnect(unsigned index)
+{
+  if (mConnectList.size() <= index)
+    return;
+  ConnectList::iterator i = mConnectList.begin();
+  std::advance(i, index);
+  mConnectList.erase(i);
+}
+
+void
+Group::removeConnect(const Connect* connect)
+{
+  ConnectList::iterator i;
+  i = std::find(mConnectList.begin(), mConnectList.end(), connect);
+  if (i == mConnectList.end())
+    return;
+  mConnectList.erase(i);
+}
+
+unsigned
+Group::getConnectNumber(const Connect* connect) const
+{
+  ConnectList::const_iterator i;
+  i = std::find(mConnectList.begin(), mConnectList.end(), connect);
+  if (i == mConnectList.end())
+    return ~0u;
+  return std::distance(mConnectList.begin(), i);
+}
+
 
 } // namespace OpenFDM

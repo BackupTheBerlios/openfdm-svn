@@ -25,6 +25,7 @@ OpenFDMCoreHEADERS = \
   Atomic.h \
   BoolStateInfo.h \
   CentralMassGravity.h \
+  Connect.h \
   ConstNodeVisitor.h \
   ContinousStateInfo.h \
   ContinousStateInfoVector.h \
@@ -144,6 +145,7 @@ OpenFDMCoreSOURCES = \
   AtmosphereSTD1976.cpp \
   Atomic.cpp \
   CentralMassGravity.cpp \
+  Connect.cpp \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
   DoPri5.cpp \
