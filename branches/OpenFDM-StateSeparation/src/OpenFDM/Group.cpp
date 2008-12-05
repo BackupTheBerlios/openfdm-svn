@@ -161,5 +161,16 @@ Group::getConnectIndex(const Connect* connect) const
   return std::distance(mConnectList.begin(), i);
 }
 
+Connect*
+Group::connect(const PortInfo* port0, const PortInfo* port1)
+{
+  SharedPtr<Connect> connect = new Connect(this);
+  if (!connect->setPortInfo0(port0))
+    return 0;
+  if (!connect->setPortInfo1(port1))
+    return 0;
+  mConnectList.push_back(connect);
+  return connect.get();
+}
 
 } // namespace OpenFDM

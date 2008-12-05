@@ -53,18 +53,10 @@ public:
   void removeConnect(unsigned i);
   void removeConnect(const Connect* connect);
   unsigned getConnectIndex(const Connect* connect) const;
-
-  Connect* connect(const PortInfo* port0, const PortInfo* port1)
-  {
-    /// FIXME: more logs ...
-    SharedPtr<Connect> connect = new Connect(this);
-    if (!connect->setPortInfo0(port0))
-      return 0;
-    if (!connect->setPortInfo1(port1))
-      return 0;
-    mConnectList.push_back(connect);
-    return connect.get();
-  }
+  
+  /// Create a new connect and connect the given ports with it
+  /// FIXME, this is currently the only way to get a Connect into a group ...
+  Connect* connect(const PortInfo* port0, const PortInfo* port1);
 
 private:
   typedef std::vector<SharedPtr<Connect> > ConnectList;
