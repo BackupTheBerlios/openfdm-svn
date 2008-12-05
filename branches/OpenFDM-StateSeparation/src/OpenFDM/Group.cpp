@@ -84,7 +84,7 @@ Group::getNumChildren() const
 }
 
 unsigned
-Group::getChildNumber(const Node* node) const
+Group::getChildIndex(const Node* node) const
 {
   ChildList::const_iterator i;
   i = std::find(mChildList.begin(), mChildList.end(), node);
@@ -152,7 +152,7 @@ Group::removeConnect(const Connect* connect)
 }
 
 unsigned
-Group::getConnectNumber(const Connect* connect) const
+Group::getConnectIndex(const Connect* connect) const
 {
   ConnectList::const_iterator i;
   i = std::find(mConnectList.begin(), mConnectList.end(), connect);

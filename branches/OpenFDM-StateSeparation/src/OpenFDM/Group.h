@@ -43,7 +43,7 @@ public:
   const Node* getChild(unsigned i) const;
   /// Get child number of the given node. If the node is not contained in
   /// the group ~0u is returned.
-  unsigned getChildNumber(const Node* node) const;
+  unsigned getChildIndex(const Node* node) const;
 
 
   /// Connect api
@@ -52,7 +52,7 @@ public:
   const Connect* getConnect(unsigned i) const;
   void removeConnect(unsigned i);
   void removeConnect(const Connect* connect);
-  unsigned getConnectNumber(const Connect* connect) const;
+  unsigned getConnectIndex(const Connect* connect) const;
 
   Connect* connect(const PortInfo* port0, const PortInfo* port1)
   {
@@ -64,35 +64,6 @@ public:
       return 0;
     mConnectList.push_back(connect);
     return connect.get();
-  }
-
-
-  unsigned getConnectNodeIndex0(unsigned i) const
-  {
-    if (getNumConnects() <= i)
-      return ~0u;
-    return getChildNumber(mConnectList[i]->getPortInfo0()->getNode());
-  }
-  unsigned getConnectNodeIndex1(unsigned i) const
-  {
-    if (getNumConnects() <= i)
-      return ~0u;
-    return getChildNumber(mConnectList[i]->getPortInfo1()->getNode());
-  }
-
-  SharedPtr<const PortInfo>
-  getConnectPortInfo0(unsigned i) const
-  {
-    if (getNumConnects() <= i)
-      return 0;
-    return mConnectList[i]->getPortInfo0();
-  }
-  SharedPtr<const PortInfo>
-  getConnectPortInfo1(unsigned i) const
-  {
-    if (getNumConnects() <= i)
-      return 0;
-    return mConnectList[i]->getPortInfo1();
   }
 
 private:

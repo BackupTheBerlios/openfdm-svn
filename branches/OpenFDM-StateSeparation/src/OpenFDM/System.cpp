@@ -816,31 +816,58 @@ public:
     // Apply the group internal connections to the instances
     unsigned numConnects = group.getNumConnects();
     for (unsigned i = 0; i < numConnects; ++i) {
-      unsigned nodeIndex0 = group.getConnectNodeIndex0(i);
-      if (nodeIndex0 == ~0u) {
-        Log(Schedule, Error)
-          << "Cannot find node from nodeId" << std::endl;
-        continue;
-      }
-      unsigned nodeIndex1 = group.getConnectNodeIndex1(i);
-      if (nodeIndex1 == ~0u) {
-        Log(Schedule, Error)
-          << "Cannot find node from nodeId" << std::endl;
+      SharedPtr<const Connect> connect = group.getConnect(i);
+      if (!connect) {
+        Log(Schedule, Warning) << "Zero Connect pointer #" << i
+                               << " for Group \""
+                               << Node::toNodePathName(getNodePath())
+                               << "\"" << std::endl;
         continue;
       }
 
-      SharedPtr<const PortInfo> portInfo0 = group.getConnectPortInfo0(i);
+      SharedPtr<const PortInfo> portInfo0 = connect->getPortInfo0();
       if (!portInfo0) {
-        Log(Schedule, Error) << "Cannot find provider Port data node "
-                             << group.getChild(nodeIndex0)->getName()
-                             << std::endl;
+        Log(Schedule, Warning) << "Incomplete connect #" << i << " for Group \""
+                               << Node::toNodePathName(getNodePath())
+                               << "\"" << std::endl;
         continue;
       }
-      SharedPtr<const PortInfo> portInfo1 = group.getConnectPortInfo1(i);
+      SharedPtr<const PortInfo> portInfo1 = connect->getPortInfo1();
       if (!portInfo1) {
-        Log(Schedule, Error) << "Cannot find acceptor Port data node "
-                             << group.getChild(nodeIndex1)->getName()
-                             << std::endl;
+        Log(Schedule, Warning) << "Incomplete connect #" << i << " for Group \""
+                               << Node::toNodePathName(getNodePath())
+                               << "\"" << std::endl;
+        continue;
+      }
+
+      SharedPtr<const Node> node0 = portInfo0->getNode();
+      if (!node0) {
+        Log(Schedule, Warning) << "Dangling port #0 connected in connect #" << i
+                               << " for Group \""
+                               << Node::toNodePathName(getNodePath())
+                               << "\"" << std::endl;
+        continue;
+      }
+      SharedPtr<const Node> node1 = portInfo1->getNode();
+      if (!node1) {
+        Log(Schedule, Warning) << "Dangling port #1 connected in connect #" << i
+                               << " for Group \""
+                               << Node::toNodePathName(getNodePath())
+                               << "\"" << std::endl;
+        continue;
+      }
+      unsigned nodeIndex0 = group.getChildIndex(node0);
+      if (nodeIndex0 == ~0u) {
+        Log(Schedule, Warning) << "Node #0 does no longer belong to group \""
+                               << Node::toNodePathName(getNodePath())
+                               << "\" in connect #" << i << std::endl;
+        continue;
+      }
+      unsigned nodeIndex1 = group.getChildIndex(node1);
+      if (nodeIndex1 == ~0u) {
+        Log(Schedule, Warning) << "Node #1 does no longer belong to group \""
+                               << Node::toNodePathName(getNodePath())
+                               << "\" in connect #" << i << std::endl;
         continue;
       }
 
