@@ -6,9 +6,7 @@
 #define OpenFDM_Environment_H
 
 #include "AbstractAtmosphere.h"
-#include "AbstractGravity.h"
 #include "AbstractGround.h"
-#include "AbstractInertial.h"
 #include "AbstractPlanet.h"
 #include "AbstractWind.h"
 #include "Matrix.h"
@@ -23,16 +21,6 @@ class Environment : public Referenced {
 public:
   Environment();
   virtual ~Environment();
-
-  void setInertial(const AbstractInertial* inertial)
-  { mInertial = inertial; }
-  const AbstractInertial* getInertial() const
-  { return mInertial; }
-
-  void setGravity(const AbstractGravity* gravity)
-  { mGravity = gravity; }
-  const AbstractGravity* getGravity() const
-  { return mGravity; }
 
   void setWind(const AbstractWind* wind)
   { mWind = wind; }
@@ -62,16 +50,16 @@ public:
   // Note that the acceleration and velocity must fit together to simulate
   // something useful.
   Vector3 getAngularVelocity(const real_type& t) const
-  { return mInertial->getAngularVelocity(t); }
+  { return mPlanet->getAngularVelocity(t); }
   Vector6 getAcceleration(const real_type& t) const
-  { return mInertial->getAcceleration(t); }
+  { return mPlanet->getAcceleration(t); }
 
   ///////////////////////////////////////////////////////////////////////////
   // Gravity related
 
   // The gravity acceleration vector in the global coordinate system
   Vector3 getGravityAcceleration(const Vector3& position) const
-  { return mGravity->getGravityAcceleration(*this, position); }
+  { return mPlanet->getGravityAcceleration(position); }
 
   ///////////////////////////////////////////////////////////////////////////
   // Wind sensing related
@@ -112,8 +100,6 @@ public:
   }
 
 private:
-  SharedPtr<const AbstractInertial> mInertial;
-  SharedPtr<const AbstractGravity> mGravity;
   SharedPtr<const AbstractWind> mWind;
   SharedPtr<const AbstractPlanet> mPlanet;
   SharedPtr<const AbstractAtmosphere> mAtmosphere;

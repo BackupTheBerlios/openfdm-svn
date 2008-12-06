@@ -4,6 +4,7 @@
 
 #include "EllipticPlanet.h"
 
+#include "Environment.h"
 #include "Types.h"
 #include "Unit.h"
 #include "Vector.h"
@@ -59,6 +60,25 @@ EllipticPlanet::getHorizont(const Vector3& position) const
   geodetic.altitude = 0;
   Vector down = getGeodHLOrientation(geodetic).backTransform(Vector3::unit(2));
   return Plane(down, toCart(geodetic));
+}
+
+Vector3
+EllipticPlanet::getGravityAcceleration(const Vector3& cart) const
+{
+  real_type dist = norm(cart);
+  return (-5.9742e24*gravity_constant/(dist*dist*dist))*cart;
+}
+
+Vector3
+EllipticPlanet::getAngularVelocity(const real_type& t) const
+{
+  return Vector3(0, 0, pi2/(24*60*60));
+}
+
+Vector6
+EllipticPlanet::getAcceleration(const real_type& t) const
+{
+  return Vector6::zeros();
 }
 
 Geodetic

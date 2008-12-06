@@ -11,14 +11,6 @@
 
 using namespace OpenFDM;
 
-class EarthInertial : public AbstractInertial {
-public:
-  virtual Vector3 getAngularVelocity(const real_type& t) const
-  { return Vector3(0, 0, pi2/(24*60*60)); }
-  virtual Vector6 getAcceleration(const real_type& t) const
-  { return Vector6::zeros(); }
-};
-
 int main()
 {
   SharedPtr<EllipticPlanet> planet = new EllipticPlanet;
@@ -62,11 +54,7 @@ int main()
 
   SharedPtr<System> system = new System("System", group);
 
-  SharedPtr<EarthInertial> inertial = new EarthInertial;
-  SharedPtr<CentralMassGravity> gravity = new CentralMassGravity;
-  system->getEnvironment()->setInertial(inertial);
   system->getEnvironment()->setPlanet(planet);
-  system->getEnvironment()->setGravity(gravity);
   system->attach(SystemOutput::newDefaultSystemOutput("foucault"));
 
   if (!system->init())

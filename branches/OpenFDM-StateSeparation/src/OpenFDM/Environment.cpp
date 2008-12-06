@@ -10,8 +10,6 @@
 namespace OpenFDM {
 
 Environment::Environment() :
-  mInertial(new AbstractInertial),
-  mGravity(new AbstractGravity),
   mWind(new AbstractWind),
   mPlanet(new FlatPlanet),
   mAtmosphere(new AtmosphereSTD1976),

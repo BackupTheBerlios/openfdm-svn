@@ -31,6 +31,21 @@ public:
    *  Plane normal points downward.
    */
   virtual Plane getHorizont(const Vector3& position) const = 0;
+
+  /** Returns the gravitational acceleration for the given position.
+   *  Note that this should not contain the effects of a non inertial
+   *  reference frame as this effect is captured by the inertial
+   *  frame methods.
+   */
+  virtual Vector3 getGravityAcceleration(const Vector3&) const = 0;
+
+  /** Return the global reference frames velocity and acceleration.
+   *  Note that these both must fit together to make the simulation
+   *  simulate something usable.
+   *  FIXME: ReferenceFrame class???
+   */
+  virtual Vector3 getAngularVelocity(const real_type& t) const = 0;
+  virtual Vector6 getAcceleration(const real_type& t) const = 0;
 };
 
 } // namespace OpenFDM

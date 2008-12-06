@@ -70,6 +70,21 @@ public:
    */
   virtual Plane getHorizont(const Vector3& position) const;
 
+  /** Returns the gravitational acceleration for the given position.
+   *  Note that this should not contain the effects of a non inertial
+   *  reference frame as this effect is captured by the inertial
+   *  frame methods.
+   */
+  virtual Vector3 getGravityAcceleration(const Vector3&) const;
+
+  /** Return the global reference frames velocity and acceleration.
+   *  Note that these both must fit together to make the simulation
+   *  simulate something usable.
+   */
+  virtual Vector3 getAngularVelocity(const real_type& t) const;
+  virtual Vector6 getAcceleration(const real_type& t) const;
+
+
   /** Transform cartesian coordinates to geodetic coordinates.
    */
   Geodetic toGeod(const Vector3& cart) const;

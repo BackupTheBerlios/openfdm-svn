@@ -2,45 +2,78 @@
  *
  */
 
-#ifndef OpenFDM_CentralMassGravity_H
-#define OpenFDM_CentralMassGravity_H
+#ifndef OpenFDM_CentralMassPlanet_H
+#define OpenFDM_CentralMassPlanet_H
 
 #include "Types.h"
 #include "Vector.h"
-#include "AbstractGravity.h"
+#include "AbstractPlanet.h"
 
 namespace OpenFDM {
 
 /**
- * The CentralMassGravity class.
+ * The CentralMassPlanet class.
  *
  * It holds some information about the gravity the simulation is running on.
  */
-class CentralMassGravity : public AbstractGravity {
+class CentralMassPlanet : public AbstractPlanet {
 public:
   /** CentralMass constructor.
    */
-  CentralMassGravity(void);
+  CentralMassPlanet(void);
 
   /** CentralMass destructor.
    */
-  virtual ~CentralMassGravity(void);
+  virtual ~CentralMassPlanet(void);
 
   /** Get planet mass.
    */
-  real_type getPlanetMass(void) const;
+  const real_type& getMass(void) const;
 
   /** Set planet mass.
    */
-  void setPlanetMass(real_type mass);
+  void setMass(const real_type& mass);
 
-  /** Gravity acceleration at the cartesion position cart.
+  /** Get planet radius.
    */
-  virtual Vector3 getGravityAcceleration(const Environment&,
-                                         const Vector3&) const;
+  const real_type& getRadius(void) const;
+
+  /** Set planet radius.
+   */
+  void setRadius(const real_type& radius);
+
+  /** Get planets angular velocity.
+   */
+  const Vector3& getAngularVelocity(void) const;
+
+  /** Set planes angular velocity.
+   */
+  void setAngularVelocity(const Vector3& angularVelocity);
+
+
+  /** Returns the horizontal plane at zero altitude.
+   *  Plane normal points downward.
+   */
+  virtual Plane getHorizont(const Vector3& position) const;
+
+  /** Returns the gravitational acceleration for the given position.
+   *  Note that this should not contain the effects of a non inertial
+   *  reference frame as this effect is captured by the inertial
+   *  frame methods.
+   */
+  virtual Vector3 getGravityAcceleration(const Vector3&) const;
+
+  /** Return the global reference frames velocity and acceleration.
+   *  Note that these both must fit together to make the simulation
+   *  simulate something usable.
+   */
+  virtual Vector3 getAngularVelocity(const real_type& t) const;
+  virtual Vector6 getAcceleration(const real_type& t) const;
 
 private:
   real_type mMass;
+  real_type mRadius;
+  Vector3 mAngularVelocity;
 };
 
 } // namespace OpenFDM

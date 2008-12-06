@@ -13,8 +13,6 @@ endif
 
 OpenFDMCoreHEADERS = \
   AbstractAtmosphere.h \
-  AbstractGravity.h \
-  AbstractInertial.h \
   AbstractModel.h \
   AbstractNodeContext.h \
   AbstractNodeInstance.h \
@@ -133,9 +131,7 @@ OpenFDMCoreHEADERS = \
 
 OpenFDMCoreSOURCES = \
   AbstractAtmosphere.cpp \
-  AbstractGravity.cpp \
   AbstractGround.cpp \
-  AbstractInertial.cpp \
   AbstractModel.cpp \
   AbstractNodeContext.cpp \
   AbstractNodeInstance.cpp \
