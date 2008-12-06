@@ -147,6 +147,10 @@ public:
     assignNewRef(id);
     return 0 <= id;
   }
+  bool flush()
+  {
+    return 0 == H5Fflush(getId(), H5F_SCOPE_LOCAL);
+  }
 };
 
 class HDFMatrix : public HDF5Object {
@@ -299,6 +303,7 @@ public:
     DumperList::iterator i;
     for (i = mDumperList.begin(); i != mDumperList.end(); ++i)
       (*i)->append();
+    mHDF5File.flush();
   }
 
   virtual void attachTo(const System* system)
