@@ -41,17 +41,33 @@ public:
    */
   virtual ~WGS84Planet(void);
 
-  /** Get aequatorial radius.
+  /** Get aequatorial radius, also called semi major axis.
    */
-  real_type getAequatorialRadius(void) const;
-
-  /** Set aequatorial radius.
+  const real_type& getAequatorialRadius(void) const;
+  /** Set aequatorial radius, also called semi major axis.
    */
-  void setAequatorialRadius(real_type r);
+  void setAequatorialRadius(const real_type& r);
 
+  /** Get planet flattening.
+   */
+  const real_type& getFlattening() const;
   /** Set planet flattening.
    */
-  void setFlattening(real_type flat);
+  void setFlattening(const real_type& flat);
+
+  /** Get the gravittational constant multiplied by the planets mass.
+   */
+  const real_type& getGM() const;
+  /** Set the gravittational constant multiplied by the planets mass.
+   */
+  void setGM(const real_type& gm);
+
+  /** Get the rotational speed of the planet.
+   */
+  const real_type& getOmega() const;
+  /** Set the rotational speed of the planet.
+   */
+  void setOmega(const real_type& omega);
 
   /** Returns the horizontal plane at zero altitude.
    *  Plane normal points downward.
@@ -93,10 +109,14 @@ private:
   /**
    */
   real_type a;
+  real_type f;
+  real_type a2;
   real_type ra2;
   real_type e;
   real_type e2;
   real_type e4;
+  real_type GM;
+  real_type mOmega;
 };
 
 /** Pretty printing of geodetic coordinates.
