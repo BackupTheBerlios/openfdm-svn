@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_CentralMassPlanet_H
-#define OpenFDM_CentralMassPlanet_H
+#ifndef OpenFDM_SphericalEarth_H
+#define OpenFDM_SphericalEarth_H
 
 #include "Types.h"
 #include "Vector.h"
@@ -12,19 +12,19 @@
 namespace OpenFDM {
 
 /**
- * The CentralMassPlanet class.
+ * The SphericalEarth class.
  *
  * It holds some information about the gravity the simulation is running on.
  */
-class CentralMassPlanet : public AbstractPlanet {
+class SphericalEarth : public AbstractPlanet {
 public:
   /** CentralMass constructor.
    */
-  CentralMassPlanet(void);
+  SphericalEarth(void);
 
   /** CentralMass destructor.
    */
-  virtual ~CentralMassPlanet(void);
+  virtual ~SphericalEarth(void);
 
   /** Get planet mass.
    */

@@ -7,7 +7,6 @@
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
 #include <OpenFDM/EllipticPlanet.h>
-#include <OpenFDM/CentralMassGravity.h>
 
 using namespace OpenFDM;
 

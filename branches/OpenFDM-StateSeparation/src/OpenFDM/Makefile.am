@@ -22,7 +22,6 @@ OpenFDMCoreHEADERS = \
   Assert.h \
   Atomic.h \
   BoolStateInfo.h \
-  CentralMassGravity.h \
   Connect.h \
   ConstNodeVisitor.h \
   ContinousStateInfo.h \
@@ -104,6 +103,7 @@ OpenFDMCoreHEADERS = \
   SampleTime.h \
   ScopeLock.h \
   SharedPtr.h \
+  SphericalEarth.h \
   StateStream.h \
   StateInfo.h \
   StateInfoVector.h \
@@ -140,7 +140,6 @@ OpenFDMCoreSOURCES = \
   Assert.cpp \
   AtmosphereSTD1976.cpp \
   Atomic.cpp \
-  CentralMassGravity.cpp \
   Connect.cpp \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
@@ -180,6 +179,7 @@ OpenFDMCoreSOURCES = \
   PortValue.cpp \
   RigidBody.cpp \
   RootJoint.cpp \
+  SphericalEarth.cpp \
   StateValue.cpp \
   System.cpp \
   SystemOutput.cpp \
