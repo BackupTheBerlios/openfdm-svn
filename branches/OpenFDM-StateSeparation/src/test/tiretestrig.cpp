@@ -147,7 +147,7 @@ main(int argc, char *argv[])
   // set the moving ground
   system->getEnvironment()->setGround(new MovingGround(Vector3(10, 0, 0)));
 
-  system->attach(SystemOutput::newDefaultSystemOutput("tiretestrig.h5"));
+  system->attach(SystemOutput::newDefaultSystemOutput("tiretestrig"));
   if (!system->init())
     return 1;
 

@@ -10,7 +10,6 @@
 #include <OpenFDM/LibraryModel.h>
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
-#include <OpenFDM/SystemOutput.h>
 
 using namespace OpenFDM;
 

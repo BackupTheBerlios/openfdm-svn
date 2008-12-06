@@ -96,7 +96,7 @@ int main()
 //   SharedPtr<System> system = new System("System", buildSimpleMechanicExample());
   SharedPtr<System> system = new System("System", buildSimpleMechanicExample2());
 
-  system->attach(SystemOutput::newDefaultSystemOutput("system.h5"));
+  system->attach(SystemOutput::newDefaultSystemOutput("mechanic"));
 
   if (!system->init())
     return 1;

@@ -67,7 +67,7 @@ int main()
   system->getEnvironment()->setInertial(inertial);
   system->getEnvironment()->setPlanet(planet);
   system->getEnvironment()->setGravity(gravity);
-  system->attach(SystemOutput::newDefaultSystemOutput("foucault.h5"));
+  system->attach(SystemOutput::newDefaultSystemOutput("foucault"));
 
   if (!system->init())
     return 1;

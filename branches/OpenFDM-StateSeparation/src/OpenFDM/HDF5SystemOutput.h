@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_HDF5Writer_H
-#define OpenFDM_HDF5Writer_H
+#ifndef OpenFDM_HDF5SystemOutput_H
+#define OpenFDM_HDF5SystemOutput_H
 
 #include <sstream>
 #include <set>
@@ -285,7 +285,7 @@ private:
 class HDF5SystemOutput : public SystemOutput {
 public:
   HDF5SystemOutput(const std::string& filename, bool outputMechanics = true) :
-    mHDF5File(filename),
+    mHDF5File(filename + ".h5"),
     mToplevelGroup(mHDF5File, "System"),
     mTimeStream(mToplevelGroup, "t", Size(1, 1)),
     mOutputMechanics(outputMechanics)
