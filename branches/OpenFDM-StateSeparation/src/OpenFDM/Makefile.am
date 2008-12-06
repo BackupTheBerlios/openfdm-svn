@@ -31,7 +31,6 @@ OpenFDMCoreHEADERS = \
   CowPtr.h \
   DiscreteStateValueVector.h \
   DoPri5.h \
-  EllipticPlanet.h \
   Environment.h \
   ExplicitAdams.h \
   ExplicitEuler.h \
@@ -127,6 +126,7 @@ OpenFDMCoreHEADERS = \
   Vector.h \
   WeakPtr.h \
   WeakReferenced.h \
+  WGS84Planet.h \
   XMLDumpModelVisitor.h
 
 OpenFDMCoreSOURCES = \
@@ -144,7 +144,6 @@ OpenFDMCoreSOURCES = \
   ConstNodeVisitor.cpp \
   ContinousStateValue.cpp \
   DoPri5.cpp \
-  EllipticPlanet.cpp \
   Environment.cpp \
   ExplicitAdams.cpp \
   ExplicitEuler.cpp \
@@ -185,7 +184,8 @@ OpenFDMCoreSOURCES = \
   SystemOutput.cpp \
   Time.cpp \
   Unit.cpp \
-  Variant.cpp
+  Variant.cpp \
+  WGS84Planet.cpp
 
 #   ReaderWriter.cpp
 

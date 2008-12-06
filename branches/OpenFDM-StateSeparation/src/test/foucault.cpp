@@ -6,13 +6,13 @@
 #include <OpenFDM/Sensor.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
-#include <OpenFDM/EllipticPlanet.h>
+#include <OpenFDM/WGS84Planet.h>
 
 using namespace OpenFDM;
 
 int main()
 {
-  SharedPtr<EllipticPlanet> planet = new EllipticPlanet;
+  SharedPtr<WGS84Planet> planet = new WGS84Planet;
 
   // Model of the paris pendulum or foucault pendulum to test coriolis effects.
 

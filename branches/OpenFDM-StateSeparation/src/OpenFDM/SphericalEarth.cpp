@@ -85,4 +85,61 @@ SphericalEarth::getAcceleration(const real_type&) const
   return Vector6::zeros();
 }
 
+Geocentric
+SphericalEarth::toGeoc(const Vector3& cart) const
+{
+  real_type lon = (cart(0) == 0 && cart(1) == 0)
+    ? real_type(0) : atan2(cart(1), cart(0));
+  real_type nxy = sqrt(cart(0)*cart(0)+cart(1)*cart(1));
+  real_type lat = (nxy == 0 && cart(2) == 0)
+    ? real_type(0) : atan2(cart(2), nxy);
+  return Geocentric(lat, lon, norm(cart));
+}
+
+Vector3
+SphericalEarth::toCart(const Geocentric& geoc) const
+{
+  real_type slat = sin(geoc.latitude);
+  real_type clat = cos(geoc.latitude);
+  real_type slon = sin(geoc.longitude);
+  real_type clon = cos(geoc.longitude);
+  return geoc.radius*Vector3( clat*clon, clat*slon, slat );
+}
+
+Quaternion
+SphericalEarth::getGeocHLOrientation(const Vector3& pos) const
+{
+  return getGeocHLOrientation(toGeoc(pos));
+}
+
+Quaternion
+SphericalEarth::getGeocHLOrientation(const Geocentric& pos) const
+{
+  return Quaternion::fromLonLat(pos.longitude, pos.latitude);
+}
+
+Vector3
+SphericalEarth::getGoecHLRate(const Geocentric& pos, const Vector3& ecVel) const
+{
+  Quaternion hlOrientation = getGeocHLOrientation(pos);
+  Vector3 hlVel = hlOrientation.transform(ecVel);
+  Vector3 hlRate = Vector3(hlVel(1), -hlVel(0), -hlVel(1)*tan(pos.latitude));
+  return hlOrientation.backTransform((1/pos.radius)*hlRate);
+}
+
+Vector3
+SphericalEarth::getGoecHLRate(const Vector3& pos, const Vector3& ecVel) const
+{
+  return getGoecHLRate(toGeoc(pos), ecVel);
+}
+
+std::ostream&
+operator<<(std::ostream& os, const Geocentric& geoc)
+{
+  return os << "[ lon = " << rad2deg*geoc.longitude
+            << ", lat = " << rad2deg*geoc.latitude
+            << ", rad = " << geoc.radius
+            << " ]";
+}
+
 } // namespace OpenFDM
