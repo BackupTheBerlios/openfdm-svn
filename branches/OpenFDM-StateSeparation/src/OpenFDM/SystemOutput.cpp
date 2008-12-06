@@ -11,6 +11,7 @@
 #ifdef HAVE_HDF5_H
 #include "HDF5SystemOutput.h"
 #endif
+#include "CSVSystemOutput.h"
 
 namespace OpenFDM {
 
@@ -30,7 +31,7 @@ SystemOutput::newDefaultSystemOutput(const std::string& filename)
 #ifdef HAVE_HDF5_H
   return new HDF5SystemOutput(filename);
 #else
-  return 0;
+  return new CSVSystemOutput(filename);
 #endif
 }
 
