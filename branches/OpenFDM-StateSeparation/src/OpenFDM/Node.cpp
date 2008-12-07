@@ -169,6 +169,22 @@ Node::checkPort(const PortId& portId) const
   return i != mPortList.end();
 }
 
+class Node::CycleCheckVisitor : public ConstNodeVisitor {
+public:
+  CycleCheckVisitor(const Node* node) :
+    mNode(node), mDetectedCycle(false)
+  { }
+  virtual void apply(const Node& node)
+  {
+    if (mNode == &node)
+      mDetectedCycle = true;
+    else
+      node.ascend(*this);
+  }
+  const Node* mNode;
+  bool mDetectedCycle;
+};
+
 bool
 Node::addParent(Node* parent)
 {
@@ -177,9 +193,23 @@ Node::addParent(Node* parent)
   ParentList::const_iterator i;
   for (i = mParentList.begin(); i != mParentList.end(); ++i) {
     SharedPtr<const Node> lockedParent = i->lock();
-    if (parent == lockedParent)
+    if (parent == lockedParent) {
+      Log(Model, Info) << "Cannot add model \"" << getName()
+                       << "\" a second time to the parent \""
+                       << lockedParent->getName() << "\"" << std::endl;
       return false;
+    }
   }
+
+  CycleCheckVisitor visitor(this);
+  visitor.apply(*parent);
+  if (visitor.mDetectedCycle) {
+    Log(Model, Info) << "Cannot add model \"" << getName()
+                     << "\" to parent \"" << parent->getName()
+                     << "\". Node cannot be parent of itself." << std::endl;
+    return false;
+  }
+
   mParentList.push_back(parent);
   return true;
 }
@@ -215,6 +245,7 @@ NodePathList
 Node::getNodePathList() const
 {
   NodePathListCollectVisitor visitor;
+  visitor.apply(*this);
   return visitor.mNodePathList;
 }
 

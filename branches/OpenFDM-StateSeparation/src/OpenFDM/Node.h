@@ -99,6 +99,7 @@ private:
   typedef std::vector<WeakPtr<Node> > ParentList;
   ParentList mParentList;
 
+  class CycleCheckVisitor;
   class NodePathListCollectVisitor;
 
   /// Sample time handling.

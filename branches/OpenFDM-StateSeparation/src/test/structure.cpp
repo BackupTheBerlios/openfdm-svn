@@ -118,6 +118,29 @@ bool testCyclicDependencyWithGroup2()
   return true;
 }
 
+bool testCyclicParents()
+{
+  SharedPtr<Group> group1 = new Group("Group 1");
+  if (group1->addChild(group1) != ~0u) {
+    std::cerr << "Detection of cyclic parent loops failed! "
+      "Could add group as child of itself." << std::endl;
+    return false;
+  }
+
+  SharedPtr<Group> group2 = new Group("Group 2");
+  if (group1->addChild(group2) == ~0u) {
+    std::cerr << "Could not add unrelated group as child of an other one."
+              << std::endl;
+    return false;
+  }
+  if (group2->addChild(group1) != ~0u) {
+    std::cerr << "Detection of cyclic parent loops failed! "
+      "Could add group as child of a child group." << std::endl;
+    return false;
+  }
+  return true;
+}
+
 int main()
 {
   // Check a self referencing gain model, to see if cyclic loops
@@ -134,6 +157,9 @@ int main()
   if (!testCyclicDependencyWithGroup1())
     return EXIT_FAILURE;
   if (!testCyclicDependencyWithGroup2())
+    return EXIT_FAILURE;
+
+  if (!testCyclicParents())
     return EXIT_FAILURE;
 
   std::cout << "PASSED" << std::endl;
