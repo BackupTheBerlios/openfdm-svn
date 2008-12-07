@@ -130,7 +130,6 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
     - normForce*lp.getNormal();
   
   // We don't have an angular moment.
-  force = -force;
   portValues[mMechanicLink].applyForce(forceFrom(contactPoint, force));
 }
 
@@ -138,7 +137,7 @@ real_type
 WheelContact::computeNormalForce(real_type compressLen, real_type compressVel) const
 {
   return compressLen*mSpringConstant
-    - mSpringDamping*min(compressVel, static_cast<real_type>(0));
+    + mSpringDamping*min(compressVel, static_cast<real_type>(0));
 }
 
 Vector2
