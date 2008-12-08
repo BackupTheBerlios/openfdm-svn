@@ -211,6 +211,7 @@ OpenFDMModelsHEADERS = \
   Gain.h \
   Input.h \
   Integrator.h \
+  InternalSensor.h \
   Joint.h \
   Launchbar.h \
   LinearSpringDamper.h \
@@ -273,6 +274,7 @@ OpenFDMMechanicSOURCES = \
   Joint.cpp \
   ExternalForce.cpp \
   FixedRootJoint.cpp \
+  InternalSensor.cpp \
   Mass.cpp \
   MobileRootJoint.cpp \
   PrismaticJoint.cpp \

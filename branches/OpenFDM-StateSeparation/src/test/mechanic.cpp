@@ -1,5 +1,6 @@
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/Group.h>
+#include <OpenFDM/InternalSensor.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/RevoluteJoint.h>
@@ -52,6 +53,8 @@ Node* buildSimpleMechanicExample2()
   RigidBody *rigidBody = new RigidBody("Rigid Body");
   rigidBody->addLink("link2");
   rigidBody->addLink("sensorLink");
+  rigidBody->addLink("internalSensorLink");
+  rigidBody->addLink("internalSensorLink2");
   group->addChild(rigidBody);
   InertiaMatrix inertia(1, 0, 0, 1, 0, 1);
   Mass* mass = new Mass("Mass", 1, inertia);
@@ -61,6 +64,8 @@ Node* buildSimpleMechanicExample2()
   group->addChild(revoluteJoint);
   RigidBody *rigidBody2 = new RigidBody("Rigid Body 2");
   rigidBody2->addLink("sensorLink");
+  rigidBody2->addLink("internalSensorLink");
+  rigidBody2->addLink("internalSensorLink2");
   group->addChild(rigidBody2);
   Mass* mass2 = new Mass("Mass 2", 1, inertia);
   group->addChild(mass2);
@@ -86,7 +91,30 @@ Node* buildSimpleMechanicExample2()
   ConstModel* jointForce = new ConstModel("Joint Force", 1);
   group->addChild(jointForce);
 
-  group->connect(jointForce->getPort("output"), revoluteJoint->getPort("force"));
+  group->connect(jointForce->getPort("output"),
+                 revoluteJoint->getPort("force"));
+
+  InternalSensor* internalSensor = new InternalSensor("Internal Sensor");
+  internalSensor->setPosition0(Vector3(0, 0, 1));
+  internalSensor->setPosition1(Vector3(0, 0, 0.8));
+  internalSensor->setEnableAll(true);
+  group->addChild(internalSensor);
+  group->connect(internalSensor->getPort("link0"),
+                 rigidBody->getPort("internalSensorLink"));
+  group->connect(internalSensor->getPort("link1"),
+                 rigidBody2->getPort("internalSensorLink"));
+
+
+  InternalSensor* internalSensor2 = new InternalSensor("Internal Sensor 2");
+  internalSensor2->setPosition0(Vector3(0, 0, 0.8));
+  internalSensor2->setPosition1(Vector3(0, 0, 1));
+  internalSensor2->setEnableAll(true);
+  group->addChild(internalSensor2);
+  group->connect(internalSensor2->getPort("link1"),
+                 rigidBody->getPort("internalSensorLink2"));
+  group->connect(internalSensor2->getPort("link0"),
+                 rigidBody2->getPort("internalSensorLink2"));
+
 
   return group.release();
 }
