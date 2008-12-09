@@ -288,15 +288,15 @@ protected:
     void setPortValue(const PortInfo& portInfo, PortValue* portValue)
     { mPortValueList.setPortValue(portInfo.getIndex(), portValue); }
     
-protected:
-  // PortValues
-  PortValueList mPortValueList;
-
-  // Continous States
-  ContinousStateValueVector mContinousState;
-  ContinousStateValueVector mContinousStateDerivative;
-  // Discrete States
-  DiscreteStateValueVector mDiscreteState;
+  protected:
+    // PortValues
+    PortValueList mPortValueList;
+    
+    // Continous States
+    ContinousStateValueVector mContinousState;
+    ContinousStateValueVector mContinousStateDerivative;
+    // Discrete States
+    DiscreteStateValueVector mDiscreteState;
 
   private:
     // Stores some values persistent accross velocity/articulation/acceleration
