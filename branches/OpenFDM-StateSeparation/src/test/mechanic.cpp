@@ -34,7 +34,7 @@ Node* buildSimpleMechanicExample()
 
   Sensor* sensor = new Sensor("Sensor");
   sensor->setPosition(mass->getPosition());
-  sensor->setEnableAll(true);
+  sensor->setEnableAllOutputs(true);
   group->addChild(sensor);
 
   group->connect(mobileRootJoint->getPort("link"), rigidBody->getPort("link0"));
@@ -73,12 +73,12 @@ Node* buildSimpleMechanicExample2()
 
   Sensor* sensor = new Sensor("Sensor");
   sensor->setPosition(mass->getPosition());
-  sensor->setEnableAll(true);
+  sensor->setEnableAllOutputs(true);
   group->addChild(sensor);
 
   Sensor* sensor2 = new Sensor("Sensor 2");
   sensor2->setPosition(mass2->getPosition());
-  sensor2->setEnableAll(true);
+  sensor2->setEnableAllOutputs(true);
   group->addChild(sensor2);
 
   group->connect(mobileRootJoint->getPort("link"), rigidBody->getPort("link0"));
@@ -98,7 +98,7 @@ Node* buildSimpleMechanicExample2()
   InternalSensor* internalSensor = new InternalSensor("Internal Sensor");
   internalSensor->setPosition0(Vector3(0, 0, 1));
   internalSensor->setPosition1(Vector3(0, 0, 0.8));
-  internalSensor->setEnableAll(true);
+  internalSensor->setEnableAllOutputs(true);
   internalSensor->setEnableForce(true);
   group->addChild(internalSensor);
   group->connect(internalSensor->getPort("link0"),
@@ -110,7 +110,7 @@ Node* buildSimpleMechanicExample2()
   InternalSensor* internalSensor2 = new InternalSensor("Internal Sensor 2");
   internalSensor2->setPosition0(Vector3(0, 0, 0.8));
   internalSensor2->setPosition1(Vector3(0, 0, 1));
-  internalSensor2->setEnableAll(true);
+  internalSensor2->setEnableAllOutputs(true);
   group->addChild(internalSensor2);
   group->connect(internalSensor2->getPort("link1"),
                  rigidBody->getPort("internalSensorLink2"));

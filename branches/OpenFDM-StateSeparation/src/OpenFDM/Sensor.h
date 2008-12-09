@@ -106,7 +106,7 @@ public:
 
   /// Set availabilty of all output ports
   /// This is mostly for convinience in testing
-  void setEnableAll(bool enable);
+  void setEnableAllOutputs(bool enable);
 
 protected:
   MechanicLink mMechanicLink;

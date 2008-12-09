@@ -43,7 +43,7 @@ int main()
 
   Sensor* sensor = new Sensor("Sensor");
   sensor->setPosition(mass->getPosition());
-  sensor->setEnableAll(true);
+  sensor->setEnableAllOutputs(true);
   group->addChild(sensor);
 
   group->connect(fixedRootJoint->getPort(0), rotationalJoint1->getPort(0));

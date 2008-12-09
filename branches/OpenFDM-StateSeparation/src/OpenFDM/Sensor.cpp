@@ -405,7 +405,7 @@ Sensor::getEnableAboveGroundLevel() const
 }
 
 void
-Sensor::setEnableAll(bool enable)
+Sensor::setEnableAllOutputs(bool enable)
 {
   setEnablePosition(enable);
   setEnableOrientation(enable);

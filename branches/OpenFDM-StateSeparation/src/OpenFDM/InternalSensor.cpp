@@ -174,7 +174,7 @@ InternalSensor::getEnableForce() const
 }
 
 void
-InternalSensor::setEnableAll(bool enable)
+InternalSensor::setEnableAllOutputs(bool enable)
 {
   setEnableDistance(enable);
   setEnableVelocity(enable);
