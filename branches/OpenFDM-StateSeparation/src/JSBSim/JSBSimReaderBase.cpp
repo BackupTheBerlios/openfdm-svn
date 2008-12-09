@@ -25,7 +25,6 @@
 #include <OpenFDM/Input.h>
 #include <OpenFDM/Output.h>
 #include <OpenFDM/Mass.h>
-#include <OpenFDM/LinearSpringDamper.h>
 #include <OpenFDM/MaxModel.h>
 #include <OpenFDM/AirSpring.h>
 #include <OpenFDM/PrismaticJoint.h>

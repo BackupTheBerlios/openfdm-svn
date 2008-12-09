@@ -7,6 +7,7 @@
 
 #include "Interact.h"
 #include "MechanicLink.h"
+#include "RealInputPort.h"
 #include "RealOutputPort.h"
 #include "Vector.h"
 
@@ -21,6 +22,8 @@ public:
   virtual void initDesignPosition(PortValueList&) const {}
   virtual void velocity(const Task&, const ContinousStateValueVector&,
                         PortValueList&) const;
+  virtual void articulation(const Task&, const ContinousStateValueVector&,
+                            PortValueList&) const;
 
   /// Set the position of the sensor in design coordinates
   void setPosition0(const Vector3& position);
@@ -42,6 +45,11 @@ public:
   /// Get availabilty of the velocity output port
   bool getEnableVelocity() const;
 
+  /// Set availabilty of the force output port
+  void setEnableForce(bool enable);
+  /// Get availabilty of the force output port
+  bool getEnableForce() const;
+
   /// Set availabilty of all output ports
   /// This is mostly for convinience in testing
   void setEnableAll(bool enable);
@@ -55,6 +63,7 @@ protected:
 
   RealOutputPort mDistancePort;
   RealOutputPort mVelocityPort;
+  RealInputPort mForcePort;
 };
 
 } // namespace OpenFDM

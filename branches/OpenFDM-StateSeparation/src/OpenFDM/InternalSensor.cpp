@@ -67,20 +67,36 @@ InternalSensor::velocity(const Task& task, const ContinousStateValueVector&,
   }
 }
 
-/// Force computation:
-//     Vector3 dir;
-//     Vector3 relPos = frame0.getRelPosition(frame1);
-//     // if we have really reached the zero position, we must have the full
-//     // speed in exactly the relPos direction.
-//     real_type nrmRelPos = norm(relPos);
-//     if (nrmRelPos <= Limits<real_type>::min()) {
-//       dir = Vector3::zeros();
-//     } else
-//       dir = (1/nrmRelPos)*relPos;
-//     // Since we assume positive input forces to push the two attached
-//     // RigidBodies, we need that minus sign to negate the current position
-//     // offset
-//     mForce = Vector6(Vector3::zeros(), (-mForcePort.getRealValue())*dir);
+void
+InternalSensor::articulation(const Task& task, const ContinousStateValueVector&,
+                             PortValueList& portValues) const
+{
+  if (getEnableForce()) {
+    const Frame& frame0 = portValues[mMechanicLink0].getFrame();
+    const Frame& frame1 = portValues[mMechanicLink1].getFrame();
+
+    // FIXME, for now relative position
+    Vector3 position0=mPosition0-portValues[mMechanicLink0].getDesignPosition();
+    Vector3 position1=mPosition1-portValues[mMechanicLink1].getDesignPosition();
+    
+    // FIXME, already have that computed in the velocity step
+    Vector3 relPos = frame0.posFromRef(frame1.posToRef(position1)) - position0;
+    real_type nrmRelPos = norm(relPos);
+
+    // If we have reached the zero position, the force vector is undefined.
+    if (Limits<real_type>::min() < nrmRelPos) {
+      Vector3 dir = (1/nrmRelPos)*relPos;
+      // Since we assume positive input forces to push the two attached
+      // RigidBodies, we need that minus sign to negate the current position
+      // offset
+      Vector3 force0 = portValues[mForcePort]*dir;
+      portValues[mMechanicLink0].applyForce(forceFrom(position0, force0));
+      
+      Vector3 force1 = -frame0.getRelOrientation(frame1).transform(force0);
+      portValues[mMechanicLink1].applyForce(forceFrom(position1, force1));
+    }
+  }
+}
 
 void
 InternalSensor::setPosition0(const Vector3& position)
@@ -138,6 +154,23 @@ bool
 InternalSensor::getEnableVelocity() const
 {
   return !mVelocityPort.empty();
+}
+
+void
+InternalSensor::setEnableForce(bool enable)
+{
+  if (enable == getEnableForce())
+    return;
+  if (enable)
+    mForcePort = RealInputPort(this, "force", true);
+  else
+    mForcePort.clear();
+}
+
+bool
+InternalSensor::getEnableForce() const
+{
+  return !mForcePort.empty();
 }
 
 void

@@ -1,6 +1,7 @@
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/Group.h>
 #include <OpenFDM/InternalSensor.h>
+#include <OpenFDM/LinearSpringDamper.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/RevoluteJoint.h>
@@ -98,6 +99,7 @@ Node* buildSimpleMechanicExample2()
   internalSensor->setPosition0(Vector3(0, 0, 1));
   internalSensor->setPosition1(Vector3(0, 0, 0.8));
   internalSensor->setEnableAll(true);
+  internalSensor->setEnableForce(true);
   group->addChild(internalSensor);
   group->connect(internalSensor->getPort("link0"),
                  rigidBody->getPort("internalSensorLink"));
@@ -115,6 +117,16 @@ Node* buildSimpleMechanicExample2()
   group->connect(internalSensor2->getPort("link0"),
                  rigidBody2->getPort("internalSensorLink2"));
 
+  LinearSpringDamper* damper = new LinearSpringDamper("LinearSpringDamper");
+  damper->setSpringConstant(0.5);
+  damper->setDamperConstant(1);
+  group->addChild(damper);
+  group->connect(damper->getPort("velocity"),
+                 internalSensor->getPort("velocity"));
+  group->connect(damper->getPort("position"),
+                 internalSensor->getPort("distance"));
+  group->connect(damper->getPort("force"),
+                 internalSensor->getPort("force"));
 
   return group.release();
 }
