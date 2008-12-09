@@ -128,7 +128,7 @@ protected:
     virtual void initDesignPosition()
     {
       Vector3 jointPosition = mCartesianJoint->getPosition();
-      mRelativePosition = jointPosition - mParentLink->getDesignPosition();
+      mRelativeDesignPosition = jointPosition-mParentLink->getDesignPosition();
       mChildLink->setDesignPosition(jointPosition);
 
       mJointMatrix = mCartesianJoint->getJointMatrix();
@@ -172,7 +172,7 @@ protected:
     void setPosAndVel(const Vector3& position, const Quaternion& orientation,
                       const VectorN& velocity)
     {
-      mChildLink->setPosAndVel(*mParentLink, mRelativePosition + position,
+      mChildLink->setPosAndVel(*mParentLink, mRelativeDesignPosition + position,
                                orientation, mJointMatrix*velocity);
     }
 
@@ -305,7 +305,7 @@ protected:
     VectorN velDot;
     VectorN mJointForce;
 
-    Vector3 mRelativePosition;
+    Vector3 mRelativeDesignPosition;
 
     Matrix6N mJointMatrix;
     
