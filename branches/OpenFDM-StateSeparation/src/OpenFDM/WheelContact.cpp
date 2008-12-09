@@ -66,7 +66,7 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
   Plane lp = mountFrame.planeFromRef(groundValues.plane);
   
   // Get the intersection length.
-  real_type distHubGround = fabs(lp.getDist(Vector3::zeros()));
+  real_type distHubGround = fabs(lp.getDist());
   real_type compressLength = mWheelRadius - distHubGround;
   
   // Don't bother if we do not intersect the ground.
@@ -91,11 +91,6 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
   // negative when decompressed.
   real_type compressVel = - lp.scalarProjectToNormal(relVel.getLinear());
   
-  // Get the plane normal force.
-  real_type normForce = computeNormalForce(compressLength, compressVel);
-  // The normal force cannot get negative here.
-  normForce = max(static_cast<real_type>(0), normForce);
-  
   // Get a transform from the current frames coordinates into
   // wheel coordinates.
   // The wheel coordinates x axis is defined by the forward orientation
@@ -110,7 +105,7 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
 
   // The wheel rotation speed wrt ground
   Vector3 rotVel = relVel.getAngular();
-  real_type omegaR = rotVel(1) * distHubGround;
+  real_type omegaR = dot(rotVel, mAxis) * distHubGround;
 
 //   Log(Model,Error) << trans(groundVel) << " "
 //                    << trans(wheelVel) << " "
@@ -119,6 +114,10 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
 //                    << distHubGround << endl;
 
 
+  // Get the plane normal force.
+  real_type normForce = computeNormalForce(compressLength, compressVel);
+  // The normal force cannot get negative here.
+  normForce = max(static_cast<real_type>(0), normForce);
 
   // Get the friction force.
   Vector2 fricForce = computeFrictionForce(normForce, wheelVel,
@@ -126,7 +125,7 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
   
   // The resulting force is the sum of both.
   // The minus sign is because of the direction of the surface normal.
-  Vector3 force = fricForce(0)*forward + fricForce(1)*side
+  Vector3 force = - fricForce(0)*forward - fricForce(1)*side
     - normForce*lp.getNormal();
   
   // We don't have an angular moment.
@@ -150,7 +149,7 @@ WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
   // The slip angle is the angle between the 'velocity vector' and 
   // the wheel forward direction.
   real_type slipAngle = rad2deg*atan2(vel(1), fabs(vel(0)));
-//   slipAngle = saturate(slipAngle, 10*fabs(vel(2)));
+//   slipAngle = saturate(slipAngle, 10*fabs(vel(1)));
   slipAngle = smoothSaturate(slipAngle, 10*fabs(vel(1)));
   
 //   Vector2 slip(wheelSlip, slipAngle);
