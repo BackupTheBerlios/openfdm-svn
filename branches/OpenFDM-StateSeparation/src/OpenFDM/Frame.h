@@ -12,7 +12,6 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Rotation.h"
-#include "Inertia.h"
 
 namespace OpenFDM {
 
@@ -23,8 +22,19 @@ accelerating coordinate frames.
 
 class Frame {
 public:
-  Frame();
-  ~Frame(void);
+  Frame() :
+    mPosition(Vector3::zeros()),
+    mOrientation(Quaternion::unit()),
+    mRelVel(Vector6::zeros()),
+    mRelVelDot(Vector6::zeros()),
+    mParentSpVel(Vector6::zeros()),
+    mParentSpAccel(Vector6::zeros()),
+    mRefOrient(Quaternion::unit()),
+    mRefPos(Vector3::zeros()),
+    mRefVel(Vector6::zeros())
+  { }
+  ~Frame(void)
+  { }
 
   void setPosAndVel(const Frame& parent)
   {
@@ -243,7 +253,7 @@ public:
   }
 
 
-  /** FIXME
+  /** FIXME belongs into the joints.
    */
   Vector6 getHdot(void) const
   {
@@ -316,14 +326,6 @@ public:
    */
   Vector6 forceToParent(const Vector6& v) const
   { return forceFrom(getPosition(), getOrientation(), v); }
-
-  /** Spatial inertia transform.
-      Transforms a spatial inertia matrix from the current frame to the parent
-      frame.
-      @param I The inertia matrix in the current frame to be transformed.
-      @return  The inertia matrix transformed to the parent frame.
-   */
-  SpatialInertia inertiaToParent(const SpatialInertia& I) const;
 
   Plane planeFromParent(const Plane& plane) const
   { return planeTo(getPosition(), getOrientation(), plane); }

@@ -5,10 +5,11 @@
 #ifndef OpenFDM_MechanicLinkValue_H
 #define OpenFDM_MechanicLinkValue_H
 
+#include "CoordinateSystem.h"
+#include "Environment.h"
+#include "Frame.h"
 #include "Inertia.h"
 #include "PortValue.h"
-#include "Frame.h"
-#include "Environment.h"
 
 namespace OpenFDM {
 
@@ -24,6 +25,16 @@ public:
   { return mFrame; }
   Frame& getFrame()
   { return mFrame; }
+
+  /// Currently duplicate information from the Frame.
+  /// This is an attempt to seperate the coordinate system stuff away from
+  /// the reference frame handling.
+  const CoordinateSystem& getCoordinateSystem() const
+  { return mCoordinateSystem; }
+  CoordinateSystem& getCoordinateSystem()
+  { return mCoordinateSystem; }
+  void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
+  { mCoordinateSystem = coordinateSystem; }
 
   const SpatialInertia& getInertia() const
   { return mArticulatedInertia; }
@@ -68,6 +79,12 @@ public:
   void setDesignPosition(const Vector3& designPosition)
   { mDesignPosition = designPosition; }
 
+  /// Returns the spatial reference velocity at the local position
+  Vector6 getReferenceVelocity(const Vector3& position) const
+  { return motionTo(position, mFrame.getRefVel()); }
+  Vector6 getReferenceVelocity() const
+  { return mFrame.getRefVel(); }
+
   // This is a per link value because of interacts that can be child of two
   // different roots.
   // FIXME, enforce setting that in the contructor
@@ -78,9 +95,9 @@ public:
   { OpenFDMAssert(environment); mEnvironment = environment; }
 
 protected:
-  // May be build a class hierarchy that accounts for different inputs
-  // and outputs a rigid body can have.
-  // Example: force port, force and inertia, frame port, velocity port
+  /// The local coordinate system of the mechanic link.
+  CoordinateSystem mCoordinateSystem;
+
   Frame mFrame;
   Vector6 mArticulatedForce;
   SpatialInertia mArticulatedInertia;

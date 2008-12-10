@@ -28,6 +28,7 @@ OpenFDMCoreHEADERS = \
   ContinousStateInfoVector.h \
   ContinousStateValue.h \
   ContinousStateValueVector.h \
+  CoordinateSystem.h \
   CowPtr.h \
   DiscreteStateValueVector.h \
   DoPri5.h \
@@ -148,7 +149,6 @@ OpenFDMCoreSOURCES = \
   ExplicitAdams.cpp \
   ExplicitEuler.cpp \
   FlatPlanet.cpp \
-  Frame.cpp \
   Function.cpp \
   Group.cpp \
   GroupInterfaceNode.cpp \

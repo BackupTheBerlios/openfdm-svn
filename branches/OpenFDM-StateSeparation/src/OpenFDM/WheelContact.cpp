@@ -43,28 +43,21 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
   const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();
 
-  const Frame& frame = portValues[mMechanicLink].getFrame();
+  const CoordinateSystem& cs = portValues[mMechanicLink].getCoordinateSystem();
 
   // FIXME, for now relative position
   Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
 
-  // FIXME, frame is constant in its parameters move into a useful context.
-  // Can also make use of that in the Sensor and so on..
-  // Also need Coordinate systems within a frame
-  Frame mountFrame;
-  mountFrame.setPosAndVel(frame, position,
-                          Quaternion::unit(), Vector6::zeros());
-  mountFrame.setAccel(frame, Vector6::zeros());
+  // The coordinate system at the hub.
+  CoordinateSystem hubCoordinateSystem(cs.getRelative(position));
 
-  // This might go into the environment???
-  // Query at a position wrt a coordinate system
-  Vector3 refPos = frame.posToRef(position);
-  // Vector3 refPos = mountFrame.posToRef(Vector3::zeros());
-  GroundValues groundValues = environment->getGroundPlane(task.getTime(), refPos);
+  // Get the ground values in the hub coordinate system.
+  GroundValues groundValues =
+    environment->getGroundPlane(hubCoordinateSystem, task.getTime());
 
   // Transform the plane equation to the local frame.
-  Plane lp = mountFrame.planeFromRef(groundValues.plane);
-  
+  Plane lp = groundValues.plane;
+ 
   // Get the intersection length.
   real_type distHubGround = fabs(lp.getDist());
   real_type compressLength = mWheelRadius - distHubGround;
@@ -76,14 +69,10 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
   Vector3 contactPoint = distHubGround*lp.getNormal();
   
   // The velocity of the ground patch in the current frame.
-  Vector6 groundVel(mountFrame.rotFromRef(groundValues.vel.getAngular()),
-                    mountFrame.rotFromRef(groundValues.vel.getLinear()));
-  groundVel -= mountFrame.getRefVel();
+  Vector6 groundVel = groundValues.vel;
   // Now get the relative velocity of the ground wrt the hub
-  Vector6 relVel = - groundVel;
-//   Log(Model,Error) << trans(mountFrame.getRelVel()) << " "
-//                    << trans(groundVel) << " "
-//                    << trans(mountFrame.motionToParent(relVel)) << endl;
+  Vector6 relVel
+    = portValues[mMechanicLink].getReferenceVelocity(position) - groundVel;
 
 
   // The velocity perpandicular to the plane.

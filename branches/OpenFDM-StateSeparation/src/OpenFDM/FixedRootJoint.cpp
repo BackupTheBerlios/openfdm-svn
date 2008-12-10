@@ -78,6 +78,8 @@ FixedRootJoint::velocity(const Task& task,
   const Environment* environment;
   environment = portValues[mMechanicLink].getEnvironment();
   Vector3 angularBaseVelocity = environment->getAngularVelocity(task.getTime());
+  portValues[mMechanicLink].setCoordinateSystem(CoordinateSystem(mPosition,
+                                                                 mOrientation));
   portValues[mMechanicLink].setPosAndVel(angularBaseVelocity, mPosition,
                                          mOrientation, Vector6::zeros());
 }

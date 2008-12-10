@@ -363,11 +363,11 @@ private:
     virtual void append()
     {
       _position.append(mMechanicLinkValue->getFrame().getPosition());
-      _refPosition.append(mMechanicLinkValue->getFrame().getRefPosition());
+      _refPosition.append(mMechanicLinkValue->getCoordinateSystem().getPosition());
       _orientation.append(mMechanicLinkValue->getFrame().getOrientation());
       _eulerAngle.append(mMechanicLinkValue->getFrame().getOrientation().getEuler());
-      _refOrientation.append(mMechanicLinkValue->getFrame().getRefOrientation());
-      _refEulerAngle.append(mMechanicLinkValue->getFrame().getRefOrientation().getEuler());
+      _refOrientation.append(mMechanicLinkValue->getCoordinateSystem().getOrientation());
+      _refEulerAngle.append(mMechanicLinkValue->getCoordinateSystem().getOrientation().getEuler());
       _velocity.append(mMechanicLinkValue->getFrame().getSpVel());
       _refVelocity.append(mMechanicLinkValue->getFrame().getRefVel());
       _acceleration.append(mMechanicLinkValue->getFrame().getSpAccel());

@@ -172,6 +172,13 @@ protected:
     void setPosAndVel(const Vector3& position, const Quaternion& orientation,
                       const VectorN& velocity)
     {
+      // Set up the local coordinate system of the joint
+      mRelativeCoordinateSystem.setPosition(mRelativeDesignPosition + position);
+      mRelativeCoordinateSystem.setOrientation(orientation);
+
+      // Propagate the reference coordinate system to the parent.
+      mChildLink->setCoordinateSystem(mParentLink->getCoordinateSystem().toReference(mRelativeCoordinateSystem));
+
       mChildLink->setPosAndVel(*mParentLink, mRelativeDesignPosition + position,
                                orientation, mJointMatrix*velocity);
     }
@@ -210,8 +217,10 @@ protected:
       I -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
       
       // Transform to parent link's coordinates and apply to the parent link
-      mParentLink->applyForce(mChildLink->getFrame().forceToParent(force));
-      mParentLink->applyInertia(mChildLink->getFrame().inertiaToParent(I));
+      force = mRelativeCoordinateSystem.forceToReference(force);
+      I = mRelativeCoordinateSystem.inertiaToReference(I);
+      mParentLink->applyForce(force);
+      mParentLink->applyInertia(I);
     }
 
     /** Compute the acceleration step for a given joint force.
@@ -219,9 +228,9 @@ protected:
      */
     void accelerateDueToForce()
     {
-      Vector6 parentSpAccel
-        = mChildLink->getFrame().motionFromParent(mParentLink->getFrame().getSpAccel());
-    
+      Vector6 parentSpAccel = mParentLink->getFrame().getSpAccel();
+      parentSpAccel = mRelativeCoordinateSystem.motionToLocal(parentSpAccel);
+
       Vector6 f = mChildLink->getInertia()*parentSpAccel + pAlpha;
       velDot = hIh.solve(mJointForce - trans(mJointMatrix)*f);
       mChildLink->setAccel(*mParentLink, mJointMatrix*velDot);
@@ -244,8 +253,10 @@ protected:
       force += I*(mChildLink->getFrame().getHdot() + mJointMatrix*velDot);
       
       // Transform to parent link's coordinates and apply to the parent link
-      mParentLink->applyForce(mChildLink->getFrame().forceToParent(force));
-      mParentLink->applyInertia(mChildLink->getFrame().inertiaToParent(I));
+      force = mRelativeCoordinateSystem.forceToReference(force);
+      I = mRelativeCoordinateSystem.inertiaToReference(I);
+      mParentLink->applyForce(force);
+      mParentLink->applyInertia(I);
     }
     
     /** Compute the acceleration step for a given velocity derivative.
@@ -306,6 +317,7 @@ protected:
     VectorN mJointForce;
 
     Vector3 mRelativeDesignPosition;
+    CoordinateSystem mRelativeCoordinateSystem;
 
     Matrix6N mJointMatrix;
     

@@ -9,6 +9,7 @@
 #include "AbstractGround.h"
 #include "AbstractPlanet.h"
 #include "AbstractWind.h"
+#include "CoordinateSystem.h"
 #include "Matrix.h"
 #include "Plane.h"
 #include "Referenced.h"
@@ -97,6 +98,18 @@ public:
   GroundValues getGroundPlane(const real_type& t, const Vector3& pos) const
   {
     return mGround->getGroundPlane(*this, t, pos);
+  }
+
+
+  /// Return the plane at the position in the given coordinate system.
+  /// The plane is also returned in the given coordinate system
+  GroundValues
+  getGroundPlane(const CoordinateSystem& cs, const real_type& t) const
+  {
+    GroundValues groundValues = getGroundPlane(t, cs.getPosition());
+    return GroundValues(cs.planeToLocal(groundValues.plane),
+                        cs.rotToLocal(groundValues.vel),
+                        groundValues.friction);
   }
 
 private:

@@ -63,6 +63,8 @@ MobileRootJoint::velocity(const Task& task,
   Quaternion orientation = continousState[*mOrientationStateInfo];
   Vector6 velocity = continousState[*mVelocityStateInfo];
 
+  portValues[mMechanicLink].setCoordinateSystem(CoordinateSystem(position,
+                                                                 orientation));
   portValues[mMechanicLink].setPosAndVel(angularBaseVelocity,
                                          position, orientation, velocity);
 }
