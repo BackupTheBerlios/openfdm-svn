@@ -42,10 +42,18 @@ InternalSensor::velocity(const Task& task, const ContinousStateValueVector&,
   Vector3 position0 = mPosition0-portValues[mMechanicLink0].getDesignPosition();
   Vector3 position1 = mPosition1-portValues[mMechanicLink1].getDesignPosition();
 
+  CoordinateSystem csys0(portValues[mMechanicLink0].getCoordinateSystem());
+  csys0 = csys0.getRelative(position0);
+  
+  CoordinateSystem csys1(portValues[mMechanicLink1].getCoordinateSystem());
+  csys1 = csys1.getRelative(position1);
+  
+  CoordinateSystem relSys = csys0.toLocal(csys1);
+
   bool enableDistance = getEnableDistance();
   bool enableVelocity = getEnableVelocity();
   if (enableDistance || enableVelocity) {
-    Vector3 relPos = frame0.posFromRef(frame1.posToRef(position1)) - position0;
+    Vector3 relPos = relSys.getPosition();
     real_type nrmRelPos = norm(relPos);
 
     // The relative distance of these two points
@@ -72,15 +80,20 @@ InternalSensor::articulation(const Task& task, const ContinousStateValueVector&,
                              PortValueList& portValues) const
 {
   if (getEnableForce()) {
-    const Frame& frame0 = portValues[mMechanicLink0].getFrame();
-    const Frame& frame1 = portValues[mMechanicLink1].getFrame();
-
     // FIXME, for now relative position
     Vector3 position0=mPosition0-portValues[mMechanicLink0].getDesignPosition();
     Vector3 position1=mPosition1-portValues[mMechanicLink1].getDesignPosition();
+
+    CoordinateSystem csys0(portValues[mMechanicLink0].getCoordinateSystem());
+    csys0 = csys0.getRelative(position0);
+
+    CoordinateSystem csys1(portValues[mMechanicLink1].getCoordinateSystem());
+    csys1 = csys1.getRelative(position1);
+
+    CoordinateSystem relSys = csys0.toLocal(csys1);
     
     // FIXME, already have that computed in the velocity step
-    Vector3 relPos = frame0.posFromRef(frame1.posToRef(position1)) - position0;
+    Vector3 relPos = relSys.getPosition();
     real_type nrmRelPos = norm(relPos);
 
     // If we have reached the zero position, the force vector is undefined.
@@ -92,7 +105,7 @@ InternalSensor::articulation(const Task& task, const ContinousStateValueVector&,
       Vector3 force0 = portValues[mForcePort]*dir;
       portValues[mMechanicLink0].applyForce(forceFrom(position0, force0));
       
-      Vector3 force1 = -frame0.getRelOrientation(frame1).transform(force0);
+      Vector3 force1 = -relSys.rotToLocal(force0);
       portValues[mMechanicLink1].applyForce(forceFrom(position1, force1));
     }
   }

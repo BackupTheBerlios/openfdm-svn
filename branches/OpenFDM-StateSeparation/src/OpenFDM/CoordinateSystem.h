@@ -14,8 +14,6 @@
 #include "Rotation.h"
 #include "Inertia.h"
 
-// #include "Frame.h"
-
 namespace OpenFDM {
 
 class CoordinateSystem {
@@ -40,11 +38,6 @@ public:
     mPosition(coordinateSystem.mPosition),
     mOrientation(coordinateSystem.mOrientation)
   { }
-  /// For a transition time, this might be a good idea
-//   CoordinateSystem(const Frame& frame) :
-//     mPosition(frame.getRefPos()),
-//     mOrientation(frame.getRefOr())
-//   { }
 
   /// Return the position of this coordinate system wrt the reference coordinate
   /// system. The position is measured in the reference coordinate
