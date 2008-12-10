@@ -1,1 +1,47 @@
-- AeroForces handling of alphadot/betadot.
+* Rigid body should again do something.
+  - Have multiple coordinate systems defined in the rigid body.
+  - Reuse them across links to that rigid body.
+  - This will avoid recomputations of these local coordinate systems for
+  - multiple models acting at the identical position offset ...
+  - by default, just use the parent coordinate system ...
+
+* More init time checking for SimpleDirectModels
+* Template Contexts for SimpleDirectModels
+* Sensor
+* Move Mechanics into a normal ModelContext??
+* Remove LeafNode??
+* Environmental cache ... May be put that into the Task???
+* Single link MechanicContext has a local coordinate system
+* Give Mass an own Context with a pretransformed Inertia
+
+* Check why harmonic is so bad ...
+* Clean up SampleTime/Fraction
+
+* Connect api in Group is questionable
+* Tests for error checks in Connect and System initialization
+
+* Enable ports, ContextGroups??
+* Nodes duerfen nur zu einem System gehören
+* test dazu
+* State allocation überarbeiten
+* Library models und parents
+* lock on exec
+* Zap Variant. Use TypeInfo data for that reason
+* PortInfo::isContinous()
+* System externe PortValues
+
+* Improove TransferFunction
+* Test TrasnferFunction!!
+
+* AeroForces handling of alphadot/betadot.
+
+* Improove the WGS84 gravity
+* Test Gravity ...
+
+* Function -> AbstractFunction
+* LLVM - compile optimized c code from a model??
+
+* PortInfo -> Port ??? PortInfo ist dann System init time Datum fuer
+  port typ und size??? Dann kann AbstractModel die typen und sizes checken
+  bevor PortValues alloziert werden und Typ angepasste Kontexte gebaut werden???
+
