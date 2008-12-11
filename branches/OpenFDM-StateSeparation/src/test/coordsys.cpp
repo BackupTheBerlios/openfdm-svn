@@ -19,9 +19,16 @@ public:
     mSpatialAcceleration(Vector6::zeros())
   { }
   ReferenceFrame(const ReferenceFrame& referenceFrame) :
+    mCoordinateSystem(referenceFrame.mCoordinateSystem),
     mSpatialVelocity(referenceFrame.mSpatialVelocity),
     mSpatialAcceleration(referenceFrame.mSpatialAcceleration)
   { }
+
+  /// The coordinate system this frame values are measured in
+  const CoordinateSystem& getCoordinateSystem() const
+  { return mCoordinateSystem; }
+  void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
+  { mCoordinateSystem = coordinateSystem; }
 
   const Vector6& getSpatialVelocity() const
   { return mSpatialVelocity; }
@@ -33,8 +40,8 @@ public:
   void setSpatialAcceleration(const Vector6& spatialAcceleration)
   { mSpatialAcceleration = spatialAcceleration; }
 
-  CoordinateSystem mCoordinateSystem; /// ????
 private:
+  CoordinateSystem mCoordinateSystem;
   Vector6 mSpatialVelocity;
   Vector6 mSpatialAcceleration;
 };
