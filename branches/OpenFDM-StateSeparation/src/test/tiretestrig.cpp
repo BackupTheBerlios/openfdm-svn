@@ -151,7 +151,7 @@ main(int argc, char *argv[])
   if (!system->init())
     return 1;
 
-  system->simulate(10);
+  system->simulate(1);
   
   return EXIT_SUCCESS;
 }
