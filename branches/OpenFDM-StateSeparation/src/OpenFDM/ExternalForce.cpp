@@ -27,7 +27,8 @@ ExternalForce::~ExternalForce(void)
 }
 
 void
-ExternalForce::articulation(const Task&, const ContinousStateValueVector&,
+ExternalForce::articulation(const Task&, const Environment&,
+                            const ContinousStateValueVector&,
                             PortValueList& portValues) const
 {
   // FIXME, for now relative position

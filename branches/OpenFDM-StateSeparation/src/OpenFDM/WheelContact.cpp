@@ -37,12 +37,10 @@ WheelContact::~WheelContact(void)
 }
 
 void
-WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
+WheelContact::articulation(const Task& task, const Environment& environment,
+                           const ContinousStateValueVector&,
                            PortValueList& portValues) const
 {
-  const Environment* environment;
-  environment = portValues[mMechanicLink].getEnvironment();
-
   const CoordinateSystem& cs = portValues[mMechanicLink].getCoordinateSystem();
 
   // FIXME, for now relative position
@@ -53,7 +51,7 @@ WheelContact::articulation(const Task& task, const ContinousStateValueVector&,
 
   // Get the ground values in the hub coordinate system.
   GroundValues groundValues =
-    environment->getGroundPlane(hubCoordinateSystem, task.getTime());
+    environment.getGroundPlane(hubCoordinateSystem, task.getTime());
 
   // Transform the plane equation to the local frame.
   Plane lp = groundValues.plane;

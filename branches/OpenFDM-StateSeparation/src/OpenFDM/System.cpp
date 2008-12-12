@@ -667,7 +667,8 @@ public:
     virtual bool createMechanicContext(Environment* environment)
     {
       OpenFDMAssert(!mMechanicContext);
-      mMechanicContext = getNode()->newMechanicContext(mPortValueList);
+      mMechanicContext = getNode()->newMechanicContext(environment,
+                                                       mPortValueList);
       if (!mMechanicContext) {
         Log(Schedule, Warning) << "Could not create context for mechanic "
                                << "node \"" << getNodeNamePath()

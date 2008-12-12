@@ -35,19 +35,17 @@ Mass::initDesignPosition(PortValueList&) const
 }
 
 void
-Mass::articulation(const Task&, const ContinousStateValueVector&,
+Mass::articulation(const Task&, const Environment& environment,
+                   const ContinousStateValueVector&,
                    PortValueList& portValues) const
 {
-  const Environment* environment;
-  environment = portValues[mMechanicLink].getEnvironment();
-
   // The position of the mass point wrt its parent link frame
   // FIXME precompute that
   Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
 
   // The gravity force that applies to this mass
   Vector3 refPosition = portValues[mMechanicLink].getFrame().posToRef(position);
-  Vector3 gravity = environment->getGravityAcceleration(refPosition);
+  Vector3 gravity = environment.getGravityAcceleration(refPosition);
   gravity = mMass*portValues[mMechanicLink].getFrame().rotFromRef(gravity);
   // The gravity force at the coordinate system of the parent link
   Vector6 force = forceFrom(position, gravity);

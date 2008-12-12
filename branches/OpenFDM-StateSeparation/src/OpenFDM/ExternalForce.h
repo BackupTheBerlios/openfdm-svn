@@ -16,7 +16,8 @@ public:
   ExternalForce(const std::string& name);
   virtual ~ExternalForce(void);
 
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
+  virtual void articulation(const Task&, const Environment&,
+                            const ContinousStateValueVector&,
                             PortValueList& portValues) const;
 
   void setLocalCoordinates(bool localCoordinates);

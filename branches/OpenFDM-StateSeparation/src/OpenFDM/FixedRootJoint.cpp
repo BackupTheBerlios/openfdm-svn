@@ -71,13 +71,11 @@ FixedRootJoint::initDesignPosition(PortValueList& portValues) const
 }
 
 void
-FixedRootJoint::velocity(const Task& task,
+FixedRootJoint::velocity(const Task& task, const Environment& environment,
                          const ContinousStateValueVector& continousState,
                          PortValueList& portValues) const
 {
-  const Environment* environment;
-  environment = portValues[mMechanicLink].getEnvironment();
-  Vector3 angularBaseVelocity = environment->getAngularVelocity(task.getTime());
+  Vector3 angularBaseVelocity = environment.getAngularVelocity(task.getTime());
   portValues[mMechanicLink].setCoordinateSystem(CoordinateSystem(mPosition,
                                                                  mOrientation));
   portValues[mMechanicLink].setPosAndVel(angularBaseVelocity, mPosition,
@@ -85,19 +83,19 @@ FixedRootJoint::velocity(const Task& task,
 }
 
 void
-FixedRootJoint::articulation(const Task&, const ContinousStateValueVector&,
-                              PortValueList&) const
+FixedRootJoint::articulation(const Task&, const Environment& environment,
+                             const ContinousStateValueVector&,
+                             PortValueList&) const
 {
   /// In this case a noop.
 }
 
 void
-FixedRootJoint::acceleration(const Task& task, const ContinousStateValueVector&,
-                              PortValueList& portValues) const
+FixedRootJoint::acceleration(const Task& task, const Environment& environment,
+                             const ContinousStateValueVector&,
+                             PortValueList& portValues) const
 {
-  const Environment* environment;
-  environment = portValues[mMechanicLink].getEnvironment();
-  Vector6 spatialAcceleration = environment->getAcceleration(task.getTime());
+  Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
   portValues[mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
 }
 

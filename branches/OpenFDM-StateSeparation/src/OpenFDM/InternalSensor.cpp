@@ -32,7 +32,8 @@ InternalSensor::~InternalSensor(void)
 }
 
 void
-InternalSensor::velocity(const Task& task, const ContinousStateValueVector&,
+InternalSensor::velocity(const Task& task, const Environment&,
+                         const ContinousStateValueVector&,
                          PortValueList& portValues) const
 {
   const Frame& frame0 = portValues[mMechanicLink0].getFrame();
@@ -76,7 +77,8 @@ InternalSensor::velocity(const Task& task, const ContinousStateValueVector&,
 }
 
 void
-InternalSensor::articulation(const Task& task, const ContinousStateValueVector&,
+InternalSensor::articulation(const Task& task, const Environment&,
+                             const ContinousStateValueVector&,
                              PortValueList& portValues) const
 {
   if (getEnableForce()) {

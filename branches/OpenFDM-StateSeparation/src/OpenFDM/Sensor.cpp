@@ -45,11 +45,10 @@ Sensor::initDesignPosition(PortValueList& portValues) const
 }
 
 void
-Sensor::velocity(const Task& task, const ContinousStateValueVector&,
+Sensor::velocity(const Task& task, const Environment& environment,
+                 const ContinousStateValueVector&,
                  PortValueList& portValues) const
 {
-  const Environment* environment;
-  environment = portValues[mMechanicLink].getEnvironment();
   const Frame& frame = portValues[mMechanicLink].getFrame();
 
   // FIXME, for now relative position
@@ -79,7 +78,7 @@ Sensor::velocity(const Task& task, const ContinousStateValueVector&,
 
     // Wind sensing
     if (enableWindVelocity) {
-      Vector6 wind = environment->getWindVelocity(task.getTime(), position);
+      Vector6 wind = environment.getWindVelocity(task.getTime(), position);
       wind -= refVelocity;
       portValues[mWindVelocityPort] = frame.rotFromRef(wind.getLinear());
     }
@@ -95,12 +94,12 @@ Sensor::velocity(const Task& task, const ContinousStateValueVector&,
   bool enableAtmosphere = (enableTemperature || enablePressure ||
                            enableDensity || enableSoundSpeed);
   if (enableAltitude || enableAtmosphere) {
-    real_type altitude = environment->getAltitude(refPosition);
+    real_type altitude = environment.getAltitude(refPosition);
     if (enableAltitude)
       portValues[mAltitudePort] = altitude;
 
     if (enableAtmosphere) {
-      const AbstractAtmosphere* atmosphere = environment->getAtmosphere();
+      const AbstractAtmosphere* atmosphere = environment.getAtmosphere();
       AtmosphereData data = atmosphere->getData(task.getTime(), altitude);
       if (enableTemperature)
         portValues[mTemperaturePort] = data.temperature;
@@ -116,17 +115,16 @@ Sensor::velocity(const Task& task, const ContinousStateValueVector&,
 
   if (getEnableAboveGroundLevel()) {
     real_type agl;
-    agl = environment->getAboveGroundLevel(task.getTime(), refPosition);
+    agl = environment.getAboveGroundLevel(task.getTime(), refPosition);
     portValues[mAboveGroundLevelPort] = agl;
   }
 }
 
 void
-Sensor::acceleration(const Task&, const ContinousStateValueVector&,
+Sensor::acceleration(const Task&, const Environment& environment,
+                     const ContinousStateValueVector&,
                      PortValueList& portValues) const
 {
-  const Environment* environment;
-  environment = portValues[mMechanicLink].getEnvironment();
   const Frame& frame = portValues[mMechanicLink].getFrame();
 
   // FIXME, for now relative position
@@ -145,7 +143,7 @@ Sensor::acceleration(const Task&, const ContinousStateValueVector&,
     if (enableLoad) {
       // May be cache that from the velocity step??
       Vector3 refPosition = frame.posToRef(position);
-      Vector3 gravity = environment->getGravityAcceleration(refPosition);
+      Vector3 gravity = environment.getGravityAcceleration(refPosition);
       gravity = frame.rotFromRef(gravity);
       portValues[mLoadPort] = centrifugalAccel - gravity;
     }

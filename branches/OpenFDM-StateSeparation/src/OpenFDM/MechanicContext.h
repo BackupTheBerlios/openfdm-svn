@@ -6,6 +6,7 @@
 #define OpenFDM_MechanicContext_H
 
 #include <list>
+#include "Environment.h"
 #include "LeafContext.h"
 #include "MechanicNode.h"
 #include "SharedPtr.h"
@@ -20,7 +21,7 @@ class InitTask;
 
 class MechanicContext : public LeafContext {
 public:
-  MechanicContext() {}
+  MechanicContext(const Environment* environment);
   virtual ~MechanicContext();
 
   virtual const MechanicNode& getNode() const = 0;
@@ -33,9 +34,14 @@ public:
   virtual void derivative(const Task&) = 0;
   virtual void update(const DiscreteTask& discreteTask) = 0;
 
+  const Environment& getEnvironment() const
+  { return *mEnvironment; }
+
 private:
   MechanicContext(const MechanicContext&);
   MechanicContext& operator=(const MechanicContext&);
+
+  SharedPtr<const Environment> mEnvironment;
 };
 
 class MechanicContextList : public std::list<SharedPtr<MechanicContext> > {

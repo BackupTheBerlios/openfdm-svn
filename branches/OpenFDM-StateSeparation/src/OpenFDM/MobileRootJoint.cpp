@@ -51,13 +51,11 @@ MobileRootJoint::initDesignPosition(PortValueList& portValues) const
 }
 
 void
-MobileRootJoint::velocity(const Task& task,
+MobileRootJoint::velocity(const Task& task, const Environment& environment,
                           const ContinousStateValueVector& continousState,
                           PortValueList& portValues) const
 {
-  const Environment* environment;
-  environment = portValues[mMechanicLink].getEnvironment();
-  Vector3 angularBaseVelocity = environment->getAngularVelocity(task.getTime());
+  Vector3 angularBaseVelocity = environment.getAngularVelocity(task.getTime());
 
   Vector3 position = continousState[*mPositionStateInfo];
   Quaternion orientation = continousState[*mOrientationStateInfo];
@@ -70,20 +68,19 @@ MobileRootJoint::velocity(const Task& task,
 }
 
 void
-MobileRootJoint::articulation(const Task&, const ContinousStateValueVector&,
+MobileRootJoint::articulation(const Task&, const Environment& environment,
+                              const ContinousStateValueVector&,
                               PortValueList&) const
 {
   /// In this case a noop.
 }
 
 void
-MobileRootJoint::acceleration(const Task& task,
+MobileRootJoint::acceleration(const Task& task, const Environment& environment,
                               const ContinousStateValueVector&,
                               PortValueList& portValues) const
 {
-  const Environment* environment;
-  environment = portValues[mMechanicLink].getEnvironment();
-  Vector6 spatialAcceleration = environment->getAcceleration(task.getTime());
+  Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
 
   SpatialInertia inertia = portValues[mMechanicLink].getInertia();
   Vector6 force = portValues[mMechanicLink].getForce();
@@ -93,7 +90,8 @@ MobileRootJoint::acceleration(const Task& task,
 }
 
 void
-MobileRootJoint::derivative(const DiscreteStateValueVector&,
+MobileRootJoint::derivative(const Environment& environment,
+                            const DiscreteStateValueVector&,
                             const ContinousStateValueVector& continousState,
                             const PortValueList& portValues,
                             ContinousStateValueVector& derivatives) const

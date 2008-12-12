@@ -19,7 +19,8 @@ public:
   virtual ~Mass(void);
 
   virtual void initDesignPosition(PortValueList&) const;
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
+  virtual void articulation(const Task&, const Environment& environment,
+                            const ContinousStateValueVector&,
                             PortValueList&) const;
 
   const InertiaMatrix& getInertia(void) const;

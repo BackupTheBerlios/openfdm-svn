@@ -16,7 +16,8 @@ public:
   virtual ~WheelContact(void);
 
   virtual void initDesignPosition(PortValueList&) const {}
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
+  virtual void articulation(const Task&, const Environment&,
+                            const ContinousStateValueVector&,
                             PortValueList& portValues) const;
 
   // Compute the plane normal force.

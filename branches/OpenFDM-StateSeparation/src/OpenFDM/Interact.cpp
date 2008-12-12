@@ -12,7 +12,10 @@ namespace OpenFDM {
 
 class Interact::Context : public MechanicContext {
 public:
-  Context(const Interact* interact) : mInteract(interact) {}
+  Context(const Interact* interact, const Environment* environment) :
+    MechanicContext(environment),
+    mInteract(interact)
+  {}
   virtual ~Context() {}
 
   virtual const Interact& getNode() const
@@ -26,25 +29,25 @@ public:
   virtual void initVelocities(const /*Init*/Task& task)
   {
     mInteract->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mInteract->velocity(task, mContinousState, mPortValueList);
+    mInteract->velocity(task, getEnvironment(), mContinousState, mPortValueList);
   }
 
   virtual void velocities(const Task& task)
   {
-    mInteract->velocity(task, mContinousState, mPortValueList);
+    mInteract->velocity(task, getEnvironment(), mContinousState, mPortValueList);
   }
   virtual void articulation(const Task& task)
   {
-    mInteract->articulation(task, mContinousState, mPortValueList);
+    mInteract->articulation(task, getEnvironment(), mContinousState, mPortValueList);
   }
   virtual void accelerations(const Task& task)
   {
-    mInteract->acceleration(task, mContinousState, mPortValueList);
+    mInteract->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
   }
 
   virtual void derivative(const Task& task)
   {
-    mInteract->derivative(task, mDiscreteState, mContinousState, mPortValueList,
+    mInteract->derivative(task, getEnvironment(), mDiscreteState, mContinousState, mPortValueList,
                           mContinousStateDerivative);
   }
  
@@ -119,9 +122,10 @@ Interact::accept(ConstNodeVisitor& visitor) const
 }
 
 MechanicContext*
-Interact::newMechanicContext(PortValueList& portValueList) const
+Interact::newMechanicContext(const Environment* environment,
+                             PortValueList& portValueList) const
 {
-  SharedPtr<Context> context = new Context(this);
+  SharedPtr<Context> context = new Context(this, environment);
   for (unsigned i = 0; i < getNumPorts(); ++i) {
     PortValue* portValue = portValueList.getPortValue(i);
     if (!portValue) {

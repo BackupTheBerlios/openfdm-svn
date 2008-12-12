@@ -6,7 +6,6 @@
 #define OpenFDM_MechanicLinkValue_H
 
 #include "CoordinateSystem.h"
-#include "Environment.h"
 #include "Frame.h"
 #include "Inertia.h"
 #include "PortValue.h"
@@ -85,15 +84,6 @@ public:
   Vector6 getReferenceVelocity() const
   { return mFrame.getRefVel(); }
 
-  // This is a per link value because of interacts that can be child of two
-  // different roots.
-  // FIXME, enforce setting that in the contructor
-  const Environment* getEnvironment() const
-  { return mEnvironment; }
-
-  void setEnvironment(const Environment* environment)
-  { OpenFDMAssert(environment); mEnvironment = environment; }
-
 protected:
   /// The local coordinate system of the mechanic link.
   CoordinateSystem mCoordinateSystem;
@@ -103,8 +93,6 @@ protected:
   SpatialInertia mArticulatedInertia;
 
   Vector3 mDesignPosition;
-
-  SharedPtr<const Environment> mEnvironment;
 };
 
 } // namespace OpenFDM

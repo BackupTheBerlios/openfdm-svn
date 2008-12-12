@@ -6,6 +6,12 @@
 
 namespace OpenFDM {
 
+MechanicContext::MechanicContext(const Environment* environment) :
+  mEnvironment(environment)
+{
+  OpenFDMAssert(mEnvironment);
+}
+
 MechanicContext::~MechanicContext()
 {
 }

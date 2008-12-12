@@ -6,6 +6,7 @@
 #define OpenFDM_Interact_H
 
 #include <string>
+#include "Environment.h"
 #include "MechanicNode.h"
 
 namespace OpenFDM {
@@ -26,27 +27,30 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual MechanicContext* newMechanicContext(PortValueList& portValues) const;
+  virtual MechanicContext* newMechanicContext(const Environment* environment,
+                                              PortValueList& portValues) const;
 
-  virtual void init(const Task&,DiscreteStateValueVector&,
+  virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector&, const PortValueList&) const
   { }
   virtual void initDesignPosition(PortValueList&) const = 0;
-  virtual void velocity(const Task&, const ContinousStateValueVector&,
-                        PortValueList&) const
+  virtual void velocity(const Task&, const Environment& environment,
+                        const ContinousStateValueVector&, PortValueList&) const
   { }
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
+  virtual void articulation(const Task&, const Environment& environment,
+                            const ContinousStateValueVector&,
                             PortValueList&) const
   { }
-  virtual void acceleration(const Task&, const ContinousStateValueVector&,
+  virtual void acceleration(const Task&, const Environment& environment,
+                            const ContinousStateValueVector&,
                             PortValueList&) const
   { }
-  virtual void derivative(const Task&, const DiscreteStateValueVector&,
+  virtual void derivative(const Task&, const Environment& environment,
+                          const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
                           const PortValueList&,
                           ContinousStateValueVector&) const
   { }
-
 private:
   class Context;
 };

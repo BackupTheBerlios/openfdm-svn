@@ -12,7 +12,10 @@ namespace OpenFDM {
 
 class RootJoint::Context : public MechanicContext {
 public:
-  Context(const RootJoint* rootJoint) : mRootJoint(rootJoint) {}
+  Context(const RootJoint* rootJoint, const Environment* environment) :
+    MechanicContext(environment),
+    mRootJoint(rootJoint)
+  {}
   virtual ~Context() {}
   
   virtual const RootJoint& getNode() const
@@ -26,25 +29,25 @@ public:
   virtual void initVelocities(const /*Init*/Task& task)
   {
     mRootJoint->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mRootJoint->velocity(task, mContinousState, mPortValueList);
+    mRootJoint->velocity(task, getEnvironment(), mContinousState, mPortValueList);
   }
   
   virtual void velocities(const Task& task)
   {
-    mRootJoint->velocity(task, mContinousState, mPortValueList);
+    mRootJoint->velocity(task, getEnvironment(), mContinousState, mPortValueList);
   }
   virtual void articulation(const Task& task)
   {
-    mRootJoint->articulation(task, mContinousState, mPortValueList);
+    mRootJoint->articulation(task, getEnvironment(), mContinousState, mPortValueList);
   }
   virtual void accelerations(const Task& task)
   {
-    mRootJoint->acceleration(task, mContinousState, mPortValueList);
+    mRootJoint->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
   }
   
   virtual void derivative(const Task&)
   {
-    mRootJoint->derivative(mDiscreteState, mContinousState, mPortValueList,
+    mRootJoint->derivative(getEnvironment(), mDiscreteState, mContinousState, mPortValueList,
                            mContinousStateDerivative);
   }
   
@@ -113,7 +116,7 @@ RootJoint::newMechanicContext(const Environment* environment,
                               const MechanicLinkInfo* childLink,
                               PortValueList& portValueList) const
 {
-  SharedPtr<Context> context = new Context(this);
+  SharedPtr<Context> context = new Context(this, environment);
   for (unsigned i = 0; i < getNumPorts(); ++i) {
     PortValue* portValue = portValueList.getPortValue(i);
     if (!portValue) {
@@ -121,10 +124,6 @@ RootJoint::newMechanicContext(const Environment* environment,
                         << "\" and port \"" << getPort(i)->getName()
                         << "\"" << endl;
       return false;
-    }
-
-    if (portValue->toMechanicLinkValue()) {
-      portValue->toMechanicLinkValue()->setEnvironment(environment);
     }
 
     context->setPortValue(*getPort(i), portValue);

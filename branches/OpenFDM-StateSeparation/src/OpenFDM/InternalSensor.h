@@ -20,9 +20,11 @@ public:
   virtual ~InternalSensor(void);
 
   virtual void initDesignPosition(PortValueList&) const {}
-  virtual void velocity(const Task&, const ContinousStateValueVector&,
+  virtual void velocity(const Task&, const Environment& environment,
+                        const ContinousStateValueVector&,
                         PortValueList&) const;
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
+  virtual void articulation(const Task&, const Environment& environment,
+                            const ContinousStateValueVector&,
                             PortValueList&) const;
 
   /// Set the position of the sensor in design coordinates

@@ -30,13 +30,17 @@ public:
   { }
   virtual void initDesignPosition(PortValueList&) const = 0;
 
-  virtual void velocity(const Task&, const ContinousStateValueVector&,
+  virtual void velocity(const Task&, const Environment& environment,
+                        const ContinousStateValueVector&,
                         PortValueList&) const = 0;
-  virtual void articulation(const Task&, const ContinousStateValueVector&,
+  virtual void articulation(const Task&, const Environment& environment,
+                            const ContinousStateValueVector&,
                             PortValueList&) const = 0;
-  virtual void acceleration(const Task&, const ContinousStateValueVector&,
+  virtual void acceleration(const Task&, const Environment& environment,
+                            const ContinousStateValueVector&,
                             PortValueList&) const = 0;
-  virtual void derivative(const DiscreteStateValueVector&,
+  virtual void derivative(const Environment& environment,
+                          const DiscreteStateValueVector&,
                           const ContinousStateValueVector&,
                           const PortValueList& portValues,
                           ContinousStateValueVector&) const

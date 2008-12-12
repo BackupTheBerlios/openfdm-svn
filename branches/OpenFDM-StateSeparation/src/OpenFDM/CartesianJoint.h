@@ -59,12 +59,8 @@ public:
     if (!childLinkValue)
       return 0;
 
-    // Now propagate the root dependent data ...
-    OpenFDMAssert(environment == parentLinkValue->getEnvironment());
-    childLinkValue->setEnvironment(environment);
-
     SharedPtr<Context> context;
-    context = new Context(this, parentLinkValue, childLinkValue);
+    context = new Context(this, environment, parentLinkValue, childLinkValue);
     for (unsigned i = 0; i < getNumPorts(); ++i) {
       PortValue* portValue = portValueList.getPortValue(i);
       if (!portValue) {
@@ -114,8 +110,9 @@ protected:
 
   class Context : public MechanicContext {
   public:
-    Context(const CartesianJoint* cartesianJoint, MechanicLinkValue* parentLink,
-            MechanicLinkValue* childLink) :
+    Context(const CartesianJoint* cartesianJoint, const Environment* env,
+            MechanicLinkValue* parentLink, MechanicLinkValue* childLink) :
+      MechanicContext(env),
       mCartesianJoint(cartesianJoint),
       mParentLink(parentLink),
       mChildLink(childLink)
