@@ -13,7 +13,7 @@
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "Joint.h"
-#include "MechanicContext.h"
+#include "JointContext.h"
 
 namespace OpenFDM {
 
@@ -34,44 +34,26 @@ public:
   void setPosition(const Vector3& position)
   { mPosition = position; }
 
-  virtual MechanicContext*
-  newMechanicContext(const Environment* environment,
-                     const MechanicLinkInfo* parentLink,
-                     const MechanicLinkInfo* childLink,
-                     PortValueList& portValueList) const
+  virtual JointContext*
+  newJointContext(const Environment* environment,
+                  MechanicLinkValue* parentLinkValue,
+                  MechanicLinkValue* childLinkValue,
+                  PortValueList& portValueList) const
   {
-    if (!parentLink) {
+    if (!parentLinkValue) {
       Log(Model, Error) << "Parent link is not set while creating context "
                         << "for model \"" << getName() << "\"" << endl;
       return 0;
     }
-    MechanicLinkValue* parentLinkValue;
-    parentLinkValue = portValueList.getPortValue(*parentLink);
-    if (!parentLinkValue)
-      return 0;
-    if (!childLink) {
+    if (!childLinkValue) {
       Log(Model, Error) << "Child link is not set while creating context "
                         << "for model \"" << getName() << "\"" << endl;
       return 0;
     }
-    MechanicLinkValue* childLinkValue;
-    childLinkValue = portValueList.getPortValue(*childLink);
-    if (!childLinkValue)
-      return 0;
-
     SharedPtr<Context> context;
-    context = new Context(this, environment, parentLinkValue, childLinkValue);
-    for (unsigned i = 0; i < getNumPorts(); ++i) {
-      PortValue* portValue = portValueList.getPortValue(i);
-      if (!portValue) {
-        Log(Model, Error) << "No port value given for model \"" << getName()
-                          << "\" and port \"" << getPort(i)->getName()
-                          << "\"" << endl;
-        return 0;
-      }
-      context->setPortValue(*getPort(i), portValue);
-    }
-    if (!context->alloc()) {
+    context = new Context(environment, this,
+                          parentLinkValue, childLinkValue, portValueList);
+    if (!context->allocStates()) {
       Log(Model, Warning) << "Could not alloc for model \""
                           << getName() << "\"" << endl;
       return 0;
@@ -90,8 +72,7 @@ protected:
   { }
 
   virtual void init(const Task&, DiscreteStateValueVector&,
-                    ContinousStateValueVector&, const PortValueList&) const
-  { }
+                    ContinousStateValueVector&, const PortValueList&) const = 0;
   virtual Matrix6N getJointMatrix() const = 0;
 
   virtual void velocity(const Task& task, Context& context,
@@ -108,14 +89,15 @@ protected:
                           const PortValueList& portValues,
                           ContinousStateValueVector&) const = 0;
 
-  class Context : public MechanicContext {
+  class Context : public JointContext {
   public:
-    Context(const CartesianJoint* cartesianJoint, const Environment* env,
-            MechanicLinkValue* parentLink, MechanicLinkValue* childLink) :
-      MechanicContext(env),
-      mCartesianJoint(cartesianJoint),
-      mParentLink(parentLink),
-      mChildLink(childLink)
+    Context(const Environment* environment,
+            const CartesianJoint* cartesianJoint,
+            MechanicLinkValue* parentLinkValue,
+            MechanicLinkValue* childLinkValue,
+            PortValueList& portValueList) :
+      JointContext(environment, parentLinkValue, childLinkValue, portValueList),
+      mCartesianJoint(cartesianJoint)
     { }
     virtual ~Context() {}
     
@@ -131,10 +113,6 @@ protected:
       mJointMatrix = mCartesianJoint->getJointMatrix();
     }
 
-    bool alloc()
-    {
-      return allocStates();
-    }
     virtual void initVelocities(const /*Init*/Task& task)
     {
       mCartesianJoint->init(task, mDiscreteState,
@@ -267,45 +245,6 @@ protected:
     const VectorN& getVelDot() const
     { return velDot; }
     
-    bool allocStates()
-    {
-      unsigned numContinousStates = getNode().getNumContinousStateValues();
-      for (unsigned i = 0; i < numContinousStates; ++i) {
-        const ContinousStateInfo* continousStateInfo;
-        continousStateInfo = getNode().getContinousStateInfo(i);
-        mContinousState.setValue(*continousStateInfo, *this);
-        mContinousStateDerivative.setValue(*continousStateInfo, *this);
-      }
-      unsigned numDiscreteStates = getNode().getNumDiscreteStateValues();
-      for (unsigned i = 0; i < numDiscreteStates; ++i) {
-        const StateInfo* stateInfo;
-        stateInfo = getNode().getDiscreteStateInfo(i);
-        mDiscreteState.setValue(*stateInfo, *this);
-      }
-      return true;
-    }
-    
-    virtual ContinousStateValue* getStateValue(const ContinousStateInfo& info)
-    { return mContinousState.getValue(info); }
-    virtual ContinousStateValue* getStateDerivative(const ContinousStateInfo& info)
-    { return mContinousStateDerivative.getValue(info); }
-    
-    /// Set port value for the given port.
-    virtual const PortValue* getPortValue(const PortInfo& portInfo) const
-    {  return mPortValueList.getPortValue(portInfo); }
-    void setPortValue(const PortInfo& portInfo, PortValue* portValue)
-    { mPortValueList.setPortValue(portInfo.getIndex(), portValue); }
-    
-  protected:
-    // PortValues
-    PortValueList mPortValueList;
-    
-    // Continous States
-    ContinousStateValueVector mContinousState;
-    ContinousStateValueVector mContinousStateDerivative;
-    // Discrete States
-    DiscreteStateValueVector mDiscreteState;
-
   private:
     // Stores some values persistent accross velocity/articulation/acceleration
     MatrixFactorsNN hIh;
@@ -317,9 +256,6 @@ protected:
     CoordinateSystem mRelativeCoordinateSystem;
 
     Matrix6N mJointMatrix;
-    
-    SharedPtr<MechanicLinkValue> mParentLink;
-    SharedPtr<MechanicLinkValue> mChildLink;
     
     SharedPtr<const CartesianJoint> mCartesianJoint;
   };

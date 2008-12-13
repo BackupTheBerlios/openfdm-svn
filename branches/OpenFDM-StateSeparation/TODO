@@ -5,6 +5,17 @@
   - multiple models acting at the identical position offset ...
   - by default, just use the parent coordinate system ...
 
+
+Class Hierarchy for the Contexts and the associated Nodes:
+
+MechanicContext
+ |- JointContext (has a unique parent and child link)
+ |- SingleLinkInteractContext (has a single parent link)
+ |- DoubleLinkInteractContext (has two parent links, constraint
+ |       joints need to implement that in the future)
+ |- RigidBodyContext (has a unique parent and may be a list of links with
+         different local coordinate sysetems, see above)
+
 * More init time checking for SimpleDirectModels
 * Template Contexts for SimpleDirectModels
 * Sensor

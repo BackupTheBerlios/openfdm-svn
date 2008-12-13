@@ -16,15 +16,23 @@
 #include "Frame.h"
 #include "LogStream.h"
 
+#include "MechanicContext.h"
+
 namespace OpenFDM {
+
+class JointContext;
 
 // May be each joint can be a root joint.
 // A joint with one link is a root joint?
-// The given position is then meant to be in the root coordinate system?
-// That is: if connected to a parent, it is the designPosition wrt root joint
-// If not connected, in the root coordinate system of the simulation?
+
 // It would be nice if each joint is lockable anyway
 // May be then unify all that joint stuff in a common framework here??
+
+// design position consitency:
+// Each joint has a design positon property.
+// This is for a root joint the position of the joint coorinate system of the
+// mechanical system simulation and this is of limited external use.
+// For a usual joint, this is an invariant point in the joint.
 class Joint : public MechanicNode {
   OPENFDM_OBJECT(Joint, MechanicNode);
 public:
@@ -36,9 +44,15 @@ public:
 
   virtual MechanicContext*
   newMechanicContext(const Environment* environment,
-                     const MechanicLinkInfo* parentLink,
-                     const MechanicLinkInfo* childLink,
-                     PortValueList& portValues) const = 0;
+                     const MechanicLinkInfo* parentLinkInfo,
+                     const MechanicLinkInfo* childLinkInfo,
+                     PortValueList& portValueList) const;
+
+  virtual JointContext*
+  newJointContext(const Environment* environment,
+                  MechanicLinkValue* parentLinkValue,
+                  MechanicLinkValue* childLinkValue,
+                  PortValueList& portValueList) const = 0;
 };
 
 } // namespace OpenFDM

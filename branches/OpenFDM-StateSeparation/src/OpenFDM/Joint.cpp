@@ -4,14 +4,8 @@
 
 #include "Joint.h"
 
-#include "Assert.h"
 #include "ConstNodeVisitor.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Matrix.h"
-#include "Quaternion.h"
-#include "Inertia.h"
-#include "Interact.h"
+#include "JointContext.h"
 #include "LogStream.h"
 #include "PortValueList.h"
 #include "NodeVisitor.h"
@@ -40,6 +34,22 @@ void
 Joint::accept(ConstNodeVisitor& visitor) const
 {
   visitor.handleNodePathAndApply(this);
+}
+
+MechanicContext*
+Joint::newMechanicContext(const Environment* environment,
+                          const MechanicLinkInfo* parentLinkInfo,
+                          const MechanicLinkInfo* childLinkInfo,
+                          PortValueList& portValueList) const
+{
+  MechanicLinkValue* parentLinkValue = 0;
+  if (parentLinkInfo)
+    parentLinkValue = portValueList.getPortValue(*parentLinkInfo);
+  MechanicLinkValue* childLinkValue = 0;
+  if (childLinkInfo)
+    childLinkValue = portValueList.getPortValue(*childLinkInfo);
+  return newJointContext(environment, parentLinkValue,
+                         childLinkValue, portValueList);
 }
 
 } // namespace OpenFDM

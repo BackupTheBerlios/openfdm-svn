@@ -16,18 +16,17 @@ public:
   RootJoint(const std::string& name);
   virtual ~RootJoint();
 
-  virtual MechanicContext*
-  newMechanicContext(const Environment* environment,
-                     const MechanicLinkInfo* parentLink,
-                     const MechanicLinkInfo* childLink,
-                     PortValueList& portValueList) const;
-
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
+  virtual JointContext*
+  newJointContext(const Environment* environment,
+                  MechanicLinkValue* parentLink,
+                  MechanicLinkValue* childLink,
+                  PortValueList& portValueList) const;
+
   virtual void init(const Task&,DiscreteStateValueVector&,
-                    ContinousStateValueVector&, const PortValueList&) const
-  { }
+                    ContinousStateValueVector&, const PortValueList&) const = 0;
   virtual void initDesignPosition(PortValueList&) const = 0;
 
   virtual void velocity(const Task&, const Environment& environment,
