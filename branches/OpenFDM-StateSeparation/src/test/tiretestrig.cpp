@@ -136,7 +136,7 @@ main(int argc, char *argv[])
   
   WheelContact* wheelContact = new WheelContact("Wheel Contact");
   wheelContact->setWheelRadius(0.3);
-  wheelContact->setSpringConstant(100000);
+  wheelContact->setSpringConstant(50000);
   wheelContact->setSpringDamping(sqrt(wheelContact->getSpringConstant())/10);
   group->addChild(wheelContact);
   rimAndTire->addLink("link2");
