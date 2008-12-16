@@ -12,8 +12,10 @@ namespace OpenFDM {
 
 class Interact::Context : public MechanicContext {
 public:
-  Context(const Interact* interact, const Environment* environment) :
+  Context(const Interact* interact, const Environment* environment,
+          PortValueList& portValueList) :
     MechanicContext(environment),
+    mPortValueList(portValueList),
     mInteract(interact)
   {}
   virtual ~Context() {}
@@ -80,8 +82,6 @@ public:
   /// Set port value for the given port.
   virtual const PortValue* getPortValue(const PortInfo& portInfo) const
   {  return mPortValueList.getPortValue(portInfo); }
-  void setPortValue(const PortInfo& portInfo, PortValue* portValue)
-  { mPortValueList.setPortValue(portInfo.getIndex(), portValue); }
   
 protected:
   // PortValues
@@ -125,17 +125,7 @@ MechanicContext*
 Interact::newMechanicContext(const Environment* environment,
                              PortValueList& portValueList) const
 {
-  SharedPtr<Context> context = new Context(this, environment);
-  for (unsigned i = 0; i < getNumPorts(); ++i) {
-    PortValue* portValue = portValueList.getPortValue(i);
-    if (!portValue) {
-      Log(Model, Error) << "No port value given for model \"" << getName()
-                        << "\" and port \"" << getPort(i)->getName()
-                        << "\"" << endl;
-      return false;
-    }
-    context->setPortValue(*getPort(i), portValue);
-  }
+  SharedPtr<Context> context = new Context(this, environment, portValueList);
   if (!context->alloc()) {
     Log(Model, Warning) << "Could not alloc for model \""
                         << getName() << "\"" << endl;
