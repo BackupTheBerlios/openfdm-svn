@@ -28,8 +28,8 @@ int main()
   // FIXME, need usable environment stuff like gravity first ...
   SharedPtr<Group> group = new Group("Foucault");
   FixedRootJoint* fixedRootJoint = new FixedRootJoint("Root");
-  fixedRootJoint->setPosition(planet->toCart(geodetic));
-  fixedRootJoint->setOrientation(planet->getGeodHLOrientation(geodetic));
+  fixedRootJoint->setRootPosition(planet->toCart(geodetic));
+  fixedRootJoint->setRootOrientation(planet->getGeodHLOrientation(geodetic));
   group->addChild(fixedRootJoint);
   RotationalJoint* rotationalJoint1 = new RotationalJoint("Rotational Joint 1");
   group->addChild(rotationalJoint1);

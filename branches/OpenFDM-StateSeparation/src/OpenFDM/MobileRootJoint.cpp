@@ -47,7 +47,7 @@ MobileRootJoint::init(const Task&, DiscreteStateValueVector&,
 void
 MobileRootJoint::initDesignPosition(PortValueList& portValues) const
 {
-  portValues[mMechanicLink].setDesignPosition(Vector3::zeros());
+  portValues[mMechanicLink].setDesignPosition(getPosition());
 }
 
 void

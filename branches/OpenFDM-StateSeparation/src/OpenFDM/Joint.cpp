@@ -13,10 +13,12 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Joint, MechanicNode)
+  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 Joint::Joint(const std::string& name) :
-  MechanicNode(name)
+  MechanicNode(name),
+  mPosition(0, 0, 0)
 {
 }
 
@@ -50,6 +52,18 @@ Joint::newMechanicContext(const Environment* environment,
     childLinkValue = portValueList.getPortValue(*childLinkInfo);
   return newJointContext(environment, parentLinkValue,
                          childLinkValue, portValueList);
+}
+
+const Vector3&
+Joint::getPosition() const
+{
+  return mPosition;
+}
+
+void
+Joint::setPosition(const Vector3& position)
+{
+  mPosition = position;
 }
 
 } // namespace OpenFDM

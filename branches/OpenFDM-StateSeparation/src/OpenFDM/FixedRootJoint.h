@@ -23,12 +23,12 @@ public:
   virtual ~FixedRootJoint();
 
   /// The position is global coordinates
-  const Vector3& getPosition() const;
-  void setPosition(const Vector3& position);
+  const Vector3& getRootPosition() const;
+  void setRootPosition(const Vector3& rootRosition);
 
   /// The orientation is global coordinates
-  const Quaternion& getOrientation() const;
-  void setOrientation(const Quaternion& orientation);
+  const Quaternion& getRootOrientation() const;
+  void setRootOrientation(const Quaternion& rootOrientation);
 
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector&,
@@ -46,8 +46,8 @@ public:
 private:
   MechanicLink mMechanicLink;
 
-  Vector3 mPosition;
-  Quaternion mOrientation;
+  Vector3 mRootPosition;
+  Quaternion mRootOrientation;
 };
 
 } // namespace OpenFDM

@@ -19,7 +19,6 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(UniversalJoint, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 UniversalJoint::UniversalJoint(const std::string& name) :
@@ -54,18 +53,6 @@ UniversalJoint::setAxis(const Vector3& axis)
   }
   mAxis = (1/nrm)*axis;
   mOrientation = Quaternion::fromRotateTo(Vector3(0, 0, 1), mAxis);
-}
-
-const Vector3&
-UniversalJoint::getPosition() const
-{
-  return CartesianJoint<2>::getPosition();
-}
-
-void
-UniversalJoint::setPosition(const Vector3& position)
-{
-  CartesianJoint<2>::setPosition(position);
 }
 
 void

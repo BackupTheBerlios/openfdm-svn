@@ -17,15 +17,15 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(FixedRootJoint, RootJoint)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
-  DEF_OPENFDM_PROPERTY(Quaternion, Orientation, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, RootPosition, Serialized)
+  DEF_OPENFDM_PROPERTY(Quaternion, RootOrientation, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 FixedRootJoint::FixedRootJoint(const std::string& name) :
   RootJoint(name),
   mMechanicLink(newMechanicLink("link")),
-  mPosition(0, 0, 0),
-  mOrientation(Quaternion::unit())
+  mRootPosition(0, 0, 0),
+  mRootOrientation(Quaternion::unit())
 {
 }
 
@@ -34,27 +34,27 @@ FixedRootJoint::~FixedRootJoint()
 }
 
 const Vector3&
-FixedRootJoint::getPosition() const
+FixedRootJoint::getRootPosition() const
 {
-  return mPosition;
+  return mRootPosition;
 }
 
 void
-FixedRootJoint::setPosition(const Vector3& position)
+FixedRootJoint::setRootPosition(const Vector3& rootPosition)
 {
-  mPosition = position;
+  mRootPosition = rootPosition;
 }
 
 const Quaternion&
-FixedRootJoint::getOrientation() const
+FixedRootJoint::getRootOrientation() const
 {
-  return mOrientation;
+  return mRootOrientation;
 }
 
 void
-FixedRootJoint::setOrientation(const Quaternion& orientation)
+FixedRootJoint::setRootOrientation(const Quaternion& rootOrientation)
 {
-  mOrientation = orientation;
+  mRootOrientation = rootOrientation;
 }
 
 void
@@ -67,7 +67,7 @@ FixedRootJoint::init(const Task&, DiscreteStateValueVector&,
 void
 FixedRootJoint::initDesignPosition(PortValueList& portValues) const
 {
-  portValues[mMechanicLink].setDesignPosition(Vector3::zeros());
+  portValues[mMechanicLink].setDesignPosition(getPosition());
 }
 
 void
@@ -76,10 +76,10 @@ FixedRootJoint::velocity(const Task& task, const Environment& environment,
                          PortValueList& portValues) const
 {
   Vector3 angularBaseVelocity = environment.getAngularVelocity(task.getTime());
-  portValues[mMechanicLink].setCoordinateSystem(CoordinateSystem(mPosition,
-                                                                 mOrientation));
-  portValues[mMechanicLink].setPosAndVel(angularBaseVelocity, mPosition,
-                                         mOrientation, Vector6::zeros());
+  portValues[mMechanicLink].setCoordinateSystem(CoordinateSystem(mRootPosition,
+                                                                 mRootOrientation));
+  portValues[mMechanicLink].setPosAndVel(angularBaseVelocity, mRootPosition,
+                                         mRootOrientation, Vector6::zeros());
 }
 
 void

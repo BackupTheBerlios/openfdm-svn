@@ -19,7 +19,6 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(PrismaticJoint, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 PrismaticJoint::PrismaticJoint(const std::string& name) :
@@ -56,18 +55,6 @@ PrismaticJoint::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-}
-
-const Vector3&
-PrismaticJoint::getPosition() const
-{
-  return CartesianJoint<1>::getPosition();
-}
-
-void
-PrismaticJoint::setPosition(const Vector3& position)
-{
-  CartesianJoint<1>::setPosition(position);
 }
 
 void

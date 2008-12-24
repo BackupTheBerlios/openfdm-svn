@@ -19,7 +19,6 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteJoint, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RevoluteJoint::RevoluteJoint(const std::string& name) :
@@ -53,18 +52,6 @@ RevoluteJoint::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-}
-
-const Vector3&
-RevoluteJoint::getPosition() const
-{
-  return CartesianJoint<1>::getPosition();
-}
-
-void
-RevoluteJoint::setPosition(const Vector3& position)
-{
-  CartesianJoint<1>::setPosition(position);
 }
 
 void

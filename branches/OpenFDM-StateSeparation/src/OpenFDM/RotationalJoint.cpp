@@ -18,7 +18,6 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RotationalJoint, Joint)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RotationalJoint::RotationalJoint(const std::string& name) :
@@ -34,18 +33,6 @@ RotationalJoint::RotationalJoint(const std::string& name) :
 
 RotationalJoint::~RotationalJoint(void)
 {
-}
-
-const Vector3&
-RotationalJoint::getPosition() const
-{
-  return CartesianJoint<3>::getPosition();
-}
-
-void
-RotationalJoint::setPosition(const Vector3& position)
-{
-  CartesianJoint<3>::setPosition(position);
 }
 
 void

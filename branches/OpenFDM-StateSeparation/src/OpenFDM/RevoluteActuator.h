@@ -33,9 +33,6 @@ public:
   const Vector3& getAxis() const;
   void setAxis(const Vector3& axis);
 
-  const Vector3& getPosition() const;
-  void setPosition(const Vector3& position);
-
   const bool& getVelocityControl(void) const
   { return mVelocityControl; }
   void setVelocityControl(const bool& velocityControl)

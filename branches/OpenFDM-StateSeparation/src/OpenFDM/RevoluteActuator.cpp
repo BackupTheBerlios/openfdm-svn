@@ -19,7 +19,6 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuator, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, VelocityControl, Serialized)
   DEF_OPENFDM_PROPERTY(Real, MaxVel, Serialized)
   DEF_OPENFDM_PROPERTY(Real, VelGain, Serialized)
@@ -65,18 +64,6 @@ RevoluteActuator::setAxis(const Vector3& axis)
     return;
   }
   mAxis = (1/nrm)*axis;
-}
-
-const Vector3&
-RevoluteActuator::getPosition() const
-{
-  return CartesianJoint<1>::getPosition();
-}
-
-void
-RevoluteActuator::setPosition(const Vector3& position)
-{
-  CartesianJoint<1>::setPosition(position);
 }
 
 void

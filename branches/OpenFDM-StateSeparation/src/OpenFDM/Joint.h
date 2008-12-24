@@ -53,6 +53,15 @@ public:
                   MechanicLinkValue* parentLinkValue,
                   MechanicLinkValue* childLinkValue,
                   PortValueList& portValueList) const = 0;
+
+
+  /** The design position of the joint.
+   */
+  const Vector3& getPosition() const;
+  void setPosition(const Vector3& position);
+
+private:
+  Vector3 mPosition;
 };
 
 } // namespace OpenFDM

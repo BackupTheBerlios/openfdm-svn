@@ -28,12 +28,6 @@ public:
   typedef LinAlg::Matrix<real_type,n,n> MatrixNN;
   typedef LinAlg::MatrixFactors<real_type,n,n,LinAlg::LUTag> MatrixFactorsNN;
 
-  // Each Cartesian joint has a position that has some kind of invariance
-  const Vector3& getPosition() const
-  { return mPosition; }
-  void setPosition(const Vector3& position)
-  { mPosition = position; }
-
   virtual JointContext*
   newJointContext(const Environment* environment,
                   MechanicLinkValue* parentLinkValue,
@@ -65,8 +59,7 @@ protected:
   CartesianJoint(const std::string& name) :
     Joint(name),
     mParentLink(newMechanicLink("link0")),
-    mChildLink(newMechanicLink("link1")),
-    mPosition(0, 0, 0)
+    mChildLink(newMechanicLink("link1"))
   { }
   virtual ~CartesianJoint(void)
   { }
@@ -263,8 +256,6 @@ protected:
 private:
   MechanicLink mParentLink;
   MechanicLink mChildLink;
-
-  Vector3 mPosition;
 };
 
 } // namespace OpenFDM

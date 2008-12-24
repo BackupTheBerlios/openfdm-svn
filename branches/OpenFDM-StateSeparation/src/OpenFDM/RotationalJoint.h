@@ -28,11 +28,6 @@ public:
   RotationalJoint(const std::string& name);
   virtual ~RotationalJoint(void);
 
-  /** Sets the joint axis where this joint is allowed to rotate around.
-   */
-  const Vector3& getPosition() const;
-  void setPosition(const Vector3& position);
-
   void setEnableExternalForce(bool enable);
   bool getEnableExternalForce() const;
 
