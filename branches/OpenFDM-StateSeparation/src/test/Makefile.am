@@ -1,7 +1,7 @@
 INCLUDES = -I$(srcdir)/..
 
 # define some util programs
-bin_PROGRAMS = foucault mechanic structure tiretestrig coordsys
+bin_PROGRAMS = foucault inertianav mechanic structure tiretestrig coordsys
 
 # define some unit tests
 check_PROGRAMS = constintegral harmonic limit linalg quattest simulationtime unitstest
@@ -21,6 +21,9 @@ quattest_LDADD = ../OpenFDM/libOpenFDM.la
 
 mechanic_SOURCES = mechanic.cpp
 mechanic_LDADD = ../OpenFDM/libOpenFDM.la
+
+inertianav_SOURCES = inertianav.cpp
+inertianav_LDADD = ../OpenFDM/libOpenFDM.la
 
 linalg_SOURCES = linalg.cpp
 linalg_LDADD = ../OpenFDM/libOpenFDM.la

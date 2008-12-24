@@ -559,7 +559,7 @@ cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,3>& v)
   return ret;
 }
 
-/** Cross product multiplication.
+/** Cross product matrix.
  */
 template<typename Impl1>
 OpenFDM_FORCE_INLINE
@@ -574,11 +574,47 @@ cross(const MatrixRValue<Impl1,3,1>& u)
   return ret;
 }
 
+/** Cross product kernel.
+ *  Compute x so that
+ *    || cross(a, x) - b ||_2 = min!, where || x ||_2 = min!
+ *  Note that the whole minimum solution space of the cross product
+ *  matrix equation is formed by
+ *    crossKern(a, x) + alpha*a
+ *  for scalar alpha.
+ */
+template<typename Impl1, typename Impl2>
+OpenFDM_FORCE_INLINE
+Vector3<typename Impl1::value_type>
+crossKern(const MatrixRValue<Impl1,3,1>& a, const MatrixRValue<Impl2,3,1>& b)
+{
+  typedef typename Impl1::value_type value_type;
+
+  value_type a2 = dot(a, a);
+  if (fabs(a2) <= Limits<value_type>::safe_min())
+    return Vector3<value_type>(0, 0, 0);
+
+  // Cache the 1/a2 value
+  value_type ra2 = value_type(1)/a2;
+  
+  // Since a cross product with a cannot result in components directing into
+  // a, project out components of b in direction of a.
+  // So in effect we solve cross(a, x) - bPer = 0, where || x ||_2 = min!
+  Vector3<value_type> bPer = b - (dot(a, b)*ra2)*a;
+  
+  // The solution must be perpandicular to bPer and a.
+  Vector3<value_type> xPrime = cross(bPer, a);
+  
+  // Comparison of coefficients:
+  // Put x' = cross(bPer, a) into the original equation.
+  // Look at
+  //  cross(a, x') = cross(a, cross(bPer, a)) = dot(a, a)*bPer + dot(a, bPer)*a
+  // since we have a perpandicular to bPer this is
+  //  cross(a, x') - dot(a, a)*bPer = 0
+  // So we need to rescale x' with 1/dot(a, a)
+  return ra2*xPrime;
+}
+
 // return any normalized vector perpendicular to v
-// template<typename Impl1, typename Impl2>
-// OpenFDM_FORCE_INLINE
-// Vector<typename Impl1::value_type,3>
-// cross(const MatrixRValue<Impl1,3,1>& u, const MatrixRValue<Impl2,3,1>& v)
 template<typename T>
 OpenFDM_FORCE_INLINE
 Vector3<T>
