@@ -19,17 +19,6 @@ public:
   SimpleDirectModel(const std::string& name);
   virtual ~SimpleDirectModel();
 
-  unsigned getNumInputPorts() const
-  { return mInputPorts.size(); }
-  PortId getInputPort(unsigned i) const
-  {
-    if (mInputPorts.size() <= i)
-      return PortId();
-    return PortId(mInputPorts[i]);
-  }
-  PortId getOutputPort() const
-  { return PortId(mOutputPort); }
-
   class Context;
   virtual AbstractModelContext* newModelContext(PortValueList& portValueList) const;
   virtual void output(Context& context) const = 0;
@@ -66,10 +55,14 @@ public:
     SharedPtr<NumericPortValue> mOutputValue;
   };
 
+  unsigned getNumInputPorts() const;
+  const InputPortInfo* getInputPort(unsigned i) const;
+  const OutputPortInfo* getOutputPort() const;
+
 protected:
   void setNumInputPorts(unsigned numInputPorts);
-  PortId addInputPort(const std::string& name);
-  void removeInputPort(const PortId& portId);
+  const InputPortInfo* addInputPort(const std::string& name);
+  void removeInputPort(const InputPortInfo* portInfo);
 
 private:
   typedef std::vector<SharedPtr<InputPortInfo> > InputPortVector;

@@ -9,7 +9,6 @@
 #include <vector>
 #include "Connect.h"
 #include "Node.h"
-#include "PortId.h"
 #include "PortInfo.h"
 #include "SharedPtr.h"
 

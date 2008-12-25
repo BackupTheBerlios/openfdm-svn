@@ -19,8 +19,8 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  PortId addLink(const std::string& name);
-  void removeLink(const PortId& portId);
+  const PortInfo* addLink(const std::string& name);
+  void removeLink(const PortInfo* portInfo);
 
 private:
   typedef std::vector<MechanicLink> MechanicLinkVector;

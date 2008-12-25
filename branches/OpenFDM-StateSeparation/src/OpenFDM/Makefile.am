@@ -87,7 +87,6 @@ OpenFDMCoreHEADERS = \
   OpenFDMConfig.h \
   PhysicalDimension.h \
   Plane.h \
-  PortId.h \
   PortInfo.h \
   PortValue.h \
   PortValueList.h \

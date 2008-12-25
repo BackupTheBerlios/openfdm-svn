@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 #include "Object.h"
-#include "PortId.h"
 #include "PortInfo.h"
 #include "SampleTime.h"
 #include "SharedPtr.h"
@@ -43,16 +42,11 @@ public:
   WeakPtr<Node> getParent(unsigned i);
   bool isChildOf(const Group* group) const;
 
-  SharedPtr<const PortInfo> getPort(const PortId& portId) const;
+  unsigned getNumPorts() const;
   SharedPtr<const PortInfo> getPort(unsigned index) const;
   SharedPtr<const PortInfo> getPort(const std::string& name) const;
-
-  unsigned getNumPorts() const;
-  PortId getPortId(unsigned index) const;
-  PortId getPortId(const std::string& name) const;
-
-  unsigned getPortIndex(const PortId& portId) const;
-  bool checkPort(const PortId& portId) const;
+  unsigned getPortIndex(const PortInfo* portInfo) const;
+  bool checkPort(const PortInfo* portInfo) const;
 
   const SampleTime& getSampleTime() const
   { return mSampleTime; }

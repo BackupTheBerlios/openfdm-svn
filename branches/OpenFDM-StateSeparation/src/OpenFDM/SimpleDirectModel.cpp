@@ -147,6 +147,26 @@ SimpleDirectModel::newModelContext(PortValueList& portValueList) const
   return new Context(this, inputValues, outputPortValue);
 }
 
+unsigned
+SimpleDirectModel::getNumInputPorts() const
+{
+  return mInputPorts.size();
+}
+
+const InputPortInfo*
+SimpleDirectModel::getInputPort(unsigned i) const
+{
+  if (mInputPorts.size() <= i)
+    return 0;
+  return mInputPorts[i];
+}
+
+const OutputPortInfo*
+SimpleDirectModel::getOutputPort() const
+{
+  return mOutputPort;
+}
+
 void
 SimpleDirectModel::setNumInputPorts(unsigned numInputPorts)
 {
@@ -160,19 +180,19 @@ SimpleDirectModel::setNumInputPorts(unsigned numInputPorts)
     removeInputPort(getInputPort(oldnum-1));
 }
 
-PortId
+const InputPortInfo*
 SimpleDirectModel::addInputPort(const std::string& name)
 {
   mInputPorts.push_back(new InputPortInfo(this, name, Size(0, 0), true));
-  return PortId(mInputPorts.back());
+  return mInputPorts.back();
 }
 
 void
-SimpleDirectModel::removeInputPort(const PortId& portId)
+SimpleDirectModel::removeInputPort(const InputPortInfo* portInfo)
 {
   InputPortVector::iterator i = mInputPorts.begin();
   while (i != mInputPorts.end()) {
-    if (portId != PortId(*i)) {
+    if (portInfo != i->get()) {
       ++i;
       continue;
     }

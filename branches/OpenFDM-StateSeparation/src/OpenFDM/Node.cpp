@@ -103,10 +103,10 @@ Node::isChildOf(const Group* group) const
   return false;
 }
 
-SharedPtr<const PortInfo>
-Node::getPort(const PortId& portId) const
+unsigned
+Node::getNumPorts() const
 {
-  return portId._port.lock();
+  return mPortList.size();
 }
 
 SharedPtr<const PortInfo>
@@ -120,53 +120,34 @@ Node::getPort(unsigned index) const
 SharedPtr<const PortInfo>
 Node::getPort(const std::string& name) const
 {
-  return getPort(getPortId(name));
-}
-
-unsigned
-Node::getNumPorts() const
-{
-  return mPortList.size();
-}
-
-PortId
-Node::getPortId(unsigned index) const
-{
-  if (mPortList.size() <= index)
-    return PortId();
-  return PortId(mPortList[index]);
-}
-
-PortId
-Node::getPortId(const std::string& name) const
-{
   PortList::const_iterator i;
   for (i = mPortList.begin(); i != mPortList.end(); ++i) {
     if (name == (*i)->getName())
-      return PortId(*i);
-  }
-  return PortId();
+      return *i;
+   }
+  return 0;
 }
 
 unsigned
-Node::getPortIndex(const PortId& portId) const
+Node::getPortIndex(const PortInfo* portInfo) const
 {
-  SharedPtr<const PortInfo> port = portId._port.lock();
-  if (!port)
-    return ~0u;
   PortList::const_iterator i;
-  i = std::find(mPortList.begin(), mPortList.end(), portId._port.lock());
-  if (i == mPortList.end())
-    return ~0u;
-  return port->getIndex();
+  for (i = mPortList.begin(); i != mPortList.end(); ++i) {
+    if (portInfo == i->get())
+      return std::distance(mPortList.begin(), i);
+  }
+  return ~0u;
 }
 
 bool
-Node::checkPort(const PortId& portId) const
+Node::checkPort(const PortInfo* portInfo) const
 {
   PortList::const_iterator i;
-  i = std::find(mPortList.begin(), mPortList.end(), portId._port.lock());
-  return i != mPortList.end();
+  for (i = mPortList.begin(); i != mPortList.end(); ++i) {
+    if (portInfo == i->get())
+      return true;
+  }
+  return false;
 }
 
 class Node::CycleCheckVisitor : public ConstNodeVisitor {
