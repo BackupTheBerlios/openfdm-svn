@@ -28,7 +28,7 @@ public:
   void traverse(NodeVisitor& visitor);
   void traverse(ConstNodeVisitor& visitor) const;
 
-  /// Add a new child. Returns the number of this child wthin the group
+  /// Add a new child. Returns the number of this child within the group
   /// on success else ~0u is returned.
   unsigned addChild(Node* node);
   /// Remove the given child.
