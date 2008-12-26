@@ -1307,8 +1307,6 @@ protected:
       const Node* node = i->second->getNode();
       for (unsigned k = 0; k < node->getNumPorts(); ++k) {
         SharedPtr<const PortInfo> portInfo = node->getPort(k);
-        if (portInfo->getOptional())
-          continue;
         if (!i->second->getPortValue(*portInfo)) {
           Log(Schedule, Warning) << "Mandatory port value for port \""
                                  << portInfo->getName() << "\" for model \""
