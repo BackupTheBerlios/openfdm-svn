@@ -16,13 +16,12 @@ class MechanicLinkValue;
 
 class PortValue : public Referenced {
 public:
-  virtual NumericPortValue* toNumericPortValue() { return 0; }
-  virtual const NumericPortValue* toNumericPortValue() const { return 0; }
-  virtual MechanicLinkValue* toMechanicLinkValue() { return 0; }
-  virtual const MechanicLinkValue* toMechanicLinkValue() const { return 0; }
+  virtual NumericPortValue* toNumericPortValue();
+  virtual const NumericPortValue* toNumericPortValue() const;
+  virtual MechanicLinkValue* toMechanicLinkValue();
+  virtual const MechanicLinkValue* toMechanicLinkValue() const;
 
-  static void destroy(const PortValue* portValue)
-  { delete portValue; }
+  static void destroy(const PortValue* portValue);
 
 protected:
   virtual ~PortValue();
