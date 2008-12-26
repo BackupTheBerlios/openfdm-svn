@@ -26,22 +26,12 @@ class PortValueList {
 public:
 
   // Accessors for real valued ports
-  bool isConnected(const RealInputPort& port) const
-  { return port.getPortValue(mPortValueVector); }
-  bool isConnected(const RealOutputPort& port) const
-  { return port.getPortValue(mPortValueVector); }
-
   const real_type& operator[](const RealInputPort& port) const
   { return port.getPortValue(mPortValueVector)->getValue()(0, 0); }
   real_type& operator[](const RealOutputPort& port)
   { return port.getPortValue(mPortValueVector)->getValue()(0, 0); }
 
   // Accessors for matrix valued ports
-  bool isConnected(const MatrixInputPort& port) const
-  { return port.getPortValue(mPortValueVector); }
-  bool isConnected(const MatrixOutputPort& port) const
-  { return port.getPortValue(mPortValueVector); }
-
   const Matrix& operator[](const MatrixInputPort& port) const
   { return port.getPortValue(mPortValueVector)->getValue(); }
   // FIXME, make sure that the size cannot change.
@@ -52,14 +42,9 @@ public:
 
 
   // Accessors for matrix valued ports
-  bool isConnected(const MechanicLink& port) const
-  { return port.getPortValue(mPortValueVector); }
-
   // FIXME Implement access control for the port value
   MechanicLinkValue& operator[](const MechanicLink& port) const
   { return *port.getPortValue(mPortValueVector); }
-
-
 
 
   // FIXME, avoid this method here. With this method the output stage of a model
