@@ -55,9 +55,8 @@ SimpleDirectModel::Context::getStateDerivative(const ContinousStateInfo&)
 }
 
 void
-SimpleDirectModel::Context::initOutput(const /*Init*/Task&)
+SimpleDirectModel::Context::init(const /*Init*/Task&)
 {
-  mModel->output(*this);
 }
 
 void

@@ -106,11 +106,10 @@ protected:
       mJointMatrix = mCartesianJoint->getJointMatrix();
     }
 
-    virtual void initVelocities(const /*Init*/Task& task)
+    virtual void init(const /*Init*/Task& task)
     {
       mCartesianJoint->init(task, mDiscreteState,
                             mContinousState, mPortValueList);
-      mCartesianJoint->velocity(task, *this, mContinousState, mPortValueList);
     }
     
     virtual void velocities(const Task& task)

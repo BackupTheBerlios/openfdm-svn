@@ -25,7 +25,12 @@ public:
 
   virtual const AbstractModel& getNode() const = 0;
 
-  virtual void initOutput(const /*Init*/Task& task) = 0;
+  void initOutput(const /*Init*/Task& task)
+  {
+    init(task);
+    output(task);
+  }
+  virtual void init(const /*Init*/Task& task) = 0;
   virtual void output(const Task& task) = 0;
   virtual void update(const DiscreteTask& discreteTask) = 0;
   virtual void derivative(const Task&) = 0;

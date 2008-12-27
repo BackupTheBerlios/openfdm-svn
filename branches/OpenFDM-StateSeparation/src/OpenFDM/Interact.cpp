@@ -28,10 +28,9 @@ public:
     mInteract->initDesignPosition(mPortValueList);
   }
 
-  virtual void initVelocities(const /*Init*/Task& task)
+  virtual void init(const /*Init*/Task& task)
   {
     mInteract->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mInteract->velocity(task, getEnvironment(), mContinousState, mPortValueList);
   }
 
   virtual void velocities(const Task& task)

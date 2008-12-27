@@ -29,10 +29,9 @@ public:
       return false;
     return mModel->alloc(*this);
   }
-  virtual void initOutput(const /*Init*/Task& task)
+  virtual void init(const /*Init*/Task& task)
   {
     mModel->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mModel->output(task, mDiscreteState, mContinousState, mPortValueList);
   }
   virtual void output(const Task& task)
   {

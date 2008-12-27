@@ -27,7 +27,13 @@ public:
   virtual const MechanicNode& getNode() const = 0;
 
   virtual void initDesignPosition() = 0;
-  virtual void initVelocities(const /*Init*/Task& task) = 0;
+
+  void initVelocities(const /*Init*/Task& task)
+  {
+    init(task);
+    velocities(task);
+  }
+  virtual void init(const /*Init*/Task& task) = 0;
   virtual void velocities(const Task& task) = 0;
   virtual void articulation(const Task& task) = 0;
   virtual void accelerations(const Task& task) = 0;

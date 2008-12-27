@@ -36,7 +36,7 @@ public:
     virtual ContinousStateValue* getStateValue(const ContinousStateInfo&);
     virtual ContinousStateValue* getStateDerivative(const ContinousStateInfo&);
     
-    virtual void initOutput(const /*Init*/Task&);
+    virtual void init(const /*Init*/Task&);
     virtual void output(const Task&);
     virtual void update(const DiscreteTask&);
     virtual void derivative(const Task&);

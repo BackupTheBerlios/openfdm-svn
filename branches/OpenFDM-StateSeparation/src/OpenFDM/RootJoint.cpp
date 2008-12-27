@@ -29,10 +29,9 @@ public:
     mRootJoint->initDesignPosition(mPortValueList);
   }
 
-  virtual void initVelocities(const /*Init*/Task& task)
+  virtual void init(const /*Init*/Task& task)
   {
     mRootJoint->init(task, mDiscreteState, mContinousState, mPortValueList);
-    mRootJoint->velocity(task, getEnvironment(), mContinousState, mPortValueList);
   }
   
   virtual void velocities(const Task& task)
