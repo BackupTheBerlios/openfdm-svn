@@ -23,6 +23,7 @@ MechanicContext
 * Remove LeafNode??
 * Environmental cache ... May be put that into the Task???
 * Single link MechanicContext has a local coordinate system
+* Optimize inertia transforms.
 * Give Mass an own Context with a pretransformed Inertia
 
 * Check why harmonic is so bad ...
