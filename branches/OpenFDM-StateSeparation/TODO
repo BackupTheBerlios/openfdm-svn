@@ -14,14 +14,18 @@ MechanicContext
  |- DoubleLinkInteractContext (has two parent links, constraint
  |       joints need to implement that in the future)
  |- RigidBodyContext (has a unique parent and may be a list of links with
-         different local coordinate sysetems, see above)
+         different local coordinate systems, see above)
 
 * More init time checking for SimpleDirectModels
 * Template Contexts for SimpleDirectModels
 * Sensor
 * Move Mechanics into a normal ModelContext??
 * Remove LeafNode??
-* Environmental cache ... May be put that into the Task???
+* Environmental cache ...
+  - May be put that into the Task???
+  - May be an extra argument to the mechanical system functions?
+  - May be have a 'RootLink' pointer/id in each MechanicLinkValue, and have
+    an environment cache for each RootLink (std::map<RootLinkId, Cache>)??
 * Single link MechanicContext has a local coordinate system
 * Optimize inertia transforms.
 * Give Mass an own Context with a pretransformed Inertia
@@ -48,6 +52,8 @@ MechanicContext
 * AeroForces handling of alphadot/betadot.
 
 * Improove the WGS84 gravity
+* Add link property to tell if we already have the gravity applied at the
+  root link or if this should be applied in the mass models.
 * Test Gravity ...
 
 * Function -> AbstractFunction
