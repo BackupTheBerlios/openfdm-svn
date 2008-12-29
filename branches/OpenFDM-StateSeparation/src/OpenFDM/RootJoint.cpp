@@ -53,9 +53,6 @@ public:
                            mContinousStateDerivative);
   }
   
-  virtual void update(const DiscreteTask&)
-  { }
-
 private:
   SharedPtr<const RootJoint> mRootJoint;
 };

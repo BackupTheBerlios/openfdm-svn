@@ -16,4 +16,46 @@ MechanicContext::~MechanicContext()
 {
 }
 
+void
+MechanicContext::initDesignPosition()
+{
+}
+
+void
+MechanicContext::initVelocities(const /*Init*/Task& task)
+{
+  init(task);
+  velocities(task);
+}
+
+void
+MechanicContext::init(const /*Init*/Task& task)
+{
+}
+
+void
+MechanicContext::velocities(const Task& task)
+{
+}
+
+void
+MechanicContext::articulation(const Task& task)
+{
+}
+
+void
+MechanicContext::accelerations(const Task& task)
+{
+}
+
+void
+MechanicContext::derivative(const Task&)
+{
+}
+
+void
+MechanicContext::update(const DiscreteTask& discreteTask)
+{
+}
+
 } // namespace OpenFDM

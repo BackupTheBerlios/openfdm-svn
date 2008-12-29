@@ -26,19 +26,14 @@ public:
 
   virtual const MechanicNode& getNode() const = 0;
 
-  virtual void initDesignPosition() = 0;
-
-  void initVelocities(const /*Init*/Task& task)
-  {
-    init(task);
-    velocities(task);
-  }
-  virtual void init(const /*Init*/Task& task) = 0;
-  virtual void velocities(const Task& task) = 0;
-  virtual void articulation(const Task& task) = 0;
-  virtual void accelerations(const Task& task) = 0;
-  virtual void derivative(const Task&) = 0;
-  virtual void update(const DiscreteTask& discreteTask) = 0;
+  virtual void initDesignPosition();
+  void initVelocities(const /*Init*/Task& task);
+  virtual void init(const /*Init*/Task& task);
+  virtual void velocities(const Task& task);
+  virtual void articulation(const Task& task);
+  virtual void accelerations(const Task& task);
+  virtual void derivative(const Task&);
+  virtual void update(const DiscreteTask& discreteTask);
 
   const Environment& getEnvironment() const
   { return *mEnvironment; }

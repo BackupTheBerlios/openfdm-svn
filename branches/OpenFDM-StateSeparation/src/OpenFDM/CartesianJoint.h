@@ -133,9 +133,6 @@ protected:
                                   mPortValueList, mContinousStateDerivative);
     }
     
-    virtual void update(const DiscreteTask&)
-    { }
-
     void setPosAndVel(const Vector3& position, const Quaternion& orientation,
                       const VectorN& velocity)
     {

@@ -65,9 +65,6 @@ public:
                             mContinousStateDerivative);
     }
     
-    virtual void update(const DiscreteTask&)
-    { }
-    
     bool alloc()
     {
       unsigned numContinousStates = getNode().getNumContinousStateValues();
