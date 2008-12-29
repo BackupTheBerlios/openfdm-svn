@@ -10,7 +10,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(WheelContact, Interact)
+BEGIN_OPENFDM_OBJECT_DEF(WheelContact, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   DEF_OPENFDM_PROPERTY(Real, WheelRadius, Serialized)
@@ -21,8 +21,7 @@ BEGIN_OPENFDM_OBJECT_DEF(WheelContact, Interact)
   END_OPENFDM_OBJECT_DEF
 
 WheelContact::WheelContact(const std::string& name) :
-  Interact(name),
-  mMechanicLink(newMechanicLink("link")),
+  SingleLinkInteract(name),
   mPosition(0, 0, 0),
   mAxis(0, 1, 0)
 {

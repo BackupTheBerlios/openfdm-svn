@@ -5,7 +5,7 @@
 #ifndef OpenFDM_Sensor_H
 #define OpenFDM_Sensor_H
 
-#include "Interact.h"
+#include "SingleLinkInteract.h"
 #include "MatrixOutputPort.h"
 #include "MechanicLink.h"
 #include "RealOutputPort.h"
@@ -13,8 +13,8 @@
 
 namespace OpenFDM {
 
-class Sensor : public Interact {
-  OPENFDM_OBJECT(Sensor, Interact);
+class Sensor : public SingleLinkInteract {
+  OPENFDM_OBJECT(Sensor, SingleLinkInteract);
 public:
   Sensor(const std::string& name);
   virtual ~Sensor(void);
@@ -111,8 +111,6 @@ public:
   void setEnableAllOutputs(bool enable);
 
 protected:
-  MechanicLink mMechanicLink;
-
   Vector3 mPosition;
 
   MatrixOutputPort mPositionPort;

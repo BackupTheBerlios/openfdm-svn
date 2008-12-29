@@ -31,6 +31,7 @@ OpenFDMCoreHEADERS = \
   CoordinateSystem.h \
   CowPtr.h \
   DiscreteStateValueVector.h \
+  DoubleLinkInteract.h \
   DoPri5.h \
   Environment.h \
   ExplicitAdams.h \
@@ -102,6 +103,7 @@ OpenFDMCoreHEADERS = \
   SampleTime.h \
   ScopeLock.h \
   SharedPtr.h \
+  SingleLinkInteract.h \
   SphericalEarth.h \
   StateStream.h \
   StateInfo.h \
@@ -270,6 +272,7 @@ OpenFDMModelsSOURCES = \
   UnitConversion.cpp
 
 OpenFDMMechanicSOURCES = \
+  DoubleLinkInteract.cpp \
   Joint.cpp \
   ExternalForce.cpp \
   FixedRootJoint.cpp \
@@ -281,6 +284,7 @@ OpenFDMMechanicSOURCES = \
   RevoluteJoint.cpp \
   RotationalJoint.cpp \
   Sensor.cpp \
+  SingleLinkInteract.cpp \
   UniversalJoint.cpp \
   WheelContact.cpp
 

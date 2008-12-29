@@ -11,7 +11,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(InternalSensor, Interact)
+BEGIN_OPENFDM_OBJECT_DEF(InternalSensor, DoubleLinkInteract)
   DEF_OPENFDM_PROPERTY(Vector3, Position0, Serialized)
   DEF_OPENFDM_PROPERTY(Vector3, Position1, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableDistance, Serialized)
@@ -19,9 +19,7 @@ BEGIN_OPENFDM_OBJECT_DEF(InternalSensor, Interact)
   END_OPENFDM_OBJECT_DEF
 
 InternalSensor::InternalSensor(const std::string& name) :
-  Interact(name),
-  mMechanicLink0(newMechanicLink("link0")),
-  mMechanicLink1(newMechanicLink("link1")),
+  DoubleLinkInteract(name),
   mPosition0(0, 0, 0),
   mPosition1(0, 0, 0)
 {

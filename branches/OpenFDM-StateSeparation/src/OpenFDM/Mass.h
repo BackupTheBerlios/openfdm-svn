@@ -5,13 +5,13 @@
 #ifndef OpenFDM_Mass_H
 #define OpenFDM_Mass_H
 
-#include "Interact.h"
+#include "SingleLinkInteract.h"
 #include "Inertia.h"
 
 namespace OpenFDM {
 
-class Mass : public Interact {
-  OPENFDM_OBJECT(Mass, Interact);
+class Mass : public SingleLinkInteract {
+  OPENFDM_OBJECT(Mass, SingleLinkInteract);
 public:
   Mass(const std::string& name, const real_type& mass = 0,
        const InertiaMatrix& inertia = InertiaMatrix(0, 0, 0, 0, 0, 0),
@@ -45,8 +45,6 @@ public:
   void setPosition(const Vector3& position);
 
 private:
-  MechanicLink mMechanicLink;
-
   /// The paremeters that can be set from outside
   real_type mMass;
   InertiaMatrix mInertia;

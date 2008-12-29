@@ -12,11 +12,10 @@
 
 using namespace OpenFDM;
 
-class AccelerationTracking : public Interact {
+class AccelerationTracking : public SingleLinkInteract {
 public:
   AccelerationTracking() :
-    Interact("AccelerationTracking"),
-    mMechanicLink(newMechanicLink("link")),
+    SingleLinkInteract("AccelerationTracking"),
 //     mAccelerationInputPort0(this, "accelerationInput0", Size(3, 1), true),
 //     mAccelerationInputPort1(this, "accelerationInput1", Size(3, 1), true),
 //     mVelocityPort(this, "velocity", Size(6, 1), true),
@@ -128,7 +127,6 @@ public:
   }
 
 protected:
-  MechanicLink mMechanicLink;
   MatrixInputPort mVelocityPort;
   MatrixInputPort mAccelerationInputPort0;
   MatrixInputPort mAccelerationInputPort1;

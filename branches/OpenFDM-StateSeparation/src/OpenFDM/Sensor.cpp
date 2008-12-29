@@ -11,7 +11,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Sensor, Interact)
+BEGIN_OPENFDM_OBJECT_DEF(Sensor, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnablePosition, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableOrientation, Serialized)
@@ -29,8 +29,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Sensor, Interact)
   END_OPENFDM_OBJECT_DEF
 
 Sensor::Sensor(const std::string& name) :
-  Interact(name),
-  mMechanicLink(newMechanicLink("link")),
+  SingleLinkInteract(name),
   mPosition(0, 0, 0)
 {
 }

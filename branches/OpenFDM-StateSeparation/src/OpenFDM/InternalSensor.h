@@ -5,7 +5,7 @@
 #ifndef OpenFDM_InternalSensor_H
 #define OpenFDM_InternalSensor_H
 
-#include "Interact.h"
+#include "DoubleLinkInteract.h"
 #include "MechanicLink.h"
 #include "RealInputPort.h"
 #include "RealOutputPort.h"
@@ -13,8 +13,8 @@
 
 namespace OpenFDM {
 
-class InternalSensor : public Interact {
-  OPENFDM_OBJECT(InternalSensor, Interact);
+class InternalSensor : public DoubleLinkInteract {
+  OPENFDM_OBJECT(InternalSensor, DoubleLinkInteract);
 public:
   InternalSensor(const std::string& name);
   virtual ~InternalSensor(void);
@@ -57,9 +57,6 @@ public:
   void setEnableAllOutputs(bool enable);
 
 protected:
-  MechanicLink mMechanicLink0;
-  MechanicLink mMechanicLink1;
-
   Vector3 mPosition0;
   Vector3 mPosition1;
 

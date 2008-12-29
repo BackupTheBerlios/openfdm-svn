@@ -6,17 +6,15 @@
 #define OpenFDM_Interact_H
 
 #include <string>
-#include "Environment.h"
 #include "MechanicNode.h"
 
 namespace OpenFDM {
 
 class ConstNodeVisitor;
-class ContinousStateValueVector;
-class DiscreteStateValueVector;
+class Environment;
+class MechanicContext;
 class NodeVisitor;
 class PortValueList;
-class Task;
 
 class Interact : public MechanicNode {
   OPENFDM_OBJECT(Interact, MechanicNode);
@@ -27,32 +25,8 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual MechanicContext* newMechanicContext(const Environment* environment,
-                                              PortValueList& portValues) const;
-
-  virtual void init(const Task&, DiscreteStateValueVector&,
-                    ContinousStateValueVector&, const PortValueList&) const
-  { }
-  virtual void initDesignPosition(PortValueList&) const = 0;
-  virtual void velocity(const Task&, const Environment& environment,
-                        const ContinousStateValueVector&, PortValueList&) const
-  { }
-  virtual void articulation(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const
-  { }
-  virtual void acceleration(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const
-  { }
-  virtual void derivative(const Task&, const Environment& environment,
-                          const DiscreteStateValueVector&,
-                          const ContinousStateValueVector&,
-                          const PortValueList&,
-                          ContinousStateValueVector&) const
-  { }
-private:
-  class Context;
+  virtual MechanicContext*
+  newMechanicContext(const Environment*, PortValueList&) const = 0;
 };
 
 } // namespace OpenFDM

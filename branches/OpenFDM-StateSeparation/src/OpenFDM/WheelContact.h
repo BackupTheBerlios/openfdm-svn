@@ -5,12 +5,12 @@
 #ifndef OpenFDM_WheelContact_H
 #define OpenFDM_WheelContact_H
 
-#include "Interact.h"
+#include "SingleLinkInteract.h"
 
 namespace OpenFDM {
 
-class WheelContact : public Interact {
-  OPENFDM_OBJECT(WheelContact, Interact);
+class WheelContact : public SingleLinkInteract {
+  OPENFDM_OBJECT(WheelContact, SingleLinkInteract);
 public:
   WheelContact(const std::string& name);
   virtual ~WheelContact(void);
@@ -64,8 +64,6 @@ public:
   { return mFrictionCoeficient; }
 
 private:
-  MechanicLink mMechanicLink;
-
   Vector3 mPosition;
   Vector3 mAxis;
   real_type mWheelRadius;

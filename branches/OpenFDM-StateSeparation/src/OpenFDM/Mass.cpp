@@ -9,7 +9,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Mass, Interact)
+BEGIN_OPENFDM_OBJECT_DEF(Mass, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   DEF_OPENFDM_PROPERTY(Inertia, Inertia, Serialized)
   DEF_OPENFDM_PROPERTY(Real, Mass, Serialized)
@@ -17,8 +17,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Mass, Interact)
 
 Mass::Mass(const std::string& name, const real_type& mass,
            const InertiaMatrix& inertia, const Vector3& position) :
-  Interact(name),
-  mMechanicLink(newMechanicLink("link")),
+  SingleLinkInteract(name),
   mMass(mass),
   mInertia(inertia),
   mPosition(position)
