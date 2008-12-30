@@ -12,16 +12,15 @@ namespace OpenFDM {
 
 class Mass : public SingleLinkInteract {
   OPENFDM_OBJECT(Mass, SingleLinkInteract);
+  class Context;
 public:
   Mass(const std::string& name, const real_type& mass = 0,
        const InertiaMatrix& inertia = InertiaMatrix(0, 0, 0, 0, 0, 0),
        const Vector3& position = Vector3::zeros());
   virtual ~Mass(void);
 
-  virtual void initDesignPosition(PortValueList&) const;
-  virtual void articulation(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const;
+  virtual MechanicContext*
+  newMechanicContext(const Environment*, PortValueList&) const;
 
   const InertiaMatrix& getInertia(void) const;
   void setInertia(const InertiaMatrix& inertia);

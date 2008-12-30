@@ -15,6 +15,54 @@ BEGIN_OPENFDM_OBJECT_DEF(Mass, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Real, Mass, Serialized)
   END_OPENFDM_OBJECT_DEF
 
+class Mass::Context : public SingleLinkInteract::Context {
+public:
+  Context(const Mass* mass,
+          const Environment* environment, PortValueList& portValueList) :
+    SingleLinkInteract::Context(mass, environment, portValueList),
+    mMass(mass),
+    mLinkRelPos(Vector3::zeros()),
+    mSpatialInertia(SpatialInertia::zeros())
+  { }
+  virtual ~Context() {}
+    
+  virtual const Mass& getNode() const
+  { return *mMass; }
+
+  virtual void initDesignPosition()
+  {
+    mLinkRelPos = mMass->getPosition() - getLink().getDesignPosition();
+    mSpatialInertia = SpatialInertia(mMass->getInertia(), mMass->getMass());
+    mSpatialInertia = inertiaFrom(mLinkRelPos, mSpatialInertia);
+  }
+  virtual void articulation(const Task&)
+  {
+    // Contribute the inerita
+    getLink().addInertia(mSpatialInertia);
+
+    // Each inertia has a contribution to the spatial force.
+    // This part is handled here.
+    Vector6 v = getLink().getSpVel();
+    Vector6 Iv = mSpatialInertia*v;
+    Vector6 vIv = Vector6(cross(v.getAngular(), Iv.getAngular()) +
+                          cross(v.getLinear(), Iv.getLinear()),
+                          cross(v.getAngular(), Iv.getLinear()));
+    getLink().addForce(vIv);
+
+    // Now the gravity part
+    Vector3 refPos = getLink().getCoordinateSystem().toReference(mLinkRelPos);
+    Vector3 gravity = getEnvironment().getGravityAcceleration(refPos);
+    gravity = getLink().getCoordinateSystem().rotToLocal(gravity);
+    gravity *= mMass->getMass();
+    getLink().applyForce(mLinkRelPos, gravity);
+  }
+
+private:
+  SharedPtr<const Mass> mMass;
+  Vector3 mLinkRelPos;
+  SpatialInertia mSpatialInertia;
+};
+
 Mass::Mass(const std::string& name, const real_type& mass,
            const InertiaMatrix& inertia, const Vector3& position) :
   SingleLinkInteract(name),
@@ -28,41 +76,11 @@ Mass::~Mass(void)
 {
 }
 
-void
-Mass::initDesignPosition(PortValueList&) const
+MechanicContext*
+Mass::newMechanicContext(const Environment* environment,
+                         PortValueList& portValueList) const
 {
-}
-
-void
-Mass::articulation(const Task&, const Environment& environment,
-                   const ContinousStateValueVector&,
-                   PortValueList& portValues) const
-{
-  // The position of the mass point wrt its parent link frame
-  // FIXME precompute that
-  Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
-
-  // The gravity force that applies to this mass
-  Vector3 refPosition = portValues[mMechanicLink].getFrame().posToRef(position);
-  Vector3 gravity = environment.getGravityAcceleration(refPosition);
-  gravity = mMass*portValues[mMechanicLink].getFrame().rotFromRef(gravity);
-  // The gravity force at the coordinate system of the parent link
-  Vector6 force = forceFrom(position, gravity);
-
-  // The inertia at the coordinate system of the parent link
-  // FIXME precompute that
-  SpatialInertia I = inertiaFrom(position, SpatialInertia(mInertia, mMass));
-
-  // FIXME: do we really need that in the mass
-  // I did search for a while until I found that missing term here ...
-  Vector6 v = portValues[mMechanicLink].getFrame().getSpVel();
-  Vector6 Iv = I*v;
-  Vector6 vIv = Vector6(cross(v.getAngular(), Iv.getAngular()) +
-                        cross(v.getLinear(), Iv.getLinear()),
-                        cross(v.getAngular(), Iv.getLinear()));
-
-  portValues[mMechanicLink].addInertia(I);
-  portValues[mMechanicLink].addForce(Vector6(vIv - force));
+  return new Context(this, environment, portValueList);
 }
 
 const InertiaMatrix&
