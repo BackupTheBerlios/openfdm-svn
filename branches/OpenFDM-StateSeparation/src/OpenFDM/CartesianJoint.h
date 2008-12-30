@@ -183,8 +183,8 @@ protected:
       // Transform to parent link's coordinates and apply to the parent link
       force = mRelativeCoordinateSystem.forceToReference(force);
       I = mRelativeCoordinateSystem.inertiaToReference(I);
-      mParentLink->applyForce(force);
-      mParentLink->applyInertia(I);
+      mParentLink->addForce(force);
+      mParentLink->addInertia(I);
     }
 
     /** Compute the acceleration step for a given joint force.
@@ -219,8 +219,8 @@ protected:
       // Transform to parent link's coordinates and apply to the parent link
       force = mRelativeCoordinateSystem.forceToReference(force);
       I = mRelativeCoordinateSystem.inertiaToReference(I);
-      mParentLink->applyForce(force);
-      mParentLink->applyInertia(I);
+      mParentLink->addForce(force);
+      mParentLink->addInertia(I);
     }
     
     /** Compute the acceleration step for a given velocity derivative.

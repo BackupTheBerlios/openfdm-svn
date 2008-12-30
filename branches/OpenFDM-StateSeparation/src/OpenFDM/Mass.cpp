@@ -61,8 +61,8 @@ Mass::articulation(const Task&, const Environment& environment,
                         cross(v.getLinear(), Iv.getLinear()),
                         cross(v.getAngular(), Iv.getLinear()));
 
-  portValues[mMechanicLink].applyInertia(I);
-  portValues[mMechanicLink].applyForce(Vector6(vIv - force));
+  portValues[mMechanicLink].addInertia(I);
+  portValues[mMechanicLink].addForce(Vector6(vIv - force));
 }
 
 const InertiaMatrix&

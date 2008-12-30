@@ -98,15 +98,15 @@ InternalSensor::articulation(const Task& task, const Environment&,
 
     // If we have reached the zero position, the force vector is undefined.
     if (Limits<real_type>::min() < nrmRelPos) {
-      Vector3 dir = (1/nrmRelPos)*relPos;
+      Vector3 dir = (-1/nrmRelPos)*relPos;
       // Since we assume positive input forces to push the two attached
       // RigidBodies, we need that minus sign to negate the current position
       // offset
       Vector3 force0 = portValues[mForcePort]*dir;
-      portValues[mMechanicLink0].applyForce(forceFrom(position0, force0));
+      portValues[mMechanicLink0].applyForce(position0, force0);
       
       Vector3 force1 = -relSys.rotToLocal(force0);
-      portValues[mMechanicLink1].applyForce(forceFrom(position1, force1));
+      portValues[mMechanicLink1].applyForce(position1, force1);
     }
   }
 }

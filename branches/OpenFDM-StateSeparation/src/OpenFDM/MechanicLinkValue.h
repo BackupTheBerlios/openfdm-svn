@@ -46,13 +46,19 @@ public:
   { mArticulatedForce = force; }
 
   void applyForce(const Vector6& force)
-  { mArticulatedForce += force; }
+  { mArticulatedForce -= force; }
+  void applyForce(const Vector3& position, const Vector6& force)
+  { applyForce(forceFrom(position, force)); }
   void applyForce(const Vector3& force)
   { applyForce(Vector6(Vector3::zeros(), force)); }
+  void applyForce(const Vector3& position, const Vector3& force)
+  { applyForce(forceFrom(position, force)); }
   void applyTorque(const Vector3& torque)
   { applyForce(Vector6(torque, Vector3::zeros())); }
 
-  void applyInertia(const SpatialInertia& inertia)
+  void addForce(const Vector6& force)
+  { mArticulatedForce += force; }
+  void addInertia(const SpatialInertia& inertia)
   { mArticulatedInertia += inertia; }
 
 

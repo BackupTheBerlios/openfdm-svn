@@ -111,11 +111,11 @@ WheelContact::articulation(const Task& task, const Environment& environment,
   
   // The resulting force is the sum of both.
   // The minus sign is because of the direction of the surface normal.
-  Vector3 force = - fricForce(0)*forward - fricForce(1)*side
-    - normForce*lp.getNormal();
+  Vector3 force = fricForce(0)*forward + fricForce(1)*side
+    + normForce*lp.getNormal();
   
   // We don't have an angular moment.
-  portValues[mMechanicLink].applyForce(forceFrom(contactPoint, force));
+  portValues[mMechanicLink].applyForce(contactPoint, force);
 }
 
 real_type

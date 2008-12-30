@@ -34,15 +34,13 @@ ExternalForce::articulation(const Task&, const Environment&,
   // FIXME, for now relative position
   Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
   if (mLocalCoordinates) {
-    Vector6 force = -portValues[mForcePort];
-    force = forceFrom(position, force);
-    portValues[mMechanicLink].applyForce(force);
+    Vector6 force = portValues[mForcePort];
+    portValues[mMechanicLink].applyForce(position, force);
   } else {
     const Frame& frame = portValues[mMechanicLink].getFrame();
-    Vector6 force = -portValues[mForcePort];
+    Vector6 force = portValues[mForcePort];
     force = forceTo(Vector3::zeros(), frame.getRefOrientation(), force);
-    force = forceFrom(position, force);
-    portValues[mMechanicLink].applyForce(force);
+    portValues[mMechanicLink].applyForce(position, force);
   }
 }
 
