@@ -40,12 +40,41 @@ public:
   Matrix& operator[](const MatrixOutputPort& port)
   { return port.getPortValue(mPortValueVector)->getValue(); }
 
-
   // Accessors for matrix valued ports
   // FIXME Implement access control for the port value
   MechanicLinkValue& operator[](const MechanicLink& port) const
   { return *port.getPortValue(mPortValueVector); }
 
+  const NumericPortValue* getPortValue(const RealInputPort& port)
+  {
+    if (port.empty())
+      return 0;
+    return port.getPortValue(mPortValueVector);
+  }
+  NumericPortValue* getPortValue(const RealOutputPort& port)
+  {
+    if (port.empty())
+      return 0;
+    return port.getPortValue(mPortValueVector);
+  }
+  const NumericPortValue* getPortValue(const MatrixInputPort& port)
+  {
+    if (port.empty())
+      return 0;
+    return port.getPortValue(mPortValueVector);
+  }
+  NumericPortValue* getPortValue(const MatrixOutputPort& port)
+  {
+    if (port.empty())
+      return 0;
+    return port.getPortValue(mPortValueVector);
+  }
+  MechanicLinkValue* getPortValue(const MechanicLink& port)
+  {
+    if (port.empty())
+      return 0;
+    return port.getPortValue(mPortValueVector);
+  }
 
   // FIXME, avoid this method here. With this method the output stage of a model
   // can change the port values, this should not be available in a model.

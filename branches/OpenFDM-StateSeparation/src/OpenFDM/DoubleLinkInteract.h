@@ -26,9 +26,9 @@ public:
       mInteract(interact),
       mPortValueList(portValueList)
     {
-      mMechanicLinkValue0 = portValueList.getPortValue(interact->mMechanicLink0.getPortIndex())->toMechanicLinkValue();
+      mMechanicLinkValue0 = portValueList.getPortValue(interact->mMechanicLink0);
       OpenFDMAssert(mMechanicLinkValue0);
-      mMechanicLinkValue1 = portValueList.getPortValue(interact->mMechanicLink1.getPortIndex())->toMechanicLinkValue();
+      mMechanicLinkValue1 = portValueList.getPortValue(interact->mMechanicLink1);
       OpenFDMAssert(mMechanicLinkValue1);
     }
     virtual ~Context() {}
