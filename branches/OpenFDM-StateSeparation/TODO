@@ -63,3 +63,5 @@ MechanicContext
   port typ und size??? Dann kann AbstractModel die typen und sizes checken
   bevor PortValues alloziert werden und Typ angepasste Kontexte gebaut werden???
 
+* LinAlg has too many pitfalls.
+* Use more in place algorithms in lu*
