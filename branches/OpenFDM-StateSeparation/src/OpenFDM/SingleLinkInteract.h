@@ -97,7 +97,7 @@ public:
     virtual const PortValue* getPortValue(const PortInfo& portInfo) const
     {  return mPortValueList.getPortValue(portInfo); }
     
-    MechanicLinkValue& getMechanicLinkValue() const
+    MechanicLinkValue& getLink() const
     { return *mMechanicLinkValue; }
 
   protected:

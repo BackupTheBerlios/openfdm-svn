@@ -15,17 +15,14 @@ namespace OpenFDM {
 
 class InternalSensor : public DoubleLinkInteract {
   OPENFDM_OBJECT(InternalSensor, DoubleLinkInteract);
+  class Context;
 public:
   InternalSensor(const std::string& name);
   virtual ~InternalSensor(void);
 
-  virtual void initDesignPosition(PortValueList&) const {}
-  virtual void velocity(const Task&, const Environment& environment,
-                        const ContinousStateValueVector&,
-                        PortValueList&) const;
-  virtual void articulation(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const;
+  virtual MechanicContext*
+  newMechanicContext(const Environment* environment,
+                     PortValueList& portValueList) const;
 
   /// Set the position of the sensor in design coordinates
   void setPosition0(const Vector3& position);

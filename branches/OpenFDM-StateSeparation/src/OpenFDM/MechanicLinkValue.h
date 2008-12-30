@@ -35,6 +35,7 @@ public:
   void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
   { mCoordinateSystem = coordinateSystem; }
 
+
   const SpatialInertia& getInertia() const
   { return mArticulatedInertia; }
   void setInertia(const SpatialInertia& inertia)
@@ -44,6 +45,7 @@ public:
   { return mArticulatedForce; }
   void setForce(const Vector6& force)
   { mArticulatedForce = force; }
+
 
   void applyForce(const Vector6& force)
   { mArticulatedForce -= force; }
@@ -60,6 +62,29 @@ public:
   { mArticulatedForce += force; }
   void addInertia(const SpatialInertia& inertia)
   { mArticulatedInertia += inertia; }
+
+  /// Returns the coordinate system of link wrt this links coordinate system
+  CoordinateSystem
+  getRelativeCoordinateSystem(const MechanicLinkValue& link) const
+  { return mCoordinateSystem.toLocal(link.mCoordinateSystem); }
+
+  /// Returns the velocity of the link measured in this links coordinate
+  /// system and measured in this links reference frame
+  Vector6 getRelativeVelocity(const MechanicLinkValue& link) const
+  {
+    CoordinateSystem csys = getRelativeCoordinateSystem(link);
+    return csys.motionToReference(link.getSpVel()) - getSpVel();
+  }
+
+
+//   const Vector6& getSpVel() const
+  Vector6 getSpVel() const
+  { return mFrame.getSpVel(); }
+//   const Vector6& getSpAccel() const
+  Vector6 getSpAccel() const
+  { return mFrame.getSpAccel(); }
+
+
 
 
   void setPosAndVel(const MechanicLinkValue& linkValue, const Vector3& position,

@@ -16,7 +16,87 @@ BEGIN_OPENFDM_OBJECT_DEF(InternalSensor, DoubleLinkInteract)
   DEF_OPENFDM_PROPERTY(Vector3, Position1, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableDistance, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableForce, Serialized)
   END_OPENFDM_OBJECT_DEF
+
+class InternalSensor::Context : public DoubleLinkInteract::Context {
+public:
+  Context(const InternalSensor* internalSensor,
+          const Environment* environment, PortValueList& portValueList) :
+    DoubleLinkInteract::Context(internalSensor, environment, portValueList),
+    mInternalSensor(internalSensor),
+    mLinkRelPos0(Vector3::zeros()),
+    mLinkRelPos1(Vector3::zeros())
+  {
+    mDistanceValue = portValueList.getPortValue(internalSensor->mDistancePort);
+    mVelocityValue = portValueList.getPortValue(internalSensor->mVelocityPort);
+    mForceValue = portValueList.getPortValue(internalSensor->mForcePort);
+  }
+  virtual ~Context() {}
+    
+  virtual const InternalSensor& getNode() const
+  { return *mInternalSensor; }
+
+  virtual void initDesignPosition()
+  {
+    mLinkRelPos0 = mInternalSensor->getPosition0();
+    mLinkRelPos0 -= getLink0().getDesignPosition();
+    mLinkRelPos1 = mInternalSensor->getPosition1();
+    mLinkRelPos1 -= getLink1().getDesignPosition();
+  }
+  virtual void velocities(const Task&)
+  {
+    mRelCoordSys = getLink0().getRelativeCoordinateSystem(getLink1());
+  
+    Vector3 relPos = mRelCoordSys.toReference(mLinkRelPos1) - mLinkRelPos0;
+    real_type nrmRelPos = norm(relPos);
+    if (nrmRelPos <= Limits<real_type>::min())
+      mDirection = Vector3::zeros();
+    else
+      mDirection = (1/nrmRelPos)*relPos;
+
+    // The relative distance of these two points
+    if (mDistanceValue)
+      mDistanceValue->getValue()(0, 0) = nrmRelPos;
+
+    if (mVelocityValue) {
+      // The motion of link1 measured in link0
+      Vector6 relVel = mRelCoordSys.motionToReference(getLink1().getSpVel());
+      // The relative motion of link1 wrt link0 measured in link0
+      relVel -= getLink0().getSpVel();
+      // Transform to the internal reference point
+      relVel = motionTo(mLinkRelPos0, relVel);
+      // The scalar product is what we need.
+      // Here the additional cross product term cancels out
+      mVelocityValue->getValue()(0, 0) = dot(mDirection, relVel.getLinear());
+    }
+  }
+  virtual void articulation(const Task&)
+  {
+    if (!mForceValue)
+      return;
+
+    // Since we assume positive input forces to push the two attached
+    // RigidBodies, we need that minus sign to negate the current position
+    // offset
+    real_type force = mForceValue->getValue()(0, 0);
+    Vector3 force0 = (-force)*mDirection;
+    getLink0().applyForce(mLinkRelPos0, force0);
+    
+    Vector3 force1 = force*mRelCoordSys.rotToLocal(mDirection);
+    getLink1().applyForce(mLinkRelPos1, force1);
+  }
+
+private:
+  SharedPtr<const InternalSensor> mInternalSensor;
+  SharedPtr<NumericPortValue> mDistanceValue;
+  SharedPtr<NumericPortValue> mVelocityValue;
+  SharedPtr<const NumericPortValue> mForceValue;
+  Vector3 mLinkRelPos0;
+  Vector3 mLinkRelPos1;
+  CoordinateSystem mRelCoordSys;
+  Vector3 mDirection;
+};
 
 InternalSensor::InternalSensor(const std::string& name) :
   DoubleLinkInteract(name),
@@ -29,86 +109,11 @@ InternalSensor::~InternalSensor(void)
 {
 }
 
-void
-InternalSensor::velocity(const Task& task, const Environment&,
-                         const ContinousStateValueVector&,
-                         PortValueList& portValues) const
+MechanicContext*
+InternalSensor::newMechanicContext(const Environment* environment,
+                                   PortValueList& portValueList) const
 {
-  const Frame& frame0 = portValues[mMechanicLink0].getFrame();
-  const Frame& frame1 = portValues[mMechanicLink1].getFrame();
-
-  // FIXME, for now relative position
-  Vector3 position0 = mPosition0-portValues[mMechanicLink0].getDesignPosition();
-  Vector3 position1 = mPosition1-portValues[mMechanicLink1].getDesignPosition();
-
-  CoordinateSystem csys0(portValues[mMechanicLink0].getCoordinateSystem());
-  csys0 = csys0.getRelative(position0);
-  
-  CoordinateSystem csys1(portValues[mMechanicLink1].getCoordinateSystem());
-  csys1 = csys1.getRelative(position1);
-  
-  CoordinateSystem relSys = csys0.toLocal(csys1);
-
-  bool enableDistance = getEnableDistance();
-  bool enableVelocity = getEnableVelocity();
-  if (enableDistance || enableVelocity) {
-    Vector3 relPos = relSys.getPosition();
-    real_type nrmRelPos = norm(relPos);
-
-    // The relative distance of these two points
-    if (enableDistance)
-      portValues[mDistancePort] = nrmRelPos;
-
-    if (enableVelocity) {
-      /// FIXME: avoid that transform to the reference frame. The relative
-      /// position must be sufficient ...
-      Vector6 refVel1 = frame1.motionToRef(motionTo(position1, frame1.getRefVel()));
-      Vector6 refVel0 = motionTo(position0, frame0.motionFromRef(refVel1) - frame0.getRefVel());
-
-      Vector3 relVel = refVel0.getLinear();
-      if (nrmRelPos <= Limits<real_type>::min())
-        portValues[mVelocityPort] = 0;
-      else
-        portValues[mVelocityPort] = dot(relPos, relVel)/nrmRelPos;
-    }
-  }
-}
-
-void
-InternalSensor::articulation(const Task& task, const Environment&,
-                             const ContinousStateValueVector&,
-                             PortValueList& portValues) const
-{
-  if (getEnableForce()) {
-    // FIXME, for now relative position
-    Vector3 position0=mPosition0-portValues[mMechanicLink0].getDesignPosition();
-    Vector3 position1=mPosition1-portValues[mMechanicLink1].getDesignPosition();
-
-    CoordinateSystem csys0(portValues[mMechanicLink0].getCoordinateSystem());
-    csys0 = csys0.getRelative(position0);
-
-    CoordinateSystem csys1(portValues[mMechanicLink1].getCoordinateSystem());
-    csys1 = csys1.getRelative(position1);
-
-    CoordinateSystem relSys = csys0.toLocal(csys1);
-    
-    // FIXME, already have that computed in the velocity step
-    Vector3 relPos = relSys.getPosition();
-    real_type nrmRelPos = norm(relPos);
-
-    // If we have reached the zero position, the force vector is undefined.
-    if (Limits<real_type>::min() < nrmRelPos) {
-      Vector3 dir = (-1/nrmRelPos)*relPos;
-      // Since we assume positive input forces to push the two attached
-      // RigidBodies, we need that minus sign to negate the current position
-      // offset
-      Vector3 force0 = portValues[mForcePort]*dir;
-      portValues[mMechanicLink0].applyForce(position0, force0);
-      
-      Vector3 force1 = -relSys.rotToLocal(force0);
-      portValues[mMechanicLink1].applyForce(position1, force1);
-    }
-  }
+  return new Context(this, environment, portValueList);
 }
 
 void

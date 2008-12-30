@@ -23,48 +23,17 @@ public:
     Context(const DoubleLinkInteract* interact, const Environment* environment,
             PortValueList& portValueList) :
       MechanicContext(environment),
-      mInteract(interact),
       mPortValueList(portValueList)
     {
-      mMechanicLinkValue0 = portValueList.getPortValue(interact->mMechanicLink0);
+      mMechanicLinkValue0 = portValueList.getPortValue(*interact->mMechanicLinkInfo0);
       OpenFDMAssert(mMechanicLinkValue0);
-      mMechanicLinkValue1 = portValueList.getPortValue(interact->mMechanicLink1);
+      mMechanicLinkValue1 = portValueList.getPortValue(*interact->mMechanicLinkInfo1);
       OpenFDMAssert(mMechanicLinkValue1);
     }
     virtual ~Context() {}
-    
-    virtual const DoubleLinkInteract& getNode() const
-    { return *mInteract; }
-    
-    virtual void initDesignPosition()
-    {
-      mInteract->initDesignPosition(mPortValueList);
-    }
-    
-    virtual void init(const /*Init*/Task& task)
-    {
-      mInteract->init(task, mDiscreteState, mContinousState, mPortValueList);
-    }
-    
-    virtual void velocities(const Task& task)
-    {
-      mInteract->velocity(task, getEnvironment(), mContinousState, mPortValueList);
-    }
-    virtual void articulation(const Task& task)
-    {
-      mInteract->articulation(task, getEnvironment(), mContinousState, mPortValueList);
-    }
-    virtual void accelerations(const Task& task)
-    {
-      mInteract->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
-    }
-    
-    virtual void derivative(const Task& task)
-    {
-      mInteract->derivative(task, getEnvironment(), mDiscreteState, mContinousState, mPortValueList,
-                            mContinousStateDerivative);
-    }
-    
+
+    virtual const DoubleLinkInteract& getNode() const = 0;
+
     bool alloc()
     {
       unsigned numContinousStates = getNode().getNumContinousStateValues();
@@ -92,9 +61,9 @@ public:
     virtual const PortValue* getPortValue(const PortInfo& portInfo) const
     {  return mPortValueList.getPortValue(portInfo); }
     
-    MechanicLinkValue& getMechanicLinkValue0() const
+    MechanicLinkValue& getLink0() const
     { return *mMechanicLinkValue0; }
-    MechanicLinkValue& getMechanicLinkValue1() const
+    MechanicLinkValue& getLink1() const
     { return *mMechanicLinkValue1; }
 
   protected:
@@ -108,48 +77,13 @@ public:
     DiscreteStateValueVector mDiscreteState;
     
   private:
-    SharedPtr<const DoubleLinkInteract> mInteract;
     SharedPtr<MechanicLinkValue> mMechanicLinkValue0;
     SharedPtr<MechanicLinkValue> mMechanicLinkValue1;
   };
   
-  virtual MechanicContext* newMechanicContext(const Environment* environment,
-                                              PortValueList& portValueList) const
-  {
-    SharedPtr<Context> context = new Context(this, environment, portValueList);
-    if (!context->alloc()) {
-      Log(Model, Warning) << "Could not alloc for model \""
-                          << getName() << "\"" << endl;
-      return 0;
-    }
-    return context.release();
-  }
-  
-  virtual void init(const Task&, DiscreteStateValueVector&,
-                    ContinousStateValueVector&, const PortValueList&) const
-  { }
-  virtual void initDesignPosition(PortValueList&) const = 0;
-  virtual void velocity(const Task&, const Environment& environment,
-                        const ContinousStateValueVector&, PortValueList&) const
-  { }
-  virtual void articulation(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const
-  { }
-  virtual void acceleration(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const
-  { }
-  virtual void derivative(const Task&, const Environment& environment,
-                          const DiscreteStateValueVector&,
-                          const ContinousStateValueVector&,
-                          const PortValueList&,
-                          ContinousStateValueVector&) const
-  { }
-
 protected:
-  MechanicLink mMechanicLink0;
-  MechanicLink mMechanicLink1;
+  SharedPtr<MechanicLinkInfo> mMechanicLinkInfo0;
+  SharedPtr<MechanicLinkInfo> mMechanicLinkInfo1;
 };
 
 } // namespace OpenFDM
