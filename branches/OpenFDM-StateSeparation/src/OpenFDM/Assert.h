@@ -24,7 +24,7 @@ do {                                                \
   }                                                 \
 } while (0)
 #else
-# define OpenFDMAssert(a) do { (void)(a); } while (0)
+# define OpenFDMAssert(a) ((void)(0))
 #endif
 
 #ifdef OpenFDMLinAlgDebug
@@ -35,7 +35,7 @@ do {                                                \
   }                                                 \
 } while (0)
 #else
-# define OpenFDMLinAlgAssert(a) do { (void)(a); } while (0)
+# define OpenFDMLinAlgAssert(a) ((void)(0))
 #endif
 
 #define OpenFDMError(a) ::OpenFDM::Assertion(__FILE__, __LINE__, a );
