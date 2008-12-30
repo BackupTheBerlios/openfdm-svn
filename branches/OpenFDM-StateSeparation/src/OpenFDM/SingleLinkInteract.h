@@ -131,7 +131,8 @@ public:
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector&, const PortValueList&) const
   { }
-  virtual void initDesignPosition(PortValueList&) const = 0;
+  virtual void initDesignPosition(PortValueList&) const
+  { }
   virtual void velocity(const Task&, const Environment& environment,
                         const ContinousStateValueVector&, PortValueList&) const
   { }
