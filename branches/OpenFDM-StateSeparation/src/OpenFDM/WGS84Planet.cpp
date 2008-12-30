@@ -102,7 +102,7 @@ WGS84Planet::getHorizont(const Vector3& position) const
 {
   Geodetic geodetic = toGeod(position);
   geodetic.altitude = 0;
-  Vector down = getGeodHLOrientation(geodetic).backTransform(Vector3::unit(2));
+  Vector3 down = getGeodHLOrientation(geodetic).backTransform(Vector3::unit(2));
   return Plane(down, toCart(geodetic));
 }
 
@@ -135,7 +135,7 @@ WGS84Planet::getGravityAcceleration(const Vector3& position) const
   real_type gammaH = gamma*(1 - 2/a*(1 + f + m - 2*f*sLat2)*h + (3/a2)*h*h);
 
   /// FIXME This is not the whole story, The direction also varies ...
-  Vector down = getGeodHLOrientation(geodetic).backTransform(Vector3::unit(2));
+  Vector3 down = getGeodHLOrientation(geodetic).backTransform(Vector3::unit(2));
 
   /// FIXME
   /// Hmm, this includes the centrifugal force also,
