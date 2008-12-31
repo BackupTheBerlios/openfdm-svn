@@ -40,7 +40,7 @@ public:
     // Contribute the inerita
     getLink().addInertia(mSpatialInertia);
 
-    // Each inertia has a contribution to the spatial force.
+    // Each inertia has a contribution to the spatial bias force.
     // This part is handled here.
     Vector6 v = getLink().getSpVel();
     Vector6 Iv = mSpatialInertia*v;
