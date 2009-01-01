@@ -665,7 +665,7 @@ l_substitute(const Matrix<T,dim1,dim1>& A, Matrix<T,dim1,dim2>& v)
   size_type cols = A.cols();
   size_type vcols = v.cols();
   for (size_type i = 0; i < rows-1; ++i) {
-    for (size_type j = 0; j < vcols-1; ++j) {
+    for (size_type j = 0; j < vcols; ++j) {
       if (v(i,j) != static_cast<value_type>(0))
         v(Range(i+1, cols-1),j) -= v(i,j)*A(Range(i+1, cols-1),i);
     }
