@@ -47,7 +47,7 @@ main(int argc, char *argv[])
   // First build up the mechanical system
   FixedRootJoint* fixedRootJoint = new FixedRootJoint("Fixed Root Joint");
   group->addChild(fixedRootJoint);
-  fixedRootJoint->setPosition(Vector3(0, 0, -1));
+  fixedRootJoint->setRootPosition(Vector3(0, 0, -1));
 
   PrismaticJoint* prismaticJoint = new PrismaticJoint("Normal Force joint");
   prismaticJoint->setAxis(Vector3::unit(2));
