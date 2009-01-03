@@ -28,6 +28,42 @@ BEGIN_OPENFDM_OBJECT_DEF(Sensor, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Bool, EnableAboveGroundLevel, Serialized)
   END_OPENFDM_OBJECT_DEF
 
+class Sensor::Context : public SingleLinkInteract::Context {
+public:
+  Context(const Sensor* sensor,
+          const Environment* environment, PortValueList& portValueList) :
+    SingleLinkInteract::Context(sensor, environment, portValueList),
+    mSensor(sensor),
+    mLinkRelPos(Vector3::zeros())
+  { }
+  virtual ~Context() {}
+    
+  virtual const Sensor& getNode() const
+  { return *mSensor; }
+  
+  virtual void initDesignPosition()
+  {
+    mLinkRelPos = mSensor->getPosition() - getLink().getDesignPosition();
+  }
+  
+  virtual void velocities(const Task& task)
+  {
+    mSensor->velocity(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  virtual void articulation(const Task& task)
+  {
+    mSensor->articulation(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  virtual void accelerations(const Task& task)
+  {
+    mSensor->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  
+private:
+  SharedPtr<const Sensor> mSensor;
+  Vector3 mLinkRelPos;
+};
+
 Sensor::Sensor(const std::string& name) :
   SingleLinkInteract(name),
   mPosition(0, 0, 0)
@@ -38,9 +74,17 @@ Sensor::~Sensor(void)
 {
 }
 
-void
-Sensor::initDesignPosition(PortValueList& portValues) const
+MechanicContext*
+Sensor::newMechanicContext(const Environment* environment,
+                           PortValueList& portValueList) const
 {
+  SharedPtr<Context> context = new Context(this, environment, portValueList);
+  if (!context->alloc()) {
+    Log(Model, Warning) << "Could not alloc for model \""
+                        << getName() << "\"" << endl;
+    return 0;
+  }
+  return context.release();
 }
 
 void

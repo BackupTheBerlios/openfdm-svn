@@ -15,14 +15,21 @@ namespace OpenFDM {
 
 class Sensor : public SingleLinkInteract {
   OPENFDM_OBJECT(Sensor, SingleLinkInteract);
+  class Context;
 public:
   Sensor(const std::string& name);
   virtual ~Sensor(void);
 
-  virtual void initDesignPosition(PortValueList&) const;
+  virtual MechanicContext*
+  newMechanicContext(const Environment*, PortValueList&) const;
+
   virtual void velocity(const Task&, const Environment&,
                         const ContinousStateValueVector&,
                         PortValueList&) const;
+  virtual void articulation(const Task&, const Environment& environment,
+                            const ContinousStateValueVector&,
+                            PortValueList&) const
+  { }
   virtual void acceleration(const Task&, const Environment&,
                             const ContinousStateValueVector&,
                             PortValueList&) const;

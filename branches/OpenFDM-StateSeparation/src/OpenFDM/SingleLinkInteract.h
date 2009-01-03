@@ -30,45 +30,12 @@ public:
     Context(const SingleLinkInteract* interact, const Environment* environment,
             PortValueList& portValueList) :
       MechanicContext(environment),
-      mInteract(interact),
       mPortValueList(portValueList)
     {
       mMechanicLinkValue = portValueList.getPortValue(interact->mMechanicLink);
       OpenFDMAssert(mMechanicLinkValue);
     }
     virtual ~Context() {}
-    
-    virtual const SingleLinkInteract& getNode() const
-    { return *mInteract; }
-    
-    virtual void initDesignPosition()
-    {
-      mInteract->initDesignPosition(mPortValueList);
-    }
-    
-    virtual void init(const /*Init*/Task& task)
-    {
-      mInteract->init(task, mDiscreteState, mContinousState, mPortValueList);
-    }
-    
-    virtual void velocities(const Task& task)
-    {
-      mInteract->velocity(task, getEnvironment(), mContinousState, mPortValueList);
-    }
-    virtual void articulation(const Task& task)
-    {
-      mInteract->articulation(task, getEnvironment(), mContinousState, mPortValueList);
-    }
-    virtual void accelerations(const Task& task)
-    {
-      mInteract->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
-    }
-    
-    virtual void derivative(const Task& task)
-    {
-      mInteract->derivative(task, getEnvironment(), mDiscreteState, mContinousState, mPortValueList,
-                            mContinousStateDerivative);
-    }
     
     bool alloc()
     {
@@ -111,45 +78,9 @@ public:
     DiscreteStateValueVector mDiscreteState;
     
   private:
-    SharedPtr<const SingleLinkInteract> mInteract;
     SharedPtr<MechanicLinkValue> mMechanicLinkValue;
   };
   
-
-  virtual MechanicContext* newMechanicContext(const Environment* environment,
-                                              PortValueList& portValueList) const
-  {
-    SharedPtr<Context> context = new Context(this, environment, portValueList);
-    if (!context->alloc()) {
-      Log(Model, Warning) << "Could not alloc for model \""
-                          << getName() << "\"" << endl;
-      return 0;
-    }
-    return context.release();
-  }
-  
-  virtual void init(const Task&, DiscreteStateValueVector&,
-                    ContinousStateValueVector&, const PortValueList&) const
-  { }
-  virtual void initDesignPosition(PortValueList&) const
-  { }
-  virtual void velocity(const Task&, const Environment& environment,
-                        const ContinousStateValueVector&, PortValueList&) const
-  { }
-  virtual void articulation(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const
-  { }
-  virtual void acceleration(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const
-  { }
-  virtual void derivative(const Task&, const Environment& environment,
-                          const DiscreteStateValueVector&,
-                          const ContinousStateValueVector&,
-                          const PortValueList&,
-                          ContinousStateValueVector&) const
-  { }
 
 protected:
   MechanicLink mMechanicLink;

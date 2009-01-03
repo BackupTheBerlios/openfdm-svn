@@ -22,6 +22,54 @@ public:
     mAccelerationPort(this, "acceleration", Size(6, 1), true)
   { }
 
+class Context : public SingleLinkInteract::Context {
+public:
+  Context(const AccelerationTracking* accelerationTracking,
+          const Environment* environment, PortValueList& portValueList) :
+    SingleLinkInteract::Context(accelerationTracking, environment, portValueList),
+    mAccelerationTracking(accelerationTracking),
+    mLinkRelPos(Vector3::zeros())
+  { }
+  virtual ~Context() {}
+    
+  virtual const AccelerationTracking& getNode() const
+  { return *mAccelerationTracking; }
+  
+  virtual void initDesignPosition()
+  {
+//     mLinkRelPos = mAccelerationTracking->getPosition() - getLink().getDesignPosition();
+  }
+  
+  virtual void velocities(const Task& task)
+  {
+    mAccelerationTracking->velocity(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  virtual void articulation(const Task& task)
+  {
+//     mAccelerationTracking->articulation(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  virtual void accelerations(const Task& task)
+  {
+    mAccelerationTracking->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  
+private:
+  SharedPtr<const AccelerationTracking> mAccelerationTracking;
+  Vector3 mLinkRelPos;
+};
+
+  virtual MechanicContext* newMechanicContext(const Environment* environment,
+                                              PortValueList& portValueList) const
+  {
+    SharedPtr<Context> context = new Context(this, environment, portValueList);
+    if (!context->alloc()) {
+      Log(Model, Warning) << "Could not alloc for model \""
+                          << getName() << "\"" << endl;
+      return 0;
+    }
+    return context.release();
+  }
+  
   virtual void initDesignPosition(PortValueList&) const
   {
   }
