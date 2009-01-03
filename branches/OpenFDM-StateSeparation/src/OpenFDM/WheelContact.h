@@ -11,14 +11,13 @@ namespace OpenFDM {
 
 class WheelContact : public SingleLinkInteract {
   OPENFDM_OBJECT(WheelContact, SingleLinkInteract);
+  class Context;
 public:
   WheelContact(const std::string& name);
   virtual ~WheelContact(void);
 
-  virtual void initDesignPosition(PortValueList&) const {}
-  virtual void articulation(const Task&, const Environment&,
-                            const ContinousStateValueVector&,
-                            PortValueList& portValues) const;
+  virtual MechanicContext*
+  newMechanicContext(const Environment*, PortValueList&) const;
 
   // Compute the plane normal force.
   virtual real_type
