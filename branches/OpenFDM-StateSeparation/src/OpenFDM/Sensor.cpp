@@ -12,7 +12,6 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Sensor, SingleLinkInteract)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnablePosition, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableOrientation, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableEulerAngles, Serialized)
@@ -33,18 +32,12 @@ public:
   Context(const Sensor* sensor,
           const Environment* environment, PortValueList& portValueList) :
     SingleLinkInteract::Context(sensor, environment, portValueList),
-    mSensor(sensor),
-    mLinkRelPos(Vector3::zeros())
+    mSensor(sensor)
   { }
   virtual ~Context() {}
     
   virtual const Sensor& getNode() const
   { return *mSensor; }
-  
-  virtual void initDesignPosition()
-  {
-    mLinkRelPos = mSensor->getPosition() - getLink().getDesignPosition();
-  }
   
   virtual void velocities(const Task& task)
   {
@@ -61,12 +54,10 @@ public:
   
 private:
   SharedPtr<const Sensor> mSensor;
-  Vector3 mLinkRelPos;
 };
 
 Sensor::Sensor(const std::string& name) :
-  SingleLinkInteract(name),
-  mPosition(0, 0, 0)
+  SingleLinkInteract(name)
 {
 }
 
@@ -191,18 +182,6 @@ Sensor::acceleration(const Task&, const Environment& environment,
       portValues[mLoadPort] = centrifugalAccel - gravity;
     }
   }
-}
-
-void
-Sensor::setPosition(const Vector3& position)
-{
-  mPosition = position;
-}
-
-const Vector3&
-Sensor::getPosition() const
-{
-  return mPosition;
 }
 
 void

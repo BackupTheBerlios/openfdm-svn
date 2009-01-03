@@ -11,7 +11,6 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(WheelContact, SingleLinkInteract)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   DEF_OPENFDM_PROPERTY(Real, WheelRadius, Serialized)
   DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
@@ -25,24 +24,19 @@ public:
   Context(const WheelContact* wheelContact,
           const Environment* environment, PortValueList& portValueList) :
     SingleLinkInteract::Context(wheelContact, environment, portValueList),
-    mWheelContact(wheelContact),
-    mLinkRelPos(Vector3::zeros())
+    mWheelContact(wheelContact)
   { }
   virtual ~Context() {}
     
   virtual const WheelContact& getNode() const
   { return *mWheelContact; }
 
-  virtual void initDesignPosition()
-  {
-    mLinkRelPos = mWheelContact->getPosition() - getLink().getDesignPosition();
-  }
   virtual void articulation(const Task& task)
   {
     const CoordinateSystem& cs = getLink().getCoordinateSystem();
 
     // The coordinate system at the hub.
-    CoordinateSystem hubCoordinateSystem(cs.getRelative(mLinkRelPos));
+    CoordinateSystem hubCoordinateSystem(cs.getRelative(getLinkRelPos()));
     
     // Get the ground values in the hub coordinate system.
     GroundValues groundValues =
@@ -65,7 +59,7 @@ public:
     // The velocity of the ground patch in the current frame.
     Vector6 groundVel = groundValues.vel;
     // Now get the relative velocity of the ground wrt the hub
-    Vector6 relVel = getLink().getReferenceVelocity(mLinkRelPos) - groundVel;
+    Vector6 relVel = getLink().getReferenceVelocity(getLinkRelPos()) - groundVel;
     
     
     // The velocity perpandicular to the plane.
@@ -111,17 +105,15 @@ public:
     Vector3 force = fricForce(0)*forward + fricForce(1)*side - normForce*down;
     
     // We don't have an angular moment.
-    getLink().applyForce(contactPoint, force);
+    applyBodyForce(contactPoint, force);
   }
 
 private:
   SharedPtr<const WheelContact> mWheelContact;
-  Vector3 mLinkRelPos;
 };
 
 WheelContact::WheelContact(const std::string& name) :
   SingleLinkInteract(name),
-  mPosition(0, 0, 0),
   mAxis(0, 1, 0)
 {
   mWheelRadius = 0.3;
@@ -169,18 +161,6 @@ WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
   
   // The friction force for fast movement.
   return (-friction*mFrictionCoeficient*normForce)*slip;
-}
-
-const Vector3&
-WheelContact::getPosition(void) const
-{
-  return mPosition;
-}
-
-void
-WheelContact::setPosition(const Vector3& position)
-{
-  mPosition = position;
 }
 
 const Vector3&

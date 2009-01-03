@@ -28,11 +28,6 @@ public:
   computeFrictionForce(real_type normForce, const Vector2& vel,
                        real_type omegaR, real_type friction) const;
 
-  /** Set a position for the wheel axis position.
-   */
-  const Vector3& getPosition(void) const;
-  void setPosition(const Vector3& position);
-
   /** Set wheel axis direction.
    */
   const Vector3& getAxis(void) const;
@@ -63,7 +58,6 @@ public:
   { return mFrictionCoeficient; }
 
 private:
-  Vector3 mPosition;
   Vector3 mAxis;
   real_type mWheelRadius;
 

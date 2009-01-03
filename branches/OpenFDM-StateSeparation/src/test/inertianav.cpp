@@ -27,18 +27,12 @@ public:
   Context(const AccelerationTracking* accelerationTracking,
           const Environment* environment, PortValueList& portValueList) :
     SingleLinkInteract::Context(accelerationTracking, environment, portValueList),
-    mAccelerationTracking(accelerationTracking),
-    mLinkRelPos(Vector3::zeros())
+    mAccelerationTracking(accelerationTracking)
   { }
   virtual ~Context() {}
     
   virtual const AccelerationTracking& getNode() const
   { return *mAccelerationTracking; }
-  
-  virtual void initDesignPosition()
-  {
-//     mLinkRelPos = mAccelerationTracking->getPosition() - getLink().getDesignPosition();
-  }
   
   virtual void velocities(const Task& task)
   {
@@ -55,7 +49,6 @@ public:
   
 private:
   SharedPtr<const AccelerationTracking> mAccelerationTracking;
-  Vector3 mLinkRelPos;
 };
 
   virtual MechanicContext* newMechanicContext(const Environment* environment,

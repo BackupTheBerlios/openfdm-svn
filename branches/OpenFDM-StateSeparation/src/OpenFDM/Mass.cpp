@@ -10,7 +10,6 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Mass, SingleLinkInteract)
-  DEF_OPENFDM_PROPERTY(Vector3, Position, Serialized)
   DEF_OPENFDM_PROPERTY(Inertia, Inertia, Serialized)
   DEF_OPENFDM_PROPERTY(Real, Mass, Serialized)
   END_OPENFDM_OBJECT_DEF
@@ -21,7 +20,6 @@ public:
           const Environment* environment, PortValueList& portValueList) :
     SingleLinkInteract::Context(mass, environment, portValueList),
     mMass(mass),
-    mLinkRelPos(Vector3::zeros()),
     mSpatialInertia(SpatialInertia::zeros())
   { }
   virtual ~Context() {}
@@ -31,9 +29,9 @@ public:
 
   virtual void initDesignPosition()
   {
-    mLinkRelPos = mMass->getPosition() - getLink().getDesignPosition();
+    SingleLinkInteract::Context::initDesignPosition();
     mSpatialInertia = SpatialInertia(mMass->getInertia(), mMass->getMass());
-    mSpatialInertia = inertiaFrom(mLinkRelPos, mSpatialInertia);
+    mSpatialInertia = inertiaFrom(getLinkRelPos(), mSpatialInertia);
   }
   virtual void articulation(const Task&)
   {
@@ -50,16 +48,15 @@ public:
     getLink().addForce(vIv);
 
     // Now the gravity part
-    Vector3 refPos = getLink().getCoordinateSystem().toReference(mLinkRelPos);
+    Vector3 refPos = getLink().getCoordinateSystem().toReference(getLinkRelPos());
     Vector3 gravity = getEnvironment().getGravityAcceleration(refPos);
     gravity = getLink().getCoordinateSystem().rotToLocal(gravity);
     gravity *= mMass->getMass();
-    getLink().applyForce(mLinkRelPos, gravity);
+    applyBodyForce(gravity);
   }
 
 private:
   SharedPtr<const Mass> mMass;
-  Vector3 mLinkRelPos;
   SpatialInertia mSpatialInertia;
 };
 
@@ -67,8 +64,7 @@ Mass::Mass(const std::string& name, const real_type& mass,
            const InertiaMatrix& inertia, const Vector3& position) :
   SingleLinkInteract(name),
   mMass(mass),
-  mInertia(inertia),
-  mPosition(position)
+  mInertia(inertia)
 {
 }
 
@@ -105,18 +101,6 @@ void
 Mass::setMass(const real_type& mass)
 {
   mMass = mass;
-}
-
-const Vector3&
-Mass::getPosition(void) const
-{
-  return mPosition;
-}
-
-void
-Mass::setPosition(const Vector3& position)
-{
-  mPosition = position;
 }
 
 } // namespace OpenFDM

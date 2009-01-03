@@ -34,11 +34,6 @@ public:
                             const ContinousStateValueVector&,
                             PortValueList&) const;
 
-  /// Set the position of the sensor in design coordinates
-  void setPosition(const Vector3& position);
-  /// Get the position of the sensor in design coordinates
-  const Vector3& getPosition() const;
-
   /// Set availabilty of the position output port
   void setEnablePosition(bool enable);
   /// Get availabilty of the position output port
@@ -118,8 +113,6 @@ public:
   void setEnableAllOutputs(bool enable);
 
 protected:
-  Vector3 mPosition;
-
   MatrixOutputPort mPositionPort;
   MatrixOutputPort mOrientationPort;
   MatrixOutputPort mEulerAnglesPort;

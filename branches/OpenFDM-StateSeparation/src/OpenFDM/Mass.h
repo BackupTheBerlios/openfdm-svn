@@ -38,16 +38,10 @@ public:
   const real_type& getMass() const;
   void setMass(const real_type& mass);
 
-  /** Set a position offset for the inertia given.
-   */
-  const Vector3& getPosition(void) const;
-  void setPosition(const Vector3& position);
-
 private:
   /// The paremeters that can be set from outside
   real_type mMass;
   InertiaMatrix mInertia;
-  Vector3 mPosition;
 };
 
 } // namespace OpenFDM

@@ -30,13 +30,19 @@ public:
     Context(const SingleLinkInteract* interact, const Environment* environment,
             PortValueList& portValueList) :
       MechanicContext(environment),
-      mPortValueList(portValueList)
+      mPortValueList(portValueList),
+      mLinkRelPos(Vector3::zeros())
     {
       mMechanicLinkValue = portValueList.getPortValue(interact->mMechanicLink);
       OpenFDMAssert(mMechanicLinkValue);
     }
     virtual ~Context() {}
     
+    virtual const SingleLinkInteract& getNode() const = 0;
+
+    virtual void initDesignPosition()
+    { mLinkRelPos = getNode().getPosition() - getLink().getDesignPosition(); }
+  
     bool alloc()
     {
       unsigned numContinousStates = getNode().getNumContinousStateValues();
@@ -67,6 +73,28 @@ public:
     MechanicLinkValue& getLink() const
     { return *mMechanicLinkValue; }
 
+    const Vector3& getLinkRelPos() const
+    { return mLinkRelPos; }
+
+    /// FIXME: Hmm, may be some kind of MechanicLinkHandle class that has a
+    /// link value and these methods???
+    void applyBodyForce(const Vector6& force)
+    { mMechanicLinkValue->applyForce(mLinkRelPos, force); }
+    void applyBodyForce(const Vector3& bodyPosition, const Vector6& force)
+    { mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, force); }
+    void applyBodyForceAtLink(const Vector6& force)
+    { mMechanicLinkValue->applyForce(force); }
+
+    void applyBodyForce(const Vector3& force)
+    { mMechanicLinkValue->applyForce(mLinkRelPos, force); }
+    void applyBodyForce(const Vector3& bodyPosition, const Vector3& force)
+    { mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, force); }
+    void applyBodyForceAtLink(const Vector3& force)
+    { mMechanicLinkValue->applyForce(force); }
+
+    void applyBodyTorque(const Vector3& torque)
+    { mMechanicLinkValue->applyTorque(torque); }
+
   protected:
     // PortValues
     PortValueList mPortValueList;
@@ -79,11 +107,18 @@ public:
     
   private:
     SharedPtr<MechanicLinkValue> mMechanicLinkValue;
+    Vector3 mLinkRelPos;
   };
   
+  /// Set the position of the sensor in design coordinates
+  void setPosition(const Vector3& position);
+  /// Get the position of the sensor in design coordinates
+  const Vector3& getPosition() const;
 
 protected:
   MechanicLink mMechanicLink;
+
+  Vector3 mPosition;
 };
 
 } // namespace OpenFDM
