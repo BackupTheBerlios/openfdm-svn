@@ -5,25 +5,19 @@
 #include "SimpleContact.h"
 
 #include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Frame.h"
-#include "Force.h"
-#include "Contact.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(SimpleContact, Contact)
   DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
-/// FIXME want to have similar names than with linearspringdamper
-  DEF_OPENFDM_PROPERTY(Real, SpringDamping, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, DamperConstant, Serialized)
   DEF_OPENFDM_PROPERTY(Real, FrictionCoeficient, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 SimpleContact::SimpleContact(const std::string& name) :
   Contact(name),
   mSpringConst(0),
-  mSpringDamp(0),
+  mDamperConstant(0),
   mFrictionCoef(0)
 {
 }
@@ -32,13 +26,48 @@ SimpleContact::~SimpleContact(void)
 {
 }
 
+const real_type&
+SimpleContact::getSpringConstant(void) const
+{
+  return mSpringConst;
+}
+
+void
+SimpleContact::setSpringConstant(const real_type& springConst)
+{
+  mSpringConst = springConst;
+}
+
+const real_type&
+SimpleContact::getDamperConstant(void) const
+{
+  return mDamperConstant;
+}
+
+void
+SimpleContact::setDamperConstant(const real_type& damperConstant)
+{
+  mDamperConstant = damperConstant;
+}
+
+const real_type&
+SimpleContact::getFrictionCoeficient(void) const
+{
+  return mFrictionCoef;
+}
+
+void
+SimpleContact::setFrictionCoeficient(const real_type& frictionCoef)
+{
+  mFrictionCoef = frictionCoef;
+}
+
 // Compute the plane normal force.
 real_type
 SimpleContact::computeNormalForce(real_type compressLen,
                                   real_type compressVel) const
 {
-  return compressLen*mSpringConst
-    - mSpringDamp*min(compressVel, static_cast<real_type>(0));
+  return compressLen*mSpringConst - mDamperConstant*compressVel;
 }
 
 // Compute the friction force.

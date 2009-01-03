@@ -5,24 +5,19 @@
 #ifndef OpenFDM_Contact_H
 #define OpenFDM_Contact_H
 
-#include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Frame.h"
-#include "Force.h"
-#include "Ground.h"
-#include "Environment.h"
+#include "SingleLinkInteract.h"
 
 namespace OpenFDM {
 
-class Contact : public ExternalForce {
-  OPENFDM_OBJECT(Contact, ExternalForce);
+class Contact : public SingleLinkInteract {
+  OPENFDM_OBJECT(Contact, SingleLinkInteract);
+  class Context;
 public:
   Contact(const std::string& name);
   virtual ~Contact(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  virtual MechanicContext*
+  newMechanicContext(const Environment*, PortValueList&) const;
 
   // Compute the plane normal force.
   virtual real_type
@@ -32,15 +27,6 @@ public:
   virtual Vector3
   computeFrictionForce(real_type normForce, const Vector3& vel,
                        const Vector3& groundNormal, real_type friction) const;
-
-protected:
-  virtual void setEnvironment(Environment* environment);
-
-private:
-  void getGround(real_type t);
-
-  GroundValues mGroundVal;
-  SharedPtr<const Environment> mEnvironment;
 };
 
 } // namespace OpenFDM

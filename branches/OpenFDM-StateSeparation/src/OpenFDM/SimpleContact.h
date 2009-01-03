@@ -5,11 +5,6 @@
 #ifndef OpenFDM_SimpleContact_H
 #define OpenFDM_SimpleContact_H
 
-#include "Assert.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Frame.h"
-#include "Force.h"
 #include "Contact.h"
 
 namespace OpenFDM {
@@ -20,20 +15,14 @@ public:
   SimpleContact(const std::string& name);
   virtual ~SimpleContact(void);
 
-  const real_type& getSpringConstant(void) const
-  { return mSpringConst; }
-  void setSpringConstant(const real_type& springConst)
-  { mSpringConst = springConst; }
+  const real_type& getSpringConstant(void) const;
+  void setSpringConstant(const real_type& springConst);
 
-  const real_type& getSpringDamping(void) const
-  { return mSpringDamp; }
-  void setSpringDamping(const real_type& springDamp)
-  { mSpringDamp = springDamp; }
+  const real_type& getDamperConstant(void) const;
+  void setDamperConstant(const real_type& damperConstant);
 
-  const real_type& getFrictionCoeficient(void) const
-  { return mFrictionCoef; }
-  void setFrictionCoeficient(const real_type& frictionCoef)
-  { mFrictionCoef = frictionCoef; }
+  const real_type& getFrictionCoeficient(void) const;
+  void setFrictionCoeficient(const real_type& frictionCoef);
 
   // Compute the plane normal force.
   virtual real_type
@@ -46,7 +35,7 @@ public:
 
 private:
   real_type mSpringConst;
-  real_type mSpringDamp;
+  real_type mDamperConstant;
   real_type mFrictionCoef;
 };
 

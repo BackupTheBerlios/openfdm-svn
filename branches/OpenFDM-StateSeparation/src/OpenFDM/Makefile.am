@@ -272,6 +272,7 @@ OpenFDMModelsSOURCES = \
   UnitConversion.cpp
 
 OpenFDMMechanicSOURCES = \
+  Contact.cpp \
   DoubleLinkInteract.cpp \
   Joint.cpp \
   ExternalForce.cpp \
@@ -284,14 +285,13 @@ OpenFDMMechanicSOURCES = \
   RevoluteJoint.cpp \
   RotationalJoint.cpp \
   Sensor.cpp \
+  SimpleContact.cpp \
   SingleLinkInteract.cpp \
   UniversalJoint.cpp \
   WheelContact.cpp
 
 #   AeroForce.cpp \
-#   Contact.cpp \
 #   Force.cpp \
-#   SimpleContact.cpp \
 #   SimpleGear.cpp \
 #   Tank.cpp
 

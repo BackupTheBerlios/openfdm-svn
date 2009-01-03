@@ -6,89 +6,96 @@
 
 #include "Assert.h"
 #include "LogStream.h"
-#include "Object.h"
-#include "Vector.h"
-#include "Frame.h"
-#include "Force.h"
+#include "Task.h"
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Contact, ExternalForce)
+BEGIN_OPENFDM_OBJECT_DEF(Contact, SingleLinkInteract)
   END_OPENFDM_OBJECT_DEF
 
-Contact::Contact(const std::string& name)
-  : ExternalForce(name)
-{
-  setDisableMode(Model::ResetHold);
+class Contact::Context : public SingleLinkInteract::Context {
+public:
+  Context(const Contact* wheelContact,
+          const Environment* environment, PortValueList& portValueList) :
+    SingleLinkInteract::Context(wheelContact, environment, portValueList),
+    mContact(wheelContact)
+  { }
+  virtual ~Context() {}
+    
+  virtual const Contact& getNode() const
+  { return *mContact; }
 
-  // FIXME??
-  addSampleTime(SampleTime::PerTimestep);
-  addSampleTime(SampleTime::Continous);
+  virtual void articulation(const Task& task)
+  {
+    const CoordinateSystem& cs = getLink().getCoordinateSystem();
+
+    // The coordinate system at the hub.
+    CoordinateSystem localCoordSys(cs.getRelative(getLinkRelPos()));
+    
+    // Get the ground values in the hub coordinate system.
+    GroundValues groundValues =
+      getEnvironment().getGroundPlane(localCoordSys, task.getTime());
+    
+    // Transform the plane equation to the local frame.
+    Plane lp = groundValues.plane;
+    
+    // Get the intersection length.
+    real_type compressLength = lp.getDist(Vector3::zeros());
+    
+    // Don't bother if we do not intersect the ground.
+    if (compressLength < 0)
+      return;
+    
+    // The velocity of the ground patch in the current frame.
+    Vector3 relVel = groundValues.vel.getLinear();
+    // Now get the relative velocity of the ground wrt the contact point
+    relVel -= getLink().getReferenceVelocity(getLinkRelPos()).getLinear();
+    
+    // The velocity perpandicular to the plane.
+    // Positive when the contact spring is compressed,
+    // negative when decompressed.
+    real_type compressVel = - lp.scalarProjectToNormal(relVel);
+    
+    // The in plane velocity.
+    Vector3 sVel = lp.projectToPlane(relVel);
+    
+    // Get the plane normal force.
+    real_type normForce = mContact->computeNormalForce(compressLength,
+                                                       compressVel);
+    // The normal force cannot get negative here.
+    normForce = max(static_cast<real_type>(0), normForce);
+    
+    // Get the friction force.
+    Vector3 fricForce = mContact->computeFrictionForce(normForce, sVel,
+                                                       lp.getNormal(),
+                                                       groundValues.friction);
+    
+    // The resulting force is the sum of both.
+    // The minus sign is because of the direction of the surface normal.
+    Vector3 force = fricForce - normForce*lp.getNormal();
+    
+    // We don't have an angular moment.
+    applyBodyForce(force);
+  }
+
+private:
+  SharedPtr<const Contact> mContact;
+};
+
+Contact::Contact(const std::string& name) :
+  SingleLinkInteract(name)
+{
 }
 
 Contact::~Contact(void)
 {
 }
 
-bool
-Contact::init(void)
+MechanicContext*
+Contact::newMechanicContext(const Environment* environment,
+                            PortValueList& portValueList) const
 {
-  setForce(Vector6::zeros());
-  return ExternalForce::init();
-}
-
-void
-Contact::output(const TaskInfo& taskInfo)
-{
-  if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
-                          SampleTime::PerTimestep)) {
-    Log(Model, Debug) << "Contact::output(): \"" << getName()
-                      << "\" computing ground plane below" << endl;
-    getGround(taskInfo.getTime());
-  }
-
-  // Transform the plane equation to the local frame.
-  Plane lp = mMountFrame->planeFromRef(mGroundVal.plane);
-  
-  // Get the intersection length.
-  real_type compressLength = lp.getDist(Vector3::zeros());
-  
-  // Don't bother if we do not intersect the ground.
-  if (compressLength < 0) {
-    setForce(Vector6::zeros());
-    return;
-  }
-  
-  // The velocity of the ground patch in the current frame.
-  Vector6 groundVel(mMountFrame->rotFromRef(mGroundVal.vel.getAngular()),
-                    mMountFrame->rotFromRef(mGroundVal.vel.getLinear()));
-  groundVel -= mMountFrame->getRefVel();
-  // Now get the relative velocity of the ground wrt the contact point
-  Vector3 relVel = - groundVel.getLinear();
-
-  // The velocity perpandicular to the plane.
-  // Positive when the contact spring is compressed,
-  // negative when decompressed.
-  real_type compressVel = - lp.scalarProjectToNormal(relVel);
-  
-  // The in plane velocity.
-  Vector3 sVel = lp.projectToPlane(relVel);
-  
-  // Get the plane normal force.
-  real_type normForce = computeNormalForce(compressLength, compressVel);
-  // The normal force cannot get negative here.
-  normForce = max(static_cast<real_type>(0), normForce);
-  
-  // Get the friction force.
-  Vector3 fricForce = computeFrictionForce(normForce, sVel, lp.getNormal(),
-                                           mGroundVal.friction);
-  
-  // The resulting force is the sum of both.
-  // The minus sign is because of the direction of the surface normal.
-  Vector3 force = fricForce - normForce*lp.getNormal();
-  
-  // We don't have an angular moment.
-  setForce(Vector6(Vector3::zeros(), force));
+  return new Context(this, environment, portValueList);
 }
 
 real_type
@@ -103,21 +110,6 @@ Contact::computeFrictionForce(real_type normForce, const Vector3& vel,
                               real_type friction) const
 {
   return Vector3::zeros();
-}
-
-void
-Contact::setEnvironment(Environment* environment)
-{
-  mEnvironment = environment;
-}
-
-void
-Contact::getGround(real_type t)
-{
-  // Get the position of the contact in the reference system.
-  Vector3 pos = mMountFrame->getRefPosition();
-  // Query for the ground parameters at this point.
-  mGroundVal = mEnvironment->getGround()->getGroundPlane(t, pos);
 }
 
 } // namespace OpenFDM
