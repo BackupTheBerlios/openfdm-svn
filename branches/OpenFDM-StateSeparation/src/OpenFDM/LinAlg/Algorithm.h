@@ -649,8 +649,14 @@ l_substitute(const Matrix<T,dim1,dim1>& A, Vector<T,dim1>& v)
   size_type rows = A.rows();
   size_type cols = A.cols();
   for (size_type i = 0; i < rows-1; ++i) {
-    if (v(i) != static_cast<value_type>(0))
+    if (v(i) != static_cast<value_type>(0)) {
+#if 0
       v(Range(i+1, cols-1)) -= v(i)*A(Range(i+1, cols-1),i);
+#else
+      for (size_type k = i+1; k < cols; ++k)
+        v(k) -= v(i)*A(k,i);
+#endif
+    }
   }
 }
 
@@ -666,8 +672,14 @@ l_substitute(const Matrix<T,dim1,dim1>& A, Matrix<T,dim1,dim2>& v)
   size_type vcols = v.cols();
   for (size_type i = 0; i < rows-1; ++i) {
     for (size_type j = 0; j < vcols; ++j) {
-      if (v(i,j) != static_cast<value_type>(0))
+      if (v(i,j) != static_cast<value_type>(0)) {
+#if 0
         v(Range(i+1, cols-1),j) -= v(i,j)*A(Range(i+1, cols-1),i);
+#else
+        for (size_type k = i+1; k < cols; ++k)
+          v(k,j) -= v(i,j)*A(k,i);
+#endif
+      }
     }
   }
 }
@@ -690,8 +702,14 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Vector<T,dim1>& v)
         v(i) = static_cast<value_type>(0);
       } else {
         v(i) /= Aii;
-        if (0 < i)
+        if (0 < i) {
+#if 0
           v(Range(0,i-1)) -= v(i)*A(Range(0,i-1),i);
+#else
+          for (size_type k = 0; k < i; ++k)
+            v(k) -= v(i)*A(k,i);
+#endif
+        }
       }
     }
   }
@@ -717,8 +735,14 @@ u_substitute(const Matrix<T,dim1,dim2>& A, Matrix<T,dim1,dim3>& v)
           v(i,j) = static_cast<value_type>(0);
         } else {
           v(i,j) /= Aii;
-          if (0 < i)
+          if (0 < i) {
+#if 0
             v(Range(0,i-1),j) -= v(i,j)*A(Range(0,i-1),i);
+#else
+            for (size_type k = 0; k < i; ++k)
+              v(k,j) -= v(i,j)*A(k,i);
+#endif
+          }
         }
       }
     }
@@ -834,9 +858,17 @@ lu_factorize(Matrix<T,dim1,dim2>& A)
       if (j < n-1) {
         // Compute elements J+1:M of J-th column.
         A(Range(j+1, m-1), j) *= static_cast<value_type>(1)/A(j,j);
-        
+
+#if 0
         A(Range(j+1, m-1), Range(j+1, n-1))
           -= A(Range(j+1,m-1),j)*A(j, Range(j+1, n-1));
+#else
+        for (size_type k = j+1; k < m; ++k) {
+          for (size_type l = j+1; l < n; ++l) {
+            A(k, l) -= A(k, j)*A(j, l);
+          }
+        }
+#endif
       }
     }
   }
@@ -877,9 +909,17 @@ lu_factorize(Matrix<T,dim1,dim2>& A, Vector<size_type,dim1>& perm)
       if (j < n-1) {
         // Compute elements J+1:M of J-th column.
         A(Range(j+1, m-1), j) *= static_cast<value_type>(1)/A(j, j);
-        
+
+#if 0
         A(Range(j+1, m-1), Range(j+1, n-1))
           -= A(Range(j+1,m-1),j)*A(j, Range(j+1, n-1));
+#else
+        for (size_type k = j+1; k < m; ++k) {
+          for (size_type l = j+1; l < n; ++l) {
+            A(k, l) -= A(k, j)*A(j, l);
+          }
+        }
+#endif
       }
     }
   }
