@@ -208,7 +208,6 @@ OpenFDMModelsHEADERS = \
   DiscreteIntegrator.h \
   ExternalInteract.h \
   FixedRootJoint.h \
-  Force.h \
   Gain.h \
   Input.h \
   Integrator.h \
@@ -289,7 +288,6 @@ OpenFDMMechanicSOURCES = \
   WheelContact.cpp
 
 #   AeroForce.cpp \
-#   Force.cpp \
 #   SimpleGear.cpp \
 #   Tank.cpp
 
