@@ -206,7 +206,6 @@ OpenFDMModelsHEADERS = \
   Delay.h \
   DiscBrake.h \
   DiscreteIntegrator.h \
-  ExternalForce.h \
   FixedRootJoint.h \
   Force.h \
   Gain.h \
@@ -275,7 +274,6 @@ OpenFDMMechanicSOURCES = \
   Contact.cpp \
   DoubleLinkInteract.cpp \
   Joint.cpp \
-  ExternalForce.cpp \
   FixedRootJoint.cpp \
   InternalSensor.cpp \
   Mass.cpp \

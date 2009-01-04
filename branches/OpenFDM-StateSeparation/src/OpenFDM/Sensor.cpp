@@ -155,6 +155,33 @@ Sensor::velocity(const Task& task, const Environment& environment,
 }
 
 void
+Sensor::articulation(const Task&, const Environment&,
+                     const ContinousStateValueVector&,
+                     PortValueList& portValues) const
+{
+  const Frame& frame = portValues[mMechanicLink].getFrame();
+  // FIXME, for now relative position
+  Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
+  
+  if (getEnableBodyForce()) {
+    Vector3 force = portValues[mBodyForcePort];
+    portValues[mMechanicLink].applyForce(position, force);
+  }
+  if (getEnableBodyTorque()) {
+    Vector3 torque = portValues[mBodyTorquePort];
+    portValues[mMechanicLink].applyTorque(torque);
+  }
+  if (getEnableGlobalForce()) {
+    Vector3 force = portValues[mGlobalForcePort];
+    portValues[mMechanicLink].applyForce(position, frame.rotFromRef(force));
+  }
+  if (getEnableGlobalTorque()) {
+    Vector3 torque = portValues[mGlobalTorquePort];
+    portValues[mMechanicLink].applyTorque(frame.rotFromRef(torque));
+  }
+}
+
+void
 Sensor::acceleration(const Task&, const Environment& environment,
                      const ContinousStateValueVector&,
                      PortValueList& portValues) const
@@ -422,6 +449,74 @@ bool
 Sensor::getEnableAboveGroundLevel() const
 {
   return !mAboveGroundLevelPort.empty();
+}
+
+void
+Sensor::setEnableBodyForce(bool enable)
+{
+  if (enable == getEnableBodyForce())
+    return;
+  if (enable)
+    mBodyForcePort = MatrixInputPort(this, "bodyForce", Size(3, 1), true);
+  else
+    mBodyForcePort.clear();
+}
+
+bool
+Sensor::getEnableBodyForce() const
+{
+  return !mBodyForcePort.empty();
+}
+
+void
+Sensor::setEnableBodyTorque(bool enable)
+{
+  if (enable == getEnableBodyTorque())
+    return;
+  if (enable)
+    mBodyTorquePort = MatrixInputPort(this, "bodyTorque", Size(3, 1), true);
+  else
+    mBodyTorquePort.clear();
+}
+
+bool
+Sensor::getEnableBodyTorque() const
+{
+  return !mBodyTorquePort.empty();
+}
+
+void
+Sensor::setEnableGlobalForce(bool enable)
+{
+  if (enable == getEnableGlobalForce())
+    return;
+  if (enable)
+    mGlobalForcePort = MatrixInputPort(this, "globalForce", Size(3, 1), true);
+  else
+    mGlobalForcePort.clear();
+}
+
+bool
+Sensor::getEnableGlobalForce() const
+{
+  return !mGlobalForcePort.empty();
+}
+
+void
+Sensor::setEnableGlobalTorque(bool enable)
+{
+  if (enable == getEnableGlobalTorque())
+    return;
+  if (enable)
+    mGlobalTorquePort = MatrixInputPort(this, "globalTorque", Size(3, 1), true);
+  else
+    mGlobalTorquePort.clear();
+}
+
+bool
+Sensor::getEnableGlobalTorque() const
+{
+  return !mGlobalTorquePort.empty();
 }
 
 void

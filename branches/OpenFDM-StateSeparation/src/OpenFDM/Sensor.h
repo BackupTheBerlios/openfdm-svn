@@ -6,6 +6,7 @@
 #define OpenFDM_Sensor_H
 
 #include "SingleLinkInteract.h"
+#include "MatrixInputPort.h"
 #include "MatrixOutputPort.h"
 #include "MechanicLink.h"
 #include "RealOutputPort.h"
@@ -28,8 +29,7 @@ public:
                         PortValueList&) const;
   virtual void articulation(const Task&, const Environment& environment,
                             const ContinousStateValueVector&,
-                            PortValueList&) const
-  { }
+                            PortValueList&) const;
   virtual void acceleration(const Task&, const Environment&,
                             const ContinousStateValueVector&,
                             PortValueList&) const;
@@ -108,6 +108,28 @@ public:
   bool getEnableAboveGroundLevel() const;
 
 
+  /// Set availabilty of the body force input port
+  void setEnableBodyForce(bool enable);
+  /// Get availabilty of the body force input port
+  bool getEnableBodyForce() const;
+
+  /// Set availabilty of the body torque input port
+  void setEnableBodyTorque(bool enable);
+  /// Get availabilty of the body torque input port
+  bool getEnableBodyTorque() const;
+
+
+  /// Set availabilty of the global force input port
+  void setEnableGlobalForce(bool enable);
+  /// Get availabilty of the global force input port
+  bool getEnableGlobalForce() const;
+
+  /// Set availabilty of the global torque input port
+  void setEnableGlobalTorque(bool enable);
+  /// Get availabilty of the global torque input port
+  bool getEnableGlobalTorque() const;
+
+
   /// Set availabilty of all output ports
   /// This is mostly for convinience in testing
   void setEnableAllOutputs(bool enable);
@@ -132,6 +154,11 @@ protected:
 
   RealOutputPort mAltitudePort;
   RealOutputPort mAboveGroundLevelPort;
+
+  MatrixInputPort mBodyForcePort;
+  MatrixInputPort mBodyTorquePort;
+  MatrixInputPort mGlobalForcePort;
+  MatrixInputPort mGlobalTorquePort;
 };
 
 } // namespace OpenFDM
