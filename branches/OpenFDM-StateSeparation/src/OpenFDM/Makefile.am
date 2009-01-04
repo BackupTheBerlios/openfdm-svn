@@ -193,53 +193,33 @@ OpenFDMCoreSOURCES = \
 
 
 OpenFDMModelsHEADERS = \
-  AeroForce.h \
   AirSpring.h \
   AtmosphereSTD1976.h \
   Bias.h \
   BinaryFunction.h \
   BreakPointLookup.h \
-  CartesianJoint.h \
   ConstModel.h \
-  Contact.h \
   DeadBand.h \
   Delay.h \
   DiscBrake.h \
   DiscreteIntegrator.h \
-  ExternalInteract.h \
-  FixedRootJoint.h \
   Gain.h \
   Input.h \
   Integrator.h \
-  InternalInteract.h \
-  Joint.h \
-  Launchbar.h \
   LinearSpringDamper.h \
-  Mass.h \
   MaxModel.h \
   MinModel.h \
-  MobileRootJoint.h \
   Output.h \
   Product.h \
-  PrismaticJoint.h \
-  RevoluteActuator.h \
-  RevoluteJoint.h \
-  RotationalJoint.h \
   Saturation.h \
-  SimpleContact.h \
   SimpleDirectModel.h \
-  SimpleGear.h \
   SimulationTime.h \
   Summer.h \
   Table.h \
-  Tailhook.h \
-  Tank.h \
   TimeDerivative.h \
   TransferFunction.h \
   UnaryFunction.h \
-  UnitConversion.h \
-  UniversalJoint.h \
-  WheelContact.h
+  UnitConversion.h
 
 OpenFDMModelsSOURCES = \
   AirSpring.cpp \
@@ -269,6 +249,26 @@ OpenFDMModelsSOURCES = \
   UnaryFunction.cpp \
   UnitConversion.cpp
 
+OpenFDMMechanicHEADERS = \
+  AeroForce.h \
+  CartesianJoint.h \
+  Contact.h \
+  ExternalInteract.h \
+  FixedRootJoint.h \
+  InternalInteract.h \
+  Joint.h \
+  Mass.h \
+  MobileRootJoint.h \
+  PrismaticJoint.h \
+  RevoluteActuator.h \
+  RevoluteJoint.h \
+  RotationalJoint.h \
+  SimpleContact.h \
+  SimpleGear.h \
+  Tank.h \
+  UniversalJoint.h \
+  WheelContact.h
+
 OpenFDMMechanicSOURCES = \
   Contact.cpp \
   DoubleLinkInteract.cpp \
@@ -295,5 +295,11 @@ OpenFDMMechanicSOURCES = \
 #   Tailhook.cpp \
 #
 
-nobase_OpenFDMinclude_HEADERS = $(OpenFDMCoreHEADERS) $(OpenFDMModelsHEADERS)
-libOpenFDM_la_SOURCES = $(OpenFDMCoreSOURCES) $(OpenFDMModelsSOURCES) $(OpenFDMMechanicSOURCES)
+nobase_OpenFDMinclude_HEADERS = \
+  $(OpenFDMCoreHEADERS) \
+  $(OpenFDMModelsHEADERS) \
+  $(OpenFDMMechanicHEADERS)
+libOpenFDM_la_SOURCES = \
+  $(OpenFDMCoreSOURCES) \
+  $(OpenFDMModelsSOURCES) \
+  $(OpenFDMMechanicSOURCES)
