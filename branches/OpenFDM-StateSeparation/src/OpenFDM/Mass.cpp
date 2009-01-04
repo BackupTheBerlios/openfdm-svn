@@ -30,29 +30,30 @@ public:
   virtual void initDesignPosition()
   {
     SingleLinkInteract::Context::initDesignPosition();
+    Vector3 relPos = getLink().getLinkRelPos();
     mSpatialInertia = SpatialInertia(mMass->getInertia(), mMass->getMass());
-    mSpatialInertia = inertiaFrom(getLinkRelPos(), mSpatialInertia);
+    mSpatialInertia = inertiaFrom(relPos, mSpatialInertia);
   }
   virtual void articulation(const Task&)
   {
     // Contribute the inerita
-    getLink().addInertia(mSpatialInertia);
+    getLink().addInertiaAtLink(mSpatialInertia);
 
     // Each inertia has a contribution to the spatial bias force.
     // This part is handled here.
-    Vector6 v = getLink().getSpVel();
+    Vector6 v = getLink().getMechanicLinkValue().getSpVel();
     Vector6 Iv = mSpatialInertia*v;
     Vector6 vIv = Vector6(cross(v.getAngular(), Iv.getAngular()) +
                           cross(v.getLinear(), Iv.getLinear()),
                           cross(v.getAngular(), Iv.getLinear()));
-    getLink().addForce(vIv);
+    getLink().addForceAtLink(vIv);
 
     // Now the gravity part
-    Vector3 refPos = getLink().getCoordinateSystem().toReference(getLinkRelPos());
+    Vector3 refPos = getLink().getRefPos();
     Vector3 gravity = getEnvironment().getGravityAcceleration(refPos);
     gravity = getLink().getCoordinateSystem().rotToLocal(gravity);
     gravity *= mMass->getMass();
-    applyBodyForce(gravity);
+    getLink().applyBodyForce(gravity);
   }
 
 private:

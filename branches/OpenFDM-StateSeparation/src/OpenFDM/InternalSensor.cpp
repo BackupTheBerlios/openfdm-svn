@@ -24,9 +24,7 @@ public:
   Context(const InternalSensor* internalSensor,
           const Environment* environment, PortValueList& portValueList) :
     DoubleLinkInteract::Context(internalSensor, environment, portValueList),
-    mInternalSensor(internalSensor),
-    mLinkRelPos0(Vector3::zeros()),
-    mLinkRelPos1(Vector3::zeros())
+    mInternalSensor(internalSensor)
   {
     mDistanceValue = portValueList.getPortValue(internalSensor->mDistancePort);
     mVelocityValue = portValueList.getPortValue(internalSensor->mVelocityPort);
@@ -39,16 +37,15 @@ public:
 
   virtual void initDesignPosition()
   {
-    mLinkRelPos0 = mInternalSensor->getPosition0();
-    mLinkRelPos0 -= getLink0().getDesignPosition();
-    mLinkRelPos1 = mInternalSensor->getPosition1();
-    mLinkRelPos1 -= getLink1().getDesignPosition();
+    getLink0().setDesignPosition(mInternalSensor->getPosition0());
+    getLink1().setDesignPosition(mInternalSensor->getPosition1());
   }
   virtual void velocities(const Task&)
   {
     mRelCoordSys = getLink0().getRelativeCoordinateSystem(getLink1());
   
-    Vector3 relPos = mRelCoordSys.toReference(mLinkRelPos1) - mLinkRelPos0;
+    Vector3 relPos = mRelCoordSys.getPosition();
+
     real_type nrmRelPos = norm(relPos);
     if (nrmRelPos <= Limits<real_type>::min())
       mDirection = Vector3::zeros();
@@ -61,11 +58,9 @@ public:
 
     if (mVelocityValue) {
       // The motion of link1 measured in link0
-      Vector6 relVel = mRelCoordSys.motionToReference(getLink1().getSpVel());
+      Vector6 relVel = mRelCoordSys.motionToReference(getLink1().getRefVel());
       // The relative motion of link1 wrt link0 measured in link0
-      relVel -= getLink0().getSpVel();
-      // Transform to the internal reference point
-      relVel = motionTo(mLinkRelPos0, relVel);
+      relVel -= getLink0().getRefVel();
       // The scalar product is what we need.
       // Here the additional cross product term cancels out
       mVelocityValue->getValue()(0, 0) = dot(mDirection, relVel.getLinear());
@@ -81,10 +76,10 @@ public:
     // offset
     real_type force = mForceValue->getValue()(0, 0);
     Vector3 force0 = (-force)*mDirection;
-    getLink0().applyForce(mLinkRelPos0, force0);
+    getLink0().applyBodyForce(force0);
     
     Vector3 force1 = force*mRelCoordSys.rotToLocal(mDirection);
-    getLink1().applyForce(mLinkRelPos1, force1);
+    getLink1().applyBodyForce(force1);
   }
 
 private:
@@ -92,8 +87,6 @@ private:
   SharedPtr<NumericPortValue> mDistanceValue;
   SharedPtr<NumericPortValue> mVelocityValue;
   SharedPtr<const NumericPortValue> mForceValue;
-  Vector3 mLinkRelPos0;
-  Vector3 mLinkRelPos1;
   CoordinateSystem mRelCoordSys;
   Vector3 mDirection;
 };

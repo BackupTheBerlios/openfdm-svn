@@ -126,6 +126,145 @@ protected:
   Vector3 mDesignPosition;
 };
 
+class ChildLink {
+public:
+  ChildLink(MechanicLinkValue* mechanicLinkValue) :
+    mMechanicLinkValue(mechanicLinkValue)
+  { OpenFDMAssert(mMechanicLinkValue); }
+
+  const MechanicLinkValue& getMechanicLinkValue() const
+  { return *mMechanicLinkValue; }
+  MechanicLinkValue& getMechanicLinkValue()
+  { return *mMechanicLinkValue; }
+
+  void setDesignPosition(const Vector3& position)
+  { mMechanicLinkValue->setDesignPosition(position); }
+
+  void setPosAndVel(const MechanicLinkValue& link, const Vector3& position,
+                    const Quaternion& orientation, const Vector6& velocity)
+  { mMechanicLinkValue->setPosAndVel(link, position, orientation, velocity); }
+  void setAccel(const MechanicLinkValue& link, const Vector6& accel)
+  { mMechanicLinkValue->setAccel(link, accel); }
+ 
+private:
+  SharedPtr<MechanicLinkValue> mMechanicLinkValue;
+};
+
+class ParentLink {
+public:
+  ParentLink(MechanicLinkValue* mechanicLinkValue = 0) :
+    mMechanicLinkValue(mechanicLinkValue),
+    mLinkRelPos(Vector3::zeros())
+  { }
+
+  bool isConnected() const
+  { return mMechanicLinkValue; }
+
+  const Vector3& getLinkRelPos() const
+  {
+    OpenFDMAssert(isConnected());
+    return mLinkRelPos;
+  }
+
+  const MechanicLinkValue& getMechanicLinkValue() const
+  {
+    OpenFDMAssert(isConnected());
+    return *mMechanicLinkValue;
+  }
+  MechanicLinkValue& getMechanicLinkValue()
+  {
+    OpenFDMAssert(isConnected());
+    return *mMechanicLinkValue;
+  }
+
+  CoordinateSystem getCoordinateSystem() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getCoordinateSystem().getRelative(mLinkRelPos);
+  }
+
+  CoordinateSystem getRelativeCoordinateSystem(const ParentLink& link) const
+  {
+    return getCoordinateSystem().toLocal(link.getCoordinateSystem());
+  }
+
+  Vector3 getRefPos() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getCoordinateSystem().toReference(mLinkRelPos);
+  }
+
+  Vector6 getSpVelAtLink() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getSpVel();
+  }
+  Vector6 getSpVel() const
+  {
+    OpenFDMAssert(isConnected());
+    return motionTo(mLinkRelPos, mMechanicLinkValue->getSpVel());
+  }
+  Vector6 getRefVel() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getReferenceVelocity(mLinkRelPos);
+  }
+
+  void setDesignPosition(const Vector3& position)
+  {
+    OpenFDMAssert(isConnected());
+    mLinkRelPos = position - mMechanicLinkValue->getDesignPosition();
+  }
+
+  void applyBodyForce(const Vector6& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyForce(mLinkRelPos, force);
+  }
+  void applyBodyForce(const Vector3& bodyPosition, const Vector6& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, force);
+  }
+  
+  void applyBodyForce(const Vector3& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyForce(mLinkRelPos, force);
+  }
+  void applyBodyForce(const Vector3& bodyPosition, const Vector3& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, force);
+  }
+  
+  void applyBodyTorque(const Vector3& torque)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyTorque(torque);
+  }
+
+  void applyForceAtLink(const Vector6& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyForce(force);
+  }
+  void addForceAtLink(const Vector6& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->addForce(force);
+  }
+  void addInertiaAtLink(const SpatialInertia& inertia)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->addInertia(inertia);
+  }
+
+private:
+  SharedPtr<MechanicLinkValue> mMechanicLinkValue;
+  Vector3 mLinkRelPos;
+};
+
 } // namespace OpenFDM
 
 #endif

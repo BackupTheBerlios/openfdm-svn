@@ -14,8 +14,7 @@ BEGIN_OPENFDM_OBJECT_DEF(WheelContact, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   DEF_OPENFDM_PROPERTY(Real, WheelRadius, Serialized)
   DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
-/// FIXME want to have similar names than with linearspringdamper
-  DEF_OPENFDM_PROPERTY(Real, SpringDamping, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, DampingConstant, Serialized)
   DEF_OPENFDM_PROPERTY(Real, FrictionCoeficient, Serialized)
   END_OPENFDM_OBJECT_DEF
 
@@ -33,11 +32,9 @@ public:
 
   virtual void articulation(const Task& task)
   {
-    const CoordinateSystem& cs = getLink().getCoordinateSystem();
-
     // The coordinate system at the hub.
-    CoordinateSystem hubCoordinateSystem(cs.getRelative(getLinkRelPos()));
-    
+    CoordinateSystem hubCoordinateSystem(getLink().getCoordinateSystem());
+
     // Get the ground values in the hub coordinate system.
     GroundValues groundValues =
       getEnvironment().getGroundPlane(hubCoordinateSystem, task.getTime());
@@ -56,11 +53,8 @@ public:
     
     Vector3 contactPoint = distHubGround*down;
     
-    // The velocity of the ground patch in the current frame.
-    Vector6 groundVel = groundValues.vel;
-    // Now get the relative velocity of the ground wrt the hub
-    Vector6 relVel = getLink().getReferenceVelocity(getLinkRelPos()) - groundVel;
-    
+    // The relative velocity of the ground wrt the contact point
+    Vector6 relVel = getLink().getRefVel() - groundValues.vel;
     
     // The velocity perpandicular to the plane.
     // Positive when the contact spring is compressed,
@@ -83,7 +77,7 @@ public:
     Vector3 rotVel = relVel.getAngular();
     real_type omegaR = dot(rotVel, mWheelContact->getAxis()) * distHubGround;
     
-    //   Log(Model,Error) << trans(groundVel) << " "
+    //   Log(Model,Error) << trans(groundValues.vel) << " "
     //                    << trans(wheelVel) << " "
     //                    << omegaR << " "
     //                    << compressLength << " "
@@ -105,7 +99,7 @@ public:
     Vector3 force = fricForce(0)*forward + fricForce(1)*side - normForce*down;
     
     // We don't have an angular moment.
-    applyBodyForce(contactPoint, force);
+    getLink().applyBodyForce(contactPoint, force);
   }
 
 private:
@@ -118,7 +112,7 @@ WheelContact::WheelContact(const std::string& name) :
 {
   mWheelRadius = 0.3;
   mSpringConstant = 0;
-  mSpringDamping = 0;
+  mDampingConstant = 0;
   mFrictionCoeficient = 0.8;
 }
 
@@ -136,8 +130,7 @@ WheelContact::newMechanicContext(const Environment* environment,
 real_type
 WheelContact::computeNormalForce(real_type compressLen, real_type compressVel) const
 {
-  return compressLen*mSpringConstant
-    + mSpringDamping*min(compressVel, static_cast<real_type>(0));
+  return compressLen*mSpringConstant + mDampingConstant*compressVel;
 }
 
 Vector2

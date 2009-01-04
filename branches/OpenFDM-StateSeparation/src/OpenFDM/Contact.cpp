@@ -27,10 +27,8 @@ public:
 
   virtual void articulation(const Task& task)
   {
-    const CoordinateSystem& cs = getLink().getCoordinateSystem();
-
-    // The coordinate system at the hub.
-    CoordinateSystem localCoordSys(cs.getRelative(getLinkRelPos()));
+    // The coordinate system at the body fixed contact point.
+    CoordinateSystem localCoordSys(getLink().getCoordinateSystem());
     
     // Get the ground values in the hub coordinate system.
     GroundValues groundValues =
@@ -49,7 +47,8 @@ public:
     // The velocity of the ground patch in the current frame.
     Vector3 relVel = groundValues.vel.getLinear();
     // Now get the relative velocity of the ground wrt the contact point
-    relVel -= getLink().getReferenceVelocity(getLinkRelPos()).getLinear();
+    relVel -= getLink().getRefVel().getLinear();
+
     
     // The velocity perpandicular to the plane.
     // Positive when the contact spring is compressed,
@@ -75,7 +74,7 @@ public:
     Vector3 force = fricForce - normForce*lp.getNormal();
     
     // We don't have an angular moment.
-    applyBodyForce(force);
+    getLink().applyBodyForce(force);
   }
 
 private:

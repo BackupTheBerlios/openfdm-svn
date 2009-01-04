@@ -23,13 +23,10 @@ public:
     Context(const DoubleLinkInteract* interact, const Environment* environment,
             PortValueList& portValueList) :
       MechanicContext(environment),
-      mPortValueList(portValueList)
-    {
-      mMechanicLinkValue0 = portValueList.getPortValue(*interact->mMechanicLinkInfo0);
-      OpenFDMAssert(mMechanicLinkValue0);
-      mMechanicLinkValue1 = portValueList.getPortValue(*interact->mMechanicLinkInfo1);
-      OpenFDMAssert(mMechanicLinkValue1);
-    }
+      mPortValueList(portValueList),
+      mLink0(portValueList.getPortValue(*interact->mMechanicLinkInfo0)),
+      mLink1(portValueList.getPortValue(*interact->mMechanicLinkInfo1))
+    { }
     virtual ~Context() {}
 
     virtual const DoubleLinkInteract& getNode() const = 0;
@@ -61,10 +58,10 @@ public:
     virtual const PortValue* getPortValue(const PortInfo& portInfo) const
     {  return mPortValueList.getPortValue(portInfo); }
     
-    MechanicLinkValue& getLink0() const
-    { return *mMechanicLinkValue0; }
-    MechanicLinkValue& getLink1() const
-    { return *mMechanicLinkValue1; }
+    ParentLink& getLink0()
+    { return mLink0; }
+    ParentLink& getLink1()
+    { return mLink1; }
 
   protected:
     // PortValues
@@ -77,8 +74,8 @@ public:
     DiscreteStateValueVector mDiscreteState;
     
   private:
-    SharedPtr<MechanicLinkValue> mMechanicLinkValue0;
-    SharedPtr<MechanicLinkValue> mMechanicLinkValue1;
+    ParentLink mLink0;
+    ParentLink mLink1;
   };
   
 protected:

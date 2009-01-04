@@ -47,10 +47,10 @@ public:
   const real_type& getSpringConstant(void) const
   { return mSpringConstant; }
 
-  void setSpringDamping(const real_type& springDamping)
-  { mSpringDamping = springDamping; }
-  const real_type& getSpringDamping(void) const
-  { return mSpringDamping; }
+  void setDampingConstant(const real_type& dampingConstant)
+  { mDampingConstant = dampingConstant; }
+  const real_type& getDampingConstant(void) const
+  { return mDampingConstant; }
 
   void setFrictionCoeficient(const real_type& frictionCoeficient)
   { mFrictionCoeficient = frictionCoeficient; }
@@ -62,7 +62,7 @@ private:
   real_type mWheelRadius;
 
   real_type mSpringConstant;
-  real_type mSpringDamping;
+  real_type mDampingConstant;
   real_type mFrictionCoeficient;
 };
 

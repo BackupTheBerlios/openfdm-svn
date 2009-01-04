@@ -31,17 +31,16 @@ public:
             PortValueList& portValueList) :
       MechanicContext(environment),
       mPortValueList(portValueList),
-      mLinkRelPos(Vector3::zeros())
+      mLink(portValueList.getPortValue(interact->mMechanicLink))
     {
-      mMechanicLinkValue = portValueList.getPortValue(interact->mMechanicLink);
-      OpenFDMAssert(mMechanicLinkValue);
+      OpenFDMAssert(mLink.isConnected());
     }
     virtual ~Context() {}
     
     virtual const SingleLinkInteract& getNode() const = 0;
 
     virtual void initDesignPosition()
-    { mLinkRelPos = getNode().getPosition() - getLink().getDesignPosition(); }
+    { mLink.setDesignPosition(getNode().getPosition()); }
   
     bool alloc()
     {
@@ -70,30 +69,8 @@ public:
     virtual const PortValue* getPortValue(const PortInfo& portInfo) const
     {  return mPortValueList.getPortValue(portInfo); }
     
-    MechanicLinkValue& getLink() const
-    { return *mMechanicLinkValue; }
-
-    const Vector3& getLinkRelPos() const
-    { return mLinkRelPos; }
-
-    /// FIXME: Hmm, may be some kind of MechanicLinkHandle class that has a
-    /// link value and these methods???
-    void applyBodyForce(const Vector6& force)
-    { mMechanicLinkValue->applyForce(mLinkRelPos, force); }
-    void applyBodyForce(const Vector3& bodyPosition, const Vector6& force)
-    { mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, force); }
-    void applyBodyForceAtLink(const Vector6& force)
-    { mMechanicLinkValue->applyForce(force); }
-
-    void applyBodyForce(const Vector3& force)
-    { mMechanicLinkValue->applyForce(mLinkRelPos, force); }
-    void applyBodyForce(const Vector3& bodyPosition, const Vector3& force)
-    { mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, force); }
-    void applyBodyForceAtLink(const Vector3& force)
-    { mMechanicLinkValue->applyForce(force); }
-
-    void applyBodyTorque(const Vector3& torque)
-    { mMechanicLinkValue->applyTorque(torque); }
+    ParentLink& getLink()
+    { return mLink; }
 
   protected:
     // PortValues
@@ -106,8 +83,7 @@ public:
     DiscreteStateValueVector mDiscreteState;
     
   private:
-    SharedPtr<MechanicLinkValue> mMechanicLinkValue;
-    Vector3 mLinkRelPos;
+    ParentLink mLink;
   };
   
   /// Set the position of the sensor in design coordinates
