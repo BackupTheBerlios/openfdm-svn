@@ -24,12 +24,11 @@ public:
   Context(const InternalInteract* internalInteract,
           const Environment* environment, PortValueList& portValueList) :
     DoubleLinkInteract::Context(internalInteract, environment, portValueList),
-    mInternalSensor(internalInteract)
-  {
-    mDistanceValue = portValueList.getPortValue(internalInteract->mDistancePort);
-    mVelocityValue = portValueList.getPortValue(internalInteract->mVelocityPort);
-    mForceValue = portValueList.getPortValue(internalInteract->mForcePort);
-  }
+    mInternalSensor(internalInteract),
+    mDistanceValue(portValueList.getPortValue(internalInteract->mDistancePort)),
+    mVelocityValue(portValueList.getPortValue(internalInteract->mVelocityPort)),
+    mForceValue(portValueList.getPortValue(internalInteract->mForcePort))
+  { }
   virtual ~Context() {}
     
   virtual const InternalInteract& getNode() const
@@ -53,28 +52,28 @@ public:
       mDirection = (1/nrmRelPos)*relPos;
 
     // The relative distance of these two points
-    if (mDistanceValue)
-      mDistanceValue->getValue()(0, 0) = nrmRelPos;
+    if (mDistanceValue.isConnected())
+      mDistanceValue = nrmRelPos;
 
-    if (mVelocityValue) {
+    if (mVelocityValue.isConnected()) {
       // The motion of link1 measured in link0
       Vector6 relVel = mRelCoordSys.motionToReference(getLink1().getRefVel());
       // The relative motion of link1 wrt link0 measured in link0
       relVel -= getLink0().getRefVel();
       // The scalar product is what we need.
       // Here the additional cross product term cancels out
-      mVelocityValue->getValue()(0, 0) = dot(mDirection, relVel.getLinear());
+      mVelocityValue = dot(mDirection, relVel.getLinear());
     }
   }
   virtual void articulation(const Task&)
   {
-    if (!mForceValue)
+    if (!mForceValue.isConnected())
       return;
 
     // Since we assume positive input forces to push the two attached
     // RigidBodies, we need that minus sign to negate the current position
     // offset
-    real_type force = mForceValue->getValue()(0, 0);
+    real_type force = mForceValue;
     Vector3 force0 = (-force)*mDirection;
     getLink0().applyBodyForce(force0);
     
@@ -84,9 +83,9 @@ public:
 
 private:
   SharedPtr<const InternalInteract> mInternalSensor;
-  SharedPtr<NumericPortValue> mDistanceValue;
-  SharedPtr<NumericPortValue> mVelocityValue;
-  SharedPtr<const NumericPortValue> mForceValue;
+  RealOutputPortHandle mDistanceValue;
+  RealOutputPortHandle mVelocityValue;
+  RealInputPortHandle mForceValue;
   CoordinateSystem mRelCoordSys;
   Vector3 mDirection;
 };
