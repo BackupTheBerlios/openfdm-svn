@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_InternalSensor_H
-#define OpenFDM_InternalSensor_H
+#ifndef OpenFDM_InternalInteract_H
+#define OpenFDM_InternalInteract_H
 
 #include "DoubleLinkInteract.h"
 #include "MechanicLink.h"
@@ -13,12 +13,12 @@
 
 namespace OpenFDM {
 
-class InternalSensor : public DoubleLinkInteract {
-  OPENFDM_OBJECT(InternalSensor, DoubleLinkInteract);
+class InternalInteract : public DoubleLinkInteract {
+  OPENFDM_OBJECT(InternalInteract, DoubleLinkInteract);
   class Context;
 public:
-  InternalSensor(const std::string& name);
-  virtual ~InternalSensor(void);
+  InternalInteract(const std::string& name);
+  virtual ~InternalInteract(void);
 
   virtual MechanicContext*
   newMechanicContext(const Environment* environment,

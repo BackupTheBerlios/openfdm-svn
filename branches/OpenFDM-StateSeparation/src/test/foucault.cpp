@@ -3,7 +3,7 @@
 #include <OpenFDM/FixedRootJoint.h>
 #include <OpenFDM/RotationalJoint.h>
 #include <OpenFDM/RigidBody.h>
-#include <OpenFDM/Sensor.h>
+#include <OpenFDM/ExternalInteract.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
 #include <OpenFDM/WGS84Planet.h>
@@ -34,22 +34,23 @@ int main()
   RotationalJoint* rotationalJoint1 = new RotationalJoint("Rotational Joint 1");
   group->addChild(rotationalJoint1);
   RigidBody* rigidBody1 = new RigidBody("Rigid Body 1");
-  rigidBody1->addLink("sensorLink");
+  rigidBody1->addLink("externalInteractLink");
   group->addChild(rigidBody1);
 
   Mass* mass = new Mass("Mass", 28, InertiaMatrix(1, 0, 0, 1, 0, 1));
   mass->setPosition(Vector3(3, 0, 67));
   group->addChild(mass);
 
-  Sensor* sensor = new Sensor("Sensor");
-  sensor->setPosition(mass->getPosition());
-  sensor->setEnableAllOutputs(true);
-  group->addChild(sensor);
+  ExternalInteract* externalInteract = new ExternalInteract("ExternalInteract");
+  externalInteract->setPosition(mass->getPosition());
+  externalInteract->setEnableAllOutputs(true);
+  group->addChild(externalInteract);
 
   group->connect(fixedRootJoint->getPort(0), rotationalJoint1->getPort(0));
   group->connect(rotationalJoint1->getPort(1), rigidBody1->getPort(0));
   group->connect(rigidBody1->getPort(1), mass->getPort(0));
-  group->connect(rigidBody1->getPort("sensorLink"), sensor->getPort("link"));
+  group->connect(rigidBody1->getPort("externalInteractLink"),
+                 externalInteract->getPort("link"));
 
   SharedPtr<System> system = new System("System", group);
 

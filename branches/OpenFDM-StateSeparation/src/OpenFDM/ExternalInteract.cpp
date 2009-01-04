@@ -2,7 +2,7 @@
  *
  */
 
-#include "Sensor.h"
+#include "ExternalInteract.h"
 
 #include "MechanicLinkValue.h"
 #include "NumericPortValue.h"
@@ -11,7 +11,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(Sensor, SingleLinkInteract)
+BEGIN_OPENFDM_OBJECT_DEF(ExternalInteract, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Bool, EnablePosition, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableOrientation, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableEulerAngles, Serialized)
@@ -27,46 +27,46 @@ BEGIN_OPENFDM_OBJECT_DEF(Sensor, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Bool, EnableAboveGroundLevel, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-class Sensor::Context : public SingleLinkInteract::Context {
+class ExternalInteract::Context : public SingleLinkInteract::Context {
 public:
-  Context(const Sensor* sensor,
+  Context(const ExternalInteract* externalInteract,
           const Environment* environment, PortValueList& portValueList) :
-    SingleLinkInteract::Context(sensor, environment, portValueList),
-    mSensor(sensor)
+    SingleLinkInteract::Context(externalInteract, environment, portValueList),
+    mExternalInteract(externalInteract)
   { }
   virtual ~Context() {}
     
-  virtual const Sensor& getNode() const
-  { return *mSensor; }
+  virtual const ExternalInteract& getNode() const
+  { return *mExternalInteract; }
   
   virtual void velocities(const Task& task)
   {
-    mSensor->velocity(task, getEnvironment(), mContinousState, mPortValueList);
+    mExternalInteract->velocity(task, getEnvironment(), mContinousState, mPortValueList);
   }
   virtual void articulation(const Task& task)
   {
-    mSensor->articulation(task, getEnvironment(), mContinousState, mPortValueList);
+    mExternalInteract->articulation(task, getEnvironment(), mContinousState, mPortValueList);
   }
   virtual void accelerations(const Task& task)
   {
-    mSensor->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
+    mExternalInteract->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
   }
   
 private:
-  SharedPtr<const Sensor> mSensor;
+  SharedPtr<const ExternalInteract> mExternalInteract;
 };
 
-Sensor::Sensor(const std::string& name) :
+ExternalInteract::ExternalInteract(const std::string& name) :
   SingleLinkInteract(name)
 {
 }
 
-Sensor::~Sensor(void)
+ExternalInteract::~ExternalInteract(void)
 {
 }
 
 MechanicContext*
-Sensor::newMechanicContext(const Environment* environment,
+ExternalInteract::newMechanicContext(const Environment* environment,
                            PortValueList& portValueList) const
 {
   SharedPtr<Context> context = new Context(this, environment, portValueList);
@@ -79,7 +79,7 @@ Sensor::newMechanicContext(const Environment* environment,
 }
 
 void
-Sensor::velocity(const Task& task, const Environment& environment,
+ExternalInteract::velocity(const Task& task, const Environment& environment,
                  const ContinousStateValueVector&,
                  PortValueList& portValues) const
 {
@@ -155,7 +155,7 @@ Sensor::velocity(const Task& task, const Environment& environment,
 }
 
 void
-Sensor::articulation(const Task&, const Environment&,
+ExternalInteract::articulation(const Task&, const Environment&,
                      const ContinousStateValueVector&,
                      PortValueList& portValues) const
 {
@@ -182,7 +182,7 @@ Sensor::articulation(const Task&, const Environment&,
 }
 
 void
-Sensor::acceleration(const Task&, const Environment& environment,
+ExternalInteract::acceleration(const Task&, const Environment& environment,
                      const ContinousStateValueVector&,
                      PortValueList& portValues) const
 {
@@ -212,7 +212,7 @@ Sensor::acceleration(const Task&, const Environment& environment,
 }
 
 void
-Sensor::setEnablePosition(bool enable)
+ExternalInteract::setEnablePosition(bool enable)
 {
   if (enable == getEnablePosition())
     return;
@@ -223,13 +223,13 @@ Sensor::setEnablePosition(bool enable)
 }
 
 bool
-Sensor::getEnablePosition() const
+ExternalInteract::getEnablePosition() const
 {
   return !mPositionPort.empty();
 }
 
 void
-Sensor::setEnableOrientation(bool enable)
+ExternalInteract::setEnableOrientation(bool enable)
 {
   if (enable == getEnableOrientation())
     return;
@@ -240,13 +240,13 @@ Sensor::setEnableOrientation(bool enable)
 }
 
 bool
-Sensor::getEnableOrientation() const
+ExternalInteract::getEnableOrientation() const
 {
   return !mOrientationPort.empty();
 }
 
 void
-Sensor::setEnableEulerAngles(bool enable)
+ExternalInteract::setEnableEulerAngles(bool enable)
 {
   if (enable == getEnableEulerAngles())
     return;
@@ -257,13 +257,13 @@ Sensor::setEnableEulerAngles(bool enable)
 }
 
 bool
-Sensor::getEnableEulerAngles() const
+ExternalInteract::getEnableEulerAngles() const
 {
   return !mEulerAnglesPort.empty();
 }
 
 void
-Sensor::setEnableLinearVelocity(bool enable)
+ExternalInteract::setEnableLinearVelocity(bool enable)
 {
   if (enable == getEnableLinearVelocity())
     return;
@@ -274,13 +274,13 @@ Sensor::setEnableLinearVelocity(bool enable)
 }
 
 bool
-Sensor::getEnableLinearVelocity() const
+ExternalInteract::getEnableLinearVelocity() const
 {
   return !mLinearVelocityPort.empty();
 }
 
 void
-Sensor::setEnableAngularVelocity(bool enable)
+ExternalInteract::setEnableAngularVelocity(bool enable)
 {
   if (enable == getEnableAngularVelocity())
     return;
@@ -292,13 +292,13 @@ Sensor::setEnableAngularVelocity(bool enable)
 }
 
 bool
-Sensor::getEnableAngularVelocity() const
+ExternalInteract::getEnableAngularVelocity() const
 {
   return !mAngularVelocityPort.empty();
 }
 
 void
-Sensor::setEnableCentrifugalAcceleration(bool enable)
+ExternalInteract::setEnableCentrifugalAcceleration(bool enable)
 {
   if (enable == getEnableCentrifugalAcceleration())
     return;
@@ -310,13 +310,13 @@ Sensor::setEnableCentrifugalAcceleration(bool enable)
 }
 
 bool
-Sensor::getEnableCentrifugalAcceleration() const
+ExternalInteract::getEnableCentrifugalAcceleration() const
 {
   return !mCentrifugalAccelerationPort.empty();
 }
 
 void
-Sensor::setEnableLoad(bool enable)
+ExternalInteract::setEnableLoad(bool enable)
 {
   if (enable == getEnableLoad())
     return;
@@ -327,13 +327,13 @@ Sensor::setEnableLoad(bool enable)
 }
 
 bool
-Sensor::getEnableLoad() const
+ExternalInteract::getEnableLoad() const
 {
   return !mLoadPort.empty();
 }
 
 void
-Sensor::setEnableWindVelocity(bool enable)
+ExternalInteract::setEnableWindVelocity(bool enable)
 {
   if (enable == getEnableWindVelocity())
     return;
@@ -344,13 +344,13 @@ Sensor::setEnableWindVelocity(bool enable)
 }
 
 bool
-Sensor::getEnableWindVelocity() const
+ExternalInteract::getEnableWindVelocity() const
 {
   return !mWindVelocityPort.empty();
 }
 
 void
-Sensor::setEnableTemperature(bool enable)
+ExternalInteract::setEnableTemperature(bool enable)
 {
   if (enable == getEnableTemperature())
     return;
@@ -361,13 +361,13 @@ Sensor::setEnableTemperature(bool enable)
 }
 
 bool
-Sensor::getEnableTemperature() const
+ExternalInteract::getEnableTemperature() const
 {
   return !mTemperaturePort.empty();
 }
 
 void
-Sensor::setEnablePressure(bool enable)
+ExternalInteract::setEnablePressure(bool enable)
 {
   if (enable == getEnablePressure())
     return;
@@ -378,13 +378,13 @@ Sensor::setEnablePressure(bool enable)
 }
 
 bool
-Sensor::getEnablePressure() const
+ExternalInteract::getEnablePressure() const
 {
   return !mPressurePort.empty();
 }
 
 void
-Sensor::setEnableDensity(bool enable)
+ExternalInteract::setEnableDensity(bool enable)
 {
   if (enable == getEnableDensity())
     return;
@@ -395,13 +395,13 @@ Sensor::setEnableDensity(bool enable)
 }
 
 bool
-Sensor::getEnableDensity() const
+ExternalInteract::getEnableDensity() const
 {
   return !mDensityPort.empty();
 }
 
 void
-Sensor::setEnableSoundSpeed(bool enable)
+ExternalInteract::setEnableSoundSpeed(bool enable)
 {
   if (enable == getEnableSoundSpeed())
     return;
@@ -412,13 +412,13 @@ Sensor::setEnableSoundSpeed(bool enable)
 }
 
 bool
-Sensor::getEnableSoundSpeed() const
+ExternalInteract::getEnableSoundSpeed() const
 {
   return !mSoundSpeedPort.empty();
 }
 
 void
-Sensor::setEnableAltitude(bool enable)
+ExternalInteract::setEnableAltitude(bool enable)
 {
   if (enable == getEnableAltitude())
     return;
@@ -429,13 +429,13 @@ Sensor::setEnableAltitude(bool enable)
 }
 
 bool
-Sensor::getEnableAltitude() const
+ExternalInteract::getEnableAltitude() const
 {
   return !mAltitudePort.empty();
 }
 
 void
-Sensor::setEnableAboveGroundLevel(bool enable)
+ExternalInteract::setEnableAboveGroundLevel(bool enable)
 {
   if (enable == getEnableAboveGroundLevel())
     return;
@@ -446,13 +446,13 @@ Sensor::setEnableAboveGroundLevel(bool enable)
 }
 
 bool
-Sensor::getEnableAboveGroundLevel() const
+ExternalInteract::getEnableAboveGroundLevel() const
 {
   return !mAboveGroundLevelPort.empty();
 }
 
 void
-Sensor::setEnableBodyForce(bool enable)
+ExternalInteract::setEnableBodyForce(bool enable)
 {
   if (enable == getEnableBodyForce())
     return;
@@ -463,13 +463,13 @@ Sensor::setEnableBodyForce(bool enable)
 }
 
 bool
-Sensor::getEnableBodyForce() const
+ExternalInteract::getEnableBodyForce() const
 {
   return !mBodyForcePort.empty();
 }
 
 void
-Sensor::setEnableBodyTorque(bool enable)
+ExternalInteract::setEnableBodyTorque(bool enable)
 {
   if (enable == getEnableBodyTorque())
     return;
@@ -480,13 +480,13 @@ Sensor::setEnableBodyTorque(bool enable)
 }
 
 bool
-Sensor::getEnableBodyTorque() const
+ExternalInteract::getEnableBodyTorque() const
 {
   return !mBodyTorquePort.empty();
 }
 
 void
-Sensor::setEnableGlobalForce(bool enable)
+ExternalInteract::setEnableGlobalForce(bool enable)
 {
   if (enable == getEnableGlobalForce())
     return;
@@ -497,13 +497,13 @@ Sensor::setEnableGlobalForce(bool enable)
 }
 
 bool
-Sensor::getEnableGlobalForce() const
+ExternalInteract::getEnableGlobalForce() const
 {
   return !mGlobalForcePort.empty();
 }
 
 void
-Sensor::setEnableGlobalTorque(bool enable)
+ExternalInteract::setEnableGlobalTorque(bool enable)
 {
   if (enable == getEnableGlobalTorque())
     return;
@@ -514,13 +514,13 @@ Sensor::setEnableGlobalTorque(bool enable)
 }
 
 bool
-Sensor::getEnableGlobalTorque() const
+ExternalInteract::getEnableGlobalTorque() const
 {
   return !mGlobalTorquePort.empty();
 }
 
 void
-Sensor::setEnableAllOutputs(bool enable)
+ExternalInteract::setEnableAllOutputs(bool enable)
 {
   setEnablePosition(enable);
   setEnableOrientation(enable);

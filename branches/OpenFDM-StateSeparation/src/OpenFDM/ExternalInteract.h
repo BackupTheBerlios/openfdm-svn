@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_Sensor_H
-#define OpenFDM_Sensor_H
+#ifndef OpenFDM_ExternalInteract_H
+#define OpenFDM_ExternalInteract_H
 
 #include "SingleLinkInteract.h"
 #include "MatrixInputPort.h"
@@ -14,12 +14,12 @@
 
 namespace OpenFDM {
 
-class Sensor : public SingleLinkInteract {
-  OPENFDM_OBJECT(Sensor, SingleLinkInteract);
+class ExternalInteract : public SingleLinkInteract {
+  OPENFDM_OBJECT(ExternalInteract, SingleLinkInteract);
   class Context;
 public:
-  Sensor(const std::string& name);
-  virtual ~Sensor(void);
+  ExternalInteract(const std::string& name);
+  virtual ~ExternalInteract(void);
 
   virtual MechanicContext*
   newMechanicContext(const Environment*, PortValueList&) const;

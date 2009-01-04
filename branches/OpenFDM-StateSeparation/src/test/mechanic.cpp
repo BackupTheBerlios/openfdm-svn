@@ -1,12 +1,12 @@
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/Group.h>
-#include <OpenFDM/InternalSensor.h>
+#include <OpenFDM/InternalInteract.h>
 #include <OpenFDM/LinearSpringDamper.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/RevoluteJoint.h>
 #include <OpenFDM/RigidBody.h>
-#include <OpenFDM/Sensor.h>
+#include <OpenFDM/ExternalInteract.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
 
@@ -27,19 +27,19 @@ Node* buildSimpleMechanicExample()
   MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
   group->addChild(mobileRootJoint);
   RigidBody* rigidBody = new RigidBody("Rigid Body");
-  rigidBody->addLink("sensorLink");
+  rigidBody->addLink("externalInteractLink");
   group->addChild(rigidBody);
   Mass* mass = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
   group->addChild(mass);
 
-  Sensor* sensor = new Sensor("Sensor");
-  sensor->setPosition(mass->getPosition());
-  sensor->setEnableAllOutputs(true);
-  group->addChild(sensor);
+  ExternalInteract* externalInteract = new ExternalInteract("ExternalInteract");
+  externalInteract->setPosition(mass->getPosition());
+  externalInteract->setEnableAllOutputs(true);
+  group->addChild(externalInteract);
 
   group->connect(mobileRootJoint->getPort("link"), rigidBody->getPort("link0"));
   group->connect(rigidBody->getPort("link1"), mass->getPort("link"));
-  group->connect(rigidBody->getPort("sensorLink"), sensor->getPort("link"));
+  group->connect(rigidBody->getPort("externalInteractLink"), externalInteract->getPort("link"));
 
   return group.release();
 }
@@ -53,9 +53,9 @@ Node* buildSimpleMechanicExample2()
 
   RigidBody *rigidBody = new RigidBody("Rigid Body");
   rigidBody->addLink("link2");
-  rigidBody->addLink("sensorLink");
-  rigidBody->addLink("internalSensorLink");
-  rigidBody->addLink("internalSensorLink2");
+  rigidBody->addLink("externalInteractLink");
+  rigidBody->addLink("internalInteractLink");
+  rigidBody->addLink("internalInteractLink2");
   group->addChild(rigidBody);
   InertiaMatrix inertia(1, 0, 0, 1, 0, 1);
   Mass* mass = new Mass("Mass", 1, inertia);
@@ -64,30 +64,30 @@ Node* buildSimpleMechanicExample2()
   revoluteJoint->setEnableExternalForce(true);
   group->addChild(revoluteJoint);
   RigidBody *rigidBody2 = new RigidBody("Rigid Body 2");
-  rigidBody2->addLink("sensorLink");
-  rigidBody2->addLink("internalSensorLink");
-  rigidBody2->addLink("internalSensorLink2");
+  rigidBody2->addLink("externalInteractLink");
+  rigidBody2->addLink("internalInteractLink");
+  rigidBody2->addLink("internalInteractLink2");
   group->addChild(rigidBody2);
   Mass* mass2 = new Mass("Mass 2", 1, inertia);
   group->addChild(mass2);
 
-  Sensor* sensor = new Sensor("Sensor");
-  sensor->setPosition(mass->getPosition());
-  sensor->setEnableAllOutputs(true);
-  group->addChild(sensor);
+  ExternalInteract* externalInteract = new ExternalInteract("ExternalInteract");
+  externalInteract->setPosition(mass->getPosition());
+  externalInteract->setEnableAllOutputs(true);
+  group->addChild(externalInteract);
 
-  Sensor* sensor2 = new Sensor("Sensor 2");
-  sensor2->setPosition(mass2->getPosition());
-  sensor2->setEnableAllOutputs(true);
-  group->addChild(sensor2);
+  ExternalInteract* externalInteract2 = new ExternalInteract("ExternalInteract 2");
+  externalInteract2->setPosition(mass2->getPosition());
+  externalInteract2->setEnableAllOutputs(true);
+  group->addChild(externalInteract2);
 
   group->connect(mobileRootJoint->getPort("link"), rigidBody->getPort("link0"));
   group->connect(rigidBody->getPort("link1"), mass->getPort("link"));
   group->connect(rigidBody->getPort("link2"), revoluteJoint->getPort("link0"));
   group->connect(revoluteJoint->getPort("link1"), rigidBody2->getPort("link0"));
   group->connect(rigidBody2->getPort("link1"), mass2->getPort("link"));
-  group->connect(rigidBody->getPort("sensorLink"), sensor->getPort("link"));
-  group->connect(rigidBody2->getPort("sensorLink"), sensor2->getPort("link"));
+  group->connect(rigidBody->getPort("externalInteractLink"), externalInteract->getPort("link"));
+  group->connect(rigidBody2->getPort("externalInteractLink"), externalInteract2->getPort("link"));
 
   ConstModel* jointForce = new ConstModel("Joint Force", 1);
   group->addChild(jointForce);
@@ -95,38 +95,38 @@ Node* buildSimpleMechanicExample2()
   group->connect(jointForce->getPort("output"),
                  revoluteJoint->getPort("force"));
 
-  InternalSensor* internalSensor = new InternalSensor("Internal Sensor");
-  internalSensor->setPosition0(Vector3(0, 0, 1));
-  internalSensor->setPosition1(Vector3(0, 0, 0.8));
-  internalSensor->setEnableAllOutputs(true);
-  internalSensor->setEnableForce(true);
-  group->addChild(internalSensor);
-  group->connect(internalSensor->getPort("link0"),
-                 rigidBody->getPort("internalSensorLink"));
-  group->connect(internalSensor->getPort("link1"),
-                 rigidBody2->getPort("internalSensorLink"));
+  InternalInteract* internalInteract = new InternalInteract("InternalInteract");
+  internalInteract->setPosition0(Vector3(0, 0, 1));
+  internalInteract->setPosition1(Vector3(0, 0, 0.8));
+  internalInteract->setEnableAllOutputs(true);
+  internalInteract->setEnableForce(true);
+  group->addChild(internalInteract);
+  group->connect(internalInteract->getPort("link0"),
+                 rigidBody->getPort("internalInteractLink"));
+  group->connect(internalInteract->getPort("link1"),
+                 rigidBody2->getPort("internalInteractLink"));
 
 
-  InternalSensor* internalSensor2 = new InternalSensor("Internal Sensor 2");
-  internalSensor2->setPosition0(Vector3(0, 0, 0.8));
-  internalSensor2->setPosition1(Vector3(0, 0, 1));
-  internalSensor2->setEnableAllOutputs(true);
-  group->addChild(internalSensor2);
-  group->connect(internalSensor2->getPort("link1"),
-                 rigidBody->getPort("internalSensorLink2"));
-  group->connect(internalSensor2->getPort("link0"),
-                 rigidBody2->getPort("internalSensorLink2"));
+  InternalInteract* internalInteract2 = new InternalInteract("InternalInteract2");
+  internalInteract2->setPosition0(Vector3(0, 0, 0.8));
+  internalInteract2->setPosition1(Vector3(0, 0, 1));
+  internalInteract2->setEnableAllOutputs(true);
+  group->addChild(internalInteract2);
+  group->connect(internalInteract2->getPort("link1"),
+                 rigidBody->getPort("internalInteractLink2"));
+  group->connect(internalInteract2->getPort("link0"),
+                 rigidBody2->getPort("internalInteractLink2"));
 
   LinearSpringDamper* damper = new LinearSpringDamper("LinearSpringDamper");
   damper->setSpringConstant(0.5);
   damper->setDamperConstant(1);
   group->addChild(damper);
   group->connect(damper->getPort("velocity"),
-                 internalSensor->getPort("velocity"));
+                 internalInteract->getPort("velocity"));
   group->connect(damper->getPort("position"),
-                 internalSensor->getPort("distance"));
+                 internalInteract->getPort("distance"));
   group->connect(damper->getPort("force"),
-                 internalSensor->getPort("force"));
+                 internalInteract->getPort("force"));
 
   return group.release();
 }

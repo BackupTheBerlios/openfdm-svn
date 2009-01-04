@@ -206,12 +206,13 @@ OpenFDMModelsHEADERS = \
   Delay.h \
   DiscBrake.h \
   DiscreteIntegrator.h \
+  ExternalInteract.h \
   FixedRootJoint.h \
   Force.h \
   Gain.h \
   Input.h \
   Integrator.h \
-  InternalSensor.h \
+  InternalInteract.h \
   Joint.h \
   Launchbar.h \
   LinearSpringDamper.h \
@@ -226,7 +227,6 @@ OpenFDMModelsHEADERS = \
   RevoluteJoint.h \
   RotationalJoint.h \
   Saturation.h \
-  Sensor.h \
   SimpleContact.h \
   SimpleDirectModel.h \
   SimpleGear.h \
@@ -273,16 +273,16 @@ OpenFDMModelsSOURCES = \
 OpenFDMMechanicSOURCES = \
   Contact.cpp \
   DoubleLinkInteract.cpp \
-  Joint.cpp \
+  ExternalInteract.cpp \
   FixedRootJoint.cpp \
-  InternalSensor.cpp \
+  InternalInteract.cpp \
+  Joint.cpp \
   Mass.cpp \
   MobileRootJoint.cpp \
   PrismaticJoint.cpp \
   RevoluteActuator.cpp \
   RevoluteJoint.cpp \
   RotationalJoint.cpp \
-  Sensor.cpp \
   SimpleContact.cpp \
   SingleLinkInteract.cpp \
   UniversalJoint.cpp \

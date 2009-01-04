@@ -2,7 +2,7 @@
  *
  */
 
-#include "InternalSensor.h"
+#include "InternalInteract.h"
 
 #include "MechanicLinkValue.h"
 #include "NumericPortValue.h"
@@ -11,7 +11,7 @@
 
 namespace OpenFDM {
 
-BEGIN_OPENFDM_OBJECT_DEF(InternalSensor, DoubleLinkInteract)
+BEGIN_OPENFDM_OBJECT_DEF(InternalInteract, DoubleLinkInteract)
   DEF_OPENFDM_PROPERTY(Vector3, Position0, Serialized)
   DEF_OPENFDM_PROPERTY(Vector3, Position1, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableDistance, Serialized)
@@ -19,20 +19,20 @@ BEGIN_OPENFDM_OBJECT_DEF(InternalSensor, DoubleLinkInteract)
   DEF_OPENFDM_PROPERTY(Bool, EnableForce, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-class InternalSensor::Context : public DoubleLinkInteract::Context {
+class InternalInteract::Context : public DoubleLinkInteract::Context {
 public:
-  Context(const InternalSensor* internalSensor,
+  Context(const InternalInteract* internalInteract,
           const Environment* environment, PortValueList& portValueList) :
-    DoubleLinkInteract::Context(internalSensor, environment, portValueList),
-    mInternalSensor(internalSensor)
+    DoubleLinkInteract::Context(internalInteract, environment, portValueList),
+    mInternalSensor(internalInteract)
   {
-    mDistanceValue = portValueList.getPortValue(internalSensor->mDistancePort);
-    mVelocityValue = portValueList.getPortValue(internalSensor->mVelocityPort);
-    mForceValue = portValueList.getPortValue(internalSensor->mForcePort);
+    mDistanceValue = portValueList.getPortValue(internalInteract->mDistancePort);
+    mVelocityValue = portValueList.getPortValue(internalInteract->mVelocityPort);
+    mForceValue = portValueList.getPortValue(internalInteract->mForcePort);
   }
   virtual ~Context() {}
     
-  virtual const InternalSensor& getNode() const
+  virtual const InternalInteract& getNode() const
   { return *mInternalSensor; }
 
   virtual void initDesignPosition()
@@ -83,7 +83,7 @@ public:
   }
 
 private:
-  SharedPtr<const InternalSensor> mInternalSensor;
+  SharedPtr<const InternalInteract> mInternalSensor;
   SharedPtr<NumericPortValue> mDistanceValue;
   SharedPtr<NumericPortValue> mVelocityValue;
   SharedPtr<const NumericPortValue> mForceValue;
@@ -91,50 +91,50 @@ private:
   Vector3 mDirection;
 };
 
-InternalSensor::InternalSensor(const std::string& name) :
+InternalInteract::InternalInteract(const std::string& name) :
   DoubleLinkInteract(name),
   mPosition0(0, 0, 0),
   mPosition1(0, 0, 0)
 {
 }
 
-InternalSensor::~InternalSensor(void)
+InternalInteract::~InternalInteract(void)
 {
 }
 
 MechanicContext*
-InternalSensor::newMechanicContext(const Environment* environment,
+InternalInteract::newMechanicContext(const Environment* environment,
                                    PortValueList& portValueList) const
 {
   return new Context(this, environment, portValueList);
 }
 
 void
-InternalSensor::setPosition0(const Vector3& position)
+InternalInteract::setPosition0(const Vector3& position)
 {
   mPosition0 = position;
 }
 
 const Vector3&
-InternalSensor::getPosition0() const
+InternalInteract::getPosition0() const
 {
   return mPosition0;
 }
 
 void
-InternalSensor::setPosition1(const Vector3& position)
+InternalInteract::setPosition1(const Vector3& position)
 {
   mPosition1 = position;
 }
 
 const Vector3&
-InternalSensor::getPosition1() const
+InternalInteract::getPosition1() const
 {
   return mPosition1;
 }
 
 void
-InternalSensor::setEnableDistance(bool enable)
+InternalInteract::setEnableDistance(bool enable)
 {
   if (enable == getEnableDistance())
     return;
@@ -145,13 +145,13 @@ InternalSensor::setEnableDistance(bool enable)
 }
 
 bool
-InternalSensor::getEnableDistance() const
+InternalInteract::getEnableDistance() const
 {
   return !mDistancePort.empty();
 }
 
 void
-InternalSensor::setEnableVelocity(bool enable)
+InternalInteract::setEnableVelocity(bool enable)
 {
   if (enable == getEnableVelocity())
     return;
@@ -162,13 +162,13 @@ InternalSensor::setEnableVelocity(bool enable)
 }
 
 bool
-InternalSensor::getEnableVelocity() const
+InternalInteract::getEnableVelocity() const
 {
   return !mVelocityPort.empty();
 }
 
 void
-InternalSensor::setEnableForce(bool enable)
+InternalInteract::setEnableForce(bool enable)
 {
   if (enable == getEnableForce())
     return;
@@ -179,13 +179,13 @@ InternalSensor::setEnableForce(bool enable)
 }
 
 bool
-InternalSensor::getEnableForce() const
+InternalInteract::getEnableForce() const
 {
   return !mForcePort.empty();
 }
 
 void
-InternalSensor::setEnableAllOutputs(bool enable)
+InternalInteract::setEnableAllOutputs(bool enable)
 {
   setEnableDistance(enable);
   setEnableVelocity(enable);
