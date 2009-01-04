@@ -139,6 +139,10 @@ public:
   OpenFDM_FORCE_INLINE
   Matrix& operator=(const Matrix& mtrx)
   { assign(mtrx); return *this; }
+  template<typename Impl2, size_type m2, size_type n2>
+  OpenFDM_FORCE_INLINE
+  Matrix& operator=(const MatrixRValue<Impl2,m2,n2>& mtrx)
+  { assign(mtrx); return *this; }
 
   OpenFDM_FORCE_INLINE
   Matrix& operator*=(value_type scalar)
