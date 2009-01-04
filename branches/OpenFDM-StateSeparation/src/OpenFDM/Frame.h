@@ -106,22 +106,6 @@ public:
     mRelVelDot = spatialAcceleration - mParentSpAccel - getHdot();
   }
 
-
-  // FIXME: they do not yet update the dependent values inside ...
-//   void setRefOrientation(const Frame& parent, const Quaternion& o)
-//   { setOrientation(inverse(parent.getRefOrientation())*o); }
-//   void setRefPosition(const Frame& parent, const Vector3& p)
-//   { setPosition(parent.posFromRef(p)); }
-//   void setRefVel(const Frame& parent, const Vector6& vel)
-//   { setRelVel(vel - motionFromParent(parent.getRefVel())); }
-
-//   void setPosition(const Vector3& p)
-//   { mPosition = p; }
-//   void setOrientation(const Quaternion& o)
-//   { mOrientation = o; }
-//   void setRelVel(const Vector6& vel)
-//   { mRelVel = vel; }
-
   /** Position of the current frame.
       @return The position vector of the current frame with repsect to the
       parent frame. It is the only vector which is in the parent frames
@@ -408,18 +392,6 @@ public:
    */
   const Vector3& getRefPosition(void) const
   { return mRefPos; }
-
-  Quaternion getRelOrientation(const Frame& frame) const
-  { return inverse(getRefOrientation())*frame.getRefOrientation(); }
-  Vector3 getRelPosition(const Frame& frame) const
-  { return posFromRef(frame.getRefPosition()); }
-  Vector6 getRelVel(const Frame& frame) const
-  { return motionFromRef(frame.motionToRef(frame.getRefVel())) - getRefVel(); }
-
-  // FIXME, docunment, and improove
-  Vector6 getRefVelAt(const Vector3& p) const
-  { return motionFrom(posToRef(p), getRefOrientation(), motionTo(p, getRefVel())); }
-
 
 private:
   // The offset of this frames origin wrt the parent frame measured in

@@ -15,10 +15,14 @@ BEGIN_OPENFDM_OBJECT_DEF(ExternalInteract, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Bool, EnablePosition, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableOrientation, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableEulerAngles, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableLinearVelocity, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableAngularVelocity, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableCentrifugalAcceleration, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableWindVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableBodyLinearVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableBodyAngularVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableGlobalLinearVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableGlobalAngularVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableBodyCentrifugalAcceleration, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableBodyLoad, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableBodyWindVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableGlobalWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnablePressure, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableDensity, Serialized)
@@ -99,22 +103,38 @@ ExternalInteract::velocity(const Task& task, const Environment& environment,
     portValues[mEulerAnglesPort] = frame.getRefOrientation().getEuler();
 
   // Velocity related sensing
-  bool enableAngularVelocity = getEnableAngularVelocity();
-  bool enableLinearVelocity = getEnableLinearVelocity();
-  bool enableWindVelocity = getEnableWindVelocity();
-  if (enableAngularVelocity || enableLinearVelocity || enableWindVelocity) {
-    Vector6 refVelocity = frame.getRefVelAt(position);
-    if (enableAngularVelocity)
-      portValues[mAngularVelocityPort] = refVelocity.getAngular();
+  bool enableBodyAngularVelocity = getEnableBodyAngularVelocity();
+  bool enableGlobalAngularVelocity = getEnableGlobalAngularVelocity();
+  bool enableBodyLinearVelocity = getEnableBodyLinearVelocity();
+  bool enableGlobalLinearVelocity = getEnableGlobalLinearVelocity();
+  bool enableBodyWindVelocity = getEnableBodyWindVelocity();
+  bool enableGlobalWindVelocity = getEnableGlobalWindVelocity();
+  if (enableBodyAngularVelocity || enableBodyLinearVelocity
+      || enableGlobalAngularVelocity || enableGlobalLinearVelocity
+      || enableBodyWindVelocity || enableGlobalWindVelocity) {
+    Vector6 refVelocity = motionTo(position, frame.getRefVel());
+    if (enableBodyAngularVelocity)
+      portValues[mBodyAngularVelocityPort] = refVelocity.getAngular();
+    if (enableGlobalAngularVelocity)
+      portValues[mGlobalAngularVelocityPort]
+        = frame.rotToRef(refVelocity.getAngular());
     
-    if (enableLinearVelocity)
-      portValues[mLinearVelocityPort] = refVelocity.getLinear();
+    if (enableBodyLinearVelocity)
+      portValues[mBodyLinearVelocityPort] = refVelocity.getLinear();
+    if (enableGlobalLinearVelocity)
+      portValues[mGlobalLinearVelocityPort]
+        = frame.rotToRef(refVelocity.getLinear());
 
     // Wind sensing
-    if (enableWindVelocity) {
+    if (enableBodyWindVelocity || enableGlobalWindVelocity) {
       Vector6 wind = environment.getWindVelocity(task.getTime(), position);
+      wind = Vector6(frame.rotFromRef(wind.getAngular()),
+                     frame.rotFromRef(wind.getLinear()));
       wind -= refVelocity;
-      portValues[mWindVelocityPort] = frame.rotFromRef(wind.getLinear());
+      if (enableBodyWindVelocity)
+        portValues[mBodyWindVelocityPort] = wind.getLinear();
+      if (enableGlobalWindVelocity)
+        portValues[mGlobalWindVelocityPort] = frame.rotToRef(wind.getLinear());
     }
   }
 
@@ -191,22 +211,22 @@ ExternalInteract::acceleration(const Task&, const Environment& environment,
   // FIXME, for now relative position
   Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
 
-  bool enableCentrifugalAcceleration = getEnableCentrifugalAcceleration();
-  bool enableLoad = getEnableLoad();
-  if (enableCentrifugalAcceleration || enableLoad) {
+  bool enableBodyCentrifugalAcceleration=getEnableBodyCentrifugalAcceleration();
+  bool enableBodyLoad = getEnableBodyLoad();
+  if (enableBodyCentrifugalAcceleration || enableBodyLoad) {
     Vector6 spatialVel = motionTo(position, frame.getSpVel());
     Vector6 spatialAccel = motionTo(position, frame.getSpAccel());
     Vector3 centrifugalAccel = spatialAccel.getLinear();
     centrifugalAccel += cross(spatialVel.getAngular(), spatialVel.getLinear());
 
-    if (enableCentrifugalAcceleration)
-      portValues[mCentrifugalAccelerationPort] = centrifugalAccel;
-    if (enableLoad) {
+    if (enableBodyCentrifugalAcceleration)
+      portValues[mBodyCentrifugalAccelerationPort] = centrifugalAccel;
+    if (enableBodyLoad) {
       // May be cache that from the velocity step??
       Vector3 refPosition = frame.posToRef(position);
       Vector3 gravity = environment.getGravityAcceleration(refPosition);
       gravity = frame.rotFromRef(gravity);
-      portValues[mLoadPort] = centrifugalAccel - gravity;
+      portValues[mBodyLoadPort] = centrifugalAccel - gravity;
     }
   }
 }
@@ -263,90 +283,146 @@ ExternalInteract::getEnableEulerAngles() const
 }
 
 void
-ExternalInteract::setEnableLinearVelocity(bool enable)
+ExternalInteract::setEnableBodyLinearVelocity(bool enable)
 {
-  if (enable == getEnableLinearVelocity())
+  if (enable == getEnableBodyLinearVelocity())
     return;
   if (enable)
-    mLinearVelocityPort = MatrixOutputPort(this, "linearVelocity", Size(3, 1));
+    mBodyLinearVelocityPort
+      = MatrixOutputPort(this, "bodyLinearVelocity", Size(3, 1));
   else
-    mLinearVelocityPort.clear();
+    mBodyLinearVelocityPort.clear();
 }
 
 bool
-ExternalInteract::getEnableLinearVelocity() const
+ExternalInteract::getEnableBodyLinearVelocity() const
 {
-  return !mLinearVelocityPort.empty();
+  return !mBodyLinearVelocityPort.empty();
 }
 
 void
-ExternalInteract::setEnableAngularVelocity(bool enable)
+ExternalInteract::setEnableBodyAngularVelocity(bool enable)
 {
-  if (enable == getEnableAngularVelocity())
+  if (enable == getEnableBodyAngularVelocity())
     return;
   if (enable)
-    mAngularVelocityPort
-      = MatrixOutputPort(this, "angularVelocity", Size(3, 1));
+    mBodyAngularVelocityPort
+      = MatrixOutputPort(this, "bodyAngularVelocity", Size(3, 1));
   else
-    mAngularVelocityPort.clear();
+    mBodyAngularVelocityPort.clear();
 }
 
 bool
-ExternalInteract::getEnableAngularVelocity() const
+ExternalInteract::getEnableBodyAngularVelocity() const
 {
-  return !mAngularVelocityPort.empty();
+  return !mBodyAngularVelocityPort.empty();
 }
 
 void
-ExternalInteract::setEnableCentrifugalAcceleration(bool enable)
+ExternalInteract::setEnableGlobalLinearVelocity(bool enable)
 {
-  if (enable == getEnableCentrifugalAcceleration())
+  if (enable == getEnableGlobalLinearVelocity())
     return;
   if (enable)
-    mCentrifugalAccelerationPort
-      = MatrixOutputPort(this, "centrifugalAcceleration", Size(3, 1), true);
+    mGlobalLinearVelocityPort
+      = MatrixOutputPort(this, "globalLinearVelocity", Size(3, 1));
   else
-    mCentrifugalAccelerationPort.clear();
+    mGlobalLinearVelocityPort.clear();
 }
 
 bool
-ExternalInteract::getEnableCentrifugalAcceleration() const
+ExternalInteract::getEnableGlobalLinearVelocity() const
 {
-  return !mCentrifugalAccelerationPort.empty();
+  return !mGlobalLinearVelocityPort.empty();
 }
 
 void
-ExternalInteract::setEnableLoad(bool enable)
+ExternalInteract::setEnableGlobalAngularVelocity(bool enable)
 {
-  if (enable == getEnableLoad())
+  if (enable == getEnableGlobalAngularVelocity())
     return;
   if (enable)
-    mLoadPort = MatrixOutputPort(this, "load", Size(3, 1), true);
+    mGlobalAngularVelocityPort
+      = MatrixOutputPort(this, "globalAngularVelocity", Size(3, 1));
   else
-    mLoadPort.clear();
+    mGlobalAngularVelocityPort.clear();
 }
 
 bool
-ExternalInteract::getEnableLoad() const
+ExternalInteract::getEnableGlobalAngularVelocity() const
 {
-  return !mLoadPort.empty();
+  return !mGlobalAngularVelocityPort.empty();
 }
 
 void
-ExternalInteract::setEnableWindVelocity(bool enable)
+ExternalInteract::setEnableBodyCentrifugalAcceleration(bool enable)
 {
-  if (enable == getEnableWindVelocity())
+  if (enable == getEnableBodyCentrifugalAcceleration())
     return;
   if (enable)
-    mWindVelocityPort = MatrixOutputPort(this, "windVelocity", Size(3, 1));
+    mBodyCentrifugalAccelerationPort
+      = MatrixOutputPort(this, "bodyCentrifugalAcceleration", Size(3, 1), true);
   else
-    mWindVelocityPort.clear();
+    mBodyCentrifugalAccelerationPort.clear();
 }
 
 bool
-ExternalInteract::getEnableWindVelocity() const
+ExternalInteract::getEnableBodyCentrifugalAcceleration() const
 {
-  return !mWindVelocityPort.empty();
+  return !mBodyCentrifugalAccelerationPort.empty();
+}
+
+void
+ExternalInteract::setEnableBodyLoad(bool enable)
+{
+  if (enable == getEnableBodyLoad())
+    return;
+  if (enable)
+    mBodyLoadPort = MatrixOutputPort(this, "bodyLoad", Size(3, 1), true);
+  else
+    mBodyLoadPort.clear();
+}
+
+bool
+ExternalInteract::getEnableBodyLoad() const
+{
+  return !mBodyLoadPort.empty();
+}
+
+void
+ExternalInteract::setEnableBodyWindVelocity(bool enable)
+{
+  if (enable == getEnableBodyWindVelocity())
+    return;
+  if (enable)
+    mBodyWindVelocityPort
+      = MatrixOutputPort(this, "bodyWindVelocity", Size(3, 1));
+  else
+    mBodyWindVelocityPort.clear();
+}
+
+bool
+ExternalInteract::getEnableBodyWindVelocity() const
+{
+  return !mBodyWindVelocityPort.empty();
+}
+
+void
+ExternalInteract::setEnableGlobalWindVelocity(bool enable)
+{
+  if (enable == getEnableGlobalWindVelocity())
+    return;
+  if (enable)
+    mGlobalWindVelocityPort
+      = MatrixOutputPort(this, "globalWindVelocity", Size(3, 1));
+  else
+    mGlobalWindVelocityPort.clear();
+}
+
+bool
+ExternalInteract::getEnableGlobalWindVelocity() const
+{
+  return !mGlobalWindVelocityPort.empty();
 }
 
 void
@@ -525,11 +601,14 @@ ExternalInteract::setEnableAllOutputs(bool enable)
   setEnablePosition(enable);
   setEnableOrientation(enable);
   setEnableEulerAngles(enable);
-  setEnableLinearVelocity(enable);
-  setEnableAngularVelocity(enable);
-  setEnableCentrifugalAcceleration(enable);
-  setEnableLoad(enable);
-  setEnableWindVelocity(enable);
+  setEnableBodyLinearVelocity(enable);
+  setEnableBodyAngularVelocity(enable);
+  setEnableGlobalLinearVelocity(enable);
+  setEnableGlobalAngularVelocity(enable);
+  setEnableBodyCentrifugalAcceleration(enable);
+  setEnableBodyLoad(enable);
+  setEnableBodyWindVelocity(enable);
+  setEnableGlobalWindVelocity(enable);
   setEnableTemperature(enable);
   setEnablePressure(enable);
   setEnableDensity(enable);

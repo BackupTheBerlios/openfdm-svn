@@ -49,31 +49,56 @@ public:
   /// Get availabilty of the euler angles output port
   bool getEnableEulerAngles() const;
 
+
   /// Set availabilty of the linear velocity output port
-  void setEnableLinearVelocity(bool enable);
+  /// The output vector is measured in body coordinates
+  void setEnableBodyLinearVelocity(bool enable);
   /// Get availabilty of the linear velocity output port
-  bool getEnableLinearVelocity() const;
+  bool getEnableBodyLinearVelocity() const;
 
   /// Set availabilty of the angular velocity output port
-  void setEnableAngularVelocity(bool enable);
+  /// The output vector is measured in body coordinates
+  void setEnableBodyAngularVelocity(bool enable);
   /// Get availabilty of the angular velocity output port
-  bool getEnableAngularVelocity() const;
+  bool getEnableBodyAngularVelocity() const;
+
+  /// Set availabilty of the linear velocity output port
+  /// The output vector is measured in global coordinates
+  void setEnableGlobalLinearVelocity(bool enable);
+  /// Get availabilty of the linear velocity output port
+  bool getEnableGlobalLinearVelocity() const;
+
+  /// Set availabilty of the angular velocity output port
+  /// The output vector is measured in global coordinates
+  void setEnableGlobalAngularVelocity(bool enable);
+  /// Get availabilty of the angular velocity output port
+  bool getEnableGlobalAngularVelocity() const;
+
 
   /// Set availabilty of the linear acceleration output port
-  void setEnableCentrifugalAcceleration(bool enable);
+  /// The output vector is measured in body coordinates
+  void setEnableBodyCentrifugalAcceleration(bool enable);
   /// Get availabilty of the linear acceleration output port
-  bool getEnableCentrifugalAcceleration() const;
+  bool getEnableBodyCentrifugalAcceleration() const;
 
   /// Set availabilty of the load output port
-  void setEnableLoad(bool enable);
+  /// The output vector is measured in body coordinates
+  void setEnableBodyLoad(bool enable);
   /// Get availabilty of the load output port
-  bool getEnableLoad() const;
+  bool getEnableBodyLoad() const;
 
 
   /// Set availabilty of the wind velocity output port
-  void setEnableWindVelocity(bool enable);
+  /// The output vector is measured in body coordinates
+  void setEnableBodyWindVelocity(bool enable);
   /// Get availabilty of the wind velocity output port
-  bool getEnableWindVelocity() const;
+  bool getEnableBodyWindVelocity() const;
+
+  /// Set availabilty of the wind velocity output port
+  /// The output vector is measured in global coordinates
+  void setEnableGlobalWindVelocity(bool enable);
+  /// Get availabilty of the wind velocity output port
+  bool getEnableGlobalWindVelocity() const;
 
 
   /// Set availabilty of the temperature output port
@@ -135,17 +160,22 @@ public:
   void setEnableAllOutputs(bool enable);
 
 protected:
+  /// Positional state sensing
   MatrixOutputPort mPositionPort;
   MatrixOutputPort mOrientationPort;
   MatrixOutputPort mEulerAnglesPort;
 
-  MatrixOutputPort mLinearVelocityPort;
-  MatrixOutputPort mAngularVelocityPort;
+  /// Velocity state sensing
+  MatrixOutputPort mBodyLinearVelocityPort;
+  MatrixOutputPort mBodyAngularVelocityPort;
+  MatrixOutputPort mGlobalLinearVelocityPort;
+  MatrixOutputPort mGlobalAngularVelocityPort;
 
-  MatrixOutputPort mCentrifugalAccelerationPort;
-  MatrixOutputPort mLoadPort;
+  MatrixOutputPort mBodyCentrifugalAccelerationPort;
+  MatrixOutputPort mBodyLoadPort;
 
-  MatrixOutputPort mWindVelocityPort;
+  MatrixOutputPort mBodyWindVelocityPort;
+  MatrixOutputPort mGlobalWindVelocityPort;
 
   RealOutputPort mTemperaturePort;
   RealOutputPort mPressurePort;
