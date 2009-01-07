@@ -41,12 +41,15 @@ public:
   bool isConnected() const
   { return mNumericPortValue; }
 
-  operator const real_type&() const
+  const real_type& getValue() const
   {
     OpenFDMAssert(mNumericPortValue);
     OpenFDMAssert(size(mNumericPortValue->getValue()) == Size(1, 1));
     return mNumericPortValue->getValue()(0, 0);
   }
+
+  operator const real_type&() const
+  { return getValue(); }
 
 private: 
   SharedPtr<const NumericPortValue> mNumericPortValue;
@@ -61,18 +64,23 @@ public:
   bool isConnected() const
   { return mNumericPortValue; }
 
+  const real_type& getValue() const
+  {
+    OpenFDMAssert(mNumericPortValue);
+    OpenFDMAssert(size(mNumericPortValue->getValue()) == Size(1, 1));
+    return mNumericPortValue->getValue()(0, 0);
+  }
+  real_type& getValue()
+  {
+    OpenFDMAssert(mNumericPortValue);
+    OpenFDMAssert(size(mNumericPortValue->getValue()) == Size(1, 1));
+    return mNumericPortValue->getValue()(0, 0);
+  }
+
   operator const real_type&() const
-  {
-    OpenFDMAssert(mNumericPortValue);
-    OpenFDMAssert(size(mNumericPortValue->getValue()) == Size(1, 1));
-    return mNumericPortValue->getValue()(0, 0);
-  }
+  { return getValue(); }
   operator real_type&()
-  {
-    OpenFDMAssert(mNumericPortValue);
-    OpenFDMAssert(size(mNumericPortValue->getValue()) == Size(1, 1));
-    return mNumericPortValue->getValue()(0, 0);
-  }
+  { return getValue(); }
   RealOutputPortHandle& operator=(const real_type& value)
   {
     OpenFDMAssert(mNumericPortValue);
@@ -94,11 +102,14 @@ public:
   bool isConnected() const
   { return mNumericPortValue; }
 
-  operator const Matrix&() const
+  const Matrix& getValue() const
   {
     OpenFDMAssert(mNumericPortValue);
     return mNumericPortValue->getValue();
   }
+
+  operator const Matrix&() const
+  { return getValue(); }
 
 private: 
   SharedPtr<const NumericPortValue> mNumericPortValue;
@@ -113,16 +124,22 @@ public:
   bool isConnected() const
   { return mNumericPortValue; }
 
+  const Matrix& getValue() const
+  {
+    OpenFDMAssert(mNumericPortValue);
+    return mNumericPortValue->getValue();
+  }
+  Matrix& getValue()
+  {
+    OpenFDMAssert(mNumericPortValue);
+    return mNumericPortValue->getValue();
+  }
+
+
   operator const Matrix&() const
-  {
-    OpenFDMAssert(mNumericPortValue);
-    return mNumericPortValue->getValue();
-  }
+  { return getValue(); }
   operator Matrix&()
-  {
-    OpenFDMAssert(mNumericPortValue);
-    return mNumericPortValue->getValue();
-  }
+  { return getValue(); }
   template<typename Impl, LinAlg::size_type m, LinAlg::size_type n>
   MatrixOutputPortHandle& operator=(const LinAlg::MatrixRValue<Impl,m,n>& value)
   {

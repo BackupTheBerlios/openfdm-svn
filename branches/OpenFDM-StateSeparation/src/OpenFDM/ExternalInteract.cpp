@@ -36,7 +36,28 @@ public:
   Context(const ExternalInteract* externalInteract,
           const Environment* environment, PortValueList& portValueList) :
     SingleLinkInteract::Context(externalInteract, environment, portValueList),
-    mExternalInteract(externalInteract)
+    mExternalInteract(externalInteract),
+    mPosition(portValueList.getPortValue(externalInteract->mPositionPort)),
+    mOrientation(portValueList.getPortValue(externalInteract->mOrientationPort)),
+    mEulerAngles(portValueList.getPortValue(externalInteract->mEulerAnglesPort)),
+    mBodyLinearVelocity(portValueList.getPortValue(externalInteract->mBodyLinearVelocityPort)),
+    mBodyAngularVelocity(portValueList.getPortValue(externalInteract->mBodyAngularVelocityPort)),
+    mGlobalLinearVelocity(portValueList.getPortValue(externalInteract->mGlobalLinearVelocityPort)),
+    mGlobalAngularVelocity(portValueList.getPortValue(externalInteract->mGlobalAngularVelocityPort)),
+    mBodyCentrifugalAcceleration(portValueList.getPortValue(externalInteract->mBodyCentrifugalAccelerationPort)),
+    mBodyLoad(portValueList.getPortValue(externalInteract->mBodyLoadPort)),
+    mBodyWindVelocity(portValueList.getPortValue(externalInteract->mBodyWindVelocityPort)),
+    mGlobalWindVelocity(portValueList.getPortValue(externalInteract->mGlobalWindVelocityPort)),
+    mTemperature(portValueList.getPortValue(externalInteract->mTemperaturePort)),
+    mPressure(portValueList.getPortValue(externalInteract->mPressurePort)),
+    mDensity(portValueList.getPortValue(externalInteract->mDensityPort)),
+    mSoundSpeed(portValueList.getPortValue(externalInteract->mSoundSpeedPort)),
+    mAltitude(portValueList.getPortValue(externalInteract->mAltitudePort)),
+    mAboveGroundLevel(portValueList.getPortValue(externalInteract->mAboveGroundLevelPort)),
+    mBodyForce(portValueList.getPortValue(externalInteract->mBodyForcePort)),
+    mBodyTorque(portValueList.getPortValue(externalInteract->mBodyTorquePort)),
+    mGlobalForce(portValueList.getPortValue(externalInteract->mGlobalForcePort)),
+    mGlobalTorque(portValueList.getPortValue(externalInteract->mGlobalTorquePort))
   { }
   virtual ~Context() {}
     
@@ -45,19 +66,156 @@ public:
   
   virtual void velocities(const Task& task)
   {
-    mExternalInteract->velocity(task, getEnvironment(), mContinousState, mPortValueList);
+    const CoordinateSystem& cs = getLink().getCoordinateSystem();
+
+    // The global coordinates position
+    Vector3 refPosition = getLink().getRefPos();
+    if (mPosition.isConnected())
+      mPosition = refPosition;
+    
+    if (mOrientation.isConnected())
+      mOrientation = getLink().getRefOr();
+    
+    if (mEulerAngles.isConnected())
+      mEulerAngles = getLink().getRefOr().getEuler();
+    
+    // Velocity related sensing
+    bool enableBodyAngularVelocity = mBodyAngularVelocity.isConnected();
+    bool enableGlobalAngularVelocity = mGlobalAngularVelocity.isConnected();
+    bool enableBodyLinearVelocity = mBodyLinearVelocity.isConnected();
+    bool enableGlobalLinearVelocity = mGlobalLinearVelocity.isConnected();
+    bool enableBodyWindVelocity = mBodyWindVelocity.isConnected();
+    bool enableGlobalWindVelocity = mGlobalWindVelocity.isConnected();
+    if (enableBodyAngularVelocity || enableBodyLinearVelocity
+        || enableGlobalAngularVelocity || enableGlobalLinearVelocity
+        || enableBodyWindVelocity || enableGlobalWindVelocity) {
+      Vector6 refVelocity = getLink().getRefVel();
+      if (enableBodyAngularVelocity)
+        mBodyAngularVelocity = refVelocity.getAngular();
+      if (enableGlobalAngularVelocity)
+        mGlobalAngularVelocity = cs.rotToReference(refVelocity.getAngular());
+      
+      if (enableBodyLinearVelocity)
+        mBodyLinearVelocity = refVelocity.getLinear();
+      if (enableGlobalLinearVelocity)
+        mGlobalLinearVelocity = cs.rotToReference(refVelocity.getLinear());
+      
+      // Wind sensing
+      if (enableBodyWindVelocity || enableGlobalWindVelocity) {
+        Vector6 wind = getEnvironment().getWindVelocity(task.getTime(),
+                                                        refPosition);
+        wind = Vector6(cs.rotToLocal(wind.getAngular()),
+                       cs.rotToLocal(wind.getLinear()));
+        wind -= refVelocity;
+        if (enableBodyWindVelocity)
+          mBodyWindVelocity = wind.getLinear();
+        if (enableGlobalWindVelocity)
+          mGlobalWindVelocity = cs.rotToReference(wind.getLinear());
+      }
+    }
+    
+    // Atmosphere related sensing
+    bool enableAltitude = mAltitude.isConnected();
+    
+    bool enableTemperature = mTemperature.isConnected();
+    bool enablePressure = mPressure.isConnected();
+    bool enableDensity = mDensity.isConnected();
+    bool enableSoundSpeed = mSoundSpeed.isConnected();
+    bool enableAtmosphere = (enableTemperature || enablePressure ||
+                             enableDensity || enableSoundSpeed);
+    if (enableAltitude || enableAtmosphere) {
+      real_type altitude = getEnvironment().getAltitude(refPosition);
+      if (enableAltitude)
+        mAltitude = altitude;
+      
+      if (enableAtmosphere) {
+        const AbstractAtmosphere* atmosphere = getEnvironment().getAtmosphere();
+        AtmosphereData data = atmosphere->getData(task.getTime(), altitude);
+        if (enableTemperature)
+          mTemperature = data.temperature;
+        if (enablePressure)
+          mPressure = data.pressure;
+        if (enableDensity)
+          mDensity = data.density;
+        if (enableSoundSpeed)
+          mSoundSpeed = atmosphere->getSoundSpeed(data.temperature);
+      }
+    }
+    
+    if (mAboveGroundLevel.isConnected()) {
+      real_type agl;
+      agl = getEnvironment().getAboveGroundLevel(task.getTime(), refPosition);
+      mAboveGroundLevel = agl;
+    }
   }
   virtual void articulation(const Task& task)
   {
-    mExternalInteract->articulation(task, getEnvironment(), mContinousState, mPortValueList);
+    // Apply all the forces ...
+    if (mBodyForce.isConnected())
+      getLink().applyBodyForce(Vector3(mBodyForce.getValue()));
+
+    if (mBodyTorque.isConnected())
+      getLink().applyBodyTorque(Vector3(mBodyTorque.getValue()));
+
+    if (mGlobalForce.isConnected())
+      getLink().applyGlobalForce(Vector3(mGlobalForce.getValue()));
+
+    if (mGlobalTorque.isConnected())
+      getLink().applyGlobalTorque(Vector3(mGlobalTorque.getValue()));
   }
   virtual void accelerations(const Task& task)
   {
-    mExternalInteract->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
+    bool enableBodyCentrifugalAcceleration
+      = mBodyCentrifugalAcceleration.isConnected();
+    bool enableBodyLoad = mBodyLoad.isConnected();
+    if (enableBodyCentrifugalAcceleration || enableBodyLoad) {
+      Vector6 spatialVel = getLink().getSpVel();
+      Vector6 spatialAccel = getLink().getSpAccel();
+      Vector3 centrifugalAccel = spatialAccel.getLinear();
+      centrifugalAccel += cross(spatialVel.getAngular(),spatialVel.getLinear());
+
+      if (enableBodyCentrifugalAcceleration)
+        mBodyCentrifugalAcceleration = centrifugalAccel;
+      if (enableBodyLoad) {
+        // May be cache that from the velocity step??
+        Vector3 refPosition = getLink().getRefPos();
+        Vector3 gravity = getEnvironment().getGravityAcceleration(refPosition);
+        gravity = getLink().getCoordinateSystem().rotToLocal(gravity);
+        mBodyLoad = centrifugalAccel - gravity;
+      }
+    }
   }
   
 private:
   SharedPtr<const ExternalInteract> mExternalInteract;
+
+  MatrixOutputPortHandle mPosition;
+  MatrixOutputPortHandle mOrientation;
+  MatrixOutputPortHandle mEulerAngles;
+
+  MatrixOutputPortHandle mBodyLinearVelocity;
+  MatrixOutputPortHandle mBodyAngularVelocity;
+  MatrixOutputPortHandle mGlobalLinearVelocity;
+  MatrixOutputPortHandle mGlobalAngularVelocity;
+
+  MatrixOutputPortHandle mBodyCentrifugalAcceleration;
+  MatrixOutputPortHandle mBodyLoad;
+
+  MatrixOutputPortHandle mBodyWindVelocity;
+  MatrixOutputPortHandle mGlobalWindVelocity;
+
+  RealOutputPortHandle mTemperature;
+  RealOutputPortHandle mPressure;
+  RealOutputPortHandle mDensity;
+  RealOutputPortHandle mSoundSpeed;
+
+  RealOutputPortHandle mAltitude;
+  RealOutputPortHandle mAboveGroundLevel;
+
+  MatrixInputPortHandle mBodyForce;
+  MatrixInputPortHandle mBodyTorque;
+  MatrixInputPortHandle mGlobalForce;
+  MatrixInputPortHandle mGlobalTorque;
 };
 
 ExternalInteract::ExternalInteract(const std::string& name) :
@@ -71,7 +229,7 @@ ExternalInteract::~ExternalInteract(void)
 
 MechanicContext*
 ExternalInteract::newMechanicContext(const Environment* environment,
-                           PortValueList& portValueList) const
+                                     PortValueList& portValueList) const
 {
   SharedPtr<Context> context = new Context(this, environment, portValueList);
   if (!context->alloc()) {
@@ -80,155 +238,6 @@ ExternalInteract::newMechanicContext(const Environment* environment,
     return 0;
   }
   return context.release();
-}
-
-void
-ExternalInteract::velocity(const Task& task, const Environment& environment,
-                 const ContinousStateValueVector&,
-                 PortValueList& portValues) const
-{
-  const Frame& frame = portValues[mMechanicLink].getFrame();
-
-  // FIXME, for now relative position
-  Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
-  Vector3 refPosition = frame.posToRef(position);
-
-  if (getEnablePosition())
-    portValues[mPositionPort] = refPosition;
-
-  if (getEnableOrientation())
-    portValues[mOrientationPort] = frame.getRefOrientation();
-
-  if (getEnableEulerAngles())
-    portValues[mEulerAnglesPort] = frame.getRefOrientation().getEuler();
-
-  // Velocity related sensing
-  bool enableBodyAngularVelocity = getEnableBodyAngularVelocity();
-  bool enableGlobalAngularVelocity = getEnableGlobalAngularVelocity();
-  bool enableBodyLinearVelocity = getEnableBodyLinearVelocity();
-  bool enableGlobalLinearVelocity = getEnableGlobalLinearVelocity();
-  bool enableBodyWindVelocity = getEnableBodyWindVelocity();
-  bool enableGlobalWindVelocity = getEnableGlobalWindVelocity();
-  if (enableBodyAngularVelocity || enableBodyLinearVelocity
-      || enableGlobalAngularVelocity || enableGlobalLinearVelocity
-      || enableBodyWindVelocity || enableGlobalWindVelocity) {
-    Vector6 refVelocity = motionTo(position, frame.getRefVel());
-    if (enableBodyAngularVelocity)
-      portValues[mBodyAngularVelocityPort] = refVelocity.getAngular();
-    if (enableGlobalAngularVelocity)
-      portValues[mGlobalAngularVelocityPort]
-        = frame.rotToRef(refVelocity.getAngular());
-    
-    if (enableBodyLinearVelocity)
-      portValues[mBodyLinearVelocityPort] = refVelocity.getLinear();
-    if (enableGlobalLinearVelocity)
-      portValues[mGlobalLinearVelocityPort]
-        = frame.rotToRef(refVelocity.getLinear());
-
-    // Wind sensing
-    if (enableBodyWindVelocity || enableGlobalWindVelocity) {
-      Vector6 wind = environment.getWindVelocity(task.getTime(), position);
-      wind = Vector6(frame.rotFromRef(wind.getAngular()),
-                     frame.rotFromRef(wind.getLinear()));
-      wind -= refVelocity;
-      if (enableBodyWindVelocity)
-        portValues[mBodyWindVelocityPort] = wind.getLinear();
-      if (enableGlobalWindVelocity)
-        portValues[mGlobalWindVelocityPort] = frame.rotToRef(wind.getLinear());
-    }
-  }
-
-  // Atmosphere related sensing
-  bool enableAltitude = getEnableAltitude();
-  
-  bool enableTemperature = getEnableTemperature();
-  bool enablePressure = getEnablePressure();
-  bool enableDensity = getEnableDensity();
-  bool enableSoundSpeed = getEnableSoundSpeed();
-  bool enableAtmosphere = (enableTemperature || enablePressure ||
-                           enableDensity || enableSoundSpeed);
-  if (enableAltitude || enableAtmosphere) {
-    real_type altitude = environment.getAltitude(refPosition);
-    if (enableAltitude)
-      portValues[mAltitudePort] = altitude;
-
-    if (enableAtmosphere) {
-      const AbstractAtmosphere* atmosphere = environment.getAtmosphere();
-      AtmosphereData data = atmosphere->getData(task.getTime(), altitude);
-      if (enableTemperature)
-        portValues[mTemperaturePort] = data.temperature;
-      if (enablePressure)
-        portValues[mPressurePort] = data.pressure;
-      if (enableDensity)
-        portValues[mDensityPort] = data.density;
-      if (enableSoundSpeed)
-        portValues[mSoundSpeedPort]
-          = atmosphere->getSoundSpeed(data.temperature);
-    }
-  }
-
-  if (getEnableAboveGroundLevel()) {
-    real_type agl;
-    agl = environment.getAboveGroundLevel(task.getTime(), refPosition);
-    portValues[mAboveGroundLevelPort] = agl;
-  }
-}
-
-void
-ExternalInteract::articulation(const Task&, const Environment&,
-                     const ContinousStateValueVector&,
-                     PortValueList& portValues) const
-{
-  const Frame& frame = portValues[mMechanicLink].getFrame();
-  // FIXME, for now relative position
-  Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
-  
-  if (getEnableBodyForce()) {
-    Vector3 force = portValues[mBodyForcePort];
-    portValues[mMechanicLink].applyForce(position, force);
-  }
-  if (getEnableBodyTorque()) {
-    Vector3 torque = portValues[mBodyTorquePort];
-    portValues[mMechanicLink].applyTorque(torque);
-  }
-  if (getEnableGlobalForce()) {
-    Vector3 force = portValues[mGlobalForcePort];
-    portValues[mMechanicLink].applyForce(position, frame.rotFromRef(force));
-  }
-  if (getEnableGlobalTorque()) {
-    Vector3 torque = portValues[mGlobalTorquePort];
-    portValues[mMechanicLink].applyTorque(frame.rotFromRef(torque));
-  }
-}
-
-void
-ExternalInteract::acceleration(const Task&, const Environment& environment,
-                     const ContinousStateValueVector&,
-                     PortValueList& portValues) const
-{
-  const Frame& frame = portValues[mMechanicLink].getFrame();
-
-  // FIXME, for now relative position
-  Vector3 position = mPosition - portValues[mMechanicLink].getDesignPosition();
-
-  bool enableBodyCentrifugalAcceleration=getEnableBodyCentrifugalAcceleration();
-  bool enableBodyLoad = getEnableBodyLoad();
-  if (enableBodyCentrifugalAcceleration || enableBodyLoad) {
-    Vector6 spatialVel = motionTo(position, frame.getSpVel());
-    Vector6 spatialAccel = motionTo(position, frame.getSpAccel());
-    Vector3 centrifugalAccel = spatialAccel.getLinear();
-    centrifugalAccel += cross(spatialVel.getAngular(), spatialVel.getLinear());
-
-    if (enableBodyCentrifugalAcceleration)
-      portValues[mBodyCentrifugalAccelerationPort] = centrifugalAccel;
-    if (enableBodyLoad) {
-      // May be cache that from the velocity step??
-      Vector3 refPosition = frame.posToRef(position);
-      Vector3 gravity = environment.getGravityAcceleration(refPosition);
-      gravity = frame.rotFromRef(gravity);
-      portValues[mBodyLoadPort] = centrifugalAccel - gravity;
-    }
-  }
 }
 
 void

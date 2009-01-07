@@ -193,11 +193,21 @@ public:
     OpenFDMAssert(isConnected());
     return mMechanicLinkValue->getCoordinateSystem().toReference(mLinkRelPos);
   }
+  const Rotation& getRefOr() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getCoordinateSystem().getOrientation();
+  }
 
   Vector6 getSpVelAtLink() const
   {
     OpenFDMAssert(isConnected());
     return mMechanicLinkValue->getSpVel();
+  }
+  Vector6 getSpAccelAtLink() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getSpAccel();
   }
   Vector6 getSpVel() const
   {
@@ -208,6 +218,11 @@ public:
   {
     OpenFDMAssert(isConnected());
     return mMechanicLinkValue->getReferenceVelocity(mLinkRelPos);
+  }
+  Vector6 getSpAccel() const
+  {
+    OpenFDMAssert(isConnected());
+    return motionTo(mLinkRelPos, mMechanicLinkValue->getSpAccel());
   }
 
   void setDesignPosition(const Vector3& position)
@@ -243,6 +258,30 @@ public:
     OpenFDMAssert(isConnected());
     mMechanicLinkValue->applyTorque(torque);
   }
+
+
+  void applyGlobalForce(const Vector3& force)
+  {
+    OpenFDMAssert(isConnected());
+    const CoordinateSystem& cs = mMechanicLinkValue->getCoordinateSystem();
+    Vector3 bodyForce = cs.rotToLocal(force);
+    mMechanicLinkValue->applyForce(mLinkRelPos, bodyForce);
+  }
+  void applyGlobalForce(const Vector3& bodyPosition, const Vector3& force)
+  {
+    OpenFDMAssert(isConnected());
+    const CoordinateSystem& cs = mMechanicLinkValue->getCoordinateSystem();
+    Vector3 bodyForce = cs.rotToLocal(force);
+    mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, bodyForce);
+  }
+
+  void applyGlobalTorque(const Vector3& torque)
+  {
+    OpenFDMAssert(isConnected());
+    const CoordinateSystem& cs = mMechanicLinkValue->getCoordinateSystem();
+    mMechanicLinkValue->applyTorque(cs.rotToLocal(torque));
+  }
+
 
   void applyForceAtLink(const Vector6& force)
   {

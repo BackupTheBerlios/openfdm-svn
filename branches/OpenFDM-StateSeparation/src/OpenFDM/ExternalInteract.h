@@ -24,16 +24,6 @@ public:
   virtual MechanicContext*
   newMechanicContext(const Environment*, PortValueList&) const;
 
-  virtual void velocity(const Task&, const Environment&,
-                        const ContinousStateValueVector&,
-                        PortValueList&) const;
-  virtual void articulation(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const;
-  virtual void acceleration(const Task&, const Environment&,
-                            const ContinousStateValueVector&,
-                            PortValueList&) const;
-
   /// Set availabilty of the position output port
   void setEnablePosition(bool enable);
   /// Get availabilty of the position output port
