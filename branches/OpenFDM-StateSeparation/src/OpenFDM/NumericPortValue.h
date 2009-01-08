@@ -144,7 +144,7 @@ public:
   MatrixOutputPortHandle& operator=(const LinAlg::MatrixRValue<Impl,m,n>& value)
   {
     OpenFDMAssert(mNumericPortValue);
-    OpenFDMAssert(size(mNumericPortValue->getValue()) == Size(value));
+    OpenFDMAssert(size(mNumericPortValue->getValue()) == size(value));
     mNumericPortValue->getValue() = value;
     return *this;
   }
