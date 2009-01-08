@@ -349,11 +349,8 @@ private:
       mMechanicLinkValue(mechanicLinkValue),
       _group(parent, name),
       _position(_group, "position", Size(3, 1)),
-      _refPosition(_group, "refPosition", Size(3, 1)),
       _orientation(_group, "orientation", Size(4, 1)),
       _eulerAngle(_group, "eulerAngles", Size(3, 1)),
-      _refOrientation(_group, "refOrientation", Size(4, 1)),
-      _refEulerAngle(_group, "refEulerAngles", Size(3, 1)),
       _velocity(_group, "velocity", Size(6, 1)),
       _refVelocity(_group, "refVelocity", Size(6, 1)),
       _acceleration(_group, "acceleration", Size(6, 1)),
@@ -362,12 +359,10 @@ private:
     { }
     virtual void append()
     {
-      _position.append(mMechanicLinkValue->getFrame().getPosition());
-      _refPosition.append(mMechanicLinkValue->getCoordinateSystem().getPosition());
-      _orientation.append(mMechanicLinkValue->getFrame().getOrientation());
-      _eulerAngle.append(mMechanicLinkValue->getFrame().getOrientation().getEuler());
-      _refOrientation.append(mMechanicLinkValue->getCoordinateSystem().getOrientation());
-      _refEulerAngle.append(mMechanicLinkValue->getCoordinateSystem().getOrientation().getEuler());
+      const CoordinateSystem& cs = mMechanicLinkValue->getCoordinateSystem();
+      _position.append(cs.getPosition());
+      _orientation.append(cs.getOrientation());
+      _eulerAngle.append(cs.getOrientation().getEuler());
       _velocity.append(mMechanicLinkValue->getFrame().getSpVel());
       _refVelocity.append(mMechanicLinkValue->getFrame().getRefVel());
       _acceleration.append(mMechanicLinkValue->getFrame().getSpAccel());
@@ -380,11 +375,8 @@ private:
     SharedPtr<const MechanicLinkValue> mMechanicLinkValue;
     HDF5Group _group;
     HDFMatrixStream _position;
-    HDFMatrixStream _refPosition;
     HDFMatrixStream _orientation;
     HDFMatrixStream _eulerAngle;
-    HDFMatrixStream _refOrientation;
-    HDFMatrixStream _refEulerAngle;
     HDFMatrixStream _velocity;
     HDFMatrixStream _refVelocity;
     HDFMatrixStream _acceleration;
