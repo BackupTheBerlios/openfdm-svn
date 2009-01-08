@@ -145,6 +145,28 @@ public:
   { mMechanicLinkValue->setPosAndVel(link, position, orientation, velocity); }
   void setAccel(const MechanicLinkValue& link, const Vector6& accel)
   { mMechanicLinkValue->setAccel(link, accel); }
+
+  void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->setCoordinateSystem(coordinateSystem);
+  }
+  const CoordinateSystem& getCoordinateSystem() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getCoordinateSystem();
+  }
+
+  const Vector6& getForce() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getForce();
+  }
+  const SpatialInertia& getInertia() const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getInertia();
+  }
  
 private:
   SharedPtr<MechanicLinkValue> mMechanicLinkValue;

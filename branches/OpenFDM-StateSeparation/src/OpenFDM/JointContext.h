@@ -52,6 +52,14 @@ public:
   virtual const PortValue* getPortValue(const PortInfo& portInfo) const
   {  return mPortValueList.getPortValue(portInfo); }
     
+  ParentLink& getParentLink()
+  { return mParentLink; }
+  ChildLink& getChildLink()
+  { return mChildLink; }
+
+  Vector6 getHdot() const
+  { return mChildLink.getMechanicLinkValue().getFrame().getHdot(); }
+    
 protected:
   // PortValues
   PortValueList mPortValueList;
@@ -62,8 +70,8 @@ protected:
   // Discrete States
   DiscreteStateValueVector mDiscreteState;
 
-  SharedPtr<MechanicLinkValue> mParentLink;
-  SharedPtr<MechanicLinkValue> mChildLink;
+  ParentLink mParentLink;
+  ChildLink mChildLink;
 };
 
 } // namespace OpenFDM

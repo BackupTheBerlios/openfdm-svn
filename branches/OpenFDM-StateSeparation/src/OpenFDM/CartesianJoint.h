@@ -58,8 +58,8 @@ public:
 protected:
   CartesianJoint(const std::string& name) :
     Joint(name),
-    mParentLink(newMechanicLink("link0")),
-    mChildLink(newMechanicLink("link1"))
+    mParentLink(new MechanicLinkInfo(this, "link0")),
+    mChildLink(new MechanicLinkInfo(this, "link1"))
   { }
   virtual ~CartesianJoint(void)
   { }
@@ -99,10 +99,8 @@ protected:
     
     virtual void initDesignPosition()
     {
-      Vector3 jointPosition = mCartesianJoint->getPosition();
-      mRelativeDesignPosition = jointPosition-mParentLink->getDesignPosition();
-      mChildLink->setDesignPosition(jointPosition);
-
+      mParentLink.setDesignPosition(mCartesianJoint->getPosition());
+      mChildLink.setDesignPosition(mCartesianJoint->getPosition());
       mJointMatrix = mCartesianJoint->getJointMatrix();
     }
 
@@ -137,14 +135,15 @@ protected:
                       const VectorN& velocity)
     {
       // Set up the local coordinate system of the joint
-      mRelativeCoordinateSystem.setPosition(mRelativeDesignPosition + position);
+      mRelativeCoordinateSystem.setPosition(mParentLink.getLinkRelPos() + position);
       mRelativeCoordinateSystem.setOrientation(orientation);
 
       // Propagate the reference coordinate system to the parent.
-      mChildLink->setCoordinateSystem(mParentLink->getCoordinateSystem().toReference(mRelativeCoordinateSystem));
+      mChildLink.setCoordinateSystem(mParentLink.getCoordinateSystem().toReference(mRelativeCoordinateSystem));
 
-      mChildLink->setPosAndVel(*mParentLink, mRelativeDesignPosition + position,
-                               orientation, mJointMatrix*velocity);
+      mChildLink.setPosAndVel(mParentLink.getMechanicLinkValue(),
+                              mParentLink.getLinkRelPos() + position,
+                              orientation, mJointMatrix*velocity);
     }
 
     /** Compute the articulation step for a given joint force.
@@ -158,7 +157,7 @@ protected:
     
       // Store the outboard values since we will need them later in velocity
       // derivative computations
-      SpatialInertia I = mChildLink->getInertia();
+      SpatialInertia I = mChildLink.getInertia();
       
       // Compute the projection to the joint coordinate space
       Matrix6N Ih = I*mJointMatrix;
@@ -166,7 +165,7 @@ protected:
 
       // Note that the momentum of the local mass is already included in the
       // child links force due the the mass model ...
-      pAlpha = mChildLink->getForce() + I*mChildLink->getFrame().getHdot();
+      pAlpha = mChildLink.getForce() + I*getHdot();
       
       if (hIh.singular()) {
         Log(ArtBody,Error) << "Detected singular mass matrix for "
@@ -183,8 +182,8 @@ protected:
       // Transform to parent link's coordinates and apply to the parent link
       force = mRelativeCoordinateSystem.forceToReference(force);
       I = mRelativeCoordinateSystem.inertiaToReference(I);
-      mParentLink->addForce(force);
-      mParentLink->addInertia(I);
+      mParentLink.addForceAtLink(force);
+      mParentLink.addInertiaAtLink(I);
     }
 
     /** Compute the acceleration step for a given joint force.
@@ -192,12 +191,16 @@ protected:
      */
     void accelerateDueToForce()
     {
-      Vector6 parentSpAccel = mParentLink->getFrame().getSpAccel();
+      if (hIh.singular())
+        return;
+
+      Vector6 parentSpAccel = mParentLink.getSpAccelAtLink();
       parentSpAccel = mRelativeCoordinateSystem.motionToLocal(parentSpAccel);
 
-      Vector6 f = mChildLink->getInertia()*parentSpAccel + pAlpha;
+      Vector6 f = mChildLink.getInertia()*parentSpAccel + pAlpha;
       velDot = hIh.solve(mJointForce - trans(mJointMatrix)*f);
-      mChildLink->setAccel(*mParentLink, mJointMatrix*velDot);
+      mChildLink.setAccel(mParentLink.getMechanicLinkValue(),
+                          mJointMatrix*velDot);
     }
   
     /** Compute the articulation step for a given velocity derivative.
@@ -212,15 +215,15 @@ protected:
       // Compute the articulated force and inertia.
       // This Since there is no projection step with the joint axis, it is clear
       // that this is just a rigid connection ...
-      SpatialInertia I = mChildLink->getInertia();
-      Vector6 force = mChildLink->getForce();
-      force += I*(mChildLink->getFrame().getHdot() + mJointMatrix*velDot);
+      SpatialInertia I = mChildLink.getInertia();
+      Vector6 force = mChildLink.getForce();
+      force += I*(getHdot() + mJointMatrix*velDot);
       
       // Transform to parent link's coordinates and apply to the parent link
       force = mRelativeCoordinateSystem.forceToReference(force);
       I = mRelativeCoordinateSystem.inertiaToReference(I);
-      mParentLink->addForce(force);
-      mParentLink->addInertia(I);
+      mParentLink.addForceAtLink(force);
+      mParentLink.addInertiaAtLink(I);
     }
     
     /** Compute the acceleration step for a given velocity derivative.
@@ -228,12 +231,13 @@ protected:
      */
     void accelerateDueToVelDot()
     {
-      mChildLink->setAccel(*mParentLink, mJointMatrix*velDot);
+      mChildLink.setAccel(mParentLink.getMechanicLinkValue(),
+                          mJointMatrix*velDot);
     }
 
     const VectorN& getVelDot() const
     { return velDot; }
-    
+
   private:
     // Stores some values persistent accross velocity/articulation/acceleration
     MatrixFactorsNN hIh;
@@ -241,7 +245,6 @@ protected:
     VectorN velDot;
     VectorN mJointForce;
 
-    Vector3 mRelativeDesignPosition;
     CoordinateSystem mRelativeCoordinateSystem;
 
     Matrix6N mJointMatrix;
@@ -250,8 +253,8 @@ protected:
   };
   
 private:
-  MechanicLink mParentLink;
-  MechanicLink mChildLink;
+  SharedPtr<MechanicLinkInfo> mParentLink;
+  SharedPtr<MechanicLinkInfo> mChildLink;
 };
 
 } // namespace OpenFDM
