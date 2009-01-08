@@ -31,7 +31,7 @@ public:
             PortValueList& portValueList) :
       MechanicContext(environment),
       mPortValueList(portValueList),
-      mLink(portValueList.getPortValue(interact->mMechanicLink))
+      mLink(portValueList.getPortValue(*interact->mMechanicLink))
     {
       OpenFDMAssert(mLink.isConnected());
     }
@@ -92,8 +92,7 @@ public:
   const Vector3& getPosition() const;
 
 protected:
-  MechanicLink mMechanicLink;
-
+  SharedPtr<MechanicLinkInfo> mMechanicLink;
   Vector3 mPosition;
 };
 

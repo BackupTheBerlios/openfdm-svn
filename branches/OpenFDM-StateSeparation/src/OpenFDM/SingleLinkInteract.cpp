@@ -12,7 +12,7 @@ BEGIN_OPENFDM_OBJECT_DEF(SingleLinkInteract, Interact)
 
 SingleLinkInteract::SingleLinkInteract(const std::string& name) :
   Interact(name),
-  mMechanicLink(this, "link"),
+  mMechanicLink(new MechanicLinkInfo(this, "link")),
   mPosition(0, 0, 0)
 {
 }

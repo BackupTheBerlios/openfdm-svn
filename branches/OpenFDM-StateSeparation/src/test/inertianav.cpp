@@ -22,94 +22,55 @@ public:
     mAccelerationPort(this, "acceleration", Size(6, 1), true)
   { }
 
-class Context : public SingleLinkInteract::Context {
-public:
-  Context(const AccelerationTracking* accelerationTracking,
-          const Environment* environment, PortValueList& portValueList) :
-    SingleLinkInteract::Context(accelerationTracking, environment, portValueList),
-    mAccelerationTracking(accelerationTracking)
-  { }
-  virtual ~Context() {}
+  class Context : public SingleLinkInteract::Context {
+  public:
+    Context(const AccelerationTracking* accelerationTracking,
+            const Environment* environment, PortValueList& portValueList) :
+      SingleLinkInteract::Context(accelerationTracking, environment, portValueList),
+      mAccelerationTracking(accelerationTracking)
+    { }
+    virtual ~Context() {}
     
-  virtual const AccelerationTracking& getNode() const
-  { return *mAccelerationTracking; }
-  
-  virtual void velocities(const Task& task)
-  {
-    mAccelerationTracking->velocity(task, getEnvironment(), mContinousState, mPortValueList);
-  }
-  virtual void articulation(const Task& task)
-  {
-//     mAccelerationTracking->articulation(task, getEnvironment(), mContinousState, mPortValueList);
-  }
-  virtual void accelerations(const Task& task)
-  {
-    mAccelerationTracking->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
-  }
-  
-private:
-  SharedPtr<const AccelerationTracking> mAccelerationTracking;
-};
-
-  virtual MechanicContext* newMechanicContext(const Environment* environment,
-                                              PortValueList& portValueList) const
-  {
-    SharedPtr<Context> context = new Context(this, environment, portValueList);
-    if (!context->alloc()) {
-      Log(Model, Warning) << "Could not alloc for model \""
-                          << getName() << "\"" << endl;
-      return 0;
-    }
-    return context.release();
-  }
-  
-  virtual void initDesignPosition(PortValueList&) const
-  {
-  }
-  virtual void velocity(const Task& task, const Environment& environment,
-                        const ContinousStateValueVector&,
-                        PortValueList&) const
-  {
-  }
-  virtual void acceleration(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList& portValues) const
-  {
-    Vector3 p1(0, 1, 0);
-    Vector3 p2(0, -1, 0);
-
-    const Frame& frame = portValues[mMechanicLink].getFrame();
-
-    CoordinateSystem csys0 = portValues[mMechanicLink].getCoordinateSystem();
-
-    CoordinateSystem csys1 = csys0.getRelative(p1);
-    CoordinateSystem csys2 = csys0.getRelative(p2);
-
-    Frame frame1;
-    frame1.setPosAndVel(frame, p1, Quaternion::unit(), Vector6::zeros());
-    frame1.setAccel(frame, Vector6::zeros());
-    Frame frame2;
-    frame2.setPosAndVel(frame, p2, Quaternion::unit(), Vector6::zeros());
-    frame2.setAccel(frame, Vector6::zeros());
-
-    Vector3 refPosition = csys0.getPosition();
-    Vector3 gravity = environment.getGravityAcceleration(refPosition);
-    gravity = frame.rotFromRef(gravity);
-
-    Vector3 a1 = frame1.getClassicAccel().getLinear() - gravity;
-    Vector3 a2 = frame2.getClassicAccel().getLinear() - gravity;
-   
-    /// Here we have constructed the synthetic example
-//     std::cout << trans(a1) << " " << trans(a2) << std::endl;
-
-    Vector6 v = frame.getSpVel();
-    Vector6 aExact = frame.getSpAccel();
-
-    Vector3 dp = p2 - p1;
+    virtual const AccelerationTracking& getNode() const
+    { return *mAccelerationTracking; }
     
-    Vector3 omega0 = v.getAngular();
-    Vector3 v0 = v.getLinear();
-    
+    virtual void accelerations(const Task& task)
+    {
+      Vector3 p1(0, 1, 0);
+      Vector3 p2(0, -1, 0);
+      
+      const Frame& frame = getLink().getMechanicLinkValue().getFrame();
+      
+      CoordinateSystem csys0 = getLink().getCoordinateSystem();
+      
+      CoordinateSystem csys1 = csys0.getRelative(p1);
+      CoordinateSystem csys2 = csys0.getRelative(p2);
+      
+      Frame frame1;
+      frame1.setPosAndVel(frame, p1, Quaternion::unit(), Vector6::zeros());
+      frame1.setAccel(frame, Vector6::zeros());
+      Frame frame2;
+      frame2.setPosAndVel(frame, p2, Quaternion::unit(), Vector6::zeros());
+      frame2.setAccel(frame, Vector6::zeros());
+      
+      Vector3 refPosition = csys0.getPosition();
+      Vector3 gravity = getEnvironment().getGravityAcceleration(refPosition);
+      gravity = frame.rotFromRef(gravity);
+      
+      Vector3 a1 = frame1.getClassicAccel().getLinear() - gravity;
+      Vector3 a2 = frame2.getClassicAccel().getLinear() - gravity;
+      
+      /// Here we have constructed the synthetic example
+      //     std::cout << trans(a1) << " " << trans(a2) << std::endl;
+      
+      Vector6 v = frame.getSpVel();
+      Vector6 aExact = frame.getSpAccel();
+      
+      Vector3 dp = p2 - p1;
+      
+      Vector3 omega0 = v.getAngular();
+      Vector3 v0 = v.getLinear();
+      
 //   Vector6 getClassicAccel(void) const
 //   {
 //     Vector6 iv = getSpVel();
@@ -146,25 +107,41 @@ private:
 //       - cross(omega0, cross(p2, omega0)) + cross(omega0, v0) - gravity;
 //     std::cout << trans(a1) << " " << trans(a1_) << std::endl;
 
-    Vector3 dpOmega = -(a2 - a1 + cross(omega0, cross(dp, omega0)));
+      Vector3 dpOmega = -(a2 - a1 + cross(omega0, cross(dp, omega0)));
 
 //     Vector3 dpOmegaExact = cross(dp, aExact.getAngular());
 //     std::cout << trans(dpOmega) << " " << trans(dpOmegaExact) << std::endl;
 
 
-    Vector3 omegaDot = crossKern(dp, dpOmega);
+      Vector3 omegaDot = crossKern(dp, dpOmega);
 
 //     std::cout << trans(dpOmega) << " " << trans(cross(dp, omegaDot)) << " " << std::endl;
 //     std::cout << trans(omegaDot) << " " << trans(aExact.getAngular()) << std::endl;
+      
+      Vector3 vDot1 = a1 + cross(p1, omegaDot) + cross(omega0, cross(p1, omega0)) - cross(omega0, v0) + gravity;
+      Vector3 vDot2 = a2 + cross(p2, omegaDot) + cross(omega0, cross(p2, omega0)) - cross(omega0, v0) + gravity;
+      
+      Vector6 a(omegaDot, vDot1);
+      
+      std::cout << trans(a) << " " << trans(frame.getSpAccel()) << std::endl;
+      
+      mPortValueList[mAccelerationTracking->mAccelerationPort] = a;
+    }
     
-    Vector3 vDot1 = a1 + cross(p1, omegaDot) + cross(omega0, cross(p1, omega0)) - cross(omega0, v0) + gravity;
-    Vector3 vDot2 = a2 + cross(p2, omegaDot) + cross(omega0, cross(p2, omega0)) - cross(omega0, v0) + gravity;
-
-    Vector6 a(omegaDot, vDot1);
-
-    std::cout << trans(a) << " " << trans(frame.getSpAccel()) << std::endl;
-
-    portValues[mAccelerationPort] = a;
+  private:
+    SharedPtr<const AccelerationTracking> mAccelerationTracking;
+  };
+  
+  virtual MechanicContext* newMechanicContext(const Environment* environment,
+                                              PortValueList& portValueList) const
+  {
+    SharedPtr<Context> context = new Context(this, environment, portValueList);
+    if (!context->alloc()) {
+      Log(Model, Warning) << "Could not alloc for model \""
+                          << getName() << "\"" << endl;
+      return 0;
+    }
+    return context.release();
   }
 
 protected:
