@@ -26,9 +26,7 @@ MechanicContext
   - May be an extra argument to the mechanical system functions?
   - May be have a 'RootLink' pointer/id in each MechanicLinkValue, and have
     an environment cache for each RootLink (std::map<RootLinkId, Cache>)??
-* Single link MechanicContext has a local coordinate system
 * Optimize inertia transforms.
-* Give Mass an own Context with a pretransformed Inertia
 
 * Check why harmonic is so bad ...
 * Clean up SampleTime/Fraction
