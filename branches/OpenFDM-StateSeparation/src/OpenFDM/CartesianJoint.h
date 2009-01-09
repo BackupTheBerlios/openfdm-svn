@@ -135,15 +135,15 @@ protected:
                       const VectorN& velocity)
     {
       // Set up the local coordinate system of the joint
-      mRelativeCoordinateSystem.setPosition(mParentLink.getLinkRelPos() + position);
+      Vector3 relPosition = mParentLink.getLinkRelPos() + position;
+      mRelativeCoordinateSystem.setPosition(relPosition);
       mRelativeCoordinateSystem.setOrientation(orientation);
 
       // Propagate the reference coordinate system to the parent.
       mChildLink.setCoordinateSystem(mParentLink.getCoordinateSystem().toReference(mRelativeCoordinateSystem));
 
       mChildLink.setPosAndVel(mParentLink.getMechanicLinkValue(),
-                              mParentLink.getLinkRelPos() + position,
-                              orientation, mJointMatrix*velocity);
+                              relPosition, orientation, mJointMatrix*velocity);
     }
 
     /** Compute the articulation step for a given joint force.
@@ -198,26 +198,26 @@ protected:
       parentSpAccel = mRelativeCoordinateSystem.motionToLocal(parentSpAccel);
 
       Vector6 f = mChildLink.getInertia()*parentSpAccel + pAlpha;
-      velDot = hIh.solve(mJointForce - trans(mJointMatrix)*f);
+      mVelDot = hIh.solve(mJointForce - trans(mJointMatrix)*f);
       mChildLink.setAccel(mParentLink.getMechanicLinkValue(),
-                          mJointMatrix*velDot);
+                          mJointMatrix*mVelDot);
     }
   
     /** Compute the articulation step for a given velocity derivative.
      *  Use this for actuators.
      */
-    void applyActuatorForce(const VectorN& _velDot)
+    void applyActuatorForce(const VectorN& velDot)
     {
       // The formulas conform to Roy Featherstones book eqn (7.36), (7.37)
       
-      velDot = _velDot;
+      mVelDot = velDot;
       
       // Compute the articulated force and inertia.
       // This Since there is no projection step with the joint axis, it is clear
       // that this is just a rigid connection ...
       SpatialInertia I = mChildLink.getInertia();
       Vector6 force = mChildLink.getForce();
-      force += I*(getHdot() + mJointMatrix*velDot);
+      force += I*(getHdot() + mJointMatrix*mVelDot);
       
       // Transform to parent link's coordinates and apply to the parent link
       force = mRelativeCoordinateSystem.forceToReference(force);
@@ -232,17 +232,17 @@ protected:
     void accelerateDueToVelDot()
     {
       mChildLink.setAccel(mParentLink.getMechanicLinkValue(),
-                          mJointMatrix*velDot);
+                          mJointMatrix*mVelDot);
     }
 
     const VectorN& getVelDot() const
-    { return velDot; }
+    { return mVelDot; }
 
   private:
     // Stores some values persistent accross velocity/articulation/acceleration
     MatrixFactorsNN hIh;
     Vector6 pAlpha;
-    VectorN velDot;
+    VectorN mVelDot;
     VectorN mJointForce;
 
     CoordinateSystem mRelativeCoordinateSystem;
