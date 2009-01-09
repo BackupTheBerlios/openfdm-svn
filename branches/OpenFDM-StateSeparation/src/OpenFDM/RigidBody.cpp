@@ -37,22 +37,20 @@ RigidBody::accept(ConstNodeVisitor& visitor) const
   visitor.handleNodePathAndApply(this);
 }
 
-const PortInfo*
+const MechanicLinkInfo*
 RigidBody::addLink(const std::string& name)
 {
-  // FIXME: simplify
-  MechanicLink mechanicLink = newMechanicLink(name);
-  mMechanicLinks.push_back(mechanicLink);
-  return getPort(mechanicLink.getPortIndex());
+  MechanicLinkInfo* mechanicLinkInfo = new MechanicLinkInfo(this, name);
+  mMechanicLinks.push_back(mechanicLinkInfo);
+  return mechanicLinkInfo;
 }
 
 void
-RigidBody::removeLink(const PortInfo* portInfo)
+RigidBody::removeLink(const MechanicLinkInfo* mechanicLinkInfo)
 {
-  // FIXME: simplify
-  MechanicLinkVector::iterator i = mMechanicLinks.begin();
+  MechanicLinkInfoVector::iterator i = mMechanicLinks.begin();
   while (i != mMechanicLinks.end()) {
-    if (getPort(i->getPortIndex()) == portInfo) {
+    if (i->get() == mechanicLinkInfo) {
       i->clear();
       i = mMechanicLinks.erase(i);
     } else

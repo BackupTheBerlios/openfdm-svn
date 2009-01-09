@@ -19,12 +19,12 @@ public:
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  const PortInfo* addLink(const std::string& name);
-  void removeLink(const PortInfo* portInfo);
+  const MechanicLinkInfo* addLink(const std::string& name);
+  void removeLink(const MechanicLinkInfo* mechanicLinkInfo);
 
 private:
-  typedef std::vector<MechanicLink> MechanicLinkVector;
-  MechanicLinkVector mMechanicLinks;
+  typedef std::vector<SharedPtr<MechanicLinkInfo> > MechanicLinkInfoVector;
+  MechanicLinkInfoVector mMechanicLinks;
 };
 
 } // namespace OpenFDM
