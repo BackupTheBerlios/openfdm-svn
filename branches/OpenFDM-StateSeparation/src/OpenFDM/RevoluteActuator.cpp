@@ -19,6 +19,8 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RevoluteActuator, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, InitialPosition, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, InitialVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, VelocityControl, Serialized)
   DEF_OPENFDM_PROPERTY(Real, MaxVel, Serialized)
   DEF_OPENFDM_PROPERTY(Real, VelGain, Serialized)
@@ -33,6 +35,8 @@ RevoluteActuator::RevoluteActuator(const std::string& name) :
   mPositionStateInfo(new Vector1StateInfo),
   mVelocityStateInfo(new Vector1StateInfo),
   mAxis(Vector3(1, 0, 0)),
+  mInitialPosition(0),
+  mInitialVelocity(0),
   mVelocityControl(false),
   mVelGain(1),
   mVelDotGain(1),
@@ -66,13 +70,85 @@ RevoluteActuator::setAxis(const Vector3& axis)
   mAxis = (1/nrm)*axis;
 }
 
+const real_type&
+RevoluteActuator::getInitialPosition() const
+{
+  return mInitialPosition;
+}
+
+void
+RevoluteActuator::setInitialPosition(const real_type& initialPosition)
+{
+  mInitialPosition = initialPosition;
+}
+
+const real_type&
+RevoluteActuator::getInitialVelocity() const
+{
+  return mInitialVelocity;
+}
+
+void
+RevoluteActuator::setInitialVelocity(const real_type& initialVelocity)
+{
+  mInitialVelocity = initialVelocity;
+}
+
+const bool&
+RevoluteActuator::getVelocityControl(void) const
+{
+  return mVelocityControl;
+}
+
+void
+RevoluteActuator::setVelocityControl(const bool& velocityControl)
+{
+  mVelocityControl = velocityControl;
+}
+
+const real_type&
+RevoluteActuator::getMaxVel(void) const
+{
+  return mMaxVel;
+}
+
+void
+RevoluteActuator::setMaxVel(const real_type& maxVel)
+{
+  mMaxVel = maxVel;
+}
+
+const real_type&
+RevoluteActuator::getVelGain(void) const
+{
+  return mVelGain;
+}
+
+void
+RevoluteActuator::setVelGain(const real_type& velGain)
+{
+  mVelGain = velGain;
+}
+
+const real_type&
+RevoluteActuator::getVelDotGain(void) const
+{
+  return mVelDotGain;
+}
+
+void
+RevoluteActuator::setVelDotGain(const real_type& velDotGain)
+{
+  mVelDotGain = velDotGain;
+}
+
 void
 RevoluteActuator::init(const Task&, DiscreteStateValueVector&,
                        ContinousStateValueVector& continousState,
                        const PortValueList&) const
 {
-  continousState[*mPositionStateInfo] = 0;
-  continousState[*mVelocityStateInfo] = 0;
+  continousState[*mPositionStateInfo] = mInitialPosition;
+  continousState[*mVelocityStateInfo] = mInitialVelocity;
 }
 
 RevoluteActuator::Matrix6N

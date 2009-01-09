@@ -33,6 +33,12 @@ public:
   const Vector3& getAxis() const;
   void setAxis(const Vector3& axis);
 
+  const real_type& getInitialPosition() const;
+  void setInitialPosition(const real_type& initialPosition);
+
+  const real_type& getInitialVelocity() const;
+  void setInitialVelocity(const real_type& initialVelocity);
+
   void setEnableExternalForce(bool enable);
   bool getEnableExternalForce() const;
 
@@ -65,6 +71,8 @@ private:
   SharedPtr<Vector1StateInfo> mVelocityStateInfo;
 
   Vector3 mAxis;
+  real_type mInitialPosition;
+  real_type mInitialVelocity;
 };
 
 } // namespace OpenFDM

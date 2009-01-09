@@ -19,6 +19,8 @@ namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(PrismaticJoint, Joint)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, InitialPosition, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, InitialVelocity, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 PrismaticJoint::PrismaticJoint(const std::string& name) :
@@ -27,7 +29,9 @@ PrismaticJoint::PrismaticJoint(const std::string& name) :
   mVelocityPort(this, "velocity", Size(1, 1)),
   mPositionStateInfo(new Vector1StateInfo),
   mVelocityStateInfo(new Vector1StateInfo),
-  mAxis(Vector3(1, 0, 0))
+  mAxis(Vector3(1, 0, 0)),
+  mInitialPosition(0),
+  mInitialVelocity(0)
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -57,6 +61,30 @@ PrismaticJoint::setAxis(const Vector3& axis)
   mAxis = (1/nrm)*axis;
 }
 
+const real_type&
+PrismaticJoint::getInitialPosition() const
+{
+  return mInitialPosition;
+}
+
+void
+PrismaticJoint::setInitialPosition(const real_type& initialPosition)
+{
+  mInitialPosition = initialPosition;
+}
+
+const real_type&
+PrismaticJoint::getInitialVelocity() const
+{
+  return mInitialVelocity;
+}
+
+void
+PrismaticJoint::setInitialVelocity(const real_type& initialVelocity)
+{
+  mInitialVelocity = initialVelocity;
+}
+
 void
 PrismaticJoint::setEnableExternalForce(bool enable)
 {
@@ -79,8 +107,8 @@ PrismaticJoint::init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector& continousState,
                     const PortValueList&) const
 {
-  continousState[*mPositionStateInfo] = 0;
-  continousState[*mVelocityStateInfo] = 0;
+  continousState[*mPositionStateInfo] = mInitialPosition;
+  continousState[*mVelocityStateInfo] = mInitialVelocity;
 }
 
 PrismaticJoint::Matrix6N

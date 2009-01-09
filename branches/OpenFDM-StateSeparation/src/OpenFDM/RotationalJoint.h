@@ -28,6 +28,12 @@ public:
   RotationalJoint(const std::string& name);
   virtual ~RotationalJoint(void);
 
+  const Quaternion& getInitialOrientation() const;
+  void setInitialOrientation(const Quaternion& initialOrientation);
+
+  const Vector3& getInitialVelocity() const;
+  void setInitialVelocity(const Vector3& initialVelocity);
+
   void setEnableExternalForce(bool enable);
   bool getEnableExternalForce() const;
 
@@ -59,6 +65,9 @@ private:
 
   SharedPtr<Vector4StateInfo> mPositionStateInfo;
   SharedPtr<Vector3StateInfo> mVelocityStateInfo;
+
+  Quaternion mInitialOrientation;
+  Vector3 mInitialVelocity;
 };
 
 } // namespace OpenFDM

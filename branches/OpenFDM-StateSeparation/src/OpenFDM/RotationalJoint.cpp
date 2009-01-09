@@ -18,6 +18,8 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(RotationalJoint, Joint)
+  DEF_OPENFDM_PROPERTY(Quaternion, InitialOrientation, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, InitialVelocity, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 RotationalJoint::RotationalJoint(const std::string& name) :
@@ -25,7 +27,9 @@ RotationalJoint::RotationalJoint(const std::string& name) :
   mOrientationPort(this, "orientation", Size(4, 1)),
   mVelocityPort(this, "velocity", Size(3, 1)),
   mPositionStateInfo(new Vector4StateInfo),
-  mVelocityStateInfo(new Vector3StateInfo)
+  mVelocityStateInfo(new Vector3StateInfo),
+  mInitialOrientation(Quaternion::unit()),
+  mInitialVelocity(Vector3::zeros())
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mVelocityStateInfo);
@@ -33,6 +37,30 @@ RotationalJoint::RotationalJoint(const std::string& name) :
 
 RotationalJoint::~RotationalJoint(void)
 {
+}
+
+const Quaternion&
+RotationalJoint::getInitialOrientation() const
+{
+  return mInitialOrientation;
+}
+
+void
+RotationalJoint::setInitialOrientation(const Quaternion& initialOrientation)
+{
+  mInitialOrientation = initialOrientation;
+}
+
+const Vector3&
+RotationalJoint::getInitialVelocity() const
+{
+  return mInitialVelocity;
+}
+
+void
+RotationalJoint::setInitialVelocity(const Vector3& initialVelocity)
+{
+  mInitialVelocity = initialVelocity;
 }
 
 void
@@ -57,8 +85,8 @@ RotationalJoint::init(const Task&, DiscreteStateValueVector&,
                       ContinousStateValueVector& continousState,
                       const PortValueList&) const
 {
-  continousState[*mPositionStateInfo] = Quaternion::unit();
-  continousState[*mVelocityStateInfo] = Vector3::zeros();
+  continousState[*mPositionStateInfo] = mInitialOrientation;
+  continousState[*mVelocityStateInfo] = mInitialVelocity;
 }
 
 RotationalJoint::Matrix6N

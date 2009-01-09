@@ -25,20 +25,21 @@ int main()
   Geodetic geodetic(rad2deg*(48 + 50.781/60), rad2deg*(2 + 20.709/60), 0);
   // Test the direction of the velocity vector projected to the ground plane
 
-  // FIXME, need usable environment stuff like gravity first ...
   SharedPtr<Group> group = new Group("Foucault");
   FixedRootJoint* fixedRootJoint = new FixedRootJoint("Root");
   fixedRootJoint->setRootPosition(planet->toCart(geodetic));
   fixedRootJoint->setRootOrientation(planet->getGeodHLOrientation(geodetic));
   group->addChild(fixedRootJoint);
   RotationalJoint* rotationalJoint1 = new RotationalJoint("Rotational Joint 1");
+  Quaternion orientation = Quaternion::fromAngleAxisDeg(90, Vector3(0, 1, 0));
+  rotationalJoint1->setInitialOrientation(orientation);
   group->addChild(rotationalJoint1);
   RigidBody* rigidBody1 = new RigidBody("Rigid Body 1");
   rigidBody1->addLink("externalInteractLink");
   group->addChild(rigidBody1);
 
-  Mass* mass = new Mass("Mass", 28, InertiaMatrix(1, 0, 0, 1, 0, 1));
-  mass->setPosition(Vector3(3, 0, 67));
+  Mass* mass = new Mass("Mass", 28, InertiaMatrix(1e-2, 0, 0, 1e-2, 0, 1e-2));
+  mass->setPosition(Vector3(0, 0, 67));
   group->addChild(mass);
 
   ExternalInteract* externalInteract = new ExternalInteract("ExternalInteract");

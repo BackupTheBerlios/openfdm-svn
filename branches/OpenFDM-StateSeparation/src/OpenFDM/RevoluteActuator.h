@@ -33,25 +33,23 @@ public:
   const Vector3& getAxis() const;
   void setAxis(const Vector3& axis);
 
-  const bool& getVelocityControl(void) const
-  { return mVelocityControl; }
-  void setVelocityControl(const bool& velocityControl)
-  { mVelocityControl = velocityControl; }
+  const real_type& getInitialPosition() const;
+  void setInitialPosition(const real_type& initialPosition);
 
-  const real_type& getMaxVel(void) const
-  { return mMaxVel; }
-  void setMaxVel(const real_type& maxVel)
-  { mMaxVel = maxVel; }
+  const real_type& getInitialVelocity() const;
+  void setInitialVelocity(const real_type& initialVelocity);
 
-  const real_type& getVelGain(void) const
-  { return mVelGain; }
-  void setVelGain(const real_type& velGain)
-  { mVelGain = velGain; }
+  const bool& getVelocityControl(void) const;
+  void setVelocityControl(const bool& velocityControl);
 
-  const real_type& getVelDotGain(void) const
-  { return mVelDotGain; }
-  void setVelDotGain(const real_type& velDotGain)
-  { mVelDotGain = velDotGain; }
+  const real_type& getMaxVel(void) const;
+  void setMaxVel(const real_type& maxVel);
+
+  const real_type& getVelGain(void) const;
+  void setVelGain(const real_type& velGain);
+
+  const real_type& getVelDotGain(void) const;
+  void setVelDotGain(const real_type& velDotGain);
 
 protected:
 
@@ -83,6 +81,8 @@ private:
   SharedPtr<Vector1StateInfo> mVelocityStateInfo;
 
   Vector3 mAxis;
+  real_type mInitialPosition;
+  real_type mInitialVelocity;
   bool mVelocityControl;
   real_type mVelGain;
   real_type mVelDotGain;
