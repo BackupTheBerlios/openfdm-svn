@@ -148,23 +148,23 @@ public:
 
   void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
   {
-    OpenFDMAssert(isConnected());
+    OpenFDMAssert(mMechanicLinkValue);
     return mMechanicLinkValue->setCoordinateSystem(coordinateSystem);
   }
   const CoordinateSystem& getCoordinateSystem() const
   {
-    OpenFDMAssert(isConnected());
+    OpenFDMAssert(mMechanicLinkValue);
     return mMechanicLinkValue->getCoordinateSystem();
   }
 
   const Vector6& getForce() const
   {
-    OpenFDMAssert(isConnected());
+    OpenFDMAssert(mMechanicLinkValue);
     return mMechanicLinkValue->getForce();
   }
   const SpatialInertia& getInertia() const
   {
-    OpenFDMAssert(isConnected());
+    OpenFDMAssert(mMechanicLinkValue);
     return mMechanicLinkValue->getInertia();
   }
  
