@@ -59,6 +59,13 @@ struct Constants {
 };
 
 template<typename T>
+inline T
+sqr(const T& val)
+{
+  return val*val;
+}
+
+template<typename T>
 inline int
 sign(const T& val)
 {
