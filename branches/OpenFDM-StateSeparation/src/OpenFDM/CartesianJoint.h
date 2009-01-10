@@ -146,6 +146,11 @@ protected:
                               relPosition, orientation, mJointMatrix*velocity);
     }
 
+    Vector6 getHdot()
+    {
+      return getChildLink().getMechanicLinkValue().getFrame().getHdot();
+    }
+    
     /** Compute the articulation step for a given joint force.
      *  Use this for usual joints.
      */

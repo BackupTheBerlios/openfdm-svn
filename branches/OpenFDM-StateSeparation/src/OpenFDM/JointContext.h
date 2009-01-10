@@ -57,9 +57,6 @@ public:
   ChildLink& getChildLink()
   { return mChildLink; }
 
-  Vector6 getHdot() const
-  { return mChildLink.getMechanicLinkValue().getFrame().getHdot(); }
-    
 protected:
   // PortValues
   PortValueList mPortValueList;
