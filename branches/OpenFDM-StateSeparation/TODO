@@ -16,6 +16,15 @@ MechanicContext
  |- RigidBodyContext (has a unique parent and may be a list of links with
          different local coordinate systems, see above)
 
+* The RevoluteActuator should not have a built in acceleration logic.
+  Make that external to be more flexible.
+* Rework the UniversalJoint.
+* Joint limits.
+
+* Build up a factory infrastructure returning groups for composite models.
+
+* Direct HLA Access??? Is there a possible way to do that??
+
 * More init time checking for SimpleDirectModels
 * Template Contexts for SimpleDirectModels
 * Sensor
