@@ -9,100 +9,62 @@
 #include "Unit.h"
 #include "Object.h"
 #include "Vector.h"
-#include "Frame.h"
-#include "Force.h"
 #include "Contact.h"
 
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(SimpleGear, Contact)
+  DEF_OPENFDM_PROPERTY(Bool, EnableSteeringAngle, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableBrakeCommand, Serialized)
   DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
-/// FIXME want to have similar names than with linearspringdamper
-  DEF_OPENFDM_PROPERTY(Real, SpringDamping, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, DamperConstant, Serialized)
   DEF_OPENFDM_PROPERTY(Real, FrictionCoeficient, Serialized)
-
-  DEF_OPENFDM_PROPERTY(Real, SteeringAngle, NotSerialized)
-/// FIXME think about that name 
-  DEF_OPENFDM_PROPERTY(Real, Brake, NotSerialized)
   END_OPENFDM_OBJECT_DEF
 
-SimpleGear::SimpleGear(const std::string& name)
-  : Contact(name)
+SimpleGear::SimpleGear(const std::string& name) :
+  Contact(name),
+  mSpringConst(0),
+  mDamperConst(0),
+  mFrictionCoef(0)
 {
-  mSteeringAngle = 0;
-  mBrake = 0;
-  mSpringConst = 0;
-  mSpringDamp = 0;
-  mFrictionCoef = 0;
-
-  /// FIXME
-  unsigned inputPortBase = getNumInputPorts();
-  setNumInputPorts(inputPortBase + 2);
-  setInputPortName(inputPortBase + 0, "brakeCommand");
-  setInputPortName(inputPortBase + 1, "steeringAngle");
 }
 
 SimpleGear::~SimpleGear(void)
 {
 }
 
+void
+SimpleGear::setEnableSteeringAngle(bool enable)
+{
+  if (enable == getEnableSteeringAngle())
+    return;
+  if (enable)
+    mSteeringAnglePort = RealInputPort(this, "steeringAngle", true);
+  else
+    mSteeringAnglePort.clear();
+}
+
 bool
-SimpleGear::init(void)
+SimpleGear::getEnableSteeringAngle() const
 {
-  NumericPortAcceptor* port = getInputPort("brakeCommand");
-  if (port)
-    mBrakeCommandHandle = port->toRealPortHandle();
+  return !mSteeringAnglePort.empty();
+}
+
+void
+SimpleGear::setEnableBrakeCommand(bool enable)
+{
+  if (enable == getEnableBrakeCommand())
+    return;
+  if (enable)
+    mBrakeCommandPort = RealInputPort(this, "brakeCommand", true);
   else
-    mBrakeCommandHandle = RealPortHandle(0);
-
-  port = getInputPort("steeringAngle");
-  if (port)
-    mSteeringAngleHandle = port->toRealPortHandle();
-  else
-    mSteeringAngleHandle = RealPortHandle(0);
-
-  mBrake = 0;
-  mSteeringAngle = 0;
-
-  return Contact::init();
+    mBrakeCommandPort.clear();
 }
 
-void
-SimpleGear::output(const TaskInfo& taskInfo)
+bool
+SimpleGear::getEnableBrakeCommand() const
 {
-  if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
-                          SampleTime::PerTimestep)) {
-    if (mBrakeCommandHandle.isConnected())
-      mBrake = mBrakeCommandHandle.getRealValue();
-    if (mSteeringAngleHandle.isConnected())
-      mSteeringAngle = mSteeringAngleHandle.getRealValue();
-  }
-
-  Contact::output(taskInfo);
-}
-
-real_type
-SimpleGear::getSteeringAngle(void) const
-{
-  return mSteeringAngle;
-}
-
-void
-SimpleGear::setSteeringAngle(real_type steeringAngle)
-{
-  mSteeringAngle = steeringAngle;
-}
-
-real_type
-SimpleGear::getBrake(void) const
-{
-  return mBrake;
-}
-
-void
-SimpleGear::setBrake(real_type brake)
-{
-  mBrake = brake;
+  return !mBrakeCommandPort.empty();
 }
 
 real_type
@@ -118,15 +80,15 @@ SimpleGear::setSpringConstant(real_type springConst)
 }
 
 real_type
-SimpleGear::getSpringDamping(void) const
+SimpleGear::getDamperConstant(void) const
 {
-  return mSpringDamp;
+  return mDamperConst;
 }
 
 void
-SimpleGear::setSpringDamping(real_type springDamp)
+SimpleGear::setDamperConstant(real_type damperConst)
 {
-  mSpringDamp = springDamp;
+  mDamperConst = damperConst;
 }
 
 real_type
@@ -144,24 +106,33 @@ SimpleGear::setFrictionCoeficient(real_type frictionCoef)
 // Compute the plane normal force.
 real_type
 SimpleGear::computeNormalForce(real_type compressLen,
-                               real_type compressVel) const
+                               real_type compressVel,
+                               PortValueList& portValueList) const
 {
-  return compressLen*mSpringConst
-    - mSpringDamp*min(compressVel, static_cast<real_type>(0));
+  return compressLen*mSpringConst - mDamperConst*compressVel;
 }
 
 // Compute the friction force.
 Vector3
 SimpleGear::computeFrictionForce(real_type normForce, const Vector3& vel,
                                  const Vector3& groundNormal,
-                                 real_type friction) const
+                                 real_type friction,
+                                 PortValueList& portValueList) const
 {
+  // Get the relevant inputs or their defaults.
+  real_type steeringAngle = 0;
+  if (getEnableSteeringAngle())
+    steeringAngle = portValueList[mSteeringAnglePort];
+  real_type brakeCommand = 0;
+  if (getEnableBrakeCommand())
+    brakeCommand = portValueList[mBrakeCommandPort];
+
   // Get a transform from the current frames coordinates into
   // wheel coordinates.
   // The wheel coordinates x asxis is defined by the forward orientation
   // of the wheel, the z axis points perpandicular to the ground
   // plane downwards.
-  Vector3 forward(cos(mSteeringAngle), sin(mSteeringAngle), 0);
+  Vector3 forward(cos(steeringAngle), sin(steeringAngle), 0);
   Vector3 side = cross(groundNormal, forward);
   forward = normalize(cross(side, groundNormal));
   side = normalize(side);
@@ -176,7 +147,7 @@ SimpleGear::computeFrictionForce(real_type normForce, const Vector3& vel,
   // The wheel spin speed is not known in this simple model.
   // We just set that to 0.99999 times the x-velocity in the 
   // rolling case and to 1 in the brakeing case.
-  real_type wheelSlip = interpolate(mBrake,
+  real_type wheelSlip = interpolate(brakeCommand,
                                     (real_type)0, 1e-5*wheelVel(0),
                                     (real_type)1, wheelVel(0));
   

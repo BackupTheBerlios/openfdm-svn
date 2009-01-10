@@ -86,13 +86,14 @@ public:
     
     // Get the plane normal force.
     real_type normForce = mWheelContact->computeNormalForce(compressLength,
-                                                            compressVel);
+                                                            compressVel,
+                                                            mPortValueList);
     // The normal force cannot get negative here.
     normForce = max(static_cast<real_type>(0), normForce);
     
     // Get the friction force.
     Vector2 fricForce = mWheelContact->computeFrictionForce(normForce, wheelVel,
-                                             omegaR, groundValues.friction);
+                                 omegaR, groundValues.friction, mPortValueList);
     
     // The resulting force is the sum of both.
     // The minus sign is because of the direction of the surface normal.
@@ -128,14 +129,17 @@ WheelContact::newMechanicContext(const Environment* environment,
 }
 
 real_type
-WheelContact::computeNormalForce(real_type compressLen, real_type compressVel) const
+WheelContact::computeNormalForce(real_type compressLen,
+                                 real_type compressVel,
+                                 PortValueList&) const
 {
   return compressLen*mSpringConstant + mDampingConstant*compressVel;
 }
 
 Vector2
 WheelContact::computeFrictionForce(real_type normForce, const Vector2& vel,
-                                   real_type omegaR, real_type friction) const
+                                   real_type omegaR, real_type friction,
+                                   PortValueList&) const
 {
   // We just get the wheel slip directly here
   real_type wheelSlip = vel(0)+omegaR;

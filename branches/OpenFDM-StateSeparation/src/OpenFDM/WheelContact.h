@@ -21,12 +21,14 @@ public:
 
   // Compute the plane normal force.
   virtual real_type
-  computeNormalForce(real_type compressLen, real_type compressVel) const;
+  computeNormalForce(real_type compressLen, real_type compressVel,
+                     PortValueList&) const;
 
   // Compute the friction force.
   virtual Vector2
   computeFrictionForce(real_type normForce, const Vector2& vel,
-                       real_type omegaR, real_type friction) const;
+                       real_type omegaR, real_type friction,
+                       PortValueList&) const;
 
   /** Set wheel axis direction.
    */

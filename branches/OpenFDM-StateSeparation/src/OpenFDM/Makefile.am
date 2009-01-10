@@ -283,12 +283,12 @@ OpenFDMMechanicSOURCES = \
   RevoluteJoint.cpp \
   RotationalJoint.cpp \
   SimpleContact.cpp \
+  SimpleGear.cpp \
   SingleLinkInteract.cpp \
   UniversalJoint.cpp \
   WheelContact.cpp
 
 #   AeroForce.cpp \
-#   SimpleGear.cpp \
 #   Tank.cpp
 
 #   Launchbar.cpp \

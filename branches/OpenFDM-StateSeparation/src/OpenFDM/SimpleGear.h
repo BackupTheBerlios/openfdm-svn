@@ -9,8 +9,6 @@
 #include "Unit.h"
 #include "Object.h"
 #include "Vector.h"
-#include "Frame.h"
-#include "Force.h"
 #include "Contact.h"
 
 namespace OpenFDM {
@@ -21,43 +19,43 @@ public:
   SimpleGear(const std::string& name);
   virtual ~SimpleGear(void);
 
-  virtual bool init(void);
-  virtual void output(const TaskInfo&);
+  /// Set availabilty of the steering angle input port
+  void setEnableSteeringAngle(bool enable);
+  /// Get availabilty of the steering angle input port
+  bool getEnableSteeringAngle() const;
 
-  real_type getSteeringAngle(void) const;
-  void setSteeringAngle(real_type steeringAngle);
-
-  real_type getBrake(void) const;
-  void setBrake(real_type brake);
+  /// Set availabilty of the brake command input port
+  void setEnableBrakeCommand(bool enable);
+  /// Get availabilty of the brake command input port
+  bool getEnableBrakeCommand() const;
 
   real_type getSpringConstant(void) const;
   void setSpringConstant(real_type springConst);
 
-  real_type getSpringDamping(void) const;
-  void setSpringDamping(real_type springDamp);
+  real_type getDamperConstant(void) const;
+  void setDamperConstant(real_type damperConstant);
 
   real_type getFrictionCoeficient(void) const;
   void setFrictionCoeficient(real_type frictionCoef);
 
   // Compute the plane normal force.
   virtual real_type
-  computeNormalForce(real_type compressLen, real_type compressVel) const;
+  computeNormalForce(real_type compressLen, real_type compressVel,
+                     PortValueList&) const;
 
   // Compute the friction force.
   virtual Vector3
   computeFrictionForce(real_type normForce, const Vector3& vel,
-                       const Vector3& groundNormal, real_type friction) const;
+                       const Vector3& groundNormal, real_type friction,
+                       PortValueList&) const;
 
 private:
-  real_type mSteeringAngle;
-  real_type mBrake;
+  RealInputPort mSteeringAnglePort;
+  RealInputPort mBrakeCommandPort;
 
   real_type mSpringConst;
-  real_type mSpringDamp;
+  real_type mDamperConst;
   real_type mFrictionCoef;
-
-  RealPortHandle mBrakeCommandHandle;
-  RealPortHandle mSteeringAngleHandle;
 };
 
 } // namespace OpenFDM

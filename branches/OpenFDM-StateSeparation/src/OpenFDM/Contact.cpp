@@ -60,14 +60,16 @@ public:
     
     // Get the plane normal force.
     real_type normForce = mContact->computeNormalForce(compressLength,
-                                                       compressVel);
+                                                       compressVel,
+                                                       mPortValueList);
     // The normal force cannot get negative here.
     normForce = max(static_cast<real_type>(0), normForce);
     
     // Get the friction force.
     Vector3 fricForce = mContact->computeFrictionForce(normForce, sVel,
                                                        lp.getNormal(),
-                                                       groundValues.friction);
+                                                       groundValues.friction,
+                                                       mPortValueList);
     
     // The resulting force is the sum of both.
     // The minus sign is because of the direction of the surface normal.
@@ -98,15 +100,14 @@ Contact::newMechanicContext(const Environment* environment,
 }
 
 real_type
-Contact::computeNormalForce(real_type compressLen, real_type compressVel) const
+Contact::computeNormalForce(real_type, real_type, PortValueList&) const
 {
   return 0;
 }
 
 Vector3
-Contact::computeFrictionForce(real_type normForce, const Vector3& vel,
-                              const Vector3& groundNormal,
-                              real_type friction) const
+Contact::computeFrictionForce(real_type, const Vector3&, const Vector3&,
+                              real_type, PortValueList&) const
 {
   return Vector3::zeros();
 }

@@ -26,12 +26,14 @@ public:
 
   // Compute the plane normal force.
   virtual real_type
-  computeNormalForce(real_type compressLen, real_type compressVel) const;
+  computeNormalForce(real_type compressLen, real_type compressVel,
+                     PortValueList&) const;
 
   // Compute the friction force.
   virtual Vector3
   computeFrictionForce(real_type normForce, const Vector3& vel,
-                       const Vector3&, real_type friction) const;
+                       const Vector3&, real_type friction,
+                       PortValueList&) const;
 
 private:
   real_type mSpringConst;

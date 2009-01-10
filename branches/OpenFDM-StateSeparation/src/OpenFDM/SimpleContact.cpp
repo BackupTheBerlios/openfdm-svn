@@ -65,7 +65,8 @@ SimpleContact::setFrictionCoeficient(const real_type& frictionCoef)
 // Compute the plane normal force.
 real_type
 SimpleContact::computeNormalForce(real_type compressLen,
-                                  real_type compressVel) const
+                                  real_type compressVel,
+                                  PortValueList&) const
 {
   return compressLen*mSpringConst - mDamperConstant*compressVel;
 }
@@ -73,7 +74,8 @@ SimpleContact::computeNormalForce(real_type compressLen,
 // Compute the friction force.
 Vector3
 SimpleContact::computeFrictionForce(real_type normForce, const Vector3& vel,
-                                    const Vector3&, real_type friction) const
+                                    const Vector3&, real_type friction,
+                                    PortValueList&) const
 {
   real_type nVel = norm(vel);
   if (1 < nVel)
