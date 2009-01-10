@@ -31,7 +31,7 @@ int main()
   fixedRootJoint->setRootOrientation(planet->getGeodHLOrientation(geodetic));
   group->addChild(fixedRootJoint);
   RotationalJoint* rotationalJoint1 = new RotationalJoint("Rotational Joint 1");
-  Quaternion orientation = Quaternion::fromAngleAxisDeg(90, Vector3(0, 1, 0));
+  Quaternion orientation = Quaternion::fromAngleAxisDeg(10, Vector3(0, 1, 0));
   rotationalJoint1->setInitialOrientation(orientation);
   group->addChild(rotationalJoint1);
   RigidBody* rigidBody1 = new RigidBody("Rigid Body 1");
