@@ -20,7 +20,8 @@
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
 #include <OpenFDM/UnaryFunction.h>
-#include <OpenFDM/WheelContact.h>
+#include <OpenFDM/Pacejka89.h>
+#include <OpenFDM/Pacejka94.h>
 
 using namespace OpenFDM;
 
@@ -42,12 +43,29 @@ private:
 int
 main(int argc, char *argv[])
 {
+  // Simulate a simple side sweep with
+  //   sweep speed alphaSpeed
+  //   sweep range alphaRange
+  //   at camber Angle
+  //   and velocity
+  real_type camberAngle = deg2rad*0;
+  real_type alphaRange = deg2rad*20;
+  real_type alphaSpeed = deg2rad*10;
+  real_type velocity = 10;
+
+
   SharedPtr<Group> group = new Group("Tire Testrig");
 
   // First build up the mechanical system
   FixedRootJoint* fixedRootJoint = new FixedRootJoint("Fixed Root Joint");
   group->addChild(fixedRootJoint);
   fixedRootJoint->setRootPosition(Vector3(0, 0, -1));
+
+//   PrismaticActuator* prismaticActuator
+//     = new PrismaticActuator("Normal Force Actuator");
+//   prismaticActuator->setAxis(Vector3::unit(2));
+//   prismaticActuator->setMaxVel(Vector3::unit(2));
+//   group->addChild(prismaticActuator);
 
   PrismaticJoint* prismaticJoint = new PrismaticJoint("Normal Force joint");
   prismaticJoint->setAxis(Vector3::unit(2));
@@ -61,7 +79,7 @@ main(int argc, char *argv[])
                  normalForceSum->getPort("output"));
 
   ConstModel* normalForce = new ConstModel("Normal force");
-  normalForce->setScalarValue(2000);
+  normalForce->setScalarValue(4000);
   group->addChild(normalForce);
   group->connect(normalForceSum->getPort("input0"),
                  normalForce->getPort("output"));
@@ -83,13 +101,15 @@ main(int argc, char *argv[])
   group->connect(rootMount->getPort("link1"), prismaticJoint->getPort("link0"));
 
   RevoluteActuator* camberActuator = new RevoluteActuator("Camber Actuator");
+  camberActuator->setAxis(Vector3(1, 0, 0));
+  camberActuator->setInitialPosition(camberAngle);
   group->addChild(camberActuator);
 
-  ConstModel* camberAngle = new ConstModel("Camber Angle");
-  camberAngle->setScalarValue(0);
-  group->addChild(camberAngle);
+  ConstModel* camberAngleModel = new ConstModel("Camber Angle");
+  camberAngleModel->setScalarValue(camberAngle);
+  group->addChild(camberAngleModel);
   group->connect(camberActuator->getPort("input"),
-                 camberAngle->getPort("output"));
+                 camberAngleModel->getPort("output"));
 
   RigidBody* normalForceStrut = new RigidBody("Normal Force Strut");
   group->addChild(normalForceStrut);
@@ -100,6 +120,11 @@ main(int argc, char *argv[])
 
  
   RevoluteActuator* sideActuator = new RevoluteActuator("Sideslip Actuator");
+  sideActuator->setAxis(Vector3(0, 0, 1));
+  sideActuator->setInitialPosition(0);
+  sideActuator->setMaxVel(alphaSpeed);
+  sideActuator->setVelGain(100);
+  sideActuator->setVelDotGain(100);
   group->addChild(sideActuator);
 
   ConstModel* sideslipAngle = new ConstModel("Sideslip Angle");
@@ -129,29 +154,44 @@ main(int argc, char *argv[])
   group->connect(hubJoint->getPort("link1"), rimAndTire->getPort("link0"));
 
   Mass* tireAndRimMass = new Mass("Rim And Tire Mass");
-  tireAndRimMass->setMass(1);
-  tireAndRimMass->setInertia(InertiaMatrix(1, 0, 0, 1, 0, 1));
+  tireAndRimMass->setMass(9);
+  // Realistic ...
+//   tireAndRimMass->setInertia(InertiaMatrix(0.4, 0, 0, 1, 0, 0.4));
+  // For pac 2002
+//   tireAndRimMass->setInertia(InertiaMatrix(0.5, 0, 0, 2, 0, 0.5));
+  // For pac 89
+  tireAndRimMass->setInertia(InertiaMatrix(0.5, 0, 0, 8, 0, 0.5));
   group->addChild(tireAndRimMass);
   group->connect(rimAndTire->getPort("link1"), tireAndRimMass->getPort("link"));
   
-  WheelContact* wheelContact = new WheelContact("Wheel Contact");
-  wheelContact->setWheelRadius(0.3);
-  wheelContact->setSpringConstant(50000);
-  wheelContact->setDampingConstant(sqrt(wheelContact->getSpringConstant())/10);
-  group->addChild(wheelContact);
+//   Pacejka89* pacejkaTire = new Pacejka89("PacejkaTire");
+  Pacejka94* pacejkaTire = new Pacejka94("PacejkaTire");
+//   Pacejka2002* pacejkaTire = new Pacejka2002("PacejkaTire");
+  pacejkaTire->setWheelRadius(0.313);
+  pacejkaTire->setSpringConstant(2e5);
+  pacejkaTire->setDampingConstant(sqrt(pacejkaTire->getSpringConstant()));
+  group->addChild(pacejkaTire);
   rimAndTire->addLink("link2");
-  group->connect(rimAndTire->getPort("link2"), wheelContact->getPort("link"));
+  group->connect(rimAndTire->getPort("link2"), pacejkaTire->getPort("link"));
+
+  prismaticJoint->setInitialPosition(1 - pacejkaTire->getWheelRadius());
 
   SharedPtr<System> system = new System("Tire Testrig", group);
 
   // set the moving ground
-  system->getEnvironment()->setGround(new MovingGround(Vector3(10, 0, 0)));
+  system->getEnvironment()->setGround(new MovingGround(Vector3(velocity, 0, 0)));
 
-  system->attach(SystemOutput::newDefaultSystemOutput("tiretestrig"));
   if (!system->init())
-    return 1;
+    return EXIT_FAILURE;
 
-  system->simulate(1);
+  system->simulate(2);
+  system->attach(SystemOutput::newDefaultSystemOutput("tiretestrig"));
+  sideslipAngle->setScalarValue(alphaRange);
+  system->simulate(system->getTime() + alphaRange/alphaSpeed);
+  sideslipAngle->setScalarValue(-alphaRange);
+  system->simulate(system->getTime() + 2*alphaRange/alphaSpeed);
+  sideslipAngle->setScalarValue(0);
+  system->simulate(system->getTime() + alphaRange/alphaSpeed);
   
   return EXIT_SUCCESS;
 }

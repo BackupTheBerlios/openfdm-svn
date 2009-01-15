@@ -259,6 +259,9 @@ OpenFDMMechanicHEADERS = \
   Joint.h \
   Mass.h \
   MobileRootJoint.h \
+  Pacejka89.h \
+  Pacejka94.h \
+  PacejkaTire.h \
   PrismaticJoint.h \
   RevoluteActuator.h \
   RevoluteJoint.h \
@@ -278,6 +281,9 @@ OpenFDMMechanicSOURCES = \
   Joint.cpp \
   Mass.cpp \
   MobileRootJoint.cpp \
+  Pacejka89.cpp \
+  Pacejka94.cpp \
+  PacejkaTire.cpp \
   PrismaticJoint.cpp \
   RevoluteActuator.cpp \
   RevoluteJoint.cpp \
