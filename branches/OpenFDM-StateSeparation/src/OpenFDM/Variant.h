@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "Assert.h"
 #include "Types.h"
 #include "Referenced.h"
 #include "SharedPtr.h"
@@ -267,7 +268,7 @@ Variant::isTable3D() const
 template<typename T>
 inline void
 variant_copy(const Variant& variant, T& value)
-{}
+{ OpenFDMAssert(false); }
 
 template<>
 inline void
@@ -289,9 +290,29 @@ inline void
 variant_copy(const Variant& variant, unsigned& value)
 { value = variant.toUnsigned(); }
 
-template<typename Impl, LinAlg::size_type m, LinAlg::size_type n> 
+template<typename T>
 inline void
-variant_copy(const Variant& variant, LinAlg::MatrixLValue<Impl,m,n>& value)
+variant_copy(const Variant& variant, LinAlg::Vector2<T>& value)
+{ value = variant.toMatrix(); }
+template<typename T>
+inline void
+variant_copy(const Variant& variant, LinAlg::Vector3<T>& value)
+{ value = variant.toMatrix(); }
+template<typename T>
+inline void
+variant_copy(const Variant& variant, LinAlg::Vector4<T>& value)
+{ value = variant.toMatrix(); }
+template<typename T>
+inline void
+variant_copy(const Variant& variant, LinAlg::Vector6<T>& value)
+{ value = variant.toMatrix(); }
+template<typename T>
+inline void
+variant_copy(const Variant& variant, LinAlg::Vector<T>& value)
+{ value = variant.toMatrix(); }
+template<typename T>
+inline void
+variant_copy(const Variant& variant, LinAlg::Matrix<T>& value)
 { value = variant.toMatrix(); }
 
 template<> 
