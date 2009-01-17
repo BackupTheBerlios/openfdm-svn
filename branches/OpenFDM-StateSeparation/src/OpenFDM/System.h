@@ -60,8 +60,13 @@ public:
   void attach(SystemOutput* systemOutput);
   void detach(SystemOutput* systemOutput);
 
+  /// Return the node that is at this particular path.
+  Node* getNode(const std::string& nodePath);
+  const Node* getNode(const std::string& nodePath) const;
+
 private:
   class NodeInstanceCollector;
+  class NodeFinder;
 
   SharedPtr<Node> mNode;
   SampleTime mSampleTime;

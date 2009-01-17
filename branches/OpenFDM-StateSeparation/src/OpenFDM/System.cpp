@@ -1512,4 +1512,46 @@ System::detach(SystemOutput* systemOutput)
   }
 }
 
+class System::NodeFinder : public NodeVisitor {
+public:
+  NodeFinder(const std::string& path) : mPath(path), mNode(0)
+  { }
+  virtual void apply(Group& group)
+  {
+    std::string path = Node::toNodePathName(getNodePath());
+    if (0 != mPath.compare(0, path.size(), path))
+      return;
+    group.traverse(*this);
+  }
+  virtual void apply(Node& node)
+  {
+    if (mPath != Node::toNodePathName(getNodePath()))
+      return;
+    mNode = &node;
+  }
+
+  std::string mPath;
+  Node* mNode;
+};
+
+Node*
+System::getNode(const std::string& nodePathString)
+{
+  if (!mNode)
+    return 0;
+  NodeFinder nodeFinder(nodePathString);
+  mNode->accept(nodeFinder);
+  return nodeFinder.mNode;
+}
+
+const Node*
+System::getNode(const std::string& nodePathString) const
+{
+  if (!mNode)
+    return 0;
+  NodeFinder nodeFinder(nodePathString);
+  mNode->accept(nodeFinder);
+  return nodeFinder.mNode;
+}
+
 } // namespace OpenFDM
