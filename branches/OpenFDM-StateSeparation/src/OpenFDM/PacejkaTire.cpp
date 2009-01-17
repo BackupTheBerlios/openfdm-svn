@@ -116,14 +116,20 @@ public:
 //     Vector3 V_cS = relVel.getLinear(); // + r_dot; ???
     Vector3 V_s = relVel2.getLinear();
 
+    // The wheels velocity wrt ground
+    Vector3 rotVel = relVel.getAngular();
+
+    // The wheel revolution speed
+    real_type omega = dot(rotVel, s);
+
+    // The rotational velocity of the hub system wrt ground
+    Vector3 rotVelHub = relVel.getAngular() - omega*s;
+ 
     // FIXME ????
     real_type V_cx = dot(V_c, l);
     real_type V_cx_eps = fabs(V_cx) + e_v;
     real_type V_cy = dot(V_c, t);
     real_type V_sx = dot(V_s, l);
-
-    // Note that internally computations are done using derived parameters,
-    // thus compute different values for the output ports
 
     // The sideslip angle (4.E3)
     real_type alpha = atan2(-V_cy, V_cx_eps);
@@ -140,7 +146,12 @@ public:
     if (mLongitudinalSlipPort.isConnected())
       mLongitudinalSlipPort = kappa;
 
-    Vector6 f = mPacejkaTire->getForce(rho, rhoDot, alpha, kappa, gamma);
+    // The turnslip
+    // FIXME: make sure this really is: That is create a testcase where
+    // we check the  = -1/R claim in (2.18) Pacejka
+    real_type phi = dot(n, rotVelHub)/V_cx_eps;
+
+    Vector6 f = mPacejkaTire->getForce(rho, rhoDot, alpha, kappa, gamma, phi);
 
     if (mLongitudinalForcePort.isConnected())
       mLongitudinalForcePort = f.getLinear()(0);

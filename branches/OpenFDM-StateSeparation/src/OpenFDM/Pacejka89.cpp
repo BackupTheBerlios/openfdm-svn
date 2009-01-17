@@ -68,7 +68,7 @@ Pacejka89::Pacejka89(const std::string& name) :
 
   mB0(2),
   mB1(0), mB2(1000),
-  mB3(0), mB4(100), mB5(0),
+  mB3(0), mB4(50), mB5(0),
   mB6(0), mB7(0), mB8(0.5),
   mB9(0), mB10(0),
 
@@ -112,7 +112,7 @@ Pacejka89::getDampingConstant(void) const
 Vector6
 Pacejka89::getForce(const real_type& rho, const real_type& rhoDot,
                     const real_type& alpha, const real_type& kappa,
-                    const real_type& gamma) const
+                    const real_type& gamma, const real_type& phi) const
 {
   // Pacejka suggests this correction to avoid singularities at zero speed
   const real_type e_v = 1e-2;
@@ -128,9 +128,9 @@ Pacejka89::getForce(const real_type& rho, const real_type& rhoDot,
   // Shape factor
   real_type Cx = mB0;
   // Peak factor
-  real_type Dx = mB1*sqr(Fz) + mB2*Fz;
+  real_type Dx = (mB1*Fz + mB2)*Fz;
   // BCD
-  real_type BCDx = (mB3*sqr(Fz) + mB4*Fz)*exp(-mB5*Fz);
+  real_type BCDx = (mB3*Fz + mB4)*Fz*exp(-mB5*Fz);
   // Stiffness factor
   real_type Bx = BCDx/(Cx*Dx + e_v);
   // Horizonal shift
@@ -142,7 +142,7 @@ Pacejka89::getForce(const real_type& rho, const real_type& rhoDot,
 //   real_type kappax = kappa + SHx;
   real_type kappax = 100*kappa + SHx;
   // Curvature factor
-  real_type Ex = (mB6*sqr(Fz) + mB7*Fz + mB8);
+  real_type Ex = (mB6*Fz + mB7)*Fz + mB8;
   // See P175 Note on Fig 4.10: Clamp E <= 1 to avoid unrealistic behaviour
   Ex = min(Ex, real_type(1));
   // The resulting longitudinal force
@@ -180,19 +180,19 @@ Pacejka89::getForce(const real_type& rho, const real_type& rhoDot,
   // Shape factor
   real_type Cz = mC0;
   // Peak factor
-  real_type Dz = mC1*sqr(Fz) + mC2*Fz;
+  real_type Dz = (mC1*Fz + mC2)*Fz;
   // BCD
-  real_type BCDz = (mC3*sqr(Fz) + mC4*Fz)*(1 - mC6*fabs(gamma))*exp(-mC5*Fz);
+  real_type BCDz = (mC3*Fz + mC4)*Fz*(1 - mC6*fabs(gamma))*exp(-mC5*Fz);
   // Stiffness factor
   real_type Bz = BCDz/(Cz*Dz + e_v);
   // Horizonal shift
   real_type SHz = mC11*gamma + mC12*Fz + mC13;
   // Vertical shift
-  real_type SVz = (mC14*sqr(Fz) + mC15*Fz)*gamma + mC16*Fz + mC17;
+  real_type SVz = (mC14*Fz + mC15)*Fz*gamma + mC16*Fz + mC17;
   // Shifted lateral slip
   real_type alphaz = rad2deg*alpha + SHz;
   // Curvature factor
-  real_type Ez = (mC7*sqr(Fz) + mC8*Fz + mC9)*(1 - mC10*fabs(gamma));
+  real_type Ez = ((mC7*Fz + mC8)*Fz + mC9)*(1 - mC10*fabs(gamma));
   // See P175 Note on Fig 4.10: Clamp E <= 1 to avoid unrealistic behaviour
   Ez = min(Ez, real_type(1));
   // The resulting lateral force

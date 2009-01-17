@@ -32,7 +32,7 @@ public:
   // Model function to compute the resulting force
   virtual Vector6 getForce(const real_type& rho, const real_type& rhoDot,
                            const real_type& alpha, const real_type& kappa,
-                           const real_type& gamma) const = 0;
+                           const real_type& gamma, const real_type& phi) const = 0;
 
 private:
   RealOutputPort mSideSlipPort;

@@ -26,7 +26,7 @@ public:
   // Helper function to compute the resulting force
   virtual Vector6 getForce(const real_type& rho, const real_type& rhoDot,
                            const real_type& alpha, const real_type& kappa,
-                           const real_type& gamma) const;
+                           const real_type& gamma, const real_type& phi) const;
 
   const real_type& getA0() const { return mA0; }
   void setA0(const real_type& value) { mA0 = value; }
