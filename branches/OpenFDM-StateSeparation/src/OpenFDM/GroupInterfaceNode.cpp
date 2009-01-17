@@ -39,6 +39,18 @@ GroupInterfaceNode::getExternalPortIndex() const
   return mExternalPortInfo->getIndex();
 }
 
+void
+GroupInterfaceNode::setExternalPortName(const std::string& portName)
+{
+  mExternalPortInfo->setName(portName);
+}
+
+const std::string&
+GroupInterfaceNode::getExternalPortName() const
+{
+  return mExternalPortInfo->getName();
+}
+
 bool
 GroupInterfaceNode::addParent(Node* parent)
 {
