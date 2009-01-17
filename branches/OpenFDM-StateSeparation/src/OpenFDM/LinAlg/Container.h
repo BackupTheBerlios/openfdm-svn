@@ -21,6 +21,9 @@ public:
   Matrix(void)
   { }
   OpenFDM_FORCE_INLINE
+  explicit Matrix(const T& scalarValue)
+  { resize(1, 1); *data_.find(0, 0) = scalarValue; }
+  OpenFDM_FORCE_INLINE
   Matrix(size_type i, size_type j)
   { resize(i, j); }
   OpenFDM_FORCE_INLINE
