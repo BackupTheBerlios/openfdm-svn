@@ -13,6 +13,7 @@
 #include <OpenFDM/GroupMechanicLink.h>
 #include <OpenFDM/GroupOutput.h>
 #include <OpenFDM/Output.h>
+#include <OpenFDM/PrismaticActuator.h>
 #include <OpenFDM/PrismaticJoint.h>
 #include <OpenFDM/RevoluteActuator.h>
 #include <OpenFDM/RevoluteJoint.h>
@@ -77,6 +78,71 @@ createWheel()
   rimAndTire->addLink("link2");
   group->connect(rimAndTire->getPort("link2"), pacejkaTire->getPort("link"));
 
+  GroupOutput* normalForceOutput = new GroupOutput("Normal Force Output");
+  group->addChild(normalForceOutput);
+  normalForceOutput->setExternalPortName("normalForce");
+  group->connect(pacejkaTire->getPort("normalForce"),
+                 normalForceOutput->getPort("input"));
+
+  return group.release();
+}
+
+Node*
+createController(const real_type& p, const real_type& i, const real_type& d)
+{
+  SharedPtr<Group> group = new Group("Controller");
+
+  GroupInput* input = new GroupInput("Input");
+  group->addChild(input);
+  input->setExternalPortName("input");
+
+  GroupInput* desiredInput = new GroupInput("Desired Input");
+  group->addChild(desiredInput);
+  desiredInput->setExternalPortName("desiredInput");
+
+  Summer* summer = new Summer("Error");
+  summer->setNumSummands(2);
+  summer->setInputSign(0, Summer::Minus);
+  summer->setInputSign(1, Summer::Plus);
+  group->addChild(summer);
+  group->connect(input->getPort(0), summer->getPort("input0"));
+  group->connect(desiredInput->getPort(0), summer->getPort("input1"));
+  
+  // the proportional thing
+  Gain* proportionalGain = new Gain("Proportional Gain");
+  proportionalGain->setGain(p);
+  group->addChild(proportionalGain);
+  group->connect(summer->getPort("output"), proportionalGain->getPort("input"));
+
+
+  // the integral thing
+  Integrator* integrator = new Integrator("Integrator");
+  group->addChild(integrator);
+  group->connect(summer->getPort("output"), integrator->getPort("input"));
+
+  Gain* integralGain = new Gain("Integral Gain");
+  integralGain->setGain(i);
+  group->addChild(integralGain);
+  group->connect(integrator->getPort("output"), integralGain->getPort("input"));
+
+
+  // the derivative thing
+//   TimeDerivative* timeDerivative = new Integrator("Integrator");
+
+  // The output sum
+  Summer* outputSum = new Summer("Output Sum");
+  outputSum->setNumSummands(2);
+  group->addChild(outputSum);
+  group->connect(proportionalGain->getPort("output"),
+                 outputSum->getPort("input0"));
+  group->connect(integralGain->getPort("output"),
+                 outputSum->getPort("input1"));
+  
+  GroupOutput* output = new GroupOutput("Output");
+  group->addChild(output);
+  output->setExternalPortName("output");
+  group->connect(outputSum->getPort("output"), output->getPort("input"));
+
   return group.release();
 }
 
@@ -87,48 +153,38 @@ createTireTestrig(Node* wheel)
 {
   SharedPtr<Group> group = new Group("Tire Testrig");
 
+  group->addChild(wheel);
+
   // First build up the mechanical system
   FixedRootJoint* fixedRootJoint = new FixedRootJoint("Fixed Root Joint");
   group->addChild(fixedRootJoint);
-  fixedRootJoint->setRootPosition(Vector3(0, 0, -1));
+  fixedRootJoint->setRootPosition(Vector3(0, 0, -0.5));
 
-//   PrismaticActuator* prismaticActuator
-//     = new PrismaticActuator("Normal Force Actuator");
-//   prismaticActuator->setAxis(Vector3::unit(2));
-//   prismaticActuator->setMaxVel(Vector3::unit(2));
-//   group->addChild(prismaticActuator);
-
-  PrismaticJoint* prismaticJoint = new PrismaticJoint("Normal Force joint");
-  prismaticJoint->setAxis(Vector3::unit(2));
-  prismaticJoint->setEnableExternalForce(true);
-  group->addChild(prismaticJoint);
-
-  Summer* normalForceSum = new Summer("Normal Force Sum");
-  normalForceSum->setNumSummands(2);
-  group->addChild(normalForceSum);
-  group->connect(prismaticJoint->getPort("force"),
-                 normalForceSum->getPort("output"));
+  PrismaticActuator* prismaticActuator
+    = new PrismaticActuator("Normal Force Actuator");
+  prismaticActuator->setAxis(Vector3::unit(2));
+  prismaticActuator->setVelDotGain(100);
+  prismaticActuator->setVelocityControl(true);
+  group->addChild(prismaticActuator);
 
   ConstModel* normalForce = new ConstModel("Normal Force");
   group->addChild(normalForce);
-  group->connect(normalForceSum->getPort("input0"),
-                 normalForce->getPort("output"));
- 
-  LinearSpringDamper* strutDamper = new LinearSpringDamper("Strut Damper");
-  strutDamper->setSpringConstant(0);
-  strutDamper->setDamperConstant(1000);
-  group->addChild(strutDamper);
-  group->connect(normalForceSum->getPort("input1"),
-                 strutDamper->getPort("force"));
-  group->connect(strutDamper->getPort("velocity"),
-                 prismaticJoint->getPort("velocity"));
-  group->connect(strutDamper->getPort("position"),
-                 prismaticJoint->getPort("position"));
+
+  Node* normalForceController = createController(1e-4, 0, 0);
+  normalForceController->setName("Normal Force Controller");
+  group->addChild(normalForceController);
+  group->connect(normalForce->getPort("output"),
+                 normalForceController->getPort("desiredInput"));
+  group->connect(wheel->getPort("normalForce"),
+                 normalForceController->getPort("input"));
+  group->connect(normalForceController->getPort("output"),
+                 prismaticActuator->getPort("input"));
 
   RigidBody* rootMount = new RigidBody("Root Mount");
   group->addChild(rootMount);
   group->connect(rootMount->getPort("link0"), fixedRootJoint->getPort("link"));
-  group->connect(rootMount->getPort("link1"), prismaticJoint->getPort("link0"));
+  group->connect(rootMount->getPort("link1"),
+                 prismaticActuator->getPort("link0"));
 
   RevoluteActuator* camberActuator = new RevoluteActuator("Camber Actuator");
   camberActuator->setAxis(Vector3(1, 0, 0));
@@ -142,7 +198,7 @@ createTireTestrig(Node* wheel)
   RigidBody* normalForceStrut = new RigidBody("Normal Force Strut");
   group->addChild(normalForceStrut);
   group->connect(normalForceStrut->getPort("link0"),
-                 prismaticJoint->getPort("link1"));
+                 prismaticActuator->getPort("link1"));
   group->connect(normalForceStrut->getPort("link1"),
                  camberActuator->getPort("link0"));
 
@@ -174,7 +230,6 @@ createTireTestrig(Node* wheel)
   group->connect(hubStrut->getPort("link0"), sideActuator->getPort("link1"));
   group->connect(hubStrut->getPort("link1"), hubJoint->getPort("link0"));
 
-  group->addChild(wheel);
   group->connect(hubJoint->getPort("link1"), wheel->getPort("link"));
 
   return group.release();
