@@ -2,6 +2,8 @@
  *
  */
 
+#include <OpenFDM/Bias.h>
+#include <OpenFDM/BinaryFunction.h>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/FixedRootJoint.h>
 #include <OpenFDM/Gain.h>
@@ -18,6 +20,7 @@
 #include <OpenFDM/RevoluteActuator.h>
 #include <OpenFDM/RevoluteJoint.h>
 #include <OpenFDM/RigidBody.h>
+#include <OpenFDM/Saturation.h>
 #include <OpenFDM/SimulationTime.h>
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
@@ -88,10 +91,11 @@ createWheel()
 }
 
 Node*
-createController(const real_type& p, const real_type& i, const real_type& d)
+createController()
 {
   SharedPtr<Group> group = new Group("Controller");
 
+  // The inputs from the outside
   GroupInput* input = new GroupInput("Input");
   group->addChild(input);
   input->setExternalPortName("input");
@@ -100,6 +104,29 @@ createController(const real_type& p, const real_type& i, const real_type& d)
   group->addChild(desiredInput);
   desiredInput->setExternalPortName("desiredInput");
 
+
+  // As long as we have not reached 1% of the load, go with a speed of 1m/s
+  BinaryFunction* div = new BinaryFunction("Normalized Input",
+                                           BinaryFunction::Div);
+  group->addChild(div);
+  group->connect(input->getPort("output"), div->getPort("input0"));
+  group->connect(desiredInput->getPort("output"), div->getPort("input1"));
+
+  Bias* bias = new Bias("Relative Input Bias", -0.01);
+  group->addChild(bias);
+  group->connect(div->getPort("output"), bias->getPort("input"));
+
+  Saturation* saturation = new Saturation("Relative Saturation");
+  saturation->setMaxSaturation(Matrix(real_type(0)));
+  group->addChild(saturation);
+  group->connect(bias->getPort("output"), saturation->getPort("input"));
+
+  Gain* approachGain = new Gain("Approach Gain", -100);
+  group->addChild(approachGain);
+  group->connect(saturation->getPort("output"), approachGain->getPort("input"));
+
+
+  // The usual proportional controller
   Summer* summer = new Summer("Error");
   summer->setNumSummands(2);
   summer->setInputSign(0, Summer::Minus);
@@ -107,27 +134,13 @@ createController(const real_type& p, const real_type& i, const real_type& d)
   group->addChild(summer);
   group->connect(input->getPort(0), summer->getPort("input0"));
   group->connect(desiredInput->getPort(0), summer->getPort("input1"));
-  
+
   // the proportional thing
   Gain* proportionalGain = new Gain("Proportional Gain");
-  proportionalGain->setGain(p);
+  proportionalGain->setGain(1e-4);
   group->addChild(proportionalGain);
   group->connect(summer->getPort("output"), proportionalGain->getPort("input"));
 
-
-  // the integral thing
-  Integrator* integrator = new Integrator("Integrator");
-  group->addChild(integrator);
-  group->connect(summer->getPort("output"), integrator->getPort("input"));
-
-  Gain* integralGain = new Gain("Integral Gain");
-  integralGain->setGain(i);
-  group->addChild(integralGain);
-  group->connect(integrator->getPort("output"), integralGain->getPort("input"));
-
-
-  // the derivative thing
-//   TimeDerivative* timeDerivative = new Integrator("Integrator");
 
   // The output sum
   Summer* outputSum = new Summer("Output Sum");
@@ -135,7 +148,7 @@ createController(const real_type& p, const real_type& i, const real_type& d)
   group->addChild(outputSum);
   group->connect(proportionalGain->getPort("output"),
                  outputSum->getPort("input0"));
-  group->connect(integralGain->getPort("output"),
+  group->connect(approachGain->getPort("output"),
                  outputSum->getPort("input1"));
   
   GroupOutput* output = new GroupOutput("Output");
@@ -170,7 +183,7 @@ createTireTestrig(Node* wheel)
   ConstModel* normalForce = new ConstModel("Normal Force");
   group->addChild(normalForce);
 
-  Node* normalForceController = createController(1e-4, 0, 0);
+  Node* normalForceController = createController();
   normalForceController->setName("Normal Force Controller");
   group->addChild(normalForceController);
   group->connect(normalForce->getPort("output"),
