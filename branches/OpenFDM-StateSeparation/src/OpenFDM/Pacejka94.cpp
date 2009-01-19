@@ -86,7 +86,7 @@ Pacejka94::Pacejka94(const std::string& name) :
 
   mB0(2),
   mB1(0), mB2(1000),
-  mB3(0), mB4(50), mB5(0),
+  mB3(0), mB4(10), mB5(0),
   mB6(0), mB7(0), mB8(0.5), mB13(0),
   mB9(0), mB10(0),
   mB11(0), mB12(0),
