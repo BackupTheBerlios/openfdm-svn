@@ -9,6 +9,7 @@ namespace OpenFDM {
 BEGIN_OPENFDM_OBJECT_DEF(Pacejka94, PacejkaTire)
   DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
   DEF_OPENFDM_PROPERTY(Real, DampingConstant, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, FzMin, Serialized)
   DEF_OPENFDM_PROPERTY(Real, A0, Serialized)
   DEF_OPENFDM_PROPERTY(Real, A1, Serialized)
   DEF_OPENFDM_PROPERTY(Real, A2, Serialized)
@@ -73,6 +74,8 @@ Pacejka94::Pacejka94(const std::string& name) :
   mSpringConstant(0),
   mDampingConstant(0),
 
+  mFzMin(0),
+
   mA0(2),
   mA1(0), mA2(1000), mA15(0),
   mA3(1000), mA4(10), mA5(0),
@@ -102,30 +105,6 @@ Pacejka94::~Pacejka94(void)
 {
 }
 
-void
-Pacejka94::setSpringConstant(const real_type& springConstant)
-{
-  mSpringConstant = springConstant;
-}
-
-const real_type&
-Pacejka94::getSpringConstant(void) const
-{
-  return mSpringConstant;
-}
-
-void
-Pacejka94::setDampingConstant(const real_type& dampingConstant)
-{
-  mDampingConstant = dampingConstant;
-}
-
-const real_type&
-Pacejka94::getDampingConstant(void) const
-{
-  return mDampingConstant;
-}
-
 Vector6
 Pacejka94::getForce(const real_type& rho, const real_type& rhoDot,
                     const real_type& alpha, const real_type& kappa,
@@ -137,7 +116,20 @@ Pacejka94::getForce(const real_type& rho, const real_type& rhoDot,
   // The normal force
   real_type Fz = rho*mSpringConstant + mDampingConstant*rhoDot;
   // The normal force cannot get negative here.
-  Fz = 1e-3*max(real_type(0), Fz);
+  Fz = max(real_type(0), Fz);
+
+  // Pacejka's equations tend to provide infinitesimal stiff tires at low
+  // normal forces. Limit the input to the magic formula to a minimal
+  // normal load and rescale the output force according to the original
+  // load.
+  real_type FzRatio = 1;
+  if (Fz < mFzMin) {
+    FzRatio = Fz/mFzMin;
+    Fz = mFzMin;
+  }
+
+  // The normal force is mean to be in kN
+  Fz *= 1e-3;
 
   //
   // Longitudinal force (Pure longitudinal slip)
@@ -216,7 +208,31 @@ Pacejka94::getForce(const real_type& rho, const real_type& rhoDot,
   real_type Bza = Bz*alphaz;
   real_type Mz = Dz*sin(Cz*atan(Bza - Ez*(Bza - atan(Bza)))) + SVz;
 
-  return Vector6(Vector3(0, 0, Mz), Vector3(Fx, Fy, 1e3*Fz));
+  return FzRatio*Vector6(Vector3(0, 0, Mz), Vector3(Fx, Fy, 1e3*Fz));
+}
+
+void
+Pacejka94::setSpringConstant(const real_type& springConstant)
+{
+  mSpringConstant = springConstant;
+}
+
+const real_type&
+Pacejka94::getSpringConstant(void) const
+{
+  return mSpringConstant;
+}
+
+void
+Pacejka94::setDampingConstant(const real_type& dampingConstant)
+{
+  mDampingConstant = dampingConstant;
+}
+
+const real_type&
+Pacejka94::getDampingConstant(void) const
+{
+  return mDampingConstant;
 }
 
 } // namespace OpenFDM

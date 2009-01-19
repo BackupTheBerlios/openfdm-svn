@@ -122,7 +122,9 @@ public:
     // The wheel revolution speed
     real_type omega = dot(rotVel, s);
 
-    // The rotational velocity of the hub system wrt ground
+    // The rotational velocity of the hub system wrt ground,
+    // Note that this does *not* include the wheels own spin
+    // rate around the wheel axis.
     Vector3 rotVelHub = relVel.getAngular() - omega*s;
  
     // FIXME ????

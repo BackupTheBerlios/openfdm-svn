@@ -15,18 +15,19 @@ public:
   Pacejka89(const std::string& name);
   virtual ~Pacejka89(void);
 
-  /** Stuff that should move into the tire force implementation.
-   */
+  // Helper function to compute the resulting force
+  virtual Vector6 getForce(const real_type& rho, const real_type& rhoDot,
+                           const real_type& alpha, const real_type& kappa,
+                           const real_type& gamma, const real_type& phi) const;
+
   void setSpringConstant(const real_type& springConstant);
   const real_type& getSpringConstant(void) const;
 
   void setDampingConstant(const real_type& dampingConstant);
   const real_type& getDampingConstant(void) const;
 
-  // Helper function to compute the resulting force
-  virtual Vector6 getForce(const real_type& rho, const real_type& rhoDot,
-                           const real_type& alpha, const real_type& kappa,
-                           const real_type& gamma, const real_type& phi) const;
+  const real_type& getFzMin() const { return mFzMin; }
+  void setFzMin(const real_type& value) { mFzMin = value; }
 
   const real_type& getA0() const { return mA0; }
   void setA0(const real_type& value) { mA0 = value; }
@@ -162,6 +163,8 @@ public:
 private:
   real_type mSpringConstant;
   real_type mDampingConstant;
+
+  real_type mFzMin;
 
   real_type mA0;
   real_type mA1, mA2;
