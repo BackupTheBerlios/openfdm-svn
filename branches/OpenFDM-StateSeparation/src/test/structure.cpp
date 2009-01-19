@@ -164,7 +164,7 @@ int main()
 
   std::cout << "PASSED" << std::endl;
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 // Kabelbaum <-> PortBundle ??? Original Kabelbaum == Cabel Bundle
