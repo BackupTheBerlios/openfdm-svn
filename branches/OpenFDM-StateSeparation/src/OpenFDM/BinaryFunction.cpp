@@ -13,7 +13,8 @@ BEGIN_OPENFDM_OBJECT_DEF(BinaryFunction, SimpleDirectModel)
   END_OPENFDM_OBJECT_DEF
 
 BinaryFunction::BinaryFunction(const std::string& name, Type type) :
-  SimpleDirectModel(name)
+  SimpleDirectModel(name),
+  mType(type)
 {
   setNumInputPorts(2);
 }
