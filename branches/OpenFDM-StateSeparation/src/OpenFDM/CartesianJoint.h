@@ -142,14 +142,31 @@ protected:
       // Propagate the reference coordinate system to the parent.
       mChildLink.setCoordinateSystem(mParentLink.getCoordinateSystem().toReference(mRelativeCoordinateSystem));
 
+      Vector6 relVel = mJointMatrix*velocity;
       mChildLink.setPosAndVel(mParentLink.getMechanicLinkValue(),
-                              relPosition, orientation, mJointMatrix*velocity);
+                              relPosition, orientation, relVel);
+
+      /**
+         This is the cross product of the inertial spatial velocity
+         vector with the relative spatial velocity vector (motion type
+         cross product). Since the inertial velocity is the transformed
+         inertial velocity of the parent frame plus the relative
+         velocity of the current frame, all the relative velocity
+         components cancel out in this expression. What remains is the
+         transformed spatial velocity of the parent frame cross the
+         relative velocity.
+      */
+      Vector6 pivel = mParentLink.getSpVelAtLink();
+      pivel = mRelativeCoordinateSystem.motionToLocal(pivel);
+      mHdot = Vector6(cross(pivel.getAngular(), relVel.getAngular()),
+                      cross(pivel.getAngular(), relVel.getLinear()) + 
+                      cross(pivel.getLinear(), relVel.getAngular()));
     }
 
-    Vector6 getHdot()
-    {
-      return getChildLink().getMechanicLinkValue().getFrame().getHdot();
-    }
+    /** This is the derivative of the joint matrix times the joint velocity
+     */
+    const Vector6& getHdot() const
+    { return mHdot; }
     
     /** Compute the articulation step for a given joint force.
      *  Use this for usual joints.
@@ -246,6 +263,7 @@ protected:
   private:
     // Stores some values persistent accross velocity/articulation/acceleration
     MatrixFactorsNN hIh;
+    Vector6 mHdot;
     Vector6 pAlpha;
     VectorN mVelDot;
     VectorN mJointForce;
