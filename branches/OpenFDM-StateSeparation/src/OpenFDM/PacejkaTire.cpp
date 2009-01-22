@@ -49,7 +49,7 @@ public:
       mLongitudinalForcePort = 0;
 
     // Pacejka suggests this correction to avoid singularities at zero speed
-    const real_type e_v = 1e-2;
+    const real_type e_v = 1e-1;
 
     // The coordinate system at the hub.
     CoordinateSystem hubCoordinateSystem(getLink().getCoordinateSystem());
@@ -70,64 +70,51 @@ public:
     // Wheel forward vector as defined in (2.23), Pacejka [1]
     Vector3 l = normalize(cross(n, s));
 
-//     // The side direction in the ground plane
-//     Vector3 t = normalize(cross(l, n));
-
-//     // The transform 
-//     Matrix33 T(l(0), l(1), l(2),
-//                t(0), t(1), t(2),
-//                s(0), s(1), s(2));
-    
     // Compute the contact point of the wheel with the ground plane
     Vector3 c;
     if (!lp.intersectLine(Vector3::zeros(), cross(l, s), c))
       return;
 
-    // Since we live in our local coordinate system, this is just to be clear
-    Vector3 r = c - Vector3::zeros();
+    // The rolling radius - e do not fiddle here with the effective rolling
+    // radius here (Yet!).
+    real_type r = norm(c);
     
     // Get the tire deflection.
-    real_type rho = mPacejkaTire->getWheelRadius() - norm(r);
+    real_type rho = mPacejkaTire->getWheelRadius() - r;
 
     // Don't bother if we do not intersect the ground.
     if (rho < 0)
       return;
 
-    // The relative velocity of the hub wrt the contact point
-    // measured in the hubs coordinate system
+    // The relative velocity of the wheel wrt the contact surface
+    // measured in the hubs coordinate system.
+    // This includes the wheels revolution speed.
     Vector6 relVel = getLink().getRefVel() - groundValues.vel;
 
-    Vector6 relVel2 = motionTo(r, relVel);
-
-//     std::cout << trans(r) << std::endl;
-//     std::cout << trans(relVel.getLinear()) << " " << 
-//       trans(relVel2.getLinear()) << std::endl;
-    
     // The compression velocity.
     // Positive when the contact spring is compressed,
     // negative when decompressed.
-    real_type rhoDot = dot(relVel.getLinear(), normalize(r));
+    real_type rhoDot = dot(relVel.getLinear(), normalize(c));
+
+    // The scalar wheel revolution speed.
+    real_type omega = dot(relVel.getAngular(), s);
+
+    // The rotational velocity of the hub system wrt ground.
+    // This does *not* include the wheels revolution speed.
+    Vector3 rotVelHub = relVel.getAngular() - omega*s;
+
+    // The relative velocity of the rim fixed contact point wrt the ground
+    Vector6 relVelS = motionTo(c, relVel);
 
     // The side direction in the ground plane
     Vector3 t = normalize(cross(l, n));
 
     // The speed at the contact center
-    Vector3 V_c = relVel.getLinear(); // + r_dot; ???
-//     Vector3 V_cS = relVel.getLinear(); // + r_dot; ???
-    Vector3 V_s = relVel2.getLinear();
+    Vector3 V_c = relVel.getLinear();
+    Vector3 V_s = relVelS.getLinear();
 
-    // The wheels velocity wrt ground
-    Vector3 rotVel = relVel.getAngular();
-
-    // The wheel revolution speed
-    real_type omega = dot(rotVel, s);
-
-    // The rotational velocity of the hub system wrt ground,
-    // Note that this does *not* include the wheels own spin
-    // rate around the wheel axis.
-    Vector3 rotVelHub = relVel.getAngular() - omega*s;
- 
-    // FIXME ????
+    // The speed values we need to define the various slips,
+    // See Pacejka's book for an explanation and the simplification used here
     real_type V_cx = dot(V_c, l);
     real_type V_cx_eps = fabs(V_cx) + e_v;
     real_type V_cy = dot(V_c, t);
@@ -153,20 +140,19 @@ public:
     // we check the  = -1/R claim in (2.18) Pacejka
     real_type phi = dot(n, rotVelHub)/V_cx_eps;
 
+    // Call the magic formula evaluation
     Vector6 f = mPacejkaTire->getForce(rho, rhoDot, alpha, kappa, gamma, phi);
 
     if (mLongitudinalForcePort.isConnected())
-      mLongitudinalForcePort = f.getLinear()(0);
+      mLongitudinalForcePort = f(3);
     if (mLateralForcePort.isConnected())
-      mLateralForcePort = f.getLinear()(1);
+      mLateralForcePort = f(4);
     if (mNormalForcePort.isConnected())
-      mNormalForcePort = f.getLinear()(2);
+      mNormalForcePort = f(5);
 
-    // For now just pure side force and slip
-    Vector3 force = f.getLinear()(0)*l + f.getLinear()(1)*t
-      + f.getLinear()(2)*n;
-    Vector3 contactPoint = c;
-    getLink().applyBodyForce(contactPoint, force);
+    // Apply the force and torque values rotated to the body frame to the wheel
+    getLink().applyBodyForce(c, Vector3(f(3)*l + f(4)*t + f(5)*n));
+    getLink().applyBodyTorque(Vector3(f(0)*l + f(1)*t + f(2)*n));
   }
 
 private:
