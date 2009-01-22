@@ -199,8 +199,7 @@ public:
 class HDFMatrixStream : public HDF5Object {
 public:
   HDFMatrixStream(const HDF5Object& parent, const std::string& name,
-                  const Size& size) :
-    _timeIndex(0)
+                  const Size& size)
   {
     hsize_t _chunklen(100);
     herr_t status;
@@ -232,7 +231,6 @@ public:
     if (!_dataspace.valid())
       return;
 
-    _timeIndex = 0;
     _dims[0] = 0;
 
     hsize_t chunk_dims[3] = { _chunklen, _dims[1], _dims[2] };
@@ -282,7 +280,6 @@ public:
 
 private:
   hsize_t _dims[3];
-  unsigned _timeIndex;
   HDF5Object _dataspace;
 };
 
