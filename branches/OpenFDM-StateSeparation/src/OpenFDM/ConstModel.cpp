@@ -30,6 +30,21 @@ ConstModel::~ConstModel(void)
 {
 }
 
+bool
+ConstModel::alloc(ModelContext& context) const
+{
+  Size sz = size(mValue);
+  Log(Initialization, Debug)
+    << "Size for ConstModel is detemined by the value "
+    << "with size: " << trans(sz) << std::endl;
+  if (!context.getPortValueList().setOrCheckPortSize(mOutputPort, sz)) {
+    Log(Initialization, Error)
+      << "Size for output port does not match!" << std::endl;
+    return false;
+  }
+  return true;
+}
+
 void
 ConstModel::output(const Task& ,const DiscreteStateValueVector&,
                    const ContinousStateValueVector&,

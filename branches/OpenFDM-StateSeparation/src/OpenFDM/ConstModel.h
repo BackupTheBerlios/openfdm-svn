@@ -17,6 +17,7 @@ public:
   ConstModel(const std::string& name, const real_type& value = real_type(0));
   virtual ~ConstModel(void);
 
+  virtual bool alloc(ModelContext& context) const;
   virtual void output(const Task&,const DiscreteStateValueVector&,
                       const ContinousStateValueVector& continousState,
                       PortValueList& portValues) const;
