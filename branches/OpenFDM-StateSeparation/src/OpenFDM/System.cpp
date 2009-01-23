@@ -363,11 +363,6 @@ public:
       return true;
     }
 
-    void disablePortValueCreation()
-    {
-      mPortValueCreator = false;
-    }
-
     void setProxyPortData(PortData* proxyPortData)
     {
       mPortValueCreator = false;
@@ -732,8 +727,17 @@ public:
     OpenFDMAssert(node.getPort(0));
     PortData* portData = instanceData->getPortData(0);
     OpenFDMAssert(portData);
-    portData->disablePortValueCreation();
-    mGroupInterfacePortDataMap[node.getExternalPortIndex()] = portData;
+
+    PortData* parentPortData;
+    parentPortData = mGroupInterfacePortDataMap[node.getExternalPortIndex()];
+    if (!parentPortData) {
+      Log(Schedule, Error) << "Internal Error: Cannot find external port "
+        "data for group external port!" << std::endl;
+      return;
+    }
+
+    parentPortData->setProxyPortData(portData);
+    portData->setProxyPortData(parentPortData);
   }
 
   virtual void apply(const RootJoint& node)
@@ -767,10 +771,8 @@ public:
         continue;
       if (portData) {
         instanceData->getPortData(i)->setProxyPortData(portData);
-        instanceData->getPortData(i)->disablePortValueCreation();
       } else {
         portData = instanceData->getPortData(i);
-        portData->disablePortValueCreation();
       }
     }
   }
@@ -805,6 +807,9 @@ public:
     GroupInterfacePortDataMap parentGroupInterfacePortDataMap;
     mGroupInterfacePortDataMap.swap(parentGroupInterfacePortDataMap);
     mGroupInterfacePortDataMap.resize(group.getNumPorts());
+    // Alloc PortData structs of each group port
+    for (unsigned i = 0; i < mGroupInterfacePortDataMap.size(); ++i)
+      mGroupInterfacePortDataMap[i] = instanceData->getPortData(i);
 
     // End pushing external connection data
 
@@ -902,25 +907,6 @@ public:
           connect(mInstanceDataVector[nodeIndex0]->getPortData(portInfoIndex0)))
         Log(Schedule, Error) << "Internal Error: Cannot connect ports that"
           " appeared to be compatible before." << std::endl;
-    }
-
-    // add group connect routings
-    // merge child list into the global list of instances
-    OpenFDMAssert(mGroupInterfacePortDataMap.size() == group.getNumPorts());
-    for (unsigned i = 0; i < group.getNumPorts(); ++i) {
-      PortData* portData = mGroupInterfacePortDataMap[i];
-      if (!portData) {
-        Log(Schedule, Error) << "Internal Error: Cannot find internal port "
-          "data for group external port!" << std::endl;
-        continue;
-      }
-
-      // Allocate a new port data struct in the parent.
-      PortData* parentPortData = instanceData->getPortData(i);
-      parentPortData->setProxyPortData(portData);
-      portData->setProxyPortData(parentPortData);
-      parentPortData->disablePortValueCreation();
-      portData->disablePortValueCreation();
     }
 
     // We must have gained exactly this amount of instances while traversing
