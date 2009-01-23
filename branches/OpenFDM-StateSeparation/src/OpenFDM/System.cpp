@@ -262,15 +262,17 @@ public:
   struct PortConnectSet : public Referenced {
     bool setPortValue(PortValue* portValue)
     {
-      while (!mParentPortData.empty()) {
-        SharedPtr<PortData> portData = mParentPortData.back().lock();
-        mParentPortData.pop_back();
-        if (!portData->setPortValue(portValue))
-          return false;
-      }
+      if (!portValue)
+        return false;
+      mPortValue = portValue;
       return true;
     }
+    PortValue* getPortValue()
+    {
+      return mPortValue;
+    }
     std::vector<WeakPtr<PortData> > mParentPortData;
+    SharedPtr<PortValue> mPortValue;
   };
 
   struct PortData : public WeakReferenced {
@@ -376,11 +378,7 @@ public:
     {
       if (!mPortValueCreator)
         return true;
-      SharedPtr<InstanceData> instanceData = mInstanceData.lock();
-      if (!instanceData)
-        return false;
-      // FIXME
-      if (instanceData->getPortValue(*getPortInfo()))
+      if (getPortValue())
         return true;
       SharedPtr<PortValue> portValue = getPortInfo()->newValue();
       if (!portValue)
@@ -388,6 +386,11 @@ public:
       if (!mPortConnectSet->setPortValue(portValue))
         return false;
       return true;
+    }
+
+    PortValue* getPortValue()
+    {
+      return mPortConnectSet->getPortValue();
     }
 
   private:
@@ -466,21 +469,42 @@ public:
     std::string getNodeNamePath() const
     { return Node::toNodePathName(mNodePath); }
 
-    bool allocPortValues()
+    bool createPortValues()
     {
       for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
-        Log(Schedule, Debug3) << "Try to to allocate port value \""
+        Log(Schedule, Debug3) << "Try to create port value \""
                               << mPortDataVector[i]->getPortInfo()->getName()
                               << "\" of \"" << getNodeNamePath()
                               << "\"" << endl;
         if (!mPortDataVector[i]->createPortValue()) {
-          Log(Schedule, Warning) << "Failed to allocate port value \""
+          Log(Schedule, Warning) << "Failed to create port value \""
                                  << mPortDataVector[i]->getPortInfo()->getName()
                                  << "\" of \"" << getNodeNamePath()
                                  << "\".\nAborting!" << endl;
 
           return false;
         }
+      }
+      return true;
+    }
+
+    bool fetchPortValues()
+    {
+      for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
+        Log(Schedule, Debug3) << "Try to fetch port value \""
+                              << mPortDataVector[i]->getPortInfo()->getName()
+                              << "\" of \"" << getNodeNamePath()
+                              << "\"" << endl;
+        PortValue* portValue = mPortDataVector[i]->getPortValue();
+        if (!portValue) {
+          Log(Schedule, Warning) << "Failed to fetch port value \""
+                                 << mPortDataVector[i]->getPortInfo()->getName()
+                                 << "\" of \"" << getNodeNamePath()
+                                 << "\".\nAborting!" << endl;
+
+          return false;
+        }
+        mPortValueList.setPortValue(i, portValue);
       }
       return true;
     }
@@ -1298,23 +1322,14 @@ protected:
     // alloc port values
     InstanceDataMap::const_iterator i;
     for (i = mInstanceDataMap.begin(); i != mInstanceDataMap.end(); ++i) {
-      if (!i->second->allocPortValues())
+      if (!i->second->createPortValues())
         return false;
     }
 
-    // check port values and report unconnected mandatory values.
+    // check port values and report unconnected values.
     for (i = mInstanceDataMap.begin(); i != mInstanceDataMap.end(); ++i) {
-      const Node* node = i->second->getNode();
-      for (unsigned k = 0; k < node->getNumPorts(); ++k) {
-        SharedPtr<const PortInfo> portInfo = node->getPort(k);
-        if (!i->second->getPortValue(*portInfo)) {
-          Log(Schedule, Warning) << "Mandatory port value for port \""
-                                 << portInfo->getName() << "\" for model \""
-                                 << i->second->getNodeNamePath()
-                                 << "\" is not connected!" << endl;
-          return false;
-        }
-      }
+      if (!i->second->fetchPortValues())
+        return false;
     }
 
     // Create the contexts
