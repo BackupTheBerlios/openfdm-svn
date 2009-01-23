@@ -277,9 +277,7 @@ public:
 
   struct PortData : public WeakReferenced {
   public:
-    PortData(InstanceData* instanceData, const PortInfo* portInfo,
-             bool valueCreator = true) :
-      mInstanceData(instanceData),
+    PortData(const PortInfo* portInfo, bool valueCreator = true) :
       mPortInfo(portInfo),
       mPortValueCreator(valueCreator)
     {
@@ -346,23 +344,6 @@ public:
     const SharedPtr<const PortInfo>& getPortInfo() const
     { return mPortInfo; }
 
-    bool setPortValue(PortValue* portValue)
-    {
-      if (!getPortInfo())
-        return false;
-      SharedPtr<InstanceData> instanceData = mInstanceData.lock();
-      if (!instanceData)
-        return false;
-      Log(Schedule, Debug3)
-        << "setPortValue for port \"" << getPortInfo()->getName()
-        << "\" is at: " << portValue << endl;
-      // FIXME: move the set port value and accept port value into one call
-      if (!getPortInfo()->acceptPortValue(portValue))
-        return false;
-      instanceData->setPortValue(*getPortInfo(), portValue);
-      return true;
-    }
-
     void setProxyPortData(PortData* proxyPortData)
     {
       mPortValueCreator = false;
@@ -389,7 +370,6 @@ public:
     }
 
   private:
-    WeakPtr<InstanceData> mInstanceData;
     SharedPtr<const PortInfo> mPortInfo;
     std::vector<WeakPtr<PortData> > mConnectedPorts;
     SharedPtr<PortConnectSet> mPortConnectSet;
@@ -405,7 +385,7 @@ public:
       unsigned numPorts = node.getNumPorts();
       mPortDataVector.reserve(numPorts);
       for (unsigned i = 0; i < numPorts; ++i)
-        mPortDataVector.push_back(new PortData(this, node.getPort(i)));
+        mPortDataVector.push_back(new PortData(node.getPort(i)));
     }
     virtual ~InstanceData()
     { }
@@ -496,9 +476,16 @@ public:
                                  << mPortDataVector[i]->getPortInfo()->getName()
                                  << "\" of \"" << getNodeNamePath()
                                  << "\".\nAborting!" << endl;
-
           return false;
         }
+        if (!mPortDataVector[i]->getPortInfo()->acceptPortValue(portValue)) {
+          Log(Schedule, Warning) << "Failed to fetch port value \""
+                                 << mPortDataVector[i]->getPortInfo()->getName()
+                                 << "\" of \"" << getNodeNamePath()
+                                 << "\".\nAborting!" << endl;
+          return false;
+        }
+
         mPortValueList.setPortValue(i, portValue);
       }
       return true;
