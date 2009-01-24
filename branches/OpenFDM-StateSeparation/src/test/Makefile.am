@@ -4,7 +4,8 @@ INCLUDES = -I$(srcdir)/..
 bin_PROGRAMS = foucault inertianav mechanic structure tiretestrig coordsys
 
 # define some unit tests
-check_PROGRAMS = constintegral harmonic limit linalg quattest simulationtime unitstest
+check_PROGRAMS = constintegral harmonic limit linalg quattest \
+                 simulationtime structure unitstest
 TESTS          = $(check_PROGRAMS)
 
 tiretestrig_SOURCES = tiretestrig.cpp
