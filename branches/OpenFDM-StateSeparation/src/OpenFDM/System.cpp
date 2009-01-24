@@ -279,6 +279,7 @@ public:
   public:
     PortData(const PortInfo* portInfo, bool valueCreator = true) :
       mPortInfo(portInfo),
+      mNumConnectedPorts(0),
       mPortValueCreator(valueCreator)
     {
       getOrCreatePortConnectSet();
@@ -318,9 +319,9 @@ public:
 
     bool addPortData(PortData* portData)
     {
-      if (getPortInfo()->getMaxConnects() <= mConnectedPorts.size())
+      if (getPortInfo()->getMaxConnects() <= mNumConnectedPorts)
         return false;
-      mConnectedPorts.push_back(portData);
+      mNumConnectedPorts += 1;
       setPortConnectSet(portData->getOrCreatePortConnectSet());
       return true;
     }
@@ -332,11 +333,11 @@ public:
 
     bool connect(PortData* portData)
     {
-      if (getPortInfo()->getMaxConnects() <= mConnectedPorts.size())
+      if (getPortInfo()->getMaxConnects() <= mNumConnectedPorts)
         return false;
       if (!portData->addPortData(this))
         return false;
-      mConnectedPorts.push_back(portData);
+      mNumConnectedPorts += 1;
       setPortConnectSet(portData->getOrCreatePortConnectSet());
       return true;
     }
@@ -371,8 +372,12 @@ public:
 
   private:
     SharedPtr<const PortInfo> mPortInfo;
-    std::vector<WeakPtr<PortData> > mConnectedPorts;
+    // The number of *directly* connected ports. That is those direct
+    // connections within the current Group. Is used to ensure 1:* port connects
+    // if required by the PortInfo.
+    unsigned mNumConnectedPorts;
     SharedPtr<PortConnectSet> mPortConnectSet;
+    // Hmm, should this go into PortInfo??
     bool mPortValueCreator;
   };
 
