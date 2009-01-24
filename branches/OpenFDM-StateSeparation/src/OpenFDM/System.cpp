@@ -404,15 +404,6 @@ public:
       return mPortDataVector[i];
     }
 
-    void setPortValue(const PortInfo& portInfo, PortValue* portValue)
-    {
-      mPortValueList.setPortValue(portInfo.getIndex(), portValue);
-    }
-    const PortValue* getPortValue(const PortInfo& portInfo)
-    {
-      return mPortValueList.getPortValue(portInfo);
-    }
-
     bool
     dependsOn(const InstanceData& instance, bool acceleration = false) const
     {
