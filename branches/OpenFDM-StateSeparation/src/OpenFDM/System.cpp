@@ -252,7 +252,7 @@ public:
   NodeInstanceCollector(const SampleTime& sampleTime,
                         Environment* environment) :
     mSampleTime(sampleTime),
-    mBasicSampleTime(SampleTime::getContinous()),
+    mBasicSampleTime(sampleTime),
     mEnvironment(environment)
   { }
 
