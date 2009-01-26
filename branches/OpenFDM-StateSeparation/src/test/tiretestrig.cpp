@@ -265,6 +265,7 @@ main(int argc, char *argv[])
   SharedPtr<Node> wheel = createWheel();
   SharedPtr<Node> testrig = createTireTestrig(wheel);
   SharedPtr<System> system = new System("Tire Testrig", testrig);
+  system->setSampleTime(SampleTime(Fraction(1, 500)));
 
   // set the moving ground
   MovingGround* movingGround = new MovingGround(Vector3(velocity, 0, 0));
