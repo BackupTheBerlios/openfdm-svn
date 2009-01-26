@@ -702,8 +702,9 @@ public:
 
   virtual void apply(const GroupInterfaceNode& node)
   {
+    SampleTime sampleTime = mergeSampleTime(mSampleTime, node.getSampleTime());
     SharedPtr<NodeInstanceData> instanceData;
-    instanceData = new NodeInstanceData(node, getNodePath(), mSampleTime);
+    instanceData = new NodeInstanceData(node, getNodePath(), sampleTime);
     addInstanceData(instanceData);
     mNodeInstanceDataList.push_back(instanceData);
 
@@ -727,22 +728,25 @@ public:
   {
     // Need to store the root nodes to build up the spanning tree for the
     // mechanical system here.
+    SampleTime sampleTime = mergeSampleTime(mSampleTime, node.getSampleTime());
     SharedPtr<JointInstanceData> instanceData;
-    instanceData = new JointInstanceData(node, getNodePath(), mSampleTime);
+    instanceData = new JointInstanceData(node, getNodePath(), sampleTime);
     addInstanceData(instanceData);
     mRootJointInstanceDataList.push_back(instanceData);
   }
   virtual void apply(const Interact& node)
   {
+    SampleTime sampleTime = mergeSampleTime(mSampleTime, node.getSampleTime());
     SharedPtr<InteractInstanceData> instanceData;
-    instanceData = new InteractInstanceData(node, getNodePath(), mSampleTime);
+    instanceData = new InteractInstanceData(node, getNodePath(), sampleTime);
     addInstanceData(instanceData);
     mInteractInstanceDataList.push_back(instanceData);
   }
   virtual void apply(const RigidBody& node)
   {
+    SampleTime sampleTime = mergeSampleTime(mSampleTime, node.getSampleTime());
     SharedPtr<NodeInstanceData> instanceData;
-    instanceData = new NodeInstanceData(node, getNodePath(), mSampleTime);
+    instanceData = new NodeInstanceData(node, getNodePath(), sampleTime);
     addInstanceData(instanceData);
     mNodeInstanceDataList.push_back(instanceData);
 
@@ -761,21 +765,27 @@ public:
   }
   virtual void apply(const Joint& node)
   {
+    SampleTime sampleTime = mergeSampleTime(mSampleTime, node.getSampleTime());
     SharedPtr<JointInstanceData> instanceData;
-    instanceData = new JointInstanceData(node, getNodePath(), mSampleTime);
+    instanceData = new JointInstanceData(node, getNodePath(), sampleTime);
     addInstanceData(instanceData);
     mJointInstanceDataList.push_back(instanceData);
   }
   virtual void apply(const AbstractModel& node)
   {
+    SampleTime sampleTime = mergeSampleTime(mSampleTime, node.getSampleTime());
     SharedPtr<ModelInstanceData> instanceData;
-    instanceData = new ModelInstanceData(node, getNodePath(), mSampleTime);
+    instanceData = new ModelInstanceData(node, getNodePath(), sampleTime);
     addInstanceData(instanceData);
     mModelInstanceDataList.push_back(instanceData);
   }
 
   virtual void apply(const Group& group)
   {
+    // push the sample time
+    SampleTime parentSampleTime = mSampleTime;
+    mSampleTime = mergeSampleTime(parentSampleTime, group.getSampleTime());
+
     SharedPtr<NodeInstanceData> instanceData;
     instanceData = new NodeInstanceData(group, getNodePath(), mSampleTime);
     addInstanceData(instanceData);
@@ -798,32 +808,12 @@ public:
 
     // Now walk the children
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
-      // push the sample time
-      SampleTime sampleTime = mSampleTime;
 
       // our next node to traverse
       SharedPtr<const Node> node = group.getChild(i);
 
-      // check what to do with sample times
-      mSampleTime = node->getSampleTime();
-      if (mSampleTime.isInherited())
-        mSampleTime = sampleTime;
-      else if (mSampleTime.isDiscrete()) {
-        if (!mBasicSampleTime.isDiscrete())
-          mBasicSampleTime = mSampleTime;
-        else {
-          Fraction a = mBasicSampleTime.getSampleTime();
-          Fraction b = mSampleTime.getSampleTime();
-          mBasicSampleTime = SampleTime(greatestCommonDivisor(a, b));
-          OpenFDMAssert(mBasicSampleTime.isDiscrete());
-        }
-      }
-
       // now traverse the child ...
       node->accept(*this);
-
-      // restore old group sample time
-      mSampleTime = sampleTime;
     }
 
     // Apply the group internal connections to the instances
@@ -899,6 +889,9 @@ public:
     // Pop the per group port connect info
     parentGroupInterfacePortDataMap.swap(mGroupInterfacePortDataMap);
     parentInstanceDataVector.swap(mInstanceDataVector);
+
+    // restore old group sample time
+    mSampleTime = parentSampleTime;
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -1002,6 +995,28 @@ public:
   }
 
 protected:
+
+
+  SampleTime mergeSampleTime(const SampleTime& parentSampleTime,
+                             const SampleTime& nodeSampleTime)
+  {
+    if (nodeSampleTime.isInherited())
+      return parentSampleTime;
+
+    SampleTime sampleTime = nodeSampleTime;
+    if (sampleTime.isDiscrete()) {
+      if (!mBasicSampleTime.isDiscrete())
+        mBasicSampleTime = sampleTime;
+      else {
+        Fraction a = mBasicSampleTime.getSampleTime();
+        Fraction b = sampleTime.getSampleTime();
+        mBasicSampleTime = SampleTime(greatestCommonDivisor(a, b));
+        OpenFDMAssert(mBasicSampleTime.isDiscrete());
+      }
+    }
+    return sampleTime;
+  }
+
   // method to sort the leafs according to their dependency
   bool sortMechanicList()
   {
