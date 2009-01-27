@@ -23,7 +23,7 @@ BEGIN_OPENFDM_OBJECT_DEF(FixedRootJoint, RootJoint)
 
 FixedRootJoint::FixedRootJoint(const std::string& name) :
   RootJoint(name),
-  mMechanicLink(newMechanicLink("link")),
+  mMechanicLink(new MechanicLink(this, "link")),
   mRootPosition(0, 0, 0),
   mRootOrientation(Quaternion::unit())
 {
@@ -67,7 +67,7 @@ FixedRootJoint::init(const Task&, DiscreteStateValueVector&,
 void
 FixedRootJoint::initDesignPosition(PortValueList& portValues) const
 {
-  portValues[mMechanicLink].setDesignPosition(getPosition());
+  portValues[*mMechanicLink].setDesignPosition(getPosition());
 }
 
 void
@@ -76,9 +76,9 @@ FixedRootJoint::velocity(const Task& task, const Environment& environment,
                          PortValueList& portValues) const
 {
   Vector3 angularBaseVelocity = environment.getAngularVelocity(task.getTime());
-  portValues[mMechanicLink].setCoordinateSystem(CoordinateSystem(mRootPosition,
-                                                                 mRootOrientation));
-  portValues[mMechanicLink].setPosAndVel(angularBaseVelocity, mRootPosition,
+  portValues[*mMechanicLink].setCoordinateSystem(CoordinateSystem(mRootPosition,
+                                         mRootOrientation));
+  portValues[*mMechanicLink].setPosAndVel(angularBaseVelocity, mRootPosition,
                                          mRootOrientation, Vector6::zeros());
 }
 
@@ -96,7 +96,7 @@ FixedRootJoint::acceleration(const Task& task, const Environment& environment,
                              PortValueList& portValues) const
 {
   Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
-  portValues[mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
+  portValues[*mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
 }
 
 } // namespace OpenFDM
