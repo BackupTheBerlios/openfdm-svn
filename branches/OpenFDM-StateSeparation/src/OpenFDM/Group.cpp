@@ -162,12 +162,12 @@ Group::getConnectIndex(const Connect* connect) const
 }
 
 Connect*
-Group::connect(const PortInfo* port0, const PortInfo* port1)
+Group::connect(const Port* port0, const Port* port1)
 {
   SharedPtr<Connect> connect = new Connect(this);
-  if (!connect->setPortInfo0(port0))
+  if (!connect->setPort0(port0))
     return 0;
-  if (!connect->setPortInfo1(port1))
+  if (!connect->setPort1(port1))
     return 0;
   mConnectList.push_back(connect);
   return connect.get();

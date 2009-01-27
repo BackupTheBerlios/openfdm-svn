@@ -41,7 +41,7 @@ public:
                           const PortValueList& portValues,
                           ContinousStateValueVector&) const;
 private:
-  MechanicLink mMechanicLink;
+  MechanicLink_ mMechanicLink;
 
   SharedPtr<Vector3StateInfo> mPositionStateInfo;
   SharedPtr<Vector4StateInfo> mOrientationStateInfo;

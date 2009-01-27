@@ -16,9 +16,9 @@ public:
 
   virtual const Node& getNode() const;
 
-  virtual const PortValue* getPortValue(const PortInfo&) const;
-  virtual const NumericPortValue* getPortValue(const NumericPortInfo&) const;
-  virtual const MechanicLinkValue* getPortValue(const MechanicLinkInfo&) const;
+  virtual const PortValue* getPortValue(const Port&) const;
+  virtual const NumericPortValue* getPortValue(const NumericPort&) const;
+  virtual const MechanicLinkValue* getPortValue(const MechanicLink&) const;
 
 private:
   SharedPtr<const Node> mNode;

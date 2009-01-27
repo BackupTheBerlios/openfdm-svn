@@ -44,8 +44,8 @@ public:
 
   virtual MechanicContext*
   newMechanicContext(const Environment* environment,
-                     const MechanicLinkInfo* parentLinkInfo,
-                     const MechanicLinkInfo* childLinkInfo,
+                     const MechanicLink* parentLink,
+                     const MechanicLink* childLink,
                      PortValueList& portValueList) const;
 
   virtual JointContext*

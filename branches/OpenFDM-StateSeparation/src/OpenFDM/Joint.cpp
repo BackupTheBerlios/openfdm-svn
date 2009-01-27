@@ -40,16 +40,16 @@ Joint::accept(ConstNodeVisitor& visitor) const
 
 MechanicContext*
 Joint::newMechanicContext(const Environment* environment,
-                          const MechanicLinkInfo* parentLinkInfo,
-                          const MechanicLinkInfo* childLinkInfo,
+                          const MechanicLink* parentLink,
+                          const MechanicLink* childLink,
                           PortValueList& portValueList) const
 {
   MechanicLinkValue* parentLinkValue = 0;
-  if (parentLinkInfo)
-    parentLinkValue = portValueList.getPortValue(*parentLinkInfo);
+  if (parentLink)
+    parentLinkValue = portValueList.getPortValue(*parentLink);
   MechanicLinkValue* childLinkValue = 0;
-  if (childLinkInfo)
-    childLinkValue = portValueList.getPortValue(*childLinkInfo);
+  if (childLink)
+    childLinkValue = portValueList.getPortValue(*childLink);
   return newJointContext(environment, parentLinkValue,
                          childLinkValue, portValueList);
 }

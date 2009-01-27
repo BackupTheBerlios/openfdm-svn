@@ -50,7 +50,7 @@ MechanicContext
 * Library models und parents
 * lock on exec
 * Zap Variant. Use TypeInfo data for that reason
-* PortInfo::isContinous()
+* Port::isContinous()
 * System externe PortValues
 
 * Improove TransferFunction
@@ -66,8 +66,8 @@ MechanicContext
 * Function -> AbstractFunction
 * LLVM - compile optimized c code from a model??
 
-* PortInfo -> Port ??? PortInfo ist dann System init time Datum fuer
-  port typ und size??? Dann kann AbstractModel die typen und sizes checken
+* PortInfo -> Port! PortInfo ist dann System init time Datum fuer
+  port typ und size! Dann kann AbstractModel die typen und sizes checken
   bevor PortValues alloziert werden und Typ angepasste Kontexte gebaut werden???
 
 * LinAlg has too many pitfalls.

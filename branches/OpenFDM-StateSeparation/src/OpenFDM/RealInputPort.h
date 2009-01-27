@@ -6,7 +6,7 @@
 #define OpenFDM_RealInputPort_H
 
 #include "NumericPortValue.h"
-#include "PortInfo.h"
+#include "Port.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
@@ -16,7 +16,7 @@ public:
   RealInputPort()
   { }
   RealInputPort(Node* node, const std::string& name, bool directInput) :
-    mPort(new InputPortInfo(node, name, Size(1, 1), directInput))
+    mPort(new InputPort(node, name, Size(1, 1), directInput))
   { }
   NumericPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -37,7 +37,7 @@ public:
   void setDirectInput(bool directInput)
   { OpenFDMAssert(mPort); mPort->setDirectInput(directInput); }
 private:
-  SharedPtr<InputPortInfo> mPort;
+  SharedPtr<InputPort> mPort;
 };
 
 } // namespace OpenFDM

@@ -277,8 +277,8 @@ public:
 
   struct PortData : public WeakReferenced {
   public:
-    PortData(const PortInfo* portInfo, bool valueCreator = true) :
-      mPortInfo(portInfo),
+    PortData(const Port* portInfo, bool valueCreator = true) :
+      mPort(portInfo),
       mNumConnectedPorts(0),
       mPortValueCreator(valueCreator)
     {
@@ -319,7 +319,7 @@ public:
 
     bool addPortData(PortData* portData)
     {
-      if (getPortInfo()->getMaxConnects() <= mNumConnectedPorts)
+      if (getPort()->getMaxConnects() <= mNumConnectedPorts)
         return false;
       mNumConnectedPorts += 1;
       setPortConnectSet(portData->getOrCreatePortConnectSet());
@@ -333,7 +333,7 @@ public:
 
     bool connect(PortData* portData)
     {
-      if (getPortInfo()->getMaxConnects() <= mNumConnectedPorts)
+      if (getPort()->getMaxConnects() <= mNumConnectedPorts)
         return false;
       if (!portData->addPortData(this))
         return false;
@@ -342,8 +342,8 @@ public:
       return true;
     }
 
-    const SharedPtr<const PortInfo>& getPortInfo() const
-    { return mPortInfo; }
+    const SharedPtr<const Port>& getPort() const
+    { return mPort; }
 
     void setProxyPortData(PortData* proxyPortData)
     {
@@ -357,7 +357,7 @@ public:
         return true;
       if (getPortValue())
         return true;
-      SharedPtr<PortValue> portValue = getPortInfo()->newValue();
+      SharedPtr<PortValue> portValue = getPort()->newValue();
       if (!portValue)
         return true; // FIXME
       if (!mPortConnectSet->setPortValue(portValue))
@@ -371,13 +371,13 @@ public:
     }
 
   private:
-    SharedPtr<const PortInfo> mPortInfo;
+    SharedPtr<const Port> mPort;
     // The number of *directly* connected ports. That is those direct
     // connections within the current Group. Is used to ensure 1:* port connects
-    // if required by the PortInfo.
+    // if required by the Port.
     unsigned mNumConnectedPorts;
     SharedPtr<PortConnectSet> mPortConnectSet;
-    // Hmm, should this go into PortInfo??
+    // Hmm, should this go into Port??
     bool mPortValueCreator;
   };
 
@@ -409,21 +409,21 @@ public:
     {
       unsigned numPorts = getNode()->getNumPorts();
       for (unsigned i = 0; i < numPorts; ++i) {
-        const InputPortInfo* inputPortInfo;
-        inputPortInfo = getNode()->getPort(i)->toInputPortInfo();
-        if (!inputPortInfo)
+        const InputPort* inputPort;
+        inputPort = getNode()->getPort(i)->toInputPort();
+        if (!inputPort)
           continue;
-        if (!inputPortInfo->getDirectInput())
+        if (!inputPort->getDirectInput())
           continue;
         OpenFDMAssert(i < mPortDataVector.size());
 
         unsigned otherNumPorts = instance.getNode()->getNumPorts();
         for (unsigned j = 0; j < otherNumPorts; ++j) {
-          const OutputPortInfo* outputPortInfo;
-          outputPortInfo = instance.getNode()->getPort(j)->toOutputPortInfo();
-          if (!outputPortInfo)
+          const OutputPort* outputPort;
+          outputPort = instance.getNode()->getPort(j)->toOutputPort();
+          if (!outputPort)
             continue;
-          if (!acceleration && outputPortInfo->getAccelerationOutput())
+          if (!acceleration && outputPort->getAccelerationOutput())
             continue;
 
           OpenFDMAssert(j < instance.mPortDataVector.size());
@@ -444,12 +444,12 @@ public:
     {
       for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
         Log(Schedule, Debug3) << "Try to create port value \""
-                              << mPortDataVector[i]->getPortInfo()->getName()
+                              << mPortDataVector[i]->getPort()->getName()
                               << "\" of \"" << getNodeNamePath()
                               << "\"" << endl;
         if (!mPortDataVector[i]->createPortValue()) {
           Log(Schedule, Warning) << "Failed to create port value \""
-                                 << mPortDataVector[i]->getPortInfo()->getName()
+                                 << mPortDataVector[i]->getPort()->getName()
                                  << "\" of \"" << getNodeNamePath()
                                  << "\".\nAborting!" << endl;
 
@@ -463,20 +463,20 @@ public:
     {
       for (unsigned i = 0; i < mPortDataVector.size(); ++i) {
         Log(Schedule, Debug3) << "Try to fetch port value \""
-                              << mPortDataVector[i]->getPortInfo()->getName()
+                              << mPortDataVector[i]->getPort()->getName()
                               << "\" of \"" << getNodeNamePath()
                               << "\"" << endl;
         PortValue* portValue = mPortDataVector[i]->getPortValue();
         if (!portValue) {
           Log(Schedule, Warning) << "Failed to fetch port value \""
-                                 << mPortDataVector[i]->getPortInfo()->getName()
+                                 << mPortDataVector[i]->getPort()->getName()
                                  << "\" of \"" << getNodeNamePath()
                                  << "\".\nAborting!" << endl;
           return false;
         }
-        if (!mPortDataVector[i]->getPortInfo()->acceptPortValue(portValue)) {
+        if (!mPortDataVector[i]->getPort()->acceptPortValue(portValue)) {
           Log(Schedule, Warning) << "Failed to fetch port value \""
-                                 << mPortDataVector[i]->getPortInfo()->getName()
+                                 << mPortDataVector[i]->getPort()->getName()
                                  << "\" of \"" << getNodeNamePath()
                                  << "\".\nAborting!" << endl;
           return false;
@@ -562,14 +562,14 @@ public:
     {
       unsigned numPorts = getNode()->getNumPorts();
       for (unsigned i = 0; i < numPorts; ++i) {
-        if (!getNode()->getPort(i)->toMechanicLinkInfo())
+        if (!getNode()->getPort(i)->toMechanicLink())
           continue;
         OpenFDMAssert(i < mPortDataVector.size());
 
         const Node* otherNode = instance.getNode();
         unsigned otherNumPorts = otherNode->getNumPorts();
         for (unsigned j = 0; j < otherNumPorts; ++j) {
-          if (!otherNode->getPort(j)->toMechanicLinkInfo())
+          if (!otherNode->getPort(j)->toMechanicLink())
             continue;
 
           OpenFDMAssert(j < instance.mPortDataVector.size());
@@ -611,8 +611,8 @@ public:
     {
       unsigned numPorts = getNode()->getNumPorts();
       for (unsigned i = 0; i < numPorts; ++i) {
-        const MechanicLinkInfo* linkInfo;
-        linkInfo = getNode()->getPort(i)->toMechanicLinkInfo();
+        const MechanicLink* linkInfo;
+        linkInfo = getNode()->getPort(i)->toMechanicLink();
         if (!linkInfo)
           continue;
         OpenFDMAssert(i < mPortDataVector.size());
@@ -620,9 +620,9 @@ public:
         const Node* otherNode = instance.getNode();
         unsigned otherNumPorts = otherNode->getNumPorts();
         for (unsigned j = 0; j < otherNumPorts; ++j) {
-          const MechanicLinkInfo* otherLinkInfo;
-          otherLinkInfo = otherNode->getPort(j)->toMechanicLinkInfo();
-          if (!otherLinkInfo)
+          const MechanicLink* otherLink;
+          otherLink = otherNode->getPort(j)->toMechanicLink();
+          if (!otherLink)
             continue;
 
           OpenFDMAssert(j < instance.mPortDataVector.size());
@@ -631,7 +631,7 @@ public:
             continue;
 
           mChildLink = linkInfo;
-          instance.mParentLink = otherLinkInfo;
+          instance.mParentLink = otherLink;
           return true;
         }
       }
@@ -643,8 +643,8 @@ public:
     {
       unsigned numPorts = getNode()->getNumPorts();
       for (unsigned i = 0; i < numPorts; ++i) {
-        const MechanicLinkInfo* linkInfo;
-        linkInfo = getNode()->getPort(i)->toMechanicLinkInfo();
+        const MechanicLink* linkInfo;
+        linkInfo = getNode()->getPort(i)->toMechanicLink();
         if (!linkInfo)
           continue;
         if (linkInfo == mParentLink)
@@ -654,8 +654,8 @@ public:
       return true;
     }
 
-    SharedPtr<const MechanicLinkInfo> mParentLink;
-    SharedPtr<const MechanicLinkInfo> mChildLink;
+    SharedPtr<const MechanicLink> mParentLink;
+    SharedPtr<const MechanicLink> mChildLink;
   private:
     SharedPtr<const Joint> mJoint;
   };
@@ -754,7 +754,7 @@ public:
     // FIXME, allocate them in this way!
     PortData* portData = 0;
     for (unsigned i = 0; i < node.getNumPorts(); ++i) {
-      if (!node.getPort(i)->toMechanicLinkInfo())
+      if (!node.getPort(i)->toMechanicLink())
         continue;
       if (portData) {
         instanceData->getPortData(i)->setProxyPortData(portData);
@@ -828,14 +828,14 @@ public:
         continue;
       }
 
-      SharedPtr<const PortInfo> portInfo0 = connect->getPortInfo0();
+      SharedPtr<const Port> portInfo0 = connect->getPort0();
       if (!portInfo0) {
         Log(Schedule, Warning) << "Incomplete connect #" << i << " for Group \""
                                << Node::toNodePathName(getNodePath())
                                << "\"" << std::endl;
         continue;
       }
-      SharedPtr<const PortInfo> portInfo1 = connect->getPortInfo1();
+      SharedPtr<const Port> portInfo1 = connect->getPort1();
       if (!portInfo1) {
         Log(Schedule, Warning) << "Incomplete connect #" << i << " for Group \""
                                << Node::toNodePathName(getNodePath())

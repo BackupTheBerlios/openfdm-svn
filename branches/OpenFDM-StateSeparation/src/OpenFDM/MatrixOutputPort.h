@@ -16,7 +16,7 @@ public:
   { }
   MatrixOutputPort(Node* node, const std::string& name, const Size& size,
                    bool accelerationPort = false) :
-    mPort(new OutputPortInfo(node, name, size, accelerationPort))
+    mPort(new OutputPort(node, name, size, accelerationPort))
   { }
   NumericPortValue* getPortValue(const PortValueVector& portValueVector) const
   {
@@ -36,7 +36,7 @@ public:
   void setAccelerationOutput(bool accelerationOutput)
   { OpenFDMAssert(mPort); mPort->setAccelerationOutput(accelerationOutput); }
 private:
-  SharedPtr<OutputPortInfo> mPort;
+  SharedPtr<OutputPort> mPort;
 };
 
 

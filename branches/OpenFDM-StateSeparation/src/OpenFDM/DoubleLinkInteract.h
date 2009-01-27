@@ -24,8 +24,8 @@ public:
             PortValueList& portValueList) :
       MechanicContext(environment),
       mPortValueList(portValueList),
-      mLink0(portValueList.getPortValue(*interact->mMechanicLinkInfo0)),
-      mLink1(portValueList.getPortValue(*interact->mMechanicLinkInfo1))
+      mLink0(portValueList.getPortValue(*interact->mMechanicLink0)),
+      mLink1(portValueList.getPortValue(*interact->mMechanicLink1))
     { }
     virtual ~Context() {}
 
@@ -55,7 +55,7 @@ public:
     { return mContinousStateDerivative.getValue(info); }
     
     /// Set port value for the given port.
-    virtual const PortValue* getPortValue(const PortInfo& portInfo) const
+    virtual const PortValue* getPortValue(const Port& portInfo) const
     {  return mPortValueList.getPortValue(portInfo); }
     
     ParentLink& getLink0()
@@ -79,8 +79,8 @@ public:
   };
   
 protected:
-  SharedPtr<MechanicLinkInfo> mMechanicLinkInfo0;
-  SharedPtr<MechanicLinkInfo> mMechanicLinkInfo1;
+  SharedPtr<MechanicLink> mMechanicLink0;
+  SharedPtr<MechanicLink> mMechanicLink1;
 };
 
 } // namespace OpenFDM

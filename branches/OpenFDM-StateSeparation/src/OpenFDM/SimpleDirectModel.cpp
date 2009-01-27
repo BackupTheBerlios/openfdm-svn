@@ -31,7 +31,7 @@ SimpleDirectModel::Context::getNode() const
 }
 
 const PortValue*
-SimpleDirectModel::Context::getPortValue(const PortInfo& portInfo) const
+SimpleDirectModel::Context::getPortValue(const Port& portInfo) const
 {
   if (mModel->mOutputPort == &portInfo)
     return mOutputValue;
@@ -80,7 +80,7 @@ BEGIN_OPENFDM_OBJECT_DEF(SimpleDirectModel, AbstractModel)
 
 SimpleDirectModel::SimpleDirectModel(const std::string& name) :
   AbstractModel(name),
-  mOutputPort(new OutputPortInfo(this, "output", Size(0, 0), false))
+  mOutputPort(new OutputPort(this, "output", Size(0, 0), false))
 {
 }
 
@@ -152,7 +152,7 @@ SimpleDirectModel::getNumInputPorts() const
   return mInputPorts.size();
 }
 
-const InputPortInfo*
+const InputPort*
 SimpleDirectModel::getInputPort(unsigned i) const
 {
   if (mInputPorts.size() <= i)
@@ -160,7 +160,7 @@ SimpleDirectModel::getInputPort(unsigned i) const
   return mInputPorts[i];
 }
 
-const OutputPortInfo*
+const OutputPort*
 SimpleDirectModel::getOutputPort() const
 {
   return mOutputPort;
@@ -179,15 +179,15 @@ SimpleDirectModel::setNumInputPorts(unsigned numInputPorts)
     removeInputPort(getInputPort(oldnum-1));
 }
 
-const InputPortInfo*
+const InputPort*
 SimpleDirectModel::addInputPort(const std::string& name)
 {
-  mInputPorts.push_back(new InputPortInfo(this, name, Size(0, 0), true));
+  mInputPorts.push_back(new InputPort(this, name, Size(0, 0), true));
   return mInputPorts.back();
 }
 
 void
-SimpleDirectModel::removeInputPort(const InputPortInfo* portInfo)
+SimpleDirectModel::removeInputPort(const InputPort* portInfo)
 {
   InputPortVector::iterator i = mInputPorts.begin();
   while (i != mInputPorts.end()) {

@@ -58,8 +58,8 @@ public:
 protected:
   CartesianJoint(const std::string& name) :
     Joint(name),
-    mParentLink(new MechanicLinkInfo(this, "link0")),
-    mChildLink(new MechanicLinkInfo(this, "link1"))
+    mParentLink(new MechanicLink(this, "link0")),
+    mChildLink(new MechanicLink(this, "link1"))
   { }
   virtual ~CartesianJoint(void)
   { }
@@ -276,8 +276,8 @@ protected:
   };
   
 private:
-  SharedPtr<MechanicLinkInfo> mParentLink;
-  SharedPtr<MechanicLinkInfo> mChildLink;
+  SharedPtr<MechanicLink> mParentLink;
+  SharedPtr<MechanicLink> mChildLink;
 };
 
 } // namespace OpenFDM

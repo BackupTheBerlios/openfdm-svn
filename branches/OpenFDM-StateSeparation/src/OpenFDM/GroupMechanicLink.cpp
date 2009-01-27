@@ -11,7 +11,7 @@ BEGIN_OPENFDM_OBJECT_DEF(GroupMechanicLink, GroupInterfaceNode)
 
 GroupMechanicLink::GroupMechanicLink(const std::string& name) :
   GroupInterfaceNode(name),
-  mGroupInternalPort(new MechanicLinkInfo(this, "link"))
+  mGroupInternalPort(new MechanicLink(this, "link"))
 {
 }
 
@@ -24,7 +24,7 @@ GroupMechanicLink::addParent(Node* parent)
 {
   if (!GroupInterfaceNode::addParent(parent))
     return false;
-  setExternalPortInfo(new MechanicLinkInfo(parent, "link"));
+  setExternalPort(new MechanicLink(parent, "link"));
   return true;
 }
 

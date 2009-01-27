@@ -82,9 +82,9 @@ public:
   { return mContinousStateDerivative.getValue(info); }
 
   /// Set port value for the given port.
-  virtual const PortValue* getPortValue(const PortInfo& portInfo) const
+  virtual const PortValue* getPortValue(const Port& portInfo) const
   {  return mPortValueList.getPortValue(portInfo); }
-  virtual void setPortValue(const PortInfo& portInfo, PortValue* portValue)
+  virtual void setPortValue(const Port& portInfo, PortValue* portValue)
   { mPortValueList.setPortValue(portInfo.getIndex(), portValue); }
 
   

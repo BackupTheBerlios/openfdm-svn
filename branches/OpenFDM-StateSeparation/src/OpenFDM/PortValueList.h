@@ -42,7 +42,7 @@ public:
 
   // Accessors for matrix valued ports
   // FIXME Implement access control for the port value
-  MechanicLinkValue& operator[](const MechanicLink& port) const
+  MechanicLinkValue& operator[](const MechanicLink_& port) const
   { return *port.getPortValue(mPortValueVector); }
 
   const NumericPortValue* getPortValue(const RealInputPort& port)
@@ -69,7 +69,7 @@ public:
       return 0;
     return port.getPortValue(mPortValueVector);
   }
-  MechanicLinkValue* getPortValue(const MechanicLink& port)
+  MechanicLinkValue* getPortValue(const MechanicLink_& port)
   {
     if (port.empty())
       return 0;
@@ -85,7 +85,7 @@ public:
       mPortValueVector.resize(idx+1);
     mPortValueVector[idx] = portValue;
   }
-  bool setOrCheckPortSize(const NumericPortInfo* portInfo, const Size& sz)
+  bool setOrCheckPortSize(const NumericPort* portInfo, const Size& sz)
   {
     if (!portInfo)
       return false;
@@ -137,26 +137,26 @@ public:
   }
 
   /// Save but partially expensive Accessor for numeric ports
-  NumericPortValue* getPortValue(const NumericPortInfo* portInfo)
+  NumericPortValue* getPortValue(const NumericPort* portInfo)
   {
     if (!portInfo)
       return 0;
     return getPortValue(*portInfo);
   }
-  NumericPortValue* getPortValue(const NumericPortInfo& portInfo)
+  NumericPortValue* getPortValue(const NumericPort& portInfo)
   {
     PortValue* portValue = getPortValue(portInfo.getIndex());
     if (!portValue)
       return 0;
     return portValue->toNumericPortValue();
   }
-  const NumericPortValue* getPortValue(const NumericPortInfo* portInfo) const
+  const NumericPortValue* getPortValue(const NumericPort* portInfo) const
   {
     if (!portInfo)
       return 0;
     return getPortValue(*portInfo);
   }
-  const NumericPortValue* getPortValue(const NumericPortInfo& portInfo) const
+  const NumericPortValue* getPortValue(const NumericPort& portInfo) const
   {
     const PortValue* portValue = getPortValue(portInfo.getIndex());
     if (!portValue)
@@ -164,20 +164,20 @@ public:
     return portValue->toNumericPortValue();
   }
   /// Save but partially expensive Accessor for numeric ports
-  const MechanicLinkValue* getPortValue(const MechanicLinkInfo* portInfo) const
+  const MechanicLinkValue* getPortValue(const MechanicLink* portInfo) const
   {
     if (!portInfo)
       return 0;
     return getPortValue(*portInfo);
   }
-  const MechanicLinkValue* getPortValue(const MechanicLinkInfo& portInfo) const
+  const MechanicLinkValue* getPortValue(const MechanicLink& portInfo) const
   {
     const PortValue* portValue = getPortValue(portInfo.getIndex());
     if (!portValue)
       return 0;
     return portValue->toMechanicLinkValue();
   }
-  MechanicLinkValue* getPortValue(const MechanicLinkInfo& portInfo)
+  MechanicLinkValue* getPortValue(const MechanicLink& portInfo)
   {
     PortValue* portValue = getPortValue(portInfo.getIndex());
     if (!portValue)
@@ -185,13 +185,13 @@ public:
     return portValue->toMechanicLinkValue();
   }
   /// Save but partially expensive Accessor for numeric ports
-  const PortValue* getPortValue(const PortInfo* portInfo) const
+  const PortValue* getPortValue(const Port* portInfo) const
   {
     if (!portInfo)
       return 0;
     return getPortValue(portInfo->getIndex());
   }
-  const PortValue* getPortValue(const PortInfo& portInfo) const
+  const PortValue* getPortValue(const Port& portInfo) const
   {
     return getPortValue(portInfo.getIndex());
   }

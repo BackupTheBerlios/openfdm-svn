@@ -11,8 +11,8 @@ BEGIN_OPENFDM_OBJECT_DEF(DoubleLinkInteract, Interact)
 
 DoubleLinkInteract::DoubleLinkInteract(const std::string& name) :
   Interact(name),
-  mMechanicLinkInfo0(new MechanicLinkInfo(this, "link0")),
-  mMechanicLinkInfo1(new MechanicLinkInfo(this, "link1"))
+  mMechanicLink0(new MechanicLink(this, "link0")),
+  mMechanicLink1(new MechanicLink(this, "link1"))
 {
 }
 

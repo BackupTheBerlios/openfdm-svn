@@ -9,7 +9,7 @@
 #include <vector>
 #include "Connect.h"
 #include "Node.h"
-#include "PortInfo.h"
+#include "Port.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
@@ -55,7 +55,7 @@ public:
   
   /// Create a new connect and connect the given ports with it
   /// FIXME, this is currently the only way to get a Connect into a group ...
-  Connect* connect(const PortInfo* port0, const PortInfo* port1);
+  Connect* connect(const Port* port0, const Port* port1);
 
 private:
   typedef std::vector<SharedPtr<Connect> > ConnectList;

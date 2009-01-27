@@ -401,14 +401,14 @@ private:
       return mSystem->getNodeInstance(nodePath);
     }
     
-    virtual void apply(const NumericPortInfo& portInfo)
+    virtual void apply(const NumericPort& portInfo)
     {
       const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
       if (!nodeInstance)
         return;
       apply(portInfo, nodeInstance->getPortValue(portInfo));
     }
-    virtual void apply(const MechanicLinkInfo& portInfo)
+    virtual void apply(const MechanicLink& portInfo)
     {
       if (!mOutputMechanics)
         return;
@@ -418,7 +418,7 @@ private:
       apply(portInfo, nodeInstance->getPortValue(portInfo));
     }
     
-    virtual void apply(const NumericPortInfo& portInfo,
+    virtual void apply(const NumericPort& portInfo,
                        const NumericPortValue* numericPortValue)
     {
       OpenFDMAssert(mCurrentPortValuesGroup.valid());
@@ -435,7 +435,7 @@ private:
         mCurrentPortValuesGroup.link(mPortValueMap.find(numericPortValue)->second->getObject(), name);
       }
     }
-    virtual void apply(const MechanicLinkInfo& portInfo,
+    virtual void apply(const MechanicLink& portInfo,
                        const MechanicLinkValue* mechanicLinkValue)
     {
       OpenFDMAssert(mCurrentPortValuesGroup.valid());

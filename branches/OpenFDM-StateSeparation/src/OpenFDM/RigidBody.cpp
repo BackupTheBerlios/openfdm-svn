@@ -37,20 +37,20 @@ RigidBody::accept(ConstNodeVisitor& visitor) const
   visitor.handleNodePathAndApply(this);
 }
 
-const MechanicLinkInfo*
+const MechanicLink*
 RigidBody::addLink(const std::string& name)
 {
-  MechanicLinkInfo* mechanicLinkInfo = new MechanicLinkInfo(this, name);
-  mMechanicLinks.push_back(mechanicLinkInfo);
-  return mechanicLinkInfo;
+  MechanicLink* mechanicLink = new MechanicLink(this, name);
+  mMechanicLinks.push_back(mechanicLink);
+  return mechanicLink;
 }
 
 void
-RigidBody::removeLink(const MechanicLinkInfo* mechanicLinkInfo)
+RigidBody::removeLink(const MechanicLink* mechanicLink)
 {
-  MechanicLinkInfoVector::iterator i = mMechanicLinks.begin();
+  MechanicLinkVector::iterator i = mMechanicLinks.begin();
   while (i != mMechanicLinks.end()) {
-    if (i->get() == mechanicLinkInfo) {
+    if (i->get() == mechanicLink) {
       i->clear();
       i = mMechanicLinks.erase(i);
     } else

@@ -7,7 +7,7 @@
 
 #include <string>
 #include "GroupInterfaceNode.h"
-#include "PortInfo.h"
+#include "Port.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
@@ -22,7 +22,7 @@ protected:
   virtual bool addParent(Node* parent);
 
 private:
-  SharedPtr<InputPortInfo> mGroupInternalPort;
+  SharedPtr<InputPort> mGroupInternalPort;
 };
 
 } // namespace OpenFDM

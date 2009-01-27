@@ -109,7 +109,7 @@ Node::getNumPorts() const
   return mPortList.size();
 }
 
-SharedPtr<const PortInfo>
+SharedPtr<const Port>
 Node::getPort(unsigned index) const
 {
   if (mPortList.size() <= index)
@@ -117,7 +117,7 @@ Node::getPort(unsigned index) const
   return mPortList[index];
 }
 
-SharedPtr<const PortInfo>
+SharedPtr<const Port>
 Node::getPort(const std::string& name) const
 {
   PortList::const_iterator i;
@@ -129,7 +129,7 @@ Node::getPort(const std::string& name) const
 }
 
 unsigned
-Node::getPortIndex(const PortInfo* portInfo) const
+Node::getPortIndex(const Port* portInfo) const
 {
   PortList::const_iterator i;
   for (i = mPortList.begin(); i != mPortList.end(); ++i) {
@@ -140,7 +140,7 @@ Node::getPortIndex(const PortInfo* portInfo) const
 }
 
 bool
-Node::checkPort(const PortInfo* portInfo) const
+Node::checkPort(const Port* portInfo) const
 {
   PortList::const_iterator i;
   for (i = mPortList.begin(); i != mPortList.end(); ++i) {
@@ -231,7 +231,7 @@ Node::getNodePathList() const
 }
 
 void
-Node::addPort(PortInfo* port)
+Node::addPort(Port* port)
 {
   if (!port)
     return;
@@ -240,7 +240,7 @@ Node::addPort(PortInfo* port)
 }
 
 void
-Node::removePort(PortInfo* port)
+Node::removePort(Port* port)
 {
   PortList::iterator i;
   i = std::find(mPortList.begin(), mPortList.end(), port);

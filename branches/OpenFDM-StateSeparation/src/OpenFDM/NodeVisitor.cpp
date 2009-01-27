@@ -18,7 +18,7 @@
 #include "RootJoint.h"
 #include "Interact.h"
 
-#include "PortInfo.h"
+#include "Port.h"
 
 namespace OpenFDM {
 
@@ -104,20 +104,20 @@ NodeVisitor::apply(Interact& node)
 }
 
 void
-NodeVisitor::apply(const PortInfo& portInfo)
+NodeVisitor::apply(const Port& portInfo)
 {
 }
 
 void
-NodeVisitor::apply(const NumericPortInfo& portInfo)
+NodeVisitor::apply(const NumericPort& portInfo)
 {
-  apply(static_cast<const PortInfo&>(portInfo));
+  apply(static_cast<const Port&>(portInfo));
 }
 
 void
-NodeVisitor::apply(const MechanicLinkInfo& portInfo)
+NodeVisitor::apply(const MechanicLink& portInfo)
 {
-  apply(static_cast<const PortInfo&>(portInfo));
+  apply(static_cast<const Port&>(portInfo));
 }
 
 } // namespace OpenFDM

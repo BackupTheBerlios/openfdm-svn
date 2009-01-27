@@ -12,7 +12,7 @@
 #include "Node.h"
 #include "NodeVisitor.h"
 #include "Object.h"
-#include "PortInfo.h"
+#include "Port.h"
 #include "SharedPtr.h"
 
 namespace OpenFDM {
@@ -35,10 +35,10 @@ protected:
   virtual bool addParent(Node* parent);
   virtual void removeParent(Node* parent);
 
-  void setExternalPortInfo(PortInfo* portInfo);
+  void setExternalPort(Port* portInfo);
 
 private:
-  SharedPtr<PortInfo> mExternalPortInfo;
+  SharedPtr<Port> mExternalPort;
 };
 
 } // namespace OpenFDM

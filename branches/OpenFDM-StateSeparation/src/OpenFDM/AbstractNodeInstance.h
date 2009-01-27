@@ -32,10 +32,10 @@ public:
   const SampleTime& getSampleTime() const
   { return mSampleTime; }
 
-  /// Access port values by the PortInfo values
-  virtual const PortValue* getPortValue(const PortInfo&) const = 0;
-  const NumericPortValue* getPortValue(const NumericPortInfo&) const;
-  const MechanicLinkValue* getPortValue(const MechanicLinkInfo&) const;
+  /// Access port values by the Port values
+  virtual const PortValue* getPortValue(const Port&) const = 0;
+  const NumericPortValue* getPortValue(const NumericPort&) const;
+  const MechanicLinkValue* getPortValue(const MechanicLink&) const;
 
 private:
   AbstractNodeInstance(const AbstractNodeInstance&);
@@ -57,8 +57,8 @@ public:
   virtual const Node& getNode() const
   { return mNodeContext->getNode(); }
 
-  /// Access port values by the PortInfo values
-  virtual const PortValue* getPortValue(const PortInfo& portInfo) const
+  /// Access port values by the Port values
+  virtual const PortValue* getPortValue(const Port& portInfo) const
   { return mNodeContext->getPortValue(portInfo); }
 
 private:

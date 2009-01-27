@@ -88,7 +88,7 @@ OpenFDMCoreHEADERS = \
   OpenFDMConfig.h \
   PhysicalDimension.h \
   Plane.h \
-  PortInfo.h \
+  Port.h \
   PortValue.h \
   PortValueList.h \
   Quaternion.h \
@@ -175,7 +175,7 @@ OpenFDMCoreSOURCES = \
   NumericPortValue.cpp \
   Object.cpp \
   ODESolver.cpp \
-  PortInfo.cpp \
+  Port.cpp \
   PortValue.cpp \
   RigidBody.cpp \
   RootJoint.cpp \

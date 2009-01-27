@@ -89,7 +89,7 @@ private:
       return mSystem->getNodeInstance(nodePath);
     }
     
-    virtual void apply(const NumericPortInfo& portInfo)
+    virtual void apply(const NumericPort& portInfo)
     {
       const AbstractNodeInstance* nodeInstance = getNodeInstance(getNodePath());
       if (!nodeInstance)
@@ -97,7 +97,7 @@ private:
       apply(portInfo, nodeInstance->getPortValue(portInfo));
     }
     
-    virtual void apply(const NumericPortInfo& portInfo,
+    virtual void apply(const NumericPort& portInfo,
                        const NumericPortValue* numericPortValue)
     {
       std::string name = portInfo.getName();

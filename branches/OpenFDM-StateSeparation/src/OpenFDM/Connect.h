@@ -6,7 +6,7 @@
 #define OpenFDM_Connect_H
 
 #include "Node.h"
-#include "PortInfo.h"
+#include "Port.h"
 #include "SharedPtr.h"
 #include "WeakPtr.h"
 
@@ -21,20 +21,20 @@ public:
 
   SharedPtr<const Group> getGroup() const;
 
-  SharedPtr<const PortInfo> getPortInfo0() const;
-  bool setPortInfo0(const PortInfo* portInfo0);
+  SharedPtr<const Port> getPort0() const;
+  bool setPort0(const Port* portInfo0);
 
-  SharedPtr<const PortInfo> getPortInfo1() const;
-  bool setPortInfo1(const PortInfo* portInfo1);
+  SharedPtr<const Port> getPort1() const;
+  bool setPort1(const Port* portInfo1);
 
 protected:
-  bool isCompatible(const PortInfo* portInfo0, const PortInfo* portInfo1) const;
-  bool isInGroup(const PortInfo& portInfo) const;
+  bool isCompatible(const Port* portInfo0, const Port* portInfo1) const;
+  bool isInGroup(const Port& portInfo) const;
 
 private:
   WeakPtr<const Group> mGroup;
-  WeakPtr<const PortInfo> mPortInfo0;
-  WeakPtr<const PortInfo> mPortInfo1;
+  WeakPtr<const Port> mPort0;
+  WeakPtr<const Port> mPort1;
 };
 
 } // namespace OpenFDM

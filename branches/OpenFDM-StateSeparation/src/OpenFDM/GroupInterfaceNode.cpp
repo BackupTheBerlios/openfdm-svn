@@ -36,19 +36,19 @@ GroupInterfaceNode::accept(ConstNodeVisitor& visitor) const
 unsigned
 GroupInterfaceNode::getExternalPortIndex() const
 {
-  return mExternalPortInfo->getIndex();
+  return mExternalPort->getIndex();
 }
 
 void
 GroupInterfaceNode::setExternalPortName(const std::string& portName)
 {
-  mExternalPortInfo->setName(portName);
+  mExternalPort->setName(portName);
 }
 
 const std::string&
 GroupInterfaceNode::getExternalPortName() const
 {
-  return mExternalPortInfo->getName();
+  return mExternalPort->getName();
 }
 
 bool
@@ -70,9 +70,9 @@ GroupInterfaceNode::removeParent(Node* parent)
 }
 
 void
-GroupInterfaceNode::setExternalPortInfo(PortInfo* portInfo)
+GroupInterfaceNode::setExternalPort(Port* portInfo)
 {
-  mExternalPortInfo = portInfo;
+  mExternalPort = portInfo;
 }
 
 } // namespace OpenFDM

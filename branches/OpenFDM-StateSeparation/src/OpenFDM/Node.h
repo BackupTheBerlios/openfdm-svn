@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include "Object.h"
-#include "PortInfo.h"
+#include "Port.h"
 #include "SampleTime.h"
 #include "SharedPtr.h"
 
@@ -43,10 +43,10 @@ public:
   bool isChildOf(const Group* group) const;
 
   unsigned getNumPorts() const;
-  SharedPtr<const PortInfo> getPort(unsigned index) const;
-  SharedPtr<const PortInfo> getPort(const std::string& name) const;
-  unsigned getPortIndex(const PortInfo* portInfo) const;
-  bool checkPort(const PortInfo* portInfo) const;
+  SharedPtr<const Port> getPort(unsigned index) const;
+  SharedPtr<const Port> getPort(const std::string& name) const;
+  unsigned getPortIndex(const Port* portInfo) const;
+  bool checkPort(const Port* portInfo) const;
 
   const SampleTime& getSampleTime() const
   { return mSampleTime; }
@@ -81,12 +81,12 @@ private:
   Node& operator=(const Node&);
 
   /// Methods and variables for port handling.
-  friend class PortInfo;
+  friend class Port;
 
-  void addPort(PortInfo* port);
-  void removePort(PortInfo* port);
+  void addPort(Port* port);
+  void removePort(Port* port);
 
-  typedef std::vector<SharedPtr<PortInfo> > PortList;
+  typedef std::vector<SharedPtr<Port> > PortList;
   PortList mPortList;
 
   /// Parents.

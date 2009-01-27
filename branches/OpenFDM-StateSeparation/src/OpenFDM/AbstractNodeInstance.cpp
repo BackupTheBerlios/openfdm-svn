@@ -21,20 +21,20 @@ AbstractNodeInstance::~AbstractNodeInstance()
 }
 
 const NumericPortValue*
-AbstractNodeInstance::getPortValue(const NumericPortInfo& portInfo) const
+AbstractNodeInstance::getPortValue(const NumericPort& portInfo) const
 {
   const PortValue* portValue;
-  portValue = getPortValue(static_cast<const PortInfo&>(portInfo));
+  portValue = getPortValue(static_cast<const Port&>(portInfo));
   if (!portValue)
     return 0;
   return portValue->toNumericPortValue();
 }
 
 const MechanicLinkValue*
-AbstractNodeInstance::getPortValue(const MechanicLinkInfo& portInfo) const
+AbstractNodeInstance::getPortValue(const MechanicLink& portInfo) const
 {
   const PortValue* portValue;
-  portValue = getPortValue(static_cast<const PortInfo&>(portInfo));
+  portValue = getPortValue(static_cast<const Port&>(portInfo));
   if (!portValue)
     return 0;
   return portValue->toMechanicLinkValue();

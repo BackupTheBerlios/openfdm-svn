@@ -11,7 +11,7 @@ BEGIN_OPENFDM_OBJECT_DEF(GroupInput, GroupInterfaceNode)
 
 GroupInput::GroupInput(const std::string& name) :
   GroupInterfaceNode(name),
-  mGroupInternalPort(new OutputPortInfo(this, "output", Size(0, 0), false))
+  mGroupInternalPort(new OutputPort(this, "output", Size(0, 0), false))
 {
 }
 
@@ -24,7 +24,7 @@ GroupInput::addParent(Node* parent)
 {
   if (!GroupInterfaceNode::addParent(parent))
     return false;
-  setExternalPortInfo(new InputPortInfo(parent, "input", Size(0, 0), false));
+  setExternalPort(new InputPort(parent, "input", Size(0, 0), false));
   return true;
 }
 

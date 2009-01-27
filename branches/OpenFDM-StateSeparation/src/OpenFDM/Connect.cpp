@@ -22,40 +22,40 @@ Connect::getGroup() const
   return mGroup.lock();
 }
 
-SharedPtr<const PortInfo>
-Connect::getPortInfo0() const
+SharedPtr<const Port>
+Connect::getPort0() const
 {
-  return mPortInfo0.lock();
+  return mPort0.lock();
 }
 
 bool
-Connect::setPortInfo0(const PortInfo* portInfo0)
+Connect::setPort0(const Port* portInfo0)
 {
-  SharedPtr<const PortInfo> portInfo1 = mPortInfo1.lock();
+  SharedPtr<const Port> portInfo1 = mPort1.lock();
   if (!isCompatible(portInfo0, portInfo1))
     return false;
-  mPortInfo0 = portInfo0;
+  mPort0 = portInfo0;
   return true;
 }
 
-SharedPtr<const PortInfo>
-Connect::getPortInfo1() const
+SharedPtr<const Port>
+Connect::getPort1() const
 {
-  return mPortInfo1.lock();
+  return mPort1.lock();
 }
 
 bool
-Connect::setPortInfo1(const PortInfo* portInfo1)
+Connect::setPort1(const Port* portInfo1)
 {
-  SharedPtr<const PortInfo> portInfo0 = mPortInfo0.lock();
+  SharedPtr<const Port> portInfo0 = mPort0.lock();
   if (!isCompatible(portInfo0, portInfo1))
     return false;
-  mPortInfo1 = portInfo1;
+  mPort1 = portInfo1;
   return true;
 }
 
 bool
-Connect::isCompatible(const PortInfo* portInfo0, const PortInfo* portInfo1) const
+Connect::isCompatible(const Port* portInfo0, const Port* portInfo1) const
 {
   if (!portInfo0)
     return true;
@@ -70,7 +70,7 @@ Connect::isCompatible(const PortInfo* portInfo0, const PortInfo* portInfo1) cons
 }
 
 bool
-Connect::isInGroup(const PortInfo& portInfo) const
+Connect::isInGroup(const Port& portInfo) const
 {
   SharedPtr<const Node> node = portInfo.getNode();
   if (!node)

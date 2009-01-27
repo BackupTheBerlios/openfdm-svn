@@ -31,7 +31,7 @@ public:
     virtual ~Context();
     
     virtual const SimpleDirectModel& getNode() const;
-    virtual const PortValue* getPortValue(const PortInfo&) const;
+    virtual const PortValue* getPortValue(const Port&) const;
 
     virtual ContinousStateValue* getStateValue(const ContinousStateInfo&);
     virtual ContinousStateValue* getStateDerivative(const ContinousStateInfo&);
@@ -56,18 +56,18 @@ public:
   };
 
   unsigned getNumInputPorts() const;
-  const InputPortInfo* getInputPort(unsigned i) const;
-  const OutputPortInfo* getOutputPort() const;
+  const InputPort* getInputPort(unsigned i) const;
+  const OutputPort* getOutputPort() const;
 
 protected:
   void setNumInputPorts(unsigned numInputPorts);
-  const InputPortInfo* addInputPort(const std::string& name);
-  void removeInputPort(const InputPortInfo* portInfo);
+  const InputPort* addInputPort(const std::string& name);
+  void removeInputPort(const InputPort* portInfo);
 
 private:
-  typedef std::vector<SharedPtr<InputPortInfo> > InputPortVector;
+  typedef std::vector<SharedPtr<InputPort> > InputPortVector;
   InputPortVector mInputPorts;
-  SharedPtr<OutputPortInfo> mOutputPort;
+  SharedPtr<OutputPort> mOutputPort;
 };
 
 } // namespace OpenFDM

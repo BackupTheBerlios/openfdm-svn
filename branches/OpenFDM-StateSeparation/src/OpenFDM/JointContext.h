@@ -49,7 +49,7 @@ public:
   { return mContinousStateDerivative.getValue(info); }
     
   /// Set port value for the given port.
-  virtual const PortValue* getPortValue(const PortInfo& portInfo) const
+  virtual const PortValue* getPortValue(const Port& portInfo) const
   {  return mPortValueList.getPortValue(portInfo); }
     
   ParentLink& getParentLink()

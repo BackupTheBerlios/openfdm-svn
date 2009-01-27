@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef OpenFDM_PortInfo_H
-#define OpenFDM_PortInfo_H
+#ifndef OpenFDM_Port_H
+#define OpenFDM_Port_H
 
 #include <string>
 #include "Assert.h"
@@ -18,22 +18,22 @@ namespace OpenFDM {
 
 // Some notes on ports:
 // Naming:
-// PortInfo - The meta data used to see what kind of port we have
+// Port - The meta data used to see what kind of port we have
 // PortValue - The ports value during simulation
 
 class ConstNodeVisitor;
 class Node;
 class NodeVisitor;
 
-class NumericPortInfo;
-class InputPortInfo;
-class OutputPortInfo;
-class MechanicLinkInfo;
+class NumericPort;
+class InputPort;
+class OutputPort;
+class MechanicLink;
 
-class PortInfo : public WeakReferenced {
+class Port : public WeakReferenced {
 public:
-  PortInfo(Node* node, const std::string& name);
-  virtual ~PortInfo();
+  Port(Node* node, const std::string& name);
+  virtual ~Port();
 
   const std::string& getName() const { return mName; }
   void setName(const std::string& name);
@@ -48,10 +48,10 @@ public:
 
   unsigned getIndex() const { return mIndex; }
 
-  virtual const NumericPortInfo* toNumericPortInfo() const { return 0; }
-  virtual const InputPortInfo* toInputPortInfo() const { return 0; }
-  virtual const OutputPortInfo* toOutputPortInfo() const { return 0; }
-  virtual const MechanicLinkInfo* toMechanicLinkInfo() const { return 0; }
+  virtual const NumericPort* toNumericPort() const { return 0; }
+  virtual const InputPort* toInputPort() const { return 0; }
+  virtual const OutputPort* toOutputPort() const { return 0; }
+  virtual const MechanicLink* toMechanicLink() const { return 0; }
 
   // May be virtual here ???, identify the fast and the slow path ...
   PortValue* getPortValue(const PortValueVector& portValueVector) const
@@ -64,7 +64,7 @@ public:
   void clear();
 
   virtual unsigned getMaxConnects() const = 0;
-  virtual bool canConnect(const PortInfo& portInfo) const = 0;
+  virtual bool canConnect(const Port& portInfo) const = 0;
   virtual bool acceptPortValue(PortValue*) const = 0;
 
   /// Public interface to instantiate a new port value
@@ -75,8 +75,8 @@ protected:
   virtual PortValue* newValueImplementation() const = 0;
 
 private:
-  PortInfo(const PortInfo&);
-  PortInfo& operator=(const PortInfo&);
+  Port(const Port&);
+  Port& operator=(const Port&);
 
   void setIndex(unsigned index) { mIndex = index; }
   void invalidateIndex() { setIndex(~0u); }
@@ -89,19 +89,19 @@ private:
   friend class Node;
 };
 
-class NumericPortInfo : public PortInfo {
+class NumericPort : public Port {
 public:
-  NumericPortInfo(Node* node, const std::string& name, const Size& size) :
-    PortInfo(node, name),
+  NumericPort(Node* node, const std::string& name, const Size& size) :
+    Port(node, name),
     mSize(size)
   { }
-  virtual ~NumericPortInfo()
+  virtual ~NumericPort()
   { }
 
   virtual void accept(NodeVisitor& visitor) const;
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual const NumericPortInfo* toNumericPortInfo() const
+  virtual const NumericPort* toNumericPort() const
   { return this; }
 
   virtual bool acceptPortValue(PortValue* portValue) const
@@ -123,24 +123,24 @@ protected:
   Size mSize;
 };
 
-class InputPortInfo : public NumericPortInfo {
+class InputPort : public NumericPort {
 public:
-  InputPortInfo(Node* node, const std::string& name, const Size& size,
+  InputPort(Node* node, const std::string& name, const Size& size,
                 bool directInput) :
-    NumericPortInfo(node, name, size),
+    NumericPort(node, name, size),
     mDirectInput(directInput)
   { }
-  virtual ~InputPortInfo()
+  virtual ~InputPort()
   { }
 
-  virtual const InputPortInfo* toInputPortInfo() const
+  virtual const InputPort* toInputPort() const
   { return this; }
 
   virtual unsigned getMaxConnects() const
   { return 1; }
 
-  virtual bool canConnect(const PortInfo& portInfo) const
-  { return portInfo.toOutputPortInfo(); }
+  virtual bool canConnect(const Port& portInfo) const
+  { return portInfo.toOutputPort(); }
 
   bool getDirectInput() const
   { return mDirectInput; }
@@ -156,24 +156,24 @@ private:
   bool mDirectInput;
 };
 
-class OutputPortInfo : public NumericPortInfo {
+class OutputPort : public NumericPort {
 public:
-  OutputPortInfo(Node* node, const std::string& name, const Size& size,
+  OutputPort(Node* node, const std::string& name, const Size& size,
                  bool accelerationOutput) :
-    NumericPortInfo(node, name, size),
+    NumericPort(node, name, size),
     mAccelerationOutput(accelerationOutput)
   { }
-  virtual ~OutputPortInfo()
+  virtual ~OutputPort()
   { }
 
-  virtual const OutputPortInfo* toOutputPortInfo() const
+  virtual const OutputPort* toOutputPort() const
   { return this; }
 
   virtual unsigned getMaxConnects() const
   { return Limits<unsigned>::max(); }
 
-  virtual bool canConnect(const PortInfo& portInfo) const
-  { return portInfo.toInputPortInfo(); }
+  virtual bool canConnect(const Port& portInfo) const
+  { return portInfo.toInputPort(); }
 
   bool getAccelerationOutput() const
   { return mAccelerationOutput; }
@@ -189,26 +189,26 @@ private:
   bool mAccelerationOutput;
 };
 
-class MechanicLinkInfo : public PortInfo {
+class MechanicLink : public Port {
 public:
   // FIXME: mechanic links are special. Just allow them in MechanicNodes ...
-  MechanicLinkInfo(/*Mechanic*/Node* node, const std::string& name) :
-    PortInfo(node, name)
+  MechanicLink(/*Mechanic*/Node* node, const std::string& name) :
+    Port(node, name)
   { }
-  virtual ~MechanicLinkInfo()
+  virtual ~MechanicLink()
   { }
 
   virtual void accept(NodeVisitor& visitor) const;
   virtual void accept(ConstNodeVisitor& visitor) const;
 
-  virtual const MechanicLinkInfo* toMechanicLinkInfo() const
+  virtual const MechanicLink* toMechanicLink() const
   { return this; }
 
   virtual unsigned getMaxConnects() const
   { return 1; }
 
-  virtual bool canConnect(const PortInfo& portInfo) const
-  { return portInfo.toMechanicLinkInfo(); }
+  virtual bool canConnect(const Port& portInfo) const
+  { return portInfo.toMechanicLink(); }
 
   virtual bool acceptPortValue(PortValue* portValue) const
   { return portValue->toMechanicLinkValue(); }

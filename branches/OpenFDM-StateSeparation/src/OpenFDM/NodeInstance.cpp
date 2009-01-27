@@ -29,19 +29,19 @@ NodeInstance::getNode() const
 }
 
 const PortValue*
-NodeInstance::getPortValue(const PortInfo& portInfo) const
+NodeInstance::getPortValue(const Port& portInfo) const
 {
   return mPortValueList.getPortValue(portInfo);
 }
 
 const NumericPortValue*
-NodeInstance::getPortValue(const NumericPortInfo& portInfo) const
+NodeInstance::getPortValue(const NumericPort& portInfo) const
 {
   return mPortValueList.getPortValue(portInfo);
 }
 
 const MechanicLinkValue*
-NodeInstance::getPortValue(const MechanicLinkInfo& portInfo) const
+NodeInstance::getPortValue(const MechanicLink& portInfo) const
 {
   return mPortValueList.getPortValue(portInfo);
 }

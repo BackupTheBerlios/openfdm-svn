@@ -2,7 +2,7 @@
  *
  */
 
-#include "PortInfo.h"
+#include "Port.h"
 
 #include "ConstNodeVisitor.h"
 #include "Node.h"
@@ -10,7 +10,7 @@
 
 namespace OpenFDM {
 
-PortInfo::PortInfo(Node* node, const std::string& name) :
+Port::Port(Node* node, const std::string& name) :
   mNode(node),
   mName(name),
   mIndex(~0u)
@@ -19,31 +19,31 @@ PortInfo::PortInfo(Node* node, const std::string& name) :
   node->addPort(this);
 }
 
-PortInfo::~PortInfo()
+Port::~Port()
 {
   clear();
 }
 
 void
-PortInfo::accept(NodeVisitor& visitor) const
+Port::accept(NodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }
 
 void
-PortInfo::accept(ConstNodeVisitor& visitor) const
+Port::accept(ConstNodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }
 
 void
-PortInfo::setName(const std::string& name)
+Port::setName(const std::string& name)
 {
   mName = name;
 }
 
 void
-PortInfo::clear()
+Port::clear()
 {
   SharedPtr<Node> node = mNode.lock();
   if (!node)
@@ -54,25 +54,25 @@ PortInfo::clear()
 
 
 void
-NumericPortInfo::accept(NodeVisitor& visitor) const
+NumericPort::accept(NodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }
 
 void
-NumericPortInfo::accept(ConstNodeVisitor& visitor) const
+NumericPort::accept(ConstNodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }
 
 void
-MechanicLinkInfo::accept(NodeVisitor& visitor) const
+MechanicLink::accept(NodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }
 
 void
-MechanicLinkInfo::accept(ConstNodeVisitor& visitor) const
+MechanicLink::accept(ConstNodeVisitor& visitor) const
 {
   visitor.apply(*this);
 }
