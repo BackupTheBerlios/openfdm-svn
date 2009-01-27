@@ -22,6 +22,18 @@ public:
   MobileRootJoint(const std::string& name);
   virtual ~MobileRootJoint();
 
+  const Vector3& getInitialPosition() const;
+  void setInitialPosition(const Vector3& initialPosition);
+
+  const Quaternion& getInitialOrientation() const;
+  void setInitialOrientation(const Quaternion& initialOrientation);
+
+  const Vector3& getInitialLinearVelocity() const;
+  void setInitialLinearVelocity(const Vector3& initialLinearVelocity);
+
+  const Vector3& getInitialAngularVelocity() const;
+  void setInitialAngularVelocity(const Vector3& initialAngularVelocity);
+
   virtual void init(const Task&, DiscreteStateValueVector&,
                     ContinousStateValueVector&,
                     const PortValueList&) const;
@@ -41,11 +53,16 @@ public:
                           const PortValueList& portValues,
                           ContinousStateValueVector&) const;
 private:
-  MechanicLink_ mMechanicLink;
+  SharedPtr<MechanicLink> mMechanicLink;
 
   SharedPtr<Vector3StateInfo> mPositionStateInfo;
   SharedPtr<Vector4StateInfo> mOrientationStateInfo;
   SharedPtr<Vector6StateInfo> mVelocityStateInfo;
+
+  Vector3 mInitialPosition;
+  Quaternion mInitialOrientation;
+  Vector3 mInitialLinearVelocity;
+  Vector3 mInitialAngularVelocity;
 };
 
 } // namespace OpenFDM

@@ -15,14 +15,22 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(MobileRootJoint, RootJoint)
+  DEF_OPENFDM_PROPERTY(Vector3, InitialPosition, Serialized)
+  DEF_OPENFDM_PROPERTY(Quaternion, InitialOrientation, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, InitialLinearVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Vector3, InitialAngularVelocity, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 MobileRootJoint::MobileRootJoint(const std::string& name) :
   RootJoint(name),
-  mMechanicLink(newMechanicLink("link")),
+  mMechanicLink(new MechanicLink(this, "link")),
   mPositionStateInfo(new Vector3StateInfo),
   mOrientationStateInfo(new Vector4StateInfo),
-  mVelocityStateInfo(new Vector6StateInfo)
+  mVelocityStateInfo(new Vector6StateInfo),
+  mInitialPosition(Vector3::zeros()),
+  mInitialOrientation(Quaternion::unit()),
+  mInitialLinearVelocity(Vector3::zeros()),
+  mInitialAngularVelocity(Vector3::zeros())
 {
   addContinousStateInfo(mPositionStateInfo);
   addContinousStateInfo(mOrientationStateInfo);
@@ -33,20 +41,70 @@ MobileRootJoint::~MobileRootJoint()
 {
 }
 
+const Vector3&
+MobileRootJoint::getInitialPosition() const
+{
+  return mInitialPosition;
+}
+
+void
+MobileRootJoint::setInitialPosition(const Vector3& initialPosition)
+{
+  mInitialPosition = initialPosition;
+}
+
+const Quaternion&
+MobileRootJoint::getInitialOrientation() const
+{
+  return mInitialOrientation;
+}
+
+void
+MobileRootJoint::setInitialOrientation(const Quaternion& initialOrientation)
+{
+  mInitialOrientation = initialOrientation;
+}
+
+const Vector3&
+MobileRootJoint::getInitialLinearVelocity() const
+{
+  return mInitialLinearVelocity;
+}
+
+void
+MobileRootJoint::setInitialLinearVelocity(const Vector3& initialVelocity)
+{
+  mInitialLinearVelocity = initialVelocity;
+}
+
+const Vector3&
+MobileRootJoint::getInitialAngularVelocity() const
+{
+  return mInitialAngularVelocity;
+}
+
+void
+MobileRootJoint::setInitialAngularVelocity(const Vector3& initialVelocity)
+{
+  mInitialAngularVelocity = initialVelocity;
+}
+
+
 void
 MobileRootJoint::init(const Task&, DiscreteStateValueVector&,
                       ContinousStateValueVector& continousState,
                       const PortValueList& portValues) const
 {
-  continousState[*mPositionStateInfo] = Vector3::zeros();
-  continousState[*mOrientationStateInfo] = Quaternion::unit();
-  continousState[*mVelocityStateInfo] = Vector6::zeros();
+  continousState[*mPositionStateInfo] = mInitialPosition;
+  continousState[*mOrientationStateInfo] = mInitialOrientation;
+  Vector6 initialVelocity(mInitialAngularVelocity, mInitialLinearVelocity);
+  continousState[*mVelocityStateInfo] = initialVelocity;
 }
 
 void
 MobileRootJoint::initDesignPosition(PortValueList& portValues) const
 {
-  portValues[mMechanicLink].setDesignPosition(getPosition());
+  portValues[*mMechanicLink].setDesignPosition(getPosition());
 }
 
 void
@@ -60,10 +118,10 @@ MobileRootJoint::velocity(const Task& task, const Environment& environment,
   Quaternion orientation = continousState[*mOrientationStateInfo];
   Vector6 velocity = continousState[*mVelocityStateInfo];
 
-  portValues[mMechanicLink].setCoordinateSystem(CoordinateSystem(position,
-                                                                 orientation));
-  portValues[mMechanicLink].setPosAndVel(angularBaseVelocity,
-                                         position, orientation, velocity);
+  portValues[*mMechanicLink].setCoordinateSystem(CoordinateSystem(position,
+                                                                  orientation));
+  portValues[*mMechanicLink].setPosAndVel(angularBaseVelocity,
+                                          position, orientation, velocity);
 }
 
 void
@@ -81,11 +139,11 @@ MobileRootJoint::acceleration(const Task& task, const Environment& environment,
 {
   Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
 
-  SpatialInertia inertia = portValues[mMechanicLink].getInertia();
-  Vector6 force = portValues[mMechanicLink].getForce();
+  SpatialInertia inertia = portValues[*mMechanicLink].getInertia();
+  Vector6 force = portValues[*mMechanicLink].getForce();
 
   spatialAcceleration -= solve(inertia, force);
-  portValues[mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
+  portValues[*mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
 }
 
 void
@@ -108,7 +166,7 @@ MobileRootJoint::derivative(const Environment& environment,
   Vector3 angVel = velocity.getAngular();
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
-  Vector6 velDeriv = portValues[mMechanicLink].getFrame().getRelVelDot();
+  Vector6 velDeriv = portValues[*mMechanicLink].getFrame().getRelVelDot();
 
   derivatives[*mPositionStateInfo] = pDot;
   derivatives[*mOrientationStateInfo] = qderiv;

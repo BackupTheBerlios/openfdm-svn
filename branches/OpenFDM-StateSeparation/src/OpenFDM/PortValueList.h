@@ -44,6 +44,10 @@ public:
   // FIXME Implement access control for the port value
   MechanicLinkValue& operator[](const MechanicLink_& port) const
   { return *port.getPortValue(mPortValueVector); }
+  const MechanicLinkValue& operator[](const MechanicLink& port) const
+  { return *getPortValue(port); }
+  MechanicLinkValue& operator[](const MechanicLink& port)
+  { return *getPortValue(port); }
 
   const NumericPortValue* getPortValue(const RealInputPort& port)
   {
