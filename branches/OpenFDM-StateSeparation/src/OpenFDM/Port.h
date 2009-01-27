@@ -11,7 +11,6 @@
 #include "WeakPtr.h"
 #include "WeakReferenced.h"
 
-#include "MechanicLinkValue.h"
 #include "NumericPortValue.h"
 
 namespace OpenFDM {
@@ -187,35 +186,6 @@ protected:
 private:
   // FIXME Derive??
   bool mAccelerationOutput;
-};
-
-class MechanicLink : public Port {
-public:
-  // FIXME: mechanic links are special. Just allow them in MechanicNodes ...
-  MechanicLink(/*Mechanic*/Node* node, const std::string& name) :
-    Port(node, name)
-  { }
-  virtual ~MechanicLink()
-  { }
-
-  virtual void accept(NodeVisitor& visitor) const;
-  virtual void accept(ConstNodeVisitor& visitor) const;
-
-  virtual const MechanicLink* toMechanicLink() const
-  { return this; }
-
-  virtual unsigned getMaxConnects() const
-  { return 1; }
-
-  virtual bool canConnect(const Port& portInfo) const
-  { return portInfo.toMechanicLink(); }
-
-  virtual bool acceptPortValue(PortValue* portValue) const
-  { return portValue->toMechanicLinkValue(); }
-
-protected:
-  virtual MechanicLinkValue* newValueImplementation() const
-  { return new MechanicLinkValue; }
 };
 
 } // namespace OpenFDM

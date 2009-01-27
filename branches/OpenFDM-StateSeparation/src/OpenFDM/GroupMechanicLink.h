@@ -7,6 +7,7 @@
 
 #include <string>
 #include "GroupInterfaceNode.h"
+#include "MechanicLink.h"
 #include "Port.h"
 #include "SharedPtr.h"
 

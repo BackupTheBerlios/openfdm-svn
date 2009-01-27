@@ -11,26 +11,28 @@
 
 namespace OpenFDM {
 
-class MechanicLink_ {
+class MechanicLink : public Port {
 public:
-  MechanicLink_(Node* node, const std::string& name) :
-    mPort(new MechanicLink(node, name))
-  {}
-  MechanicLinkValue* getPortValue(const PortValueVector& portValueVector) const
-  {
-    PortValue* portValue = mPort->getPortValue(portValueVector);
-    OpenFDMAssert(portValue);
-    OpenFDMAssert(portValue->toMechanicLinkValue());
-    return static_cast<MechanicLinkValue*>(portValue);
-  }
-  bool empty() const
-  { return !mPort; }
-  void clear()
-  { if (!mPort) return; mPort->clear(); mPort = 0; }
-  unsigned getPortIndex() const
-  { OpenFDMAssert(mPort); return mPort->getIndex(); }
-private:
-  SharedPtr<MechanicLink> mPort;
+  MechanicLink(Node* node, const std::string& name);
+  virtual ~MechanicLink();
+
+  virtual void accept(NodeVisitor& visitor) const;
+  virtual void accept(ConstNodeVisitor& visitor) const;
+
+  virtual const MechanicLink* toMechanicLink() const;
+
+  virtual unsigned getMaxConnects() const
+  { return 1; }
+
+  virtual bool canConnect(const Port& portInfo) const
+  { return portInfo.toMechanicLink(); }
+
+  virtual bool acceptPortValue(PortValue* portValue) const
+  { return portValue->toMechanicLinkValue(); }
+
+protected:
+  virtual MechanicLinkValue* newValueImplementation() const
+  { return new MechanicLinkValue; }
 };
 
 } // namespace OpenFDM

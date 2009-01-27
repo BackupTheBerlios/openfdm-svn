@@ -5,6 +5,8 @@
 #include "GroupInterfaceNode.h"
 
 #include "ConstNodeVisitor.h"
+#include "LogStream.h"
+#include "Model.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {

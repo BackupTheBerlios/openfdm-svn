@@ -163,6 +163,7 @@ OpenFDMCoreSOURCES = \
   LibraryNode.cpp \
   Logger.cpp \
   MechanicContext.cpp \
+  MechanicLink.cpp \
   MechanicLinkValue.cpp \
   MechanicNode.cpp \
   MidpointRule.cpp \

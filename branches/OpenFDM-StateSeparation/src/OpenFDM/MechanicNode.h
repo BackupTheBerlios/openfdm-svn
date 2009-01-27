@@ -49,10 +49,6 @@ public:
 
   virtual void accept(NodeVisitor& visitor);
   virtual void accept(ConstNodeVisitor& visitor) const;
-
-protected:
-  MechanicLink_ newMechanicLink(const std::string& name)
-  { return MechanicLink_(this, name); }
 };
 
 } // namespace OpenFDM

@@ -65,16 +65,4 @@ NumericPort::accept(ConstNodeVisitor& visitor) const
   visitor.apply(*this);
 }
 
-void
-MechanicLink::accept(NodeVisitor& visitor) const
-{
-  visitor.apply(*this);
-}
-
-void
-MechanicLink::accept(ConstNodeVisitor& visitor) const
-{
-  visitor.apply(*this);
-}
-
 } // namespace OpenFDM
