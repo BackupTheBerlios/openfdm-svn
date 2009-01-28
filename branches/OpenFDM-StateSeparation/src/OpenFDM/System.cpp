@@ -277,8 +277,8 @@ public:
 
   struct PortData : public WeakReferenced {
   public:
-    PortData(const Port* portInfo, bool valueCreator = true) :
-      mPort(portInfo),
+    PortData(const Port* port, bool valueCreator = true) :
+      mPort(port),
       mNumConnectedPorts(0),
       mPortValueCreator(valueCreator)
     {
@@ -828,22 +828,22 @@ public:
         continue;
       }
 
-      SharedPtr<const Port> portInfo0 = connect->getPort0();
-      if (!portInfo0) {
+      SharedPtr<const Port> port0 = connect->getPort0();
+      if (!port0) {
         Log(Schedule, Warning) << "Incomplete connect #" << i << " for Group \""
                                << Node::toNodePathName(getNodePath())
                                << "\"" << std::endl;
         continue;
       }
-      SharedPtr<const Port> portInfo1 = connect->getPort1();
-      if (!portInfo1) {
+      SharedPtr<const Port> port1 = connect->getPort1();
+      if (!port1) {
         Log(Schedule, Warning) << "Incomplete connect #" << i << " for Group \""
                                << Node::toNodePathName(getNodePath())
                                << "\"" << std::endl;
         continue;
       }
 
-      SharedPtr<const Node> node0 = portInfo0->getNode();
+      SharedPtr<const Node> node0 = port0->getNode();
       if (!node0) {
         Log(Schedule, Warning) << "Dangling port #0 connected in connect #" << i
                                << " for Group \""
@@ -851,7 +851,7 @@ public:
                                << "\"" << std::endl;
         continue;
       }
-      SharedPtr<const Node> node1 = portInfo1->getNode();
+      SharedPtr<const Node> node1 = port1->getNode();
       if (!node1) {
         Log(Schedule, Warning) << "Dangling port #1 connected in connect #" << i
                                << " for Group \""
@@ -874,10 +874,10 @@ public:
         continue;
       }
 
-      unsigned portInfoIndex0 = portInfo0->getIndex();
-      unsigned portInfoIndex1 = portInfo1->getIndex();
-      if (!mInstanceDataVector[nodeIndex1]->getPortData(portInfoIndex1)->
-          connect(mInstanceDataVector[nodeIndex0]->getPortData(portInfoIndex0)))
+      unsigned portIndex0 = port0->getIndex();
+      unsigned portIndex1 = port1->getIndex();
+      if (!mInstanceDataVector[nodeIndex1]->getPortData(portIndex1)->
+          connect(mInstanceDataVector[nodeIndex0]->getPortData(portIndex0)))
         Log(Schedule, Error) << "Internal Error: Cannot connect ports that"
           " appeared to be compatible before." << std::endl;
     }
