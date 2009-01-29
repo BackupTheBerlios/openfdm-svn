@@ -18,6 +18,9 @@ Group::Group(const std::string& name) :
 
 Group::~Group()
 {
+  ChildList::const_iterator i;
+  for (i = mChildList.begin(); i != mChildList.end(); ++i)
+    (*i)->removeParent(this);
 }
 
 void
@@ -64,6 +67,7 @@ Group::removeChild(const Node* node)
   i = std::find(mChildList.begin(), mChildList.end(), node);
   if (i == mChildList.end())
     return;
+  (*i)->removeParent(this);
   mChildList.erase(i);
 }
 
@@ -74,6 +78,7 @@ Group::removeChild(unsigned index)
     return;
   ChildList::iterator i = mChildList.begin();
   std::advance(i, index);
+  (*i)->removeParent(this);
   mChildList.erase(i);
 }
 

@@ -93,12 +93,14 @@ Node::getParent(unsigned i)
 }
 
 bool
-Node::isChildOf(const Group* group) const
+Node::isChildOf(const Node* node) const
 {
+  if (!node)
+    return false;
   ParentList::const_iterator i;
   for (i = mParentList.begin(); i != mParentList.end(); ++i) {
-    SharedPtr<const Node> node = i->lock();
-    if (node == group)
+    SharedPtr<const Node> parentNode = i->lock();
+    if (node == parentNode)
       return true;
   }
   return false;
@@ -130,22 +132,22 @@ Node::getPort(const std::string& name) const
 }
 
 unsigned
-Node::getPortIndex(const Port* portInfo) const
+Node::getPortIndex(const Port* port) const
 {
   PortList::const_iterator i;
   for (i = mPortList.begin(); i != mPortList.end(); ++i) {
-    if (portInfo == i->get())
+    if (port == i->get())
       return std::distance(mPortList.begin(), i);
   }
   return ~0u;
 }
 
 bool
-Node::checkPort(const Port* portInfo) const
+Node::checkPort(const Port* port) const
 {
   PortList::const_iterator i;
   for (i = mPortList.begin(); i != mPortList.end(); ++i) {
-    if (portInfo == i->get())
+    if (port == i->get())
       return true;
   }
   return false;

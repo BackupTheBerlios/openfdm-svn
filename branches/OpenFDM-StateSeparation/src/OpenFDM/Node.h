@@ -40,13 +40,13 @@ public:
   { return mParentList.size(); }
   WeakPtr<const Node> getParent(unsigned i) const;
   WeakPtr<Node> getParent(unsigned i);
-  bool isChildOf(const Group* group) const;
+  bool isChildOf(const Node* node) const;
 
   unsigned getNumPorts() const;
   SharedPtr<const Port> getPort(unsigned index) const;
   SharedPtr<const Port> getPort(const std::string& name) const;
-  unsigned getPortIndex(const Port* portInfo) const;
-  bool checkPort(const Port* portInfo) const;
+  unsigned getPortIndex(const Port* port) const;
+  bool checkPort(const Port* port) const;
 
   const SampleTime& getSampleTime() const
   { return mSampleTime; }
