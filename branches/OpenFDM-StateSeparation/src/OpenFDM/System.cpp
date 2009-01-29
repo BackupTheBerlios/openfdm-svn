@@ -611,18 +611,18 @@ public:
     {
       unsigned numPorts = getNode()->getNumPorts();
       for (unsigned i = 0; i < numPorts; ++i) {
-        const MechanicLink* linkInfo;
-        linkInfo = getNode()->getPort(i)->toMechanicLink();
-        if (!linkInfo)
+        const MechanicLink* mechanicLink;
+        mechanicLink = getNode()->getPort(i)->toMechanicLink();
+        if (!mechanicLink)
           continue;
         OpenFDMAssert(i < mPortDataVector.size());
 
         const Node* otherNode = instance.getNode();
         unsigned otherNumPorts = otherNode->getNumPorts();
         for (unsigned j = 0; j < otherNumPorts; ++j) {
-          const MechanicLink* otherLink;
-          otherLink = otherNode->getPort(j)->toMechanicLink();
-          if (!otherLink)
+          const MechanicLink* otherMechanicLink;
+          otherMechanicLink = otherNode->getPort(j)->toMechanicLink();
+          if (!otherMechanicLink)
             continue;
 
           OpenFDMAssert(j < instance.mPortDataVector.size());
@@ -630,8 +630,8 @@ public:
           if (!mPortDataVector[i]->isConnected(*instance.mPortDataVector[j]))
             continue;
 
-          mChildLink = linkInfo;
-          instance.mParentLink = otherLink;
+          mChildLink = mechanicLink;
+          instance.mParentLink = otherMechanicLink;
           return true;
         }
       }
@@ -643,13 +643,13 @@ public:
     {
       unsigned numPorts = getNode()->getNumPorts();
       for (unsigned i = 0; i < numPorts; ++i) {
-        const MechanicLink* linkInfo;
-        linkInfo = getNode()->getPort(i)->toMechanicLink();
-        if (!linkInfo)
+        const MechanicLink* mechanicLink;
+        mechanicLink = getNode()->getPort(i)->toMechanicLink();
+        if (!mechanicLink)
           continue;
-        if (linkInfo == mParentLink)
+        if (mechanicLink == mParentLink)
           continue;
-        mChildLink = linkInfo;
+        mChildLink = mechanicLink;
       }
       return true;
     }
