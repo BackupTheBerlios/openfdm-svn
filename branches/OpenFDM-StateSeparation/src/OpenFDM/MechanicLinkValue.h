@@ -20,11 +20,6 @@ public:
   virtual MechanicLinkValue* toMechanicLinkValue() { return this; }
   virtual const MechanicLinkValue* toMechanicLinkValue() const { return this; }
 
-  const Frame& getFrame() const
-  { return mFrame; }
-  Frame& getFrame()
-  { return mFrame; }
-
   /// Currently duplicate information from the Frame.
   /// This is an attempt to seperate the coordinate system stuff away from
   /// the reference frame handling.
@@ -92,10 +87,10 @@ public:
   {
     mArticulatedInertia = SpatialInertia::zeros();
     mArticulatedForce = Vector6::zeros();
-    mFrame.setPosAndVel(linkValue.getFrame(), position, orientation, velocity);
+    mFrame.setPosAndVel(linkValue.mFrame, position, orientation, velocity);
   }
   void setAccel(const MechanicLinkValue& linkValue, const Vector6& accel)
-  { mFrame.setAccel(linkValue.getFrame(), accel); }
+  { mFrame.setAccel(linkValue.mFrame, accel); }
   void setPosAndVel(const Vector3& parentAngularVel, const Vector3& position,
                     const Quaternion& orientation, const Vector6& velocity)
   {
@@ -103,6 +98,11 @@ public:
     mArticulatedForce = Vector6::zeros();
     mFrame.setPosAndVel(parentAngularVel, position, orientation, velocity);
   }
+  void setSpAccel(const Vector6& accel)
+  { mFrame.setSpAccel(accel); }
+
+  Vector6 getRelVelDot() const
+  { return mFrame.getRelVelDot(); }
 
   const Vector3& getDesignPosition() const
   { return mDesignPosition; }

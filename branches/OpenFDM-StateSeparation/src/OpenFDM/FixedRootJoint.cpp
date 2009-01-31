@@ -96,7 +96,7 @@ FixedRootJoint::acceleration(const Task& task, const Environment& environment,
                              PortValueList& portValues) const
 {
   Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
-  portValues[*mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
+  portValues[*mMechanicLink].setSpAccel(spatialAcceleration);
 }
 
 } // namespace OpenFDM

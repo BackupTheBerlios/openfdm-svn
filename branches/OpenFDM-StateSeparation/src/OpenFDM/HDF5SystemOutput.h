@@ -360,9 +360,9 @@ private:
       _position.append(cs.getPosition());
       _orientation.append(cs.getOrientation());
       _eulerAngle.append(cs.getOrientation().getEuler());
-      _velocity.append(mMechanicLinkValue->getFrame().getSpVel());
-      _refVelocity.append(mMechanicLinkValue->getFrame().getRefVel());
-      _acceleration.append(mMechanicLinkValue->getFrame().getSpAccel());
+      _velocity.append(mMechanicLinkValue->getSpVel());
+      _refVelocity.append(mMechanicLinkValue->getReferenceVelocity());
+      _acceleration.append(mMechanicLinkValue->getSpAccel());
       _force.append(mMechanicLinkValue->getForce());
       _inertia.append(mMechanicLinkValue->getInertia());
     }

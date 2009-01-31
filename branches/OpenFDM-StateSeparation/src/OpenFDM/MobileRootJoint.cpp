@@ -143,7 +143,7 @@ MobileRootJoint::acceleration(const Task& task, const Environment& environment,
   Vector6 force = portValues[*mMechanicLink].getForce();
 
   spatialAcceleration -= solve(inertia, force);
-  portValues[*mMechanicLink].getFrame().setSpAccel(spatialAcceleration);
+  portValues[*mMechanicLink].setSpAccel(spatialAcceleration);
 }
 
 void
@@ -166,7 +166,7 @@ MobileRootJoint::derivative(const Environment& environment,
   Vector3 angVel = velocity.getAngular();
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
-  Vector6 velDeriv = portValues[*mMechanicLink].getFrame().getRelVelDot();
+  Vector6 velDeriv = portValues[*mMechanicLink].getRelVelDot();
 
   derivatives[*mPositionStateInfo] = pDot;
   derivatives[*mOrientationStateInfo] = qderiv;
