@@ -6,7 +6,6 @@
 #define OpenFDM_InternalInteract_H
 
 #include "DoubleLinkInteract.h"
-#include "MechanicLink.h"
 #include "RealInputPort.h"
 #include "RealOutputPort.h"
 #include "Vector.h"

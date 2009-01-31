@@ -6,7 +6,6 @@
 
 #include "ConstNodeVisitor.h"
 #include "JointContext.h"
-#include "MechanicLinkValue.h"
 #include "NodeVisitor.h"
 
 namespace OpenFDM {

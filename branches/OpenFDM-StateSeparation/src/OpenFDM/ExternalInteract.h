@@ -8,7 +8,6 @@
 #include "SingleLinkInteract.h"
 #include "MatrixInputPort.h"
 #include "MatrixOutputPort.h"
-#include "MechanicLink.h"
 #include "RealOutputPort.h"
 #include "Vector.h"
 

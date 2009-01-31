@@ -4,7 +4,6 @@
 
 #include "ExternalInteract.h"
 
-#include "MechanicLinkValue.h"
 #include "NumericPortValue.h"
 #include "PortValueList.h"
 #include "Task.h"
