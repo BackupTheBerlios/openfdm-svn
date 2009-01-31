@@ -22,6 +22,12 @@ public:
   FixedRootJoint(const std::string& name);
   virtual ~FixedRootJoint();
 
+  virtual JointContext*
+  newJointContext(const Environment* environment,
+                  MechanicLinkValue* parentLink,
+                  MechanicLinkValue* childLink,
+                  PortValueList& portValueList) const;
+
   /// The position is global coordinates
   const Vector3& getRootPosition() const;
   void setRootPosition(const Vector3& rootRosition);
@@ -30,20 +36,9 @@ public:
   const Quaternion& getRootOrientation() const;
   void setRootOrientation(const Quaternion& rootOrientation);
 
-  virtual void init(const Task&, DiscreteStateValueVector&,
-                    ContinousStateValueVector&,
-                    const PortValueList&) const;
-  virtual void initDesignPosition(PortValueList&) const;
-  virtual void velocity(const Task&, const Environment& environment,
-                        const ContinousStateValueVector& states,
-                        PortValueList& portValues) const;
-  virtual void articulation(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList& portValues) const;
-  virtual void acceleration(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList& portValues) const;
 private:
+  class Context;
+
   SharedPtr<MechanicLink> mMechanicLink;
 
   Vector3 mRootPosition;

@@ -22,6 +22,12 @@ public:
   MobileRootJoint(const std::string& name);
   virtual ~MobileRootJoint();
 
+  virtual JointContext*
+  newJointContext(const Environment* environment,
+                  MechanicLinkValue* parentLink,
+                  MechanicLinkValue* childLink,
+                  PortValueList& portValueList) const;
+
   const Vector3& getInitialPosition() const;
   void setInitialPosition(const Vector3& initialPosition);
 
@@ -34,25 +40,27 @@ public:
   const Vector3& getInitialAngularVelocity() const;
   void setInitialAngularVelocity(const Vector3& initialAngularVelocity);
 
-  virtual void init(const Task&, DiscreteStateValueVector&,
-                    ContinousStateValueVector&,
-                    const PortValueList&) const;
-  virtual void initDesignPosition(PortValueList&) const;
-  virtual void velocity(const Task&, const Environment& environment,
-                        const ContinousStateValueVector& states,
-                        PortValueList& portValues) const;
-  virtual void articulation(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList& portValues) const;
-  virtual void acceleration(const Task&, const Environment& environment,
-                            const ContinousStateValueVector&,
-                            PortValueList& portValues) const;
-  virtual void derivative(const Environment& environment,
-                          const DiscreteStateValueVector&,
-                          const ContinousStateValueVector&,
-                          const PortValueList& portValues,
-                          ContinousStateValueVector&) const;
+  void init(const Task&, DiscreteStateValueVector&,
+            ContinousStateValueVector&,
+            const PortValueList&) const;
+  void initDesignPosition(PortValueList&) const;
+  void velocity(const Task&, const Environment& environment,
+                const ContinousStateValueVector& states,
+                PortValueList& portValues) const;
+  void articulation(const Task&, const Environment& environment,
+                    const ContinousStateValueVector&,
+                    PortValueList& portValues) const;
+  void acceleration(const Task&, const Environment& environment,
+                    const ContinousStateValueVector&,
+                    PortValueList& portValues) const;
+  void derivative(const Environment& environment,
+                  const DiscreteStateValueVector&,
+                  const ContinousStateValueVector&,
+                  const PortValueList& portValues,
+                  ContinousStateValueVector&) const;
 private:
+  class Context;
+
   SharedPtr<MechanicLink> mMechanicLink;
 
   SharedPtr<Vector3StateInfo> mPositionStateInfo;

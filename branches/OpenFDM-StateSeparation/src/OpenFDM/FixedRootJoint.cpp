@@ -5,6 +5,7 @@
 #include "FixedRootJoint.h"
 
 #include "Assert.h"
+#include "JointContext.h"
 #include "LogStream.h"
 #include "Object.h"
 #include "Vector.h"
@@ -15,6 +16,44 @@
 #include "MechanicContext.h"
 
 namespace OpenFDM {
+
+class FixedRootJoint::Context : public JointContext {
+public:
+  Context(const FixedRootJoint* rootJoint, const Environment* environment,
+          MechanicLinkValue* parentLinkValue, MechanicLinkValue* childLinkValue,
+          PortValueList& portValueList) :
+    JointContext(environment, parentLinkValue, childLinkValue, portValueList),
+    mFixedRootJoint(rootJoint)
+  {}
+  virtual ~Context() {}
+  
+  virtual const FixedRootJoint& getNode() const
+  { return *mFixedRootJoint; }
+  
+  virtual void initDesignPosition()
+  {
+    mChildLink.setDesignPosition(mFixedRootJoint->getPosition());
+  }
+
+  virtual void velocities(const Task& task)
+  {
+    Vector3 angularVel = getEnvironment().getAngularVelocity(task.getTime());
+    mChildLink.getMechanicLinkValue().
+      setCoordinateSystem(CoordinateSystem(mFixedRootJoint->mRootPosition,
+                                           mFixedRootJoint->mRootOrientation));
+    mChildLink.getMechanicLinkValue().
+      setPosAndVel(angularVel, mFixedRootJoint->mRootPosition,
+                   mFixedRootJoint->mRootOrientation, Vector6::zeros());
+  }
+  virtual void accelerations(const Task& task)
+  {
+    mChildLink.getMechanicLinkValue().
+      setSpAccel(getEnvironment().getAcceleration(task.getTime()));
+  }
+  
+private:
+  SharedPtr<const FixedRootJoint> mFixedRootJoint;
+};
 
 BEGIN_OPENFDM_OBJECT_DEF(FixedRootJoint, RootJoint)
   DEF_OPENFDM_PROPERTY(Vector3, RootPosition, Serialized)
@@ -31,6 +70,22 @@ FixedRootJoint::FixedRootJoint(const std::string& name) :
 
 FixedRootJoint::~FixedRootJoint()
 {
+}
+
+JointContext*
+FixedRootJoint::newJointContext(const Environment* environment,
+                                MechanicLinkValue* parentLinkValue,
+                                MechanicLinkValue* childLinkValue,
+                                PortValueList& portValueList) const
+{
+  SharedPtr<Context> context = new Context(this, environment, parentLinkValue,
+                                           childLinkValue, portValueList);
+  if (!context->allocStates()) {
+    Log(Model, Warning) << "Could not alloc for model \""
+                        << getName() << "\"" << endl;
+    return false;
+  }
+  return context.release();
 }
 
 const Vector3&
@@ -55,48 +110,6 @@ void
 FixedRootJoint::setRootOrientation(const Quaternion& rootOrientation)
 {
   mRootOrientation = rootOrientation;
-}
-
-void
-FixedRootJoint::init(const Task&, DiscreteStateValueVector&,
-                      ContinousStateValueVector& continousState,
-                      const PortValueList& portValues) const
-{
-}
-
-void
-FixedRootJoint::initDesignPosition(PortValueList& portValues) const
-{
-  portValues[*mMechanicLink].setDesignPosition(getPosition());
-}
-
-void
-FixedRootJoint::velocity(const Task& task, const Environment& environment,
-                         const ContinousStateValueVector& continousState,
-                         PortValueList& portValues) const
-{
-  Vector3 angularBaseVelocity = environment.getAngularVelocity(task.getTime());
-  portValues[*mMechanicLink].setCoordinateSystem(CoordinateSystem(mRootPosition,
-                                         mRootOrientation));
-  portValues[*mMechanicLink].setPosAndVel(angularBaseVelocity, mRootPosition,
-                                         mRootOrientation, Vector6::zeros());
-}
-
-void
-FixedRootJoint::articulation(const Task&, const Environment& environment,
-                             const ContinousStateValueVector&,
-                             PortValueList&) const
-{
-  /// In this case a noop.
-}
-
-void
-FixedRootJoint::acceleration(const Task& task, const Environment& environment,
-                             const ContinousStateValueVector&,
-                             PortValueList& portValues) const
-{
-  Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
-  portValues[*mMechanicLink].setSpAccel(spatialAcceleration);
 }
 
 } // namespace OpenFDM

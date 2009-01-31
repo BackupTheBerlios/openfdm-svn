@@ -5,6 +5,7 @@
 #include "MobileRootJoint.h"
 
 #include "Assert.h"
+#include "JointContext.h"
 #include "LogStream.h"
 #include "Vector.h"
 #include "Matrix.h"
@@ -13,6 +14,52 @@
 #include "Task.h"
 
 namespace OpenFDM {
+
+class MobileRootJoint::Context : public JointContext {
+public:
+  Context(const MobileRootJoint* rootJoint, const Environment* environment,
+          MechanicLinkValue* parentLinkValue, MechanicLinkValue* childLinkValue,
+          PortValueList& portValueList) :
+    JointContext(environment, parentLinkValue, childLinkValue, portValueList),
+    mMobileRootJoint(rootJoint)
+  {}
+  virtual ~Context() {}
+  
+  virtual const MobileRootJoint& getNode() const
+  { return *mMobileRootJoint; }
+  
+  virtual void initDesignPosition()
+  {
+    mMobileRootJoint->initDesignPosition(mPortValueList);
+  }
+
+  virtual void init(const /*Init*/Task& task)
+  {
+    mMobileRootJoint->init(task, mDiscreteState, mContinousState, mPortValueList);
+  }
+  
+  virtual void velocities(const Task& task)
+  {
+    mMobileRootJoint->velocity(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  virtual void articulation(const Task& task)
+  {
+    mMobileRootJoint->articulation(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  virtual void accelerations(const Task& task)
+  {
+    mMobileRootJoint->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
+  }
+  
+  virtual void derivative(const Task&)
+  {
+    mMobileRootJoint->derivative(getEnvironment(), mDiscreteState, mContinousState, mPortValueList,
+                           mContinousStateDerivative);
+  }
+  
+private:
+  SharedPtr<const MobileRootJoint> mMobileRootJoint;
+};
 
 BEGIN_OPENFDM_OBJECT_DEF(MobileRootJoint, RootJoint)
   DEF_OPENFDM_PROPERTY(Vector3, InitialPosition, Serialized)
@@ -39,6 +86,22 @@ MobileRootJoint::MobileRootJoint(const std::string& name) :
 
 MobileRootJoint::~MobileRootJoint()
 {
+}
+
+JointContext*
+MobileRootJoint::newJointContext(const Environment* environment,
+                                 MechanicLinkValue* parentLinkValue,
+                                 MechanicLinkValue* childLinkValue,
+                                 PortValueList& portValueList) const
+{
+  SharedPtr<Context> context = new Context(this, environment, parentLinkValue,
+                                           childLinkValue, portValueList);
+  if (!context->allocStates()) {
+    Log(Model, Warning) << "Could not alloc for model \""
+                        << getName() << "\"" << endl;
+    return false;
+  }
+  return context.release();
 }
 
 const Vector3&
