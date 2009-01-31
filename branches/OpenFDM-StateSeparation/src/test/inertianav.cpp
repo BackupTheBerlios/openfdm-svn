@@ -38,8 +38,9 @@ public:
     {
       Vector3 p1(0, 1, 0);
       Vector3 p2(0, -1, 0);
-      
-      const Frame& frame = getLink().getMechanicLinkValue().getFrame();
+
+#if 0      
+      const Frame frame = getLink().getMechanicLinkValue().getFrame();
       
       CoordinateSystem csys0 = getLink().getCoordinateSystem();
       
@@ -126,6 +127,7 @@ public:
       std::cout << trans(a) << " " << trans(frame.getSpAccel()) << std::endl;
       
       mPortValueList[mAccelerationTracking->mAccelerationPort] = a;
+#endif
     }
     
   private:
