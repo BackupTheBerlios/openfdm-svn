@@ -143,8 +143,7 @@ protected:
       mChildLink.setCoordinateSystem(mParentLink.getCoordinateSystem().toReference(mRelativeCoordinateSystem));
 
       Vector6 relVel = mJointMatrix*velocity;
-      mChildLink.setPosAndVel(mParentLink.getMechanicLinkValue(),
-                              relPosition, orientation, relVel);
+      mChildLink.setPosAndVel(mParentLink, relPosition, orientation, relVel);
 
       /**
          This is the cross product of the inertial spatial velocity
@@ -221,8 +220,7 @@ protected:
 
       Vector6 f = mChildLink.getInertia()*parentSpAccel + pAlpha;
       mVelDot = hIh.solve(mJointForce - trans(mJointMatrix)*f);
-      mChildLink.setAccel(mParentLink.getMechanicLinkValue(),
-                          mJointMatrix*mVelDot);
+      mChildLink.setAccel(mParentLink, mJointMatrix*mVelDot);
     }
   
     /** Compute the articulation step for a given velocity derivative.
@@ -253,8 +251,7 @@ protected:
      */
     void accelerateDueToVelDot()
     {
-      mChildLink.setAccel(mParentLink.getMechanicLinkValue(),
-                          mJointMatrix*mVelDot);
+      mChildLink.setAccel(mParentLink, mJointMatrix*mVelDot);
     }
 
     const VectorN& getVelDot() const

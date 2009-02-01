@@ -173,8 +173,7 @@ MobileRootJoint::velocity(const Task& task, const Environment& environment,
   Vector6 velocity = continousState[*mVelocityStateInfo];
 
   childLink.setCoordinateSystem(CoordinateSystem(position, orientation));
-  childLink.getMechanicLinkValue().setPosAndVel(angularBaseVelocity, position,
-                                                orientation, velocity);
+  childLink.setPosAndVel(angularBaseVelocity, position, orientation, velocity);
 }
 
 void
@@ -188,7 +187,7 @@ MobileRootJoint::acceleration(const Task& task, const Environment& environment,
   Vector6 force = childLink.getForce();
 
   spatialAcceleration -= solve(inertia, force);
-  childLink.getMechanicLinkValue().setSpAccel(spatialAcceleration);
+  childLink.setSpAccel(spatialAcceleration);
 }
 
 void

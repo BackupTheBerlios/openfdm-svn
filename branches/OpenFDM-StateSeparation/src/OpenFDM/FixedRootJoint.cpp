@@ -38,17 +38,16 @@ public:
   virtual void velocities(const Task& task)
   {
     Vector3 angularVel = getEnvironment().getAngularVelocity(task.getTime());
-    mChildLink.getMechanicLinkValue().
-      setCoordinateSystem(CoordinateSystem(mFixedRootJoint->mRootPosition,
-                                           mFixedRootJoint->mRootOrientation));
-    mChildLink.getMechanicLinkValue().
-      setPosAndVel(angularVel, mFixedRootJoint->mRootPosition,
-                   mFixedRootJoint->mRootOrientation, Vector6::zeros());
+    CoordinateSystem coordSys(mFixedRootJoint->mRootPosition,
+                              mFixedRootJoint->mRootOrientation);
+    mChildLink.setCoordinateSystem(coordSys);
+    mChildLink.setPosAndVel(angularVel, mFixedRootJoint->mRootPosition,
+                            mFixedRootJoint->mRootOrientation,
+                            Vector6::zeros());
   }
   virtual void accelerations(const Task& task)
   {
-    mChildLink.getMechanicLinkValue().
-      setSpAccel(getEnvironment().getAcceleration(task.getTime()));
+    mChildLink.setSpAccel(getEnvironment().getAcceleration(task.getTime()));
   }
   
 private:

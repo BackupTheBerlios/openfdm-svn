@@ -126,52 +126,6 @@ protected:
   Vector3 mDesignPosition;
 };
 
-class ChildLink {
-public:
-  ChildLink(MechanicLinkValue* mechanicLinkValue) :
-    mMechanicLinkValue(mechanicLinkValue)
-  { OpenFDMAssert(mMechanicLinkValue); }
-
-  const MechanicLinkValue& getMechanicLinkValue() const
-  { return *mMechanicLinkValue; }
-  MechanicLinkValue& getMechanicLinkValue()
-  { return *mMechanicLinkValue; }
-
-  void setDesignPosition(const Vector3& position)
-  { mMechanicLinkValue->setDesignPosition(position); }
-
-  void setPosAndVel(const MechanicLinkValue& link, const Vector3& position,
-                    const Quaternion& orientation, const Vector6& velocity)
-  { mMechanicLinkValue->setPosAndVel(link, position, orientation, velocity); }
-  void setAccel(const MechanicLinkValue& link, const Vector6& accel)
-  { mMechanicLinkValue->setAccel(link, accel); }
-
-  void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
-  {
-    OpenFDMAssert(mMechanicLinkValue);
-    return mMechanicLinkValue->setCoordinateSystem(coordinateSystem);
-  }
-  const CoordinateSystem& getCoordinateSystem() const
-  {
-    OpenFDMAssert(mMechanicLinkValue);
-    return mMechanicLinkValue->getCoordinateSystem();
-  }
-
-  const Vector6& getForce() const
-  {
-    OpenFDMAssert(mMechanicLinkValue);
-    return mMechanicLinkValue->getForce();
-  }
-  const SpatialInertia& getInertia() const
-  {
-    OpenFDMAssert(mMechanicLinkValue);
-    return mMechanicLinkValue->getInertia();
-  }
- 
-private:
-  SharedPtr<MechanicLinkValue> mMechanicLinkValue;
-};
-
 class ParentLink {
 public:
   ParentLink(MechanicLinkValue* mechanicLinkValue = 0) :
@@ -189,11 +143,6 @@ public:
   }
 
   const MechanicLinkValue& getMechanicLinkValue() const
-  {
-    OpenFDMAssert(isConnected());
-    return *mMechanicLinkValue;
-  }
-  MechanicLinkValue& getMechanicLinkValue()
   {
     OpenFDMAssert(isConnected());
     return *mMechanicLinkValue;
@@ -324,6 +273,71 @@ public:
 private:
   SharedPtr<MechanicLinkValue> mMechanicLinkValue;
   Vector3 mLinkRelPos;
+};
+
+class ChildLink {
+public:
+  ChildLink(MechanicLinkValue* mechanicLinkValue) :
+    mMechanicLinkValue(mechanicLinkValue)
+  { OpenFDMAssert(mMechanicLinkValue); }
+
+  const MechanicLinkValue& getMechanicLinkValue() const
+  { return *mMechanicLinkValue; }
+
+  void setDesignPosition(const Vector3& position)
+  { mMechanicLinkValue->setDesignPosition(position); }
+
+  void setPosAndVel(const Vector3& angularBaseVel, const Vector3& position,
+                    const Quaternion& orientation, const Vector6& velocity)
+  {
+    mMechanicLinkValue->setPosAndVel(angularBaseVel, position,
+                                     orientation, velocity);
+  }
+  void setSpAccel(const Vector6& accel)
+  {
+    mMechanicLinkValue->setSpAccel(accel);
+  }
+  Vector6 getSpAccel() const
+  {
+    mMechanicLinkValue->getSpAccel();
+  }
+
+  void setPosAndVel(const ParentLink& parentLink, const Vector3& position,
+                    const Quaternion& orientation, const Vector6& velocity)
+  {
+    const MechanicLinkValue& link = parentLink.getMechanicLinkValue();
+    mMechanicLinkValue->setPosAndVel(link, position, orientation, velocity);
+  }
+  void setAccel(const ParentLink& parentLink, const Vector6& accel)
+  {
+    const MechanicLinkValue& link = parentLink.getMechanicLinkValue();
+    mMechanicLinkValue->setAccel(link, accel);
+  }
+
+  void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
+  {
+    OpenFDMAssert(mMechanicLinkValue);
+    return mMechanicLinkValue->setCoordinateSystem(coordinateSystem);
+  }
+  const CoordinateSystem& getCoordinateSystem() const
+  {
+    OpenFDMAssert(mMechanicLinkValue);
+    return mMechanicLinkValue->getCoordinateSystem();
+  }
+
+  const Vector6& getForce() const
+  {
+    OpenFDMAssert(mMechanicLinkValue);
+    return mMechanicLinkValue->getForce();
+  }
+  const SpatialInertia& getInertia() const
+  {
+    OpenFDMAssert(mMechanicLinkValue);
+    return mMechanicLinkValue->getInertia();
+  }
+ 
+private:
+  SharedPtr<MechanicLinkValue> mMechanicLinkValue;
 };
 
 } // namespace OpenFDM
