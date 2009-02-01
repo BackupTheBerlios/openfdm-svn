@@ -40,13 +40,6 @@ public:
   Matrix& operator[](const MatrixOutputPort& port)
   { return port.getPortValue(mPortValueVector)->getValue(); }
 
-  // Accessors for matrix valued ports
-  // FIXME Implement access control for the port value
-  const MechanicLinkValue& operator[](const MechanicLink& port) const
-  { return *getPortValue(port); }
-  MechanicLinkValue& operator[](const MechanicLink& port)
-  { return *getPortValue(port); }
-
   const NumericPortValue* getPortValue(const RealInputPort& port)
   {
     if (port.empty())
@@ -172,6 +165,12 @@ public:
     if (!portValue)
       return 0;
     return portValue->toMechanicLinkValue();
+  }
+  MechanicLinkValue* getPortValue(const MechanicLink* portInfo)
+  {
+    if (!portInfo)
+      return 0;
+    return getPortValue(*portInfo);
   }
   MechanicLinkValue* getPortValue(const MechanicLink& portInfo)
   {
