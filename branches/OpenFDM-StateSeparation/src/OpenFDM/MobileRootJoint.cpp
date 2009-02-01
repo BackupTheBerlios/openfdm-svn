@@ -30,30 +30,28 @@ public:
   
   virtual void initDesignPosition()
   {
-    mMobileRootJoint->initDesignPosition(mPortValueList);
+    mChildLink.setDesignPosition(mMobileRootJoint->getPosition());
   }
 
   virtual void init(const /*Init*/Task& task)
   {
-    mMobileRootJoint->init(task, mDiscreteState, mContinousState, mPortValueList);
+    mMobileRootJoint->init(task, mContinousState);
   }
   
   virtual void velocities(const Task& task)
   {
-    mMobileRootJoint->velocity(task, getEnvironment(), mContinousState, mPortValueList);
+    mMobileRootJoint->velocity(task, getEnvironment(), mContinousState, mChildLink);
   }
   virtual void articulation(const Task& task)
-  {
-    mMobileRootJoint->articulation(task, getEnvironment(), mContinousState, mPortValueList);
-  }
+  { }
   virtual void accelerations(const Task& task)
   {
-    mMobileRootJoint->acceleration(task, getEnvironment(), mContinousState, mPortValueList);
+    mMobileRootJoint->acceleration(task, getEnvironment(), mContinousState, mChildLink);
   }
   
   virtual void derivative(const Task&)
   {
-    mMobileRootJoint->derivative(getEnvironment(), mDiscreteState, mContinousState, mPortValueList,
+    mMobileRootJoint->derivative(getEnvironment(), mDiscreteState, mContinousState, mChildLink,
                            mContinousStateDerivative);
   }
   
@@ -154,9 +152,8 @@ MobileRootJoint::setInitialAngularVelocity(const Vector3& initialVelocity)
 
 
 void
-MobileRootJoint::init(const Task&, DiscreteStateValueVector&,
-                      ContinousStateValueVector& continousState,
-                      const PortValueList& portValues) const
+MobileRootJoint::init(const Task&,
+                      ContinousStateValueVector& continousState) const
 {
   continousState[*mPositionStateInfo] = mInitialPosition;
   continousState[*mOrientationStateInfo] = mInitialOrientation;
@@ -165,15 +162,9 @@ MobileRootJoint::init(const Task&, DiscreteStateValueVector&,
 }
 
 void
-MobileRootJoint::initDesignPosition(PortValueList& portValues) const
-{
-  portValues[*mMechanicLink].setDesignPosition(getPosition());
-}
-
-void
 MobileRootJoint::velocity(const Task& task, const Environment& environment,
                           const ContinousStateValueVector& continousState,
-                          PortValueList& portValues) const
+                          ChildLink& childLink) const
 {
   Vector3 angularBaseVelocity = environment.getAngularVelocity(task.getTime());
 
@@ -181,39 +172,30 @@ MobileRootJoint::velocity(const Task& task, const Environment& environment,
   Quaternion orientation = continousState[*mOrientationStateInfo];
   Vector6 velocity = continousState[*mVelocityStateInfo];
 
-  portValues[*mMechanicLink].setCoordinateSystem(CoordinateSystem(position,
-                                                                  orientation));
-  portValues[*mMechanicLink].setPosAndVel(angularBaseVelocity,
-                                          position, orientation, velocity);
-}
-
-void
-MobileRootJoint::articulation(const Task&, const Environment& environment,
-                              const ContinousStateValueVector&,
-                              PortValueList&) const
-{
-  /// In this case a noop.
+  childLink.setCoordinateSystem(CoordinateSystem(position, orientation));
+  childLink.getMechanicLinkValue().setPosAndVel(angularBaseVelocity, position,
+                                                orientation, velocity);
 }
 
 void
 MobileRootJoint::acceleration(const Task& task, const Environment& environment,
                               const ContinousStateValueVector&,
-                              PortValueList& portValues) const
+                              ChildLink& childLink) const
 {
   Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
 
-  SpatialInertia inertia = portValues[*mMechanicLink].getInertia();
-  Vector6 force = portValues[*mMechanicLink].getForce();
+  SpatialInertia inertia = childLink.getInertia();
+  Vector6 force = childLink.getForce();
 
   spatialAcceleration -= solve(inertia, force);
-  portValues[*mMechanicLink].setSpAccel(spatialAcceleration);
+  childLink.getMechanicLinkValue().setSpAccel(spatialAcceleration);
 }
 
 void
 MobileRootJoint::derivative(const Environment& environment,
                             const DiscreteStateValueVector&,
                             const ContinousStateValueVector& continousState,
-                            const PortValueList& portValues,
+                            const ChildLink& childLink,
                             ContinousStateValueVector& derivatives) const
 {
   Quaternion orientation = continousState[*mOrientationStateInfo];
@@ -229,7 +211,7 @@ MobileRootJoint::derivative(const Environment& environment,
   Vector3 angVel = velocity.getAngular();
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
-  Vector6 velDeriv = portValues[*mMechanicLink].getRelVelDot();
+  Vector6 velDeriv = childLink.getMechanicLinkValue().getRelVelDot();
 
   derivatives[*mPositionStateInfo] = pDot;
   derivatives[*mOrientationStateInfo] = qderiv;

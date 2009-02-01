@@ -40,23 +40,15 @@ public:
   const Vector3& getInitialAngularVelocity() const;
   void setInitialAngularVelocity(const Vector3& initialAngularVelocity);
 
-  void init(const Task&, DiscreteStateValueVector&,
-            ContinousStateValueVector&,
-            const PortValueList&) const;
-  void initDesignPosition(PortValueList&) const;
+  void init(const Task&, ContinousStateValueVector&) const;
   void velocity(const Task&, const Environment& environment,
-                const ContinousStateValueVector& states,
-                PortValueList& portValues) const;
-  void articulation(const Task&, const Environment& environment,
-                    const ContinousStateValueVector&,
-                    PortValueList& portValues) const;
+                const ContinousStateValueVector& states, ChildLink&) const;
   void acceleration(const Task&, const Environment& environment,
-                    const ContinousStateValueVector&,
-                    PortValueList& portValues) const;
+                    const ContinousStateValueVector&, ChildLink&) const;
   void derivative(const Environment& environment,
                   const DiscreteStateValueVector&,
                   const ContinousStateValueVector&,
-                  const PortValueList& portValues,
+                  const ChildLink& childLink,
                   ContinousStateValueVector&) const;
 private:
   class Context;
