@@ -43,9 +43,7 @@ public:
   void init(const Task&, ContinousStateValueVector&) const;
   void velocity(const Task&, const Environment& environment,
                 const ContinousStateValueVector& states, ChildLink&) const;
-  void acceleration(const Task&, const Environment& environment,
-                    const ContinousStateValueVector&, ChildLink&) const;
-  void derivative(const Environment& environment,
+  void derivative(const Task&, const Environment& environment,
                   const DiscreteStateValueVector&,
                   const ContinousStateValueVector&,
                   const ChildLink& childLink,

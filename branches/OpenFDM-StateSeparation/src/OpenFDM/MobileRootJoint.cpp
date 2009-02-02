@@ -43,15 +43,19 @@ public:
     mMobileRootJoint->velocity(task, getEnvironment(), mContinousState, mChildLink);
   }
   virtual void articulation(const Task& task)
-  { }
+  {
+  }
   virtual void accelerations(const Task& task)
   {
-    mMobileRootJoint->acceleration(task, getEnvironment(), mContinousState, mChildLink);
+    SpatialInertia inertia = mChildLink.getInertia();
+    Vector6 force = -mChildLink.getForce();
+    Vector6 spatialAcceleration = solve(inertia, force);
+    mChildLink.setSpAccel(spatialAcceleration);
   }
   
-  virtual void derivative(const Task&)
+  virtual void derivative(const Task& task)
   {
-    mMobileRootJoint->derivative(getEnvironment(), mDiscreteState, mContinousState, mChildLink,
+    mMobileRootJoint->derivative(task, getEnvironment(), mDiscreteState, mContinousState, mChildLink,
                            mContinousStateDerivative);
   }
   
@@ -177,26 +181,13 @@ MobileRootJoint::velocity(const Task& task, const Environment& environment,
 }
 
 void
-MobileRootJoint::acceleration(const Task& task, const Environment& environment,
-                              const ContinousStateValueVector&,
-                              ChildLink& childLink) const
-{
-  Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
-
-  SpatialInertia inertia = childLink.getInertia();
-  Vector6 force = childLink.getForce();
-
-  spatialAcceleration -= solve(inertia, force);
-  childLink.setSpAccel(spatialAcceleration);
-}
-
-void
-MobileRootJoint::derivative(const Environment& environment,
+MobileRootJoint::derivative(const Task& task, const Environment& environment,
                             const DiscreteStateValueVector&,
                             const ContinousStateValueVector& continousState,
                             const ChildLink& childLink,
                             ContinousStateValueVector& derivatives) const
 {
+  Vector3 position = continousState[*mPositionStateInfo];
   Quaternion orientation = continousState[*mOrientationStateInfo];
   Vector6 velocity = continousState[*mVelocityStateInfo];
 
@@ -210,7 +201,23 @@ MobileRootJoint::derivative(const Environment& environment,
   Vector3 angVel = velocity.getAngular();
   Vector4 qderiv = LinAlg::derivative(q, angVel) + 1e1*(normalize(q) - q);
 
-  Vector6 velDeriv = childLink.getMechanicLinkValue().getRelVelDot();
+  // Now the derivative of the relative velocity, that is take the
+  // spatial acceleration and subtract the inertial base velocity and the
+  // derivative of the 'joint matrix'.
+  Vector6 spatialAcceleration = environment.getAcceleration(task.getTime());
+//       pivel = mRelativeCoordinateSystem.motionToLocal(pivel);
+  spatialAcceleration = motionTo(position, orientation, spatialAcceleration);
+
+  Vector3 angularBaseVelocity = environment.getAngularVelocity(task.getTime());
+//       Vector6 pivel = mParentLink.getSpVelAtLink();
+  Vector6 pivel(angularBaseVelocity, Vector3::zeros());
+//       pivel = mRelativeCoordinateSystem.motionToLocal(pivel);
+  Vector6 relVel = velocity;
+  Vector6 Hdot = Vector6(cross(pivel.getAngular(), relVel.getAngular()),
+                         cross(pivel.getAngular(), relVel.getLinear()) + 
+                         cross(pivel.getLinear(), relVel.getAngular()));
+
+  Vector6 velDeriv = childLink.getSpAccel() - spatialAcceleration - Hdot;
 
   derivatives[*mPositionStateInfo] = pDot;
   derivatives[*mOrientationStateInfo] = qderiv;

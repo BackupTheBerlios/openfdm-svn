@@ -47,7 +47,10 @@ public:
   }
   virtual void accelerations(const Task& task)
   {
-    mChildLink.setSpAccel(getEnvironment().getAcceleration(task.getTime()));
+    Vector6 spAccel = getEnvironment().getAcceleration(task.getTime());
+    spAccel = motionTo(mFixedRootJoint->mRootPosition,
+                       mFixedRootJoint->mRootOrientation, spAccel);
+    mChildLink.setSpAccel(spAccel);
   }
   
 private:
