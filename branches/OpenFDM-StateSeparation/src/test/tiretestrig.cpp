@@ -28,6 +28,7 @@
 #include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/Pacejka89.h>
 #include <OpenFDM/Pacejka94.h>
+#include <OpenFDM/Variant.h>
 
 using namespace OpenFDM;
 

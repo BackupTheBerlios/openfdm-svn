@@ -3,7 +3,10 @@
  */
 
 #include "DiscBrake.h"
+
 #include "Model.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 #include "Vector.h"
 
 namespace OpenFDM {

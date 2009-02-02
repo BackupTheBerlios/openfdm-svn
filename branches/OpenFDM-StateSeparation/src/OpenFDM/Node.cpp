@@ -8,6 +8,8 @@
 #include "Group.h"
 #include "LogStream.h"
 #include "NodeVisitor.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

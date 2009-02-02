@@ -4,7 +4,8 @@
 
 #include "Gain.h"
 
-#include <string>
+#include "TypeInfo.h"
+#include "Variant.h"
 #include "Vector.h"
 
 namespace OpenFDM {

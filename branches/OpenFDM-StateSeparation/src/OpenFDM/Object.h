@@ -5,31 +5,24 @@
 #ifndef OpenFDM_Object_H
 #define OpenFDM_Object_H
 
-#include <list>
-#include <map>
 #include <string>
+#include <vector>
 
 #include "OpenFDMConfig.h"
 
 #include "SharedPtr.h"
 #include "WeakReferenced.h"
-#include "Variant.h"
-
-#include "TypeInfo.h"
 
 namespace OpenFDM {
+
+class Variant;
+class PropertyInfo;
+class TypeInfo;
 
 /// Macros for the reflection stuff
 #define OPENFDM_OBJECT(classname, baseclassname)                              \
 private:                                                                      \
-  class classname ## TypeInfo : public TypeInfoTemplate<classname> {          \
-  public:                                                                     \
-    classname ## TypeInfo(void);                                              \
-    ~ classname ## TypeInfo(void);                                            \
-  private:                                                                    \
-    classname ## TypeInfo(const classname ## TypeInfo&);                      \
-    classname ## TypeInfo& operator=(const classname  ## TypeInfo&);          \
-  };                                                                          \
+  class classname ## TypeInfo;                                                \
   static classname ## TypeInfo sTypeInfo;                                     \
 public:                                                                       \
   virtual const TypeInfo& getTypeInfo(void) const;                            \
@@ -40,7 +33,21 @@ public:                                                                       \
 
 /// Start a reflected object definition
 #define BEGIN_OPENFDM_OBJECT_DEF(classname, baseclassname)                    \
-const TypeInfo& classname :: getTypeInfo(void) const { return sTypeInfo; }    \
+class classname :: classname ## TypeInfo :                                    \
+  public TypeInfoTemplate<classname> {                                        \
+public:                                                                       \
+  classname ## TypeInfo(void);                                                \
+  ~ classname ## TypeInfo(void);                                              \
+private:                                                                      \
+  classname ## TypeInfo(const classname ## TypeInfo&);                        \
+  classname ## TypeInfo& operator=(const classname  ## TypeInfo&);            \
+};                                                                            \
+                                                                              \
+const TypeInfo&                                                               \
+classname :: getTypeInfo(void) const                                          \
+{                                                                             \
+  return sTypeInfo;                                                           \
+}                                                                             \
                                                                               \
 bool                                                                          \
 classname :: getPropertyValue(const std::string& name, Variant& value) const  \
@@ -88,7 +95,6 @@ classname :: classname ## TypeInfo:: classname ## TypeInfo(void) :            \
 #define END_OPENFDM_OBJECT_DEF                                                \
 }
 
-
 /// The OpenFDM object base class.
 class Object : public WeakReferenced {
   OPENFDM_OBJECT(Object, );
@@ -96,24 +102,18 @@ public:
   Object(const std::string& name = "Unnamed Object");
 
   /// Returns the Objects name.
-  const std::string& getName(void) const
-  { return mName; }
-  void setName(const std::string& name)
-  { mName = name; }
+  const std::string& getName(void) const;
+  void setName(const std::string& name);
 
   /// Returns the objects type name
-  const char* const getTypeName(void) const
-  { return getTypeInfo().getName(); }
+  const char* const getTypeName(void) const;
 
   /// Returns the objects attached user data
-  Object* getUserData(void)
-  { return mUserData; }
+  Object* getUserData(void);
   /// Returns the objects attached const user data
-  const Object* getUserData(void) const
-  { return mUserData; }
+  const Object* getUserData(void) const;
   /// Sets the objects user data
-  void setUserData(Object* userData)
-  { mUserData = userData; }
+  void setUserData(Object* userData);
 
   /// overwrites the destroy function in Referenced
   static void destroy(const Object* object);

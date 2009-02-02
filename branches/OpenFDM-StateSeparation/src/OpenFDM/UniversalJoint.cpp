@@ -3,6 +3,7 @@
  */
 
 #include "UniversalJoint.h"
+
 #include "Assert.h"
 #include "LogStream.h"
 #include "Limits.h"
@@ -14,6 +15,8 @@
 #include "PortValueList.h"
 #include "ContinousStateValueVector.h"
 #include "MechanicContext.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

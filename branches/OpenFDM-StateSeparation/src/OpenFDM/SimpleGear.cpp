@@ -10,6 +10,8 @@
 #include "Object.h"
 #include "Vector.h"
 #include "Contact.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

@@ -7,6 +7,8 @@
 #include "Assert.h"
 #include "LogStream.h"
 #include "Task.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

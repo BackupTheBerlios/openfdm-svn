@@ -5,6 +5,8 @@
 #include "ConstModel.h"
 
 #include "PortValueList.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

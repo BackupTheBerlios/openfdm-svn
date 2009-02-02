@@ -4,7 +4,19 @@
 
 #include "Object.h"
 
+#include "TypeInfo.h"
+#include "Variant.h"
+
 namespace OpenFDM {
+
+class Object::ObjectTypeInfo : public TypeInfoTemplate<Object> {
+public:
+  ObjectTypeInfo(void);
+  ~ObjectTypeInfo(void);
+private:
+  ObjectTypeInfo(const ObjectTypeInfo&);
+  ObjectTypeInfo& operator=(const ObjectTypeInfo&);
+};
 
 Object::ObjectTypeInfo::ObjectTypeInfo(void) :
   TypeInfoTemplate<Object>("Object")
@@ -13,7 +25,8 @@ Object::ObjectTypeInfo::ObjectTypeInfo(void) :
 }
 
 Object::ObjectTypeInfo::~ObjectTypeInfo(void)
-{}
+{
+}
 
 Object::ObjectTypeInfo Object::sTypeInfo;
 
@@ -31,20 +44,16 @@ Object::getTypeInfo(void) const
 bool
 Object::getPropertyValue(const std::string& name, Variant& value) const
 {
-  //// FIXME
-  if (name != "Name")
+  if (!sTypeInfo.getPropertyValue(this, name, value))
     return false;
-  value = getName();
   return true;
 }
 
 bool
 Object::setPropertyValue(const std::string& name, const Variant& value)
 {
-  //// FIXME
-  if (name != "Name")
+  if (!sTypeInfo.setPropertyValue(this, name, value))
     return false;
-  setName(value.toString());
   return true;
 }
 
@@ -52,6 +61,42 @@ void
 Object::getPropertyInfoList(std::vector<PropertyInfo>& props) const
 {
   sTypeInfo.getPropertyInfoList(props);
+}
+
+const std::string&
+Object::getName(void) const
+{
+  return mName;
+}
+
+void
+Object::setName(const std::string& name)
+{
+  mName = name;
+}
+
+const char* const
+Object::getTypeName(void) const
+{
+  return getTypeInfo().getName();
+}
+
+Object*
+Object::getUserData(void)
+{
+  return mUserData;
+}
+
+const Object*
+Object::getUserData(void) const
+{
+  return mUserData;
+}
+
+void
+Object::setUserData(Object* userData)
+{
+  mUserData = userData;
 }
 
 void

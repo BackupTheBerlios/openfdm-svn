@@ -4,6 +4,9 @@
 
 #include "UnitConversion.h"
 
+#include "TypeInfo.h"
+#include "Variant.h"
+
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(UnitConversion, SimpleDirectModel)

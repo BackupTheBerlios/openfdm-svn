@@ -5,6 +5,8 @@
 #include "LibraryModel.h"
 
 #include "LibraryNode.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

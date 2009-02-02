@@ -3,9 +3,12 @@
  */
 
 #include "DiscreteIntegrator.h"
+
 #include "Assert.h"
 #include "Task.h"
 #include "ModelContext.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

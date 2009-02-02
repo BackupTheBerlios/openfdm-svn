@@ -4,10 +4,10 @@
 
 #include "Table.h"
 
-#include <map>
-#include <iostream>
 #include "Matrix.h"
 #include "Vector.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

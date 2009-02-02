@@ -8,6 +8,8 @@
 #include "Matrix.h"
 #include "AbstractModel.h"
 #include "ModelContext.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

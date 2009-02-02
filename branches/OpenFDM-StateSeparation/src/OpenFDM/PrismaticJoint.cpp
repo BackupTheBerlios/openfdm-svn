@@ -14,6 +14,8 @@
 #include "PortValueList.h"
 #include "ContinousStateValueVector.h"
 #include "MechanicContext.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

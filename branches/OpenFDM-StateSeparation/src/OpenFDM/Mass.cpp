@@ -6,6 +6,8 @@
 
 #include "PortValueList.h"
 #include "Transform.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

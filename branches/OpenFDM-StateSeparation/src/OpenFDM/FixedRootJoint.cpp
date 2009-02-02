@@ -14,6 +14,8 @@
 #include "Inertia.h"
 #include "Task.h"
 #include "MechanicContext.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

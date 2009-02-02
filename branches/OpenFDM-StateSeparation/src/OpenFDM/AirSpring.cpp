@@ -4,8 +4,9 @@
 
 #include "AirSpring.h"
 
-#include <string>
 #include "PortValueList.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

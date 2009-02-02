@@ -7,6 +7,8 @@
 #include "ConstNodeVisitor.h"
 #include "MechanicContext.h"
 #include "NodeVisitor.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

@@ -4,7 +4,8 @@
 
 #include "UnaryFunction.h"
 
-#include <string>
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

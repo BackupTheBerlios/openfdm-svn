@@ -17,6 +17,8 @@
 #include "RootJoint.h"
 #include "SystemOutput.h"
 #include "Task.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 #include "Function.h"
 #include "DoPri5.h"

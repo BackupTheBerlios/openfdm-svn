@@ -8,6 +8,8 @@
 #include "Task.h"
 #include "ModelContext.h"
 #include "LogStream.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

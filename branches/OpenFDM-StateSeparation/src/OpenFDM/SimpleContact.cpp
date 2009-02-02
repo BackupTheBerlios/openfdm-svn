@@ -5,6 +5,8 @@
 #include "SimpleContact.h"
 
 #include "Assert.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

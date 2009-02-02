@@ -3,8 +3,11 @@
  */
 
 #include "Group.h"
+
 #include "ConstNodeVisitor.h"
 #include "NodeVisitor.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

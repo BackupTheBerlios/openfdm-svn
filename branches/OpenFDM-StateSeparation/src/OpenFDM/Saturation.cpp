@@ -5,6 +5,8 @@
 #include "Saturation.h"
 
 #include "Matrix.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

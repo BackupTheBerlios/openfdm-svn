@@ -4,6 +4,9 @@
 
 #include "Pacejka94.h"
 
+#include "TypeInfo.h"
+#include "Variant.h"
+
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(Pacejka94, PacejkaTire)

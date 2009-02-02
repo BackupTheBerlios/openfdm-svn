@@ -4,10 +4,11 @@
 
 #include "MaxModel.h"
 
-#include <string>
 #include "Types.h"
 #include "Matrix.h"
 #include "Model.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 
 namespace OpenFDM {
 

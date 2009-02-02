@@ -4,13 +4,12 @@
 
 #include "Delay.h"
 
-#include <string>
-#include <vector>
-
 #include "Assert.h"
 #include "Object.h"
 #include "Model.h"
 #include "ModelContext.h"
+#include "TypeInfo.h"
+#include "Variant.h"
 #include "Vector.h"
 
 namespace OpenFDM {
