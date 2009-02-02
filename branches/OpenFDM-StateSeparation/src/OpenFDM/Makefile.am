@@ -297,6 +297,8 @@ OpenFDMMechanicSOURCES = \
   UniversalJoint.cpp \
   WheelContact.cpp
 
+#   Actuator.h
+
 #   AeroForce.cpp \
 #   Tank.cpp
 
