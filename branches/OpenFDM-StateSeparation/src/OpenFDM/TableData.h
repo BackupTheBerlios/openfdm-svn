@@ -41,10 +41,8 @@ public:
 
   value_type lookup(const value_type& input) const
   {
-    // Empty table??
-    // FIXME
     if (mVector.empty())
-      return value_type(0);
+      return Limits<value_type>::quiet_NaN();
 
     vector_type::const_iterator vectorBegin = mVector.begin();
     vector_type::const_iterator vectorEnd = mVector.end();
@@ -125,8 +123,7 @@ public:
   const SizeVector& size(void) const
   { return mSize; }
   unsigned size(unsigned i) const
-  { if (mSize.size() <= i) return 0; return mSize(i); }
-  //   { if (mSize.size() <= i) return 1; /*??may be*/ return mSize(i); }
+  { if (mSize.size() <= i) return 1; return mSize(i); }
 
   const real_type& operator()(const Index& multiIndex) const
   { return mData[offset(multiIndex)]; }
@@ -138,9 +135,17 @@ public:
   real_type& at(const Index& multiIndex)
   { return mData[offset(multiIndex)]; }
 
+  bool validIndex(const Index& multiIndex) const
+  {
+    for (unsigned i = 0; i < numDims; ++i) {
+      if (mSize(i) <= multiIndex(i))
+        return false;
+    }
+    return true;
+  }
+
   unsigned offset(const Index& multiIndex) const
   {
-    /// FIXME do size bounds checking ...
     unsigned idx = multiIndex(numDims-1);
     for (unsigned i = numDims-1; 0 < i; --i) {
       idx *= mSize(i-1);
