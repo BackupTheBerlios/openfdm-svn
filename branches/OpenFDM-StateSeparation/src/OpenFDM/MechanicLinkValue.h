@@ -299,7 +299,7 @@ public:
   }
   Vector6 getSpAccel() const
   {
-    mMechanicLinkValue->getSpAccel();
+    return mMechanicLinkValue->getSpAccel();
   }
 
   void setPosAndVel(const ParentLink& parentLink, const Vector3& position,
