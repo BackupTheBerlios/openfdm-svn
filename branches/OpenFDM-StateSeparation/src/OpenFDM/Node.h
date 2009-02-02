@@ -97,7 +97,6 @@ private:
   class NodePathListCollectVisitor;
 
   /// Sample time handling.
-  /// FIXME Should that be something like the old sample time set??
   SampleTime mSampleTime;
 };
 
