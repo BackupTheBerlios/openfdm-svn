@@ -25,9 +25,11 @@ MechanicContext
 
 * Direct HLA Access??? Is there a possible way to do that??
 
+* Sensor: May be we can introduce SensorAttributes?
+  An attribute would be something like 'X-Velocity', 'Angular Velocity'
+
 * More init time checking for SimpleDirectModels
 * Template Contexts for SimpleDirectModels
-* Sensor
 * Move Mechanics into a normal ModelContext??
 * Remove LeafNode??
 * Environmental cache ...
