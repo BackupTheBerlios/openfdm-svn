@@ -5,6 +5,7 @@
 #include "AbstractNodeInstance.h"
 
 #include "Assert.h"
+#include "MechanicLink.h"
 #include "Node.h"
 #include "SharedPtr.h"
 #include "WeakReferenced.h"

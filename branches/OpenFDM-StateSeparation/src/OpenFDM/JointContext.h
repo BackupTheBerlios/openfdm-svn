@@ -7,6 +7,7 @@
 
 #include "Joint.h"
 #include "MechanicContext.h"
+#include "PortValueList.h"
 
 namespace OpenFDM {
 

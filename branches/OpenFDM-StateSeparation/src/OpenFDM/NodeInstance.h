@@ -6,6 +6,7 @@
 #define OpenFDM_NodeInstance_H
 
 #include "AbstractNodeInstance.h"
+#include "PortValueList.h"
 
 namespace OpenFDM {
 

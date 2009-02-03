@@ -5,10 +5,13 @@
 #ifndef OpenFDM_AbstractNodeContext_H
 #define OpenFDM_AbstractNodeContext_H
 
-#include "Node.h"
-#include "PortValueList.h"
+#include "Referenced.h"
 
 namespace OpenFDM {
+
+class Node;
+class Port;
+class PortValue;
 
 class AbstractNodeContext : public Referenced {
 public:

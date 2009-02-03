@@ -6,9 +6,10 @@
 #define OpenFDM_ModelContext_H
 
 #include <list>
-#include "SharedPtr.h"
-#include "LeafContext.h"
 #include "AbstractModel.h"
+#include "LeafContext.h"
+#include "PortValueList.h"
+#include "SharedPtr.h"
 
 namespace OpenFDM {
 

@@ -8,6 +8,7 @@
 #include <string>
 #include "Interact.h"
 #include "Environment.h"
+#include "PortValueList.h"
 #include "MechanicContext.h"
 
 namespace OpenFDM {

@@ -6,6 +6,7 @@
 #define OpenFDM_AbstractSystem_H
 
 #include "Interval.h"
+#include "LogStream.h"
 #include "Referenced.h"
 #include "Types.h"
 
