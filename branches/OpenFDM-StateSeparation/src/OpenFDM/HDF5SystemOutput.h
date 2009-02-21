@@ -263,7 +263,7 @@ public:
 
     // increment size
     _dims[0] += 1;
-    herr_t status = H5Dextend(getId(), _dims);
+    herr_t status = H5Dset_extent(getId(), _dims);
 
     HDF5Object filespace(H5Dget_space(getId()), true);
     hsize_t offset[3] = { _dims[0] - 1, 0, 0 };
