@@ -300,7 +300,7 @@ public:
     DumperList::iterator i;
     for (i = mDumperList.begin(); i != mDumperList.end(); ++i)
       (*i)->append();
-    mHDF5File.flush();
+    // mHDF5File.flush();
   }
 
   virtual void attachTo(const System* system)
