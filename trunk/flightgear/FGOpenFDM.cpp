@@ -5,6 +5,7 @@
 #include <simgear/misc/sg_path.hxx>
 #include <simgear/math/sg_geodesy.hxx>
 #include <simgear/props/props.hxx>
+#include <simgear/scene/material/mat.hxx>
 
 #include <Aircraft/controls.hxx>
 #include <Main/globals.hxx>
@@ -30,8 +31,8 @@ namespace OpenFDM {
 class FGGround
   : public Ground {
 public:
-  FGGround(FGInterface *ifce)
-    : mIfce(ifce)
+  FGGround(FGInterface *ifce) :
+    mIfce(ifce)
   { }
   virtual ~FGGround(void)
   { }
@@ -40,18 +41,24 @@ public:
   getGroundPlane(real_type t, const Vector3& refPos) const
   {
     double loc_cart[3] = { refPos(0), refPos(1), refPos(2) };
-    double contact[3], normal[3], vel[3], lc, ff, agl;
-    int groundtype;
+    double contact[3], normal[3], vel[3], angvel[3];
+    const SGMaterial* material;
+    simgear::BVHNode::Id id;
     // FIXME!!!!!!!
     bool ok = false;
     if (mIfce)
-      ok = mIfce->get_agl_m(t, loc_cart, contact, normal, vel,
-                            &groundtype, &lc, &ff, &agl);
+      ok = mIfce->get_agl_m(t, loc_cart, 0, contact, normal, vel, angvel,
+                            material, id);
     Vector3 unitDown(-normal[0], -normal[1], -normal[2]);
     Vector3 groundOff(contact[0], contact[1], contact[2]);
     // FIXME: why is this not normalized?? ...
     Plane p(normalize(unitDown), groundOff);
-    Vector6 v(Vector3::zeros(), Vector3(vel[0], vel[1], vel[2]));
+    Vector3 linearVel(vel[0], vel[1], vel[2]);
+    Vector3 angularVel(angvel[0], angvel[1], angvel[2]);
+    Vector6 v(angularVel, linearVel + cross(angularVel, refPos - groundOff));
+    double ff = 1;
+    if (material)
+      ff = material->get_friction_factor();
     return GroundValues(p, v, ff);
   }
 
