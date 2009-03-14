@@ -83,7 +83,7 @@ diff -u -r1.88 Makefile.am
  
 +if ENABLE_OpenFDM_FDM
 +OpenFDM_LIBS = $(top_builddir)/src/FDM/OpenFDM/libFGOpenFDM.a \
-+               -lOpenFDMJSBReader -lOpenFDMeasyxmlXML -lOpenFDMXML -lOpenFDM -lrt
++               -lOpenFDMJSBReader -lOpenFDMeasyxmlXML -lOpenFDMXML -lOpenFDM
 +else
 +OpenFDM_LIBS = 
 +endif
