@@ -569,7 +569,7 @@ FGOpenFDM::update(double dt)
   Vector3 cart = vehicle->getCartPosition();
   double cart_pos[3] = { cart(0), cart(1), cart(2) };
   double t = vehicle->getTime();
-  if (!prepare_ground_cache_m(t, cart_pos, groundCacheRadius))
+  if (!prepare_ground_cache_m(t, t+dt, cart_pos, groundCacheRadius))
     SG_LOG(SG_FLIGHT, SG_WARN,
            "FGInterface is beeing called without scenery below the aircraft!");
 
