@@ -249,8 +249,7 @@ System::init(void)
     return false;
   }
 
-  mTimestepper->setTime(0);
-  mTime = 0;
+  mTimestepper->setTime(mTime);
   mTimestepper->setStepsize(gcd);
   return true;
 }

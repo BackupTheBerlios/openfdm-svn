@@ -57,6 +57,8 @@ public:
   /// Return the current simulation time, convenience function
   real_type getTime(void) const
   { return mTime; }
+  void setTime(real_type time)
+  { mTime = time; }
 
   /// Sets a timestepping algorithm for use with this system.
   void setTimestepper(ODESolver* timestepper);

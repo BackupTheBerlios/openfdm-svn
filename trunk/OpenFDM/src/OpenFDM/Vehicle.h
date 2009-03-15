@@ -107,6 +107,8 @@ public:
   { return 15; }
   real_type getTime(void) const
   { return mSystem->getTime(); }
+  void setTime(real_type time)
+  { mSystem->setTime(time); }
   // FIXME:
   const RigidBody* getTopBody(void) const
   { return mTopBody; }
