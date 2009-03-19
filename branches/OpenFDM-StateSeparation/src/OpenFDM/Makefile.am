@@ -194,6 +194,7 @@ OpenFDMCoreSOURCES = \
 
 
 OpenFDMModelsHEADERS = \
+  Actuator.h \
   AirSpring.h \
   AtmosphereSTD1976.h \
   Bias.h \
@@ -223,6 +224,7 @@ OpenFDMModelsHEADERS = \
   UnitConversion.h
 
 OpenFDMModelsSOURCES = \
+  Actuator.cpp \
   AirSpring.cpp \
   Bias.cpp \
   BinaryFunction.cpp \
@@ -297,7 +299,6 @@ OpenFDMMechanicSOURCES = \
   UniversalJoint.cpp \
   WheelContact.cpp
 
-#   Actuator.h
 
 #   AeroForce.cpp \
 #   Tank.cpp
