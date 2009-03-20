@@ -264,6 +264,7 @@ OpenFDMMechanicHEADERS = \
   MobileRootJoint.h \
   Pacejka89.h \
   Pacejka94.h \
+  PacejkaSimple.h \
   PacejkaTire.h \
   PrismaticActuator.h \
   PrismaticJoint.h \
@@ -287,6 +288,7 @@ OpenFDMMechanicSOURCES = \
   MobileRootJoint.cpp \
   Pacejka89.cpp \
   Pacejka94.cpp \
+  PacejkaSimple.cpp \
   PacejkaTire.cpp \
   PrismaticActuator.cpp \
   PrismaticJoint.cpp \
