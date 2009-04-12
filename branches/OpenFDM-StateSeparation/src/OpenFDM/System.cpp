@@ -258,7 +258,6 @@ public:
     mEnvironment(environment)
   { }
 
-  struct InstanceData;
   struct PortData;
 
   struct PortConnectSet : public Referenced {
