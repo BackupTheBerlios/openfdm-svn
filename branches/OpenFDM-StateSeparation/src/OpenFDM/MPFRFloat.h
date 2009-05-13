@@ -1067,8 +1067,7 @@ inline
 std::basic_ostream<char_t, traits_t>&
 operator<<(std::basic_ostream<char_t, traits_t>& os, const MPFRFloat& f)
 {
-  int sign = copysign(f, MPFRFloat(1));
-  if (sign < 0)
+  if (mpfr_sgn(f._value) < 0)
     os << os.widen('-');
 
   if (mpfr_nan_p(f._value))
