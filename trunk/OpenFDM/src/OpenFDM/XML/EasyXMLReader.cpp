@@ -147,7 +147,8 @@ EasyXMLReader::parse(std::istream& stream)
     readXML(stream, easyXMLVisitor);
   } catch (const sg_exception& e) {
     if (mErrorHandler) {
-      std::string error = e.getOrigin() + ": " + e.getFormattedMessage();
+      std::string error = std::string(e.getOrigin())
+        + ": " + e.getFormattedMessage();
       const ErrorHandler* eh = mErrorHandler;
       const_cast<ErrorHandler*>(eh)->error(error.c_str(), 0, 0);
     }
