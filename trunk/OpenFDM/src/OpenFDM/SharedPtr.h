@@ -56,6 +56,9 @@ public:
   unsigned getNumRefs(void) const
   { return T::count(_ptr); }
 
+  bool valid(void) const
+  { return _ptr; }
+
   void clear()
   { put(); }
   void swap(SharedPtr& sharedPtr)
