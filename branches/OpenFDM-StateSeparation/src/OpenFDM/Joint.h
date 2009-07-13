@@ -7,13 +7,11 @@
 
 #include "Assert.h"
 #include "Object.h"
-#include "Frame.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Inertia.h"
 #include "Interact.h"
-#include "Frame.h"
 #include "LogStream.h"
 
 #include "MechanicContext.h"
