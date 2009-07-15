@@ -49,7 +49,7 @@ public:
     // The velocity of the ground patch in the current frame.
     Vector3 relVel = groundValues.vel.getLinear();
     // Now get the relative velocity of the ground wrt the contact point
-    relVel -= getLink().getRefVel().getLinear();
+    relVel -= getLink().getLocalVelocity().getLinear();
 
     
     // The velocity perpandicular to the plane.

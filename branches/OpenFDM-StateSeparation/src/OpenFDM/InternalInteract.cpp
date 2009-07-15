@@ -58,9 +58,9 @@ public:
 
     if (mVelocityValue.isConnected()) {
       // The motion of link1 measured in link0
-      Vector6 relVel = mRelCoordSys.motionToReference(getLink1().getRefVel());
+      Vector6 relVel = mRelCoordSys.motionToReference(getLink1().getLocalVelocity());
       // The relative motion of link1 wrt link0 measured in link0
-      relVel -= getLink0().getRefVel();
+      relVel -= getLink0().getLocalVelocity();
       // The scalar product is what we need.
       // Here the additional cross product term cancels out
       mVelocityValue = dot(mDirection, relVel.getLinear());

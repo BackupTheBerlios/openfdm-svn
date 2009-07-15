@@ -143,7 +143,7 @@ protected:
       mChildLink.setCoordinateSystem(mParentLink.getCoordinateSystem().toReference(mRelativeCoordinateSystem));
 
       Vector6 relVel = mJointMatrix*velocity;
-      mChildLink.setPosAndVel(mParentLink, relPosition, orientation, relVel);
+      mChildLink.setRelativeVelocity(mParentLink, relVel);
 
       /**
          This is the cross product of the inertial spatial velocity
@@ -155,7 +155,7 @@ protected:
          transformed spatial velocity of the parent frame cross the
          relative velocity.
       */
-      Vector6 pivel = mParentLink.getSpVelAtLink();
+      Vector6 pivel = mParentLink.getLocalVelocityAtLink();
       pivel = mRelativeCoordinateSystem.motionToLocal(pivel);
       mHdot = Vector6(cross(pivel.getAngular(), relVel.getAngular()),
                       cross(pivel.getAngular(), relVel.getLinear()) + 
@@ -215,12 +215,14 @@ protected:
       if (hIh.singular())
         return;
 
-      Vector6 parentSpAccel = mParentLink.getSpAccelAtLink();
+      Vector6 parentSpAccel = mParentLink.getLocalAccelerationAtLink();
       parentSpAccel = mRelativeCoordinateSystem.motionToLocal(parentSpAccel);
 
       Vector6 f = mChildLink.getInertia()*parentSpAccel + pAlpha;
       mVelDot = hIh.solve(mJointForce - trans(mJointMatrix)*f);
-      mChildLink.setAccel(mParentLink, mJointMatrix*mVelDot);
+
+      Vector6 spAccel = parentSpAccel + getHdot() + mJointMatrix*mVelDot;
+      mChildLink.setLocalAcceleration(spAccel);
     }
   
     /** Compute the articulation step for a given velocity derivative.
@@ -251,7 +253,11 @@ protected:
      */
     void accelerateDueToVelDot()
     {
-      mChildLink.setAccel(mParentLink, mJointMatrix*mVelDot);
+      Vector6 parentSpAccel = mParentLink.getLocalAccelerationAtLink();
+      parentSpAccel = mRelativeCoordinateSystem.motionToLocal(parentSpAccel);
+
+      Vector6 spAccel = parentSpAccel + getHdot() + mJointMatrix*mVelDot;
+      mChildLink.setLocalAcceleration(spAccel);
     }
 
     const VectorN& getVelDot() const

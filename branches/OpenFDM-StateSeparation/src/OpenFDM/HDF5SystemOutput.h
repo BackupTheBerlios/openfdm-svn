@@ -349,7 +349,6 @@ private:
       _orientation(_group, "orientation", Size(4, 1)),
       _eulerAngle(_group, "eulerAngles", Size(3, 1)),
       _velocity(_group, "velocity", Size(6, 1)),
-      _refVelocity(_group, "refVelocity", Size(6, 1)),
       _acceleration(_group, "acceleration", Size(6, 1)),
       _force(_group, "force", Size(6, 1)),
       _inertia(_group, "inertia", Size(6, 6))
@@ -360,9 +359,8 @@ private:
       _position.append(cs.getPosition());
       _orientation.append(cs.getOrientation());
       _eulerAngle.append(cs.getOrientation().getEuler());
-      _velocity.append(mMechanicLinkValue->getSpVel());
-      _refVelocity.append(mMechanicLinkValue->getReferenceVelocity());
-      _acceleration.append(mMechanicLinkValue->getSpAccel());
+      _velocity.append(mMechanicLinkValue->getLocalVelocity());
+      _acceleration.append(mMechanicLinkValue->getLocalAcceleration());
       _force.append(mMechanicLinkValue->getForce());
       _inertia.append(mMechanicLinkValue->getInertia());
     }
@@ -375,7 +373,6 @@ private:
     HDFMatrixStream _orientation;
     HDFMatrixStream _eulerAngle;
     HDFMatrixStream _velocity;
-    HDFMatrixStream _refVelocity;
     HDFMatrixStream _acceleration;
     HDFMatrixStream _force;
     HDFMatrixStream _inertia;

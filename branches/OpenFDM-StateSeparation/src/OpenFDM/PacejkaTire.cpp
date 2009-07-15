@@ -91,7 +91,7 @@ public:
     // The relative velocity of the wheel wrt the contact surface
     // measured in the hubs coordinate system.
     // This includes the wheels revolution speed.
-    Vector6 relVel = getLink().getRefVel() - groundValues.vel;
+    Vector6 relVel = getLink().getLocalVelocity() - groundValues.vel;
 
     // The compression velocity.
     // Positive when the contact spring is compressed,

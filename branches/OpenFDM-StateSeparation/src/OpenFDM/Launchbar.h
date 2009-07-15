@@ -8,7 +8,6 @@
 #include "Assert.h"
 #include "Object.h"
 #include "Vector.h"
-#include "Frame.h"
 #include "Force.h"
 #include "Ground.h"
 #include "Environment.h"

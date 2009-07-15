@@ -90,7 +90,7 @@ public:
     if (enableBodyAngularVelocity || enableBodyLinearVelocity
         || enableGlobalAngularVelocity || enableGlobalLinearVelocity
         || enableBodyWindVelocity || enableGlobalWindVelocity) {
-      Vector6 refVelocity = getLink().getRefVel();
+      Vector6 refVelocity = getLink().getLocalVelocity();
       if (enableBodyAngularVelocity)
         mBodyAngularVelocity = refVelocity.getAngular();
       if (enableGlobalAngularVelocity)
@@ -170,8 +170,8 @@ public:
       = mBodyCentrifugalAcceleration.isConnected();
     bool enableBodyLoad = mBodyLoad.isConnected();
     if (enableBodyCentrifugalAcceleration || enableBodyLoad) {
-      Vector6 spatialVel = getLink().getSpVel();
-      Vector6 spatialAccel = getLink().getSpAccel();
+      Vector6 spatialVel = getLink().getLocalVelocity();
+      Vector6 spatialAccel = getLink().getLocalAcceleration();
       Vector3 centrifugalAccel = spatialAccel.getLinear();
       centrifugalAccel += cross(spatialVel.getAngular(),spatialVel.getLinear());
 

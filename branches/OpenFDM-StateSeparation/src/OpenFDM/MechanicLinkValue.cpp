@@ -16,4 +16,16 @@ MechanicLinkValue::~MechanicLinkValue()
 {
 }
 
+MechanicLinkValue*
+MechanicLinkValue::toMechanicLinkValue()
+{
+  return this;
+}
+
+const MechanicLinkValue*
+MechanicLinkValue::toMechanicLinkValue() const
+{
+  return this;
+}
+
 } // namespace OpenFDM

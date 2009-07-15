@@ -30,7 +30,15 @@ public:
     mPosition(Vector3::zeros()),
     mOrientation(orientation)
   { }
+  CoordinateSystem(const Rotation& orientation) :
+    mPosition(Vector3::zeros()),
+    mOrientation(orientation)
+  { }
   CoordinateSystem(const Vector3& position, const Quaternion& orientation) :
+    mPosition(position),
+    mOrientation(orientation)
+  { }
+  CoordinateSystem(const Vector3& position, const Rotation& orientation) :
     mPosition(position),
     mOrientation(orientation)
   { }
@@ -102,11 +110,14 @@ public:
                    mOrientation.transform(v.getLinear())); }
 
 
+  // Avoid that here. We *only* handle coordinate systems not reference frames.
   Vector6 motionToReference(const Vector6& motion) const
   { return motionFrom(mPosition, mOrientation, motion); }
   Vector6 motionToLocal(const Vector6& motion) const
   { return motionTo(mPosition, mOrientation, motion); }
 
+  // Hmm force and inertia have this cross product stuff also,
+  // is that something reference frame related or not ???
   Vector6 forceToReference(const Vector6& force) const
   { return forceFrom(mPosition, mOrientation, force); }
   Vector6 forceToLocal(const Vector6& force) const

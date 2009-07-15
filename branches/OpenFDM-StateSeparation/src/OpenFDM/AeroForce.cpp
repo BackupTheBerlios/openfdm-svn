@@ -6,7 +6,6 @@
 
 #include "Object.h"
 #include "Vector.h"
-#include "Frame.h"
 #include "Force.h"
 #include "Atmosphere.h"
 

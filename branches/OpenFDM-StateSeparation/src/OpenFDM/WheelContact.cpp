@@ -56,7 +56,7 @@ public:
     Vector3 contactPoint = distHubGround*down;
     
     // The relative velocity of the ground wrt the contact point
-    Vector6 relVel = getLink().getRefVel() - groundValues.vel;
+    Vector6 relVel = getLink().getLocalVelocity() - groundValues.vel;
     
     // The velocity perpandicular to the plane.
     // Positive when the contact spring is compressed,

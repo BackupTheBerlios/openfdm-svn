@@ -38,7 +38,6 @@ OpenFDMCoreHEADERS = \
   ExplicitEuler.h \
   FlatPlanet.h \
   Fraction.h \
-  Frame.h \
   Function.h \
   Group.h \
   GroupInterfaceNode.h \
