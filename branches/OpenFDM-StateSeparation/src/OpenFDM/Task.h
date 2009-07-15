@@ -37,6 +37,8 @@ public:
     setTime(t);
     // The model outputs before mechanical state propagation
     mModelContextList[0].initOutput(*this);
+    // The mechanical systems design positions
+    mMechanicContextList.initDesignPosition();
     // Now the mechanical state propagation
     mMechanicContextList.initVelocities(*this);
     // The model outputs before mechanical force propagation

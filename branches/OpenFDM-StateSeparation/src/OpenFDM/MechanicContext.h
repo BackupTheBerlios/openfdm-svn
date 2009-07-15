@@ -57,10 +57,8 @@ public:
 
   void initVelocities(const /*Init*/Task& task) const
   {
-    for (list_type::const_iterator i = begin(); i != end(); ++i) {
-      (*i)->initDesignPosition();
+    for (list_type::const_iterator i = begin(); i != end(); ++i)
       (*i)->initVelocities(task);
-    }
   }
   void velocities(const Task& task) const
   {

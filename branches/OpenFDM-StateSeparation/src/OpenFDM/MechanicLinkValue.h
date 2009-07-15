@@ -104,11 +104,6 @@ public:
     mVelocity = mCoordinateSystem.rotToReference(velocity) + parentVel;
   }
 
-  const Vector3& getDesignPosition() const
-  { return mDesignPosition; }
-  void setDesignPosition(const Vector3& designPosition)
-  { mDesignPosition = designPosition; }
-
 protected:
   /// The local coordinate system of the mechanic link.
   CoordinateSystem mCoordinateSystem;
@@ -122,10 +117,10 @@ protected:
   /// The spacial velocities pivot point is at the coordinate systems origin.
   Vector6 mAcceleration;
 
+  // These are stored in local coordinates.
+  // FIXME: move them to global coordinates too
   Vector6 mArticulatedForce;
   SpatialInertia mArticulatedInertia;
-
-  Vector3 mDesignPosition;
 };
 
 class ParentLink {
@@ -196,7 +191,8 @@ public:
   void setDesignPosition(const Vector3& position)
   {
     OpenFDMAssert(isConnected());
-    mLinkRelPos = position - mMechanicLinkValue->getDesignPosition();
+    mLinkRelPos = position;
+    mLinkRelPos -= mMechanicLinkValue->getCoordinateSystem().getPosition();
   }
 
   void applyBodyForce(const Vector6& force)
@@ -282,7 +278,7 @@ public:
   { return *mMechanicLinkValue; }
 
   void setDesignPosition(const Vector3& position)
-  { mMechanicLinkValue->setDesignPosition(position); }
+  { mMechanicLinkValue->setCoordinateSystem(CoordinateSystem(position)); }
 
   void setLocalAcceleration(const Vector6& accel)
   { mMechanicLinkValue->setLocalAcceleration(accel); }
