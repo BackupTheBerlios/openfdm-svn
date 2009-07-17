@@ -12,39 +12,15 @@
 
 using namespace OpenFDM;
 
+/// sensible test cases:
+/// drop: gravity
+/// throw: just this test with a different start condition
+/// harmonic oszilator: compare with 2nd order linear system
+/// arrow: see if the tip stays in front
+/// satellit: coriolis
+/// paris pendulum: coriolis
+
 Node* buildSimpleMechanicExample()
-{
-  /// sensible test cases:
-  /// drop: gravity
-  /// throw: just this test with a different start condition
-  /// harmonic oszilator: compare with 2nd order linear system
-  /// arrow: see if the tip stays in front
-  /// satellit: coriolis
-  /// paris pendulum: coriolis
-
-  SharedPtr<Group> group = new Group("G");
-
-  MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
-  group->addChild(mobileRootJoint);
-  RigidBody* rigidBody = new RigidBody("Rigid Body");
-  rigidBody->addLink("externalInteractLink");
-  group->addChild(rigidBody);
-  Mass* mass = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
-  group->addChild(mass);
-
-  ExternalInteract* externalInteract = new ExternalInteract("ExternalInteract");
-  externalInteract->setPosition(mass->getPosition());
-  externalInteract->setEnableAllOutputs(true);
-  group->addChild(externalInteract);
-
-  group->connect(mobileRootJoint->getPort("link"), rigidBody->getPort("link0"));
-  group->connect(rigidBody->getPort("link1"), mass->getPort("link"));
-  group->connect(rigidBody->getPort("externalInteractLink"), externalInteract->getPort("link"));
-
-  return group.release();
-}
-
-Node* buildSimpleMechanicExample2()
 {
   SharedPtr<Group> group = new Group("G");
 
@@ -133,8 +109,7 @@ Node* buildSimpleMechanicExample2()
 
 int main()
 {
-//   SharedPtr<System> system = new System("System", buildSimpleMechanicExample());
-  SharedPtr<System> system = new System("System", buildSimpleMechanicExample2());
+  SharedPtr<System> system = new System("System", buildSimpleMechanicExample());
 
   system->attach(SystemOutput::newDefaultSystemOutput("mechanic"));
 
