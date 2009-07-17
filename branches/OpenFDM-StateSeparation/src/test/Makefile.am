@@ -13,6 +13,7 @@ TESTS = \
 
 # define some util programs
 noinst_PROGRAMS = \
+	ballistic \
 	drop \
 	foucault \
 	inertianav \
@@ -21,6 +22,9 @@ noinst_PROGRAMS = \
 	tiretestrig \
 	coordsys \
 	$(TESTS)
+
+ballistic_SOURCES = ballistic.cpp
+ballistic_LDADD = ../OpenFDM/libOpenFDM.la
 
 constintegral_SOURCES = constintegral.cpp
 constintegral_LDADD = ../OpenFDM/libOpenFDM.la

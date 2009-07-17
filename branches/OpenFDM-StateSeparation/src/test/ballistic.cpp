@@ -12,13 +12,13 @@
 
 using namespace OpenFDM;
 
-Node* buildDrop()
+Node* buildBallistic()
 {
   // A simple free falling mass.
   SharedPtr<Group> group = new Group("Group");
 
   MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
-  mobileRootJoint->setInitialAngularVelocity(Vector3(1, 1, 1));
+  mobileRootJoint->setInitialLinearVelocity(50/sqrt(2)*Vector3(1, 0, -1));
   group->addChild(mobileRootJoint);
 
   RigidBody* rigidBody = new RigidBody("Rigid Body");
@@ -45,9 +45,9 @@ Node* buildDrop()
 
 int main()
 {
-  SharedPtr<System> system = new System("System", buildDrop());
+  SharedPtr<System> system = new System("System", buildBallistic());
 
-  system->attach(SystemOutput::newDefaultSystemOutput("drop"));
+  system->attach(SystemOutput::newDefaultSystemOutput("ballistic"));
 
   if (!system->init())
     return 1;
@@ -56,4 +56,3 @@ int main()
 
   return 0;
 }
-
