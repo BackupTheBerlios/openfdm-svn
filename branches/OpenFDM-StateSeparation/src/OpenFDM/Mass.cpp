@@ -21,8 +21,7 @@ public:
   Context(const Mass* mass,
           const Environment* environment, PortValueList& portValueList) :
     SingleLinkInteract::Context(mass, environment, portValueList),
-    mMass(mass),
-    mSpatialInertia(SpatialInertia::zeros())
+    mMass(mass)
   { }
   virtual ~Context() {}
     
@@ -32,35 +31,33 @@ public:
   virtual void initDesignPosition()
   {
     SingleLinkInteract::Context::initDesignPosition();
-    Vector3 relPos = getLink().getLinkRelPos();
-    mSpatialInertia = SpatialInertia(mMass->getInertia(), mMass->getMass());
-    mSpatialInertia = inertiaFrom(relPos, mSpatialInertia);
   }
   virtual void articulation(const Task&)
   {
+    CoordinateSystem cs = getLink().getCoordinateSystem();
+
+    SpatialInertia I(cs.rotToReference(mMass->getInertia()), mMass->getMass());
+
     // Contribute the inerita
-    getLink().addInertiaAtLink(mSpatialInertia);
+    getLink().addSpatialInertia(cs.getPosition(), I);
 
     // Each inertia has a contribution to the spatial bias force.
     // This part is handled here.
-    Vector6 v = getLink().getLocalVelocityAtLink();
-    Vector6 Iv = mSpatialInertia*v;
+    Vector6 v = getLink().getVelocity(cs.getPosition());
+    Vector6 Iv = I*v;
     Vector6 vIv = Vector6(cross(v.getAngular(), Iv.getAngular()) +
                           cross(v.getLinear(), Iv.getLinear()),
                           cross(v.getAngular(), Iv.getLinear()));
-    getLink().addForceAtLink(vIv);
+    getLink().addSpatialForce(cs.getPosition(), vIv);
 
     // Now the gravity part
-    Vector3 refPos = getLink().getRefPos();
-    Vector3 gravity = getEnvironment().getGravityAcceleration(refPos);
-    gravity = getLink().getCoordinateSystem().rotToLocal(gravity);
+    Vector3 gravity = getEnvironment().getGravityAcceleration(cs.getPosition());
     gravity *= mMass->getMass();
-    getLink().applyBodyForce(gravity);
+    getLink().applyForce(cs.getPosition(), gravity);
   }
 
 private:
   SharedPtr<const Mass> mMass;
-  SpatialInertia mSpatialInertia;
 };
 
 Mass::Mass(const std::string& name, const real_type& mass,

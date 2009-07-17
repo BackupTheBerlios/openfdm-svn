@@ -16,11 +16,16 @@ public:
   MechanicLinkValue();
   virtual ~MechanicLinkValue();
 
+  /// Dynamic cast methods
   virtual MechanicLinkValue* toMechanicLinkValue();
   virtual const MechanicLinkValue* toMechanicLinkValue() const;
 
-  /// This is an attempt to seperate the coordinate system stuff away from
-  /// the reference frame handling.
+  /// The Coordinate system of this mechanic link
+  ///
+  /// The Coordinates position is the reference point of the reference frame
+  /// that moves with this mechanic link.
+  /// The spatial velocities, accelerations, forces and the inertia are all
+  /// based on this reference point.
   const CoordinateSystem& getCoordinateSystem() const
   { return mCoordinateSystem; }
   CoordinateSystem& getCoordinateSystem()
@@ -28,81 +33,148 @@ public:
   void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
   { mCoordinateSystem = coordinateSystem; }
 
+  /// The spatial velocity of this mechanic link
+  ///
+  /// The velocity is given in global coordinates and at this mechanic links
+  /// coordinate systems origin.
+  void setVelocity(const Vector6& velocity)
+  { mVelocity = velocity; }
+  const Vector6& getVelocity() const
+  { return mVelocity; }
 
-  const SpatialInertia& getInertia() const
-  { return mArticulatedInertia; }
-  void setInertia(const SpatialInertia& inertia)
-  { mArticulatedInertia = inertia; }
+  /// The spatial acceleration of this mechanic link
+  ///
+  /// The acceleration is given in global coordinates and at this mechanic links
+  /// coordinate systems origin.
+  void setAcceleration(const Vector6& acceleration)
+  { mAcceleration = acceleration; }
+  const Vector6& getAcceleration() const
+  { return mAcceleration; }
 
-  const Vector6& getForce() const
-  { return mArticulatedForce; }
-  void setForce(const Vector6& force)
-  { mArticulatedForce = force; }
+  /// The spatial force of this mechanic link
+  ///
+  /// The force is given in global coordinates and at this mechanic links
+  /// coordinate systems origin.
+  const Vector6& getSpatialForce() const
+  { return mForce; }
+  void setSpatialForce(const Vector6& force)
+  { mForce = force; }
 
+  /// The spatial inertia of this mechanic link
+  ///
+  /// The inertia is given in global coordinates and at this mechanic links
+  /// coordinate systems origin.
+  const SpatialInertia& getSpatialInertia() const
+  { return mInertia; }
+  void setSpatialInertia(const SpatialInertia& inertia)
+  { mInertia = inertia; }
 
-  void applyForce(const Vector6& force)
-  { mArticulatedForce -= force; }
-  void applyForce(const Vector3& position, const Vector6& force)
-  { applyForce(forceFrom(position, force)); }
-  void applyForce(const Vector3& force)
-  { applyForce(Vector6(Vector3::zeros(), force)); }
-  void applyForce(const Vector3& position, const Vector3& force)
-  { applyForce(forceFrom(position, force)); }
-  void applyTorque(const Vector3& torque)
-  { applyForce(Vector6(torque, Vector3::zeros())); }
-
-  void addForce(const Vector6& force)
-  { mArticulatedForce += force; }
-  void addInertia(const SpatialInertia& inertia)
-  { mArticulatedInertia += inertia; }
 
   /// Returns the coordinate system of link wrt this links coordinate system
   CoordinateSystem
   getRelativeCoordinateSystem(const MechanicLinkValue& link) const
   { return mCoordinateSystem.toLocal(link.mCoordinateSystem); }
 
+
+  /// Conveninent getters at different positions/coordinatesystems
+  Vector6 getSpatialVelocity(const Vector3& pos) const
+  { return motionTo(pos - mCoordinateSystem.getPosition(), getVelocity()); }
+  Vector6 getSpatialVelocity(const CoordinateSystem& cs) const
+  { return cs.rotToLocal(getSpatialVelocity(cs.getPosition())); }
+
+  Vector6 getSpatialAcceleration(const Vector3& pos) const
+  { return motionTo(pos - mCoordinateSystem.getPosition(), getAcceleration()); }
+  Vector6 getSpatialAcceleration(const CoordinateSystem& cs) const
+  { return cs.rotToLocal(getSpatialAcceleration(cs.getPosition())); }
+
+  Vector6 getSpatialForce(const Vector3& pos) const
+  { return forceTo(pos - mCoordinateSystem.getPosition(), getSpatialForce()); }
+  Vector6 getSpatialForce(const CoordinateSystem& cs) const
+  { return cs.rotToLocal(getSpatialForce(cs.getPosition())); }
+
+  SpatialInertia getSpatialInertia(const Vector3& pos) const
+  {
+    // is inertiaTo(pos - cs.getPosition(), ...)
+    return inertiaFrom(mCoordinateSystem.getPosition() - pos,
+                       getSpatialInertia());
+  }
+  SpatialInertia getSpatialInertia(const CoordinateSystem& cs) const
+  { return cs.rotToLocal(getSpatialInertia(cs.getPosition())); }
+
+
+  void applyForce(const Vector3& position, const Vector3& force)
+  {
+    Vector3 positionDiff = position - mCoordinateSystem.getPosition();
+    mForce -= forceFrom(positionDiff, force);
+  }
+  void applyForce(const Vector3& position, const Vector6& force)
+  {
+    Vector3 positionDiff = position - mCoordinateSystem.getPosition();
+    mForce -= forceFrom(positionDiff, force);
+  }
+  void applyForce(const CoordinateSystem& cs, const Vector3& force)
+  {
+    Vector3 forceInGlobal = cs.rotToReference(force);
+    Vector3 positionDiff = cs.getPosition() - mCoordinateSystem.getPosition();
+    mForce -= forceFrom(positionDiff, forceInGlobal);
+  }
+  void applyForce(const CoordinateSystem& cs, const Vector6& force)
+  {
+    Vector6 forceInGlobal = cs.rotToReference(force);
+    Vector3 positionDiff = cs.getPosition() - mCoordinateSystem.getPosition();
+    mForce -= forceFrom(positionDiff, forceInGlobal);
+  }
+
+
+  void addSpatialForce(const Vector3& position, const Vector6& force)
+  {
+    Vector3 offset = position - mCoordinateSystem.getPosition();
+    mForce += forceFrom(offset, force);
+  }
+  void addSpatialInertia(const Vector3& position, const SpatialInertia& inertia)
+  {
+    if (position == mCoordinateSystem.getPosition()) {
+      mInertia += inertia;
+    } else {
+      Vector3 offset = position - mCoordinateSystem.getPosition();
+      mInertia += inertiaFrom(offset, inertia);
+    }
+  }
+
+
+  SpatialInertia getLocalInertia() const
+  { return getSpatialInertia(mCoordinateSystem); }
+  Vector6 getLocalForce() const
+  { return getSpatialForce(mCoordinateSystem); }
+
+  void applyGlobalTorque(const Vector3& torque)
+  {
+    mForce -= Vector6(torque, Vector3::zeros());
+  }
+  void applyGlobalForce(const Vector3& globalPosition, const Vector3& force)
+  {
+    Vector3 positionDiff = globalPosition - mCoordinateSystem.getPosition();
+    mForce -= forceFrom(positionDiff, force);
+  }
+
+  void applyLocalForce(const Vector6& force)
+  { mForce -= mCoordinateSystem.rotToReference(force); }
+  void applyLocalForce(const Vector3& position, const Vector6& force)
+  { applyLocalForce(forceFrom(position, force)); }
+  void applyLocalForce(const Vector3& force)
+  { applyLocalForce(Vector6(Vector3::zeros(), force)); }
+  void applyLocalForce(const Vector3& position, const Vector3& force)
+  { applyLocalForce(forceFrom(position, force)); }
+  void applyLocalTorque(const Vector3& torque)
+  { applyLocalForce(Vector6(torque, Vector3::zeros())); }
+
   void setLocalVelocity(const Vector6& velocity)
   { mVelocity = mCoordinateSystem.rotToReference(velocity); }
   Vector6 getLocalVelocity() const
   { return mCoordinateSystem.rotToLocal(mVelocity); }
 
-  void setLocalAcceleration(const Vector6& acceleration)
-  { mAcceleration = mCoordinateSystem.rotToReference(acceleration); }
   Vector6 getLocalAcceleration() const
   { return mCoordinateSystem.rotToLocal(mAcceleration); }
-
-
-  void setVelocity(const Vector6& velocity)
-  { mVelocity = velocity; }
-  const Vector6& getVelocity() const
-  { return mVelocity; }
-
-  void setAcceleration(const Vector6& acceleration)
-  { mAcceleration = acceleration; }
-  const Vector6& getAcceleration() const
-  { return mAcceleration; }
-
-
-  void setRelativeVelocity(const MechanicLinkValue& linkValue,
-                           const Vector6& velocity)
-  {
-    mArticulatedInertia = SpatialInertia::zeros();
-    mArticulatedForce = Vector6::zeros();
-
-    Vector3 positionDiff = mCoordinateSystem.getPosition();
-    positionDiff -= linkValue.mCoordinateSystem.getPosition();
-    Vector6 parentVel = motionTo(positionDiff, linkValue.mVelocity);
-    mVelocity = mCoordinateSystem.rotToReference(velocity) + parentVel;
-  }
-  void setBaseVelocity(const Vector3& baseAngularVel, const Vector6& velocity)
-  {
-    mArticulatedInertia = SpatialInertia::zeros();
-    mArticulatedForce = Vector6::zeros();
-
-    Vector3 referencePos = mCoordinateSystem.getPosition();
-    Vector6 parentVel = angularMotionTo(referencePos, baseAngularVel);
-    mVelocity = mCoordinateSystem.rotToReference(velocity) + parentVel;
-  }
 
 protected:
   /// The local coordinate system of the mechanic link.
@@ -112,16 +184,26 @@ protected:
   /// measured in global coordinate systems coordinates.
   /// The spacial velocities pivot point is at the coordinate systems origin.
   Vector6 mVelocity;
+  // FIXME: make use of that!! Currently relative velocities do not work
+//   Vector6 mReferenceVelocity;
+
   /// The spatial acceleration at the origin of the coordinate system
   /// measured in global coordinate systems coordinates.
   /// The spacial velocities pivot point is at the coordinate systems origin.
   Vector6 mAcceleration;
 
-  // These are stored in local coordinates.
-  // FIXME: move them to global coordinates too
-  Vector6 mArticulatedForce;
-  SpatialInertia mArticulatedInertia;
+  /// The articulated force at the origin of the coordinate system
+  /// measured in global coordinate systems coordinates.
+  /// The articulated force pivot point is at the coordinate systems origin.
+  Vector6 mForce;
+
+  /// The articulated inertia at the origin of the coordinate system
+  /// measured in global coordinate systems coordinates.
+  /// The articulated inertia pivot point is at the coordinate systems origin.
+  SpatialInertia mInertia;
 };
+
+
 
 class ParentLink {
 public:
@@ -167,16 +249,28 @@ public:
     return mMechanicLinkValue->getCoordinateSystem().getOrientation();
   }
 
-  Vector6 getLocalVelocityAtLink() const
+  Vector6 getVelocity(const Vector3& position) const
   {
     OpenFDMAssert(isConnected());
-    return mMechanicLinkValue->getLocalVelocity();
+    return mMechanicLinkValue->getSpatialVelocity(position);
   }
-  Vector6 getLocalAccelerationAtLink() const
+  Vector6 getVelocity(const CoordinateSystem& cs) const
   {
     OpenFDMAssert(isConnected());
-    return mMechanicLinkValue->getLocalAcceleration();
+    return mMechanicLinkValue->getSpatialVelocity(cs);
   }
+
+  Vector6 getAcceleration(const Vector3& position) const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getSpatialAcceleration(position);
+  }
+  Vector6 getAcceleration(const CoordinateSystem& cs) const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getSpatialAcceleration(cs);
+  }
+
   Vector6 getLocalVelocity() const
   {
     OpenFDMAssert(isConnected());
@@ -187,6 +281,10 @@ public:
     OpenFDMAssert(isConnected());
     return motionTo(mLinkRelPos, mMechanicLinkValue->getLocalAcceleration());
   }
+  const Vector6& getAcceleration() const
+  { return mMechanicLinkValue->getAcceleration(); }
+  const Vector6& getVelocity() const
+  { return mMechanicLinkValue->getVelocity(); }
 
   void setDesignPosition(const Vector3& position)
   {
@@ -198,29 +296,29 @@ public:
   void applyBodyForce(const Vector6& force)
   {
     OpenFDMAssert(isConnected());
-    mMechanicLinkValue->applyForce(mLinkRelPos, force);
+    mMechanicLinkValue->applyLocalForce(mLinkRelPos, force);
   }
   void applyBodyForce(const Vector3& bodyPosition, const Vector6& force)
   {
     OpenFDMAssert(isConnected());
-    mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, force);
+    mMechanicLinkValue->applyLocalForce(bodyPosition + mLinkRelPos, force);
   }
   
   void applyBodyForce(const Vector3& force)
   {
     OpenFDMAssert(isConnected());
-    mMechanicLinkValue->applyForce(mLinkRelPos, force);
+    mMechanicLinkValue->applyLocalForce(mLinkRelPos, force);
   }
   void applyBodyForce(const Vector3& bodyPosition, const Vector3& force)
   {
     OpenFDMAssert(isConnected());
-    mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, force);
+    mMechanicLinkValue->applyLocalForce(bodyPosition + mLinkRelPos, force);
   }
   
   void applyBodyTorque(const Vector3& torque)
   {
     OpenFDMAssert(isConnected());
-    mMechanicLinkValue->applyTorque(torque);
+    mMechanicLinkValue->applyLocalTorque(torque);
   }
 
 
@@ -228,39 +326,51 @@ public:
   {
     OpenFDMAssert(isConnected());
     const CoordinateSystem& cs = mMechanicLinkValue->getCoordinateSystem();
-    Vector3 bodyForce = cs.rotToLocal(force);
-    mMechanicLinkValue->applyForce(mLinkRelPos, bodyForce);
-  }
-  void applyGlobalForce(const Vector3& bodyPosition, const Vector3& force)
-  {
-    OpenFDMAssert(isConnected());
-    const CoordinateSystem& cs = mMechanicLinkValue->getCoordinateSystem();
-    Vector3 bodyForce = cs.rotToLocal(force);
-    mMechanicLinkValue->applyForce(bodyPosition + mLinkRelPos, bodyForce);
+    mMechanicLinkValue->applyGlobalForce(cs.toReference(mLinkRelPos), force);
   }
 
   void applyGlobalTorque(const Vector3& torque)
   {
     OpenFDMAssert(isConnected());
-    const CoordinateSystem& cs = mMechanicLinkValue->getCoordinateSystem();
-    mMechanicLinkValue->applyTorque(cs.rotToLocal(torque));
+    mMechanicLinkValue->applyGlobalTorque(torque);
   }
 
+  void applyLocalForceAtLink(const Vector6& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyLocalForce(force);
+  }
 
-  void applyForceAtLink(const Vector6& force)
+  void applyForce(const Vector3& position, const Vector3& force)
   {
     OpenFDMAssert(isConnected());
-    mMechanicLinkValue->applyForce(force);
+    mMechanicLinkValue->applyForce(position, force);
   }
-  void addForceAtLink(const Vector6& force)
+  void applyForce(const CoordinateSystem& cs, const Vector3& force)
   {
     OpenFDMAssert(isConnected());
-    mMechanicLinkValue->addForce(force);
+    mMechanicLinkValue->applyForce(cs, force);
   }
-  void addInertiaAtLink(const SpatialInertia& inertia)
+  void applyForce(const Vector3& position, const Vector6& force)
   {
     OpenFDMAssert(isConnected());
-    mMechanicLinkValue->addInertia(inertia);
+    mMechanicLinkValue->applyForce(position, force);
+  }
+  void applyForce(const CoordinateSystem& cs, const Vector6& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyForce(cs, force);
+  }
+
+  void addSpatialForce(const Vector3& position, const Vector6& force)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->addSpatialForce(position, force);
+  }
+  void addSpatialInertia(const Vector3& position, const SpatialInertia& inertia)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->addSpatialInertia(position, inertia);
   }
 
 private:
@@ -280,35 +390,30 @@ public:
   void setDesignPosition(const Vector3& position)
   { mMechanicLinkValue->setCoordinateSystem(CoordinateSystem(position)); }
 
-  void setLocalAcceleration(const Vector6& accel)
-  { mMechanicLinkValue->setLocalAcceleration(accel); }
-  Vector6 getLocalAcceleration() const
-  { return mMechanicLinkValue->getLocalAcceleration(); }
-
   void setAcceleration(const Vector6& accel)
   { mMechanicLinkValue->setAcceleration(accel); }
   const Vector6& getAcceleration() const
   { return mMechanicLinkValue->getAcceleration(); }
 
-  void setBaseVelocity(const Vector3& angularBaseVel, const Vector6& velocity)
-  { mMechanicLinkValue->setBaseVelocity(angularBaseVel, velocity); }
-
-  void setRelativeVelocity(const ParentLink& parentLink,
-                           const Vector6& velocity)
-  {
-    const MechanicLinkValue& link = parentLink.getMechanicLinkValue();
-    mMechanicLinkValue->setRelativeVelocity(link, velocity);
-  }
+  void setVelocity(const Vector6& velocity)
+  { mMechanicLinkValue->setVelocity(velocity); }
+  const Vector6& getVelocity() const
+  { return mMechanicLinkValue->getVelocity(); }
 
   void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
   { return mMechanicLinkValue->setCoordinateSystem(coordinateSystem); }
   const CoordinateSystem& getCoordinateSystem() const
   { return mMechanicLinkValue->getCoordinateSystem(); }
 
-  const Vector6& getForce() const
-  { return mMechanicLinkValue->getForce(); }
-  const SpatialInertia& getInertia() const
-  { return mMechanicLinkValue->getInertia(); }
+  void setSpatialForce(const Vector6& force)
+  { return mMechanicLinkValue->setSpatialForce(force); }
+  const Vector6& getSpatialForce() const
+  { return mMechanicLinkValue->getSpatialForce(); }
+
+  void setSpatialInertia(const SpatialInertia& inertia) const
+  { return mMechanicLinkValue->setSpatialInertia(inertia); }
+  const SpatialInertia& getSpatialInertia() const
+  { return mMechanicLinkValue->getSpatialInertia(); }
  
 private:
   SharedPtr<MechanicLinkValue> mMechanicLinkValue;

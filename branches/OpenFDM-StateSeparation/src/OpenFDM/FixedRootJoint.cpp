@@ -43,11 +43,14 @@ public:
     CoordinateSystem coordSys(mFixedRootJoint->mRootPosition,
                               mFixedRootJoint->mRootOrientation);
     mChildLink.setCoordinateSystem(coordSys);
-    mChildLink.setBaseVelocity(angularVel, Vector6::zeros());
+    Vector6 vel = angularMotionTo(mFixedRootJoint->mRootPosition, angularVel);
+    mChildLink.setVelocity(vel);
+
+    mChildLink.setSpatialForce(Vector6::zeros());
+    mChildLink.setSpatialInertia(SpatialInertia::zeros());
   }
   virtual void accelerations(const Task& task)
   {
-    // FIXME
     Vector6 spAccel = getEnvironment().getAcceleration(task.getTime());
     spAccel = motionTo(mFixedRootJoint->mRootPosition, spAccel);
     mChildLink.setAcceleration(spAccel);

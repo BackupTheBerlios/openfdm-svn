@@ -359,10 +359,10 @@ private:
       _position.append(cs.getPosition());
       _orientation.append(cs.getOrientation());
       _eulerAngle.append(cs.getOrientation().getEuler());
-      _velocity.append(mMechanicLinkValue->getLocalVelocity());
-      _acceleration.append(mMechanicLinkValue->getLocalAcceleration());
-      _force.append(mMechanicLinkValue->getForce());
-      _inertia.append(mMechanicLinkValue->getInertia());
+      _velocity.append(mMechanicLinkValue->getVelocity());
+      _acceleration.append(mMechanicLinkValue->getAcceleration());
+      _force.append(mMechanicLinkValue->getSpatialForce());
+      _inertia.append(mMechanicLinkValue->getSpatialInertia());
     }
     virtual HDF5Object getObject()
     { return _group; }
