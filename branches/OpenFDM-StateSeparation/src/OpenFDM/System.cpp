@@ -1036,6 +1036,12 @@ protected:
     // have only one link ...
     JointInstanceDataList sortedJoints;
     sortedJoints.swap(mRootJointInstanceDataList);
+    // For the case that the root joint is the only joint in the chain
+    for (JointInstanceDataList::iterator i = sortedJoints.begin();
+         i != sortedJoints.end(); ++i) {
+      // FIXME
+      (*i)->makeRemainigLinksChildLinks();
+    }
 
     // Not the best algorithm, but for a first cut ...
     while (!mJointInstanceDataList.empty()) {
