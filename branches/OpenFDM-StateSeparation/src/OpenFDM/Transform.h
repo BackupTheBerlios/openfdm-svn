@@ -259,6 +259,20 @@ planeFrom(const Rotation& r, const Plane& plane)
 
 
 
+OpenFDM_FORCE_INLINE InertiaMatrix
+inertiaTo(const Rotation& r, const InertiaMatrix& inertia)
+{
+  return r.getTransform()*inertia*r.getBackTransform();
+}
+
+OpenFDM_FORCE_INLINE InertiaMatrix
+inertiaFrom(const Rotation& r, const InertiaMatrix& inertia)
+{
+  return r.getBackTransform()*inertia*r.getTransform();
+}
+
+
+
 OpenFDM_FORCE_INLINE SpatialInertia
 inertiaFrom(const Vector3& p, const Rotation& r, const SpatialInertia& I)
 {
