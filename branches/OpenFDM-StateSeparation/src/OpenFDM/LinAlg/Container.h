@@ -1165,6 +1165,11 @@ public:
   SymMatrix3(const SymMatrix3& S)
     : SymMatrix<T,3>(S)
   { }
+  template<typename Impl2, size_type m2>
+  OpenFDM_FORCE_INLINE
+  SymMatrix3(const MatrixRValue<Impl2,m2,m2>& A)
+    : SymMatrix<T,3>(A)
+  { }
   OpenFDM_FORCE_INLINE
   ~SymMatrix3(void)
   { }
@@ -1228,6 +1233,11 @@ public:
   OpenFDM_FORCE_INLINE
   SymMatrix6(const SymMatrix6& S)
     : SymMatrix<T,6>(S)
+  { }
+  template<typename Impl2, size_type m2>
+  OpenFDM_FORCE_INLINE
+  SymMatrix6(const MatrixRValue<Impl2,m2,m2>& A)
+    : SymMatrix<T,6>(A)
   { }
   OpenFDM_FORCE_INLINE
   ~SymMatrix6(void)
