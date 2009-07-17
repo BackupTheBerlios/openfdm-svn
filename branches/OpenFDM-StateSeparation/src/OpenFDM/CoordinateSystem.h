@@ -22,15 +22,15 @@ public:
     mPosition(Vector3::zeros()),
     mOrientation(Quaternion::unit())
   { }
-  CoordinateSystem(const Vector3& position) :
+  explicit CoordinateSystem(const Vector3& position) :
     mPosition(position),
     mOrientation(Quaternion::unit())
   { }
-  CoordinateSystem(const Quaternion& orientation) :
+  explicit CoordinateSystem(const Quaternion& orientation) :
     mPosition(Vector3::zeros()),
     mOrientation(orientation)
   { }
-  CoordinateSystem(const Rotation& orientation) :
+  explicit CoordinateSystem(const Rotation& orientation) :
     mPosition(Vector3::zeros()),
     mOrientation(orientation)
   { }
@@ -108,6 +108,62 @@ public:
   Vector6 rotToLocal(const Vector6& v) const
   { return Vector6(mOrientation.transform(v.getAngular()),
                    mOrientation.transform(v.getLinear())); }
+
+  template<unsigned n>
+  LinAlg::Matrix<real_type,3,n>
+  rotToReference(const LinAlg::Matrix<real_type,3,n>& m) const
+  {
+    LinAlg::Matrix<real_type,3,n> result;
+    for (unsigned i = 0; i < n; ++i)
+      result(Range(0, 2), i) = mOrientation.backTransform(m(Range(0, 2), i));
+    return result;
+  }
+  template<unsigned n>
+  LinAlg::Matrix<real_type,3,n>
+  rotToLocal(const LinAlg::Matrix<real_type,3,n>& m) const
+  {
+    LinAlg::Matrix<real_type,3,n> result;
+    for (unsigned i = 0; i < n; ++i)
+      result(Range(0, 2), i) = mOrientation.transform(m(Range(0, 2), i));
+    return result;
+  }
+
+
+  template<unsigned n>
+  LinAlg::Matrix<real_type,6,n>
+  rotToReference(const LinAlg::Matrix<real_type,6,n>& m) const
+  {
+    LinAlg::Matrix<real_type,6,n> result;
+    for (unsigned i = 0; i < n; ++i) {
+      result(Range(0, 2), i) = mOrientation.backTransform(m(Range(0, 2), i));
+      result(Range(3, 5), i) = mOrientation.backTransform(m(Range(3, 5), i));
+    }
+    return result;
+  }
+  template<unsigned n>
+  LinAlg::Matrix<real_type,6,n>
+  rotToLocal(const LinAlg::Matrix<real_type,6,n>& m) const
+  {
+    LinAlg::Matrix<real_type,6,n> result;
+    for (unsigned i = 0; i < n; ++i) {
+      result(Range(0, 2), i) = mOrientation.transform(m(Range(0, 2), i));
+      result(Range(3, 5), i) = mOrientation.transform(m(Range(3, 5), i));
+    }
+    return result;
+  }
+
+
+
+
+  InertiaMatrix rotToReference(const InertiaMatrix& inertia) const
+  { return inertiaFrom(mOrientation, inertia); }
+  InertiaMatrix rotToLocal(const InertiaMatrix& inertia) const
+  { return inertiaTo(mOrientation, inertia); }
+
+  SpatialInertia rotToReference(const SpatialInertia& inertia) const
+  { return inertiaFrom(mOrientation, inertia); }
+  SpatialInertia rotToLocal(const SpatialInertia& inertia) const
+  { return inertiaFrom(Rotation(inverse(mOrientation)), inertia); }
 
 
   // Avoid that here. We *only* handle coordinate systems not reference frames.
