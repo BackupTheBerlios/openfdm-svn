@@ -28,7 +28,6 @@ void SystemOutput::setSystem(const System* system)
 SystemOutput*
 SystemOutput::newDefaultSystemOutput(const std::string& filename)
 {
-  return 0;
 #ifdef HAVE_HDF5_H
   return new HDF5SystemOutput(filename);
 #else
