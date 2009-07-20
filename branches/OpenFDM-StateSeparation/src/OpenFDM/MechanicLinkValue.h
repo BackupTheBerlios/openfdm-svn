@@ -176,6 +176,13 @@ public:
   Vector6 getLocalAcceleration() const
   { return mCoordinateSystem.rotToLocal(mAcceleration); }
 
+  void addInertia(const Vector3& position,
+                  const InertiaMatrix& inertia, const real_type& mass)
+  {
+    Vector3 offset = position - mCoordinateSystem.getPosition();
+    mInertia += SpatialInertia(offset, inertia, mass);
+  }
+
 protected:
   /// The local coordinate system of the mechanic link.
   CoordinateSystem mCoordinateSystem;
@@ -371,6 +378,12 @@ public:
   {
     OpenFDMAssert(isConnected());
     mMechanicLinkValue->addSpatialInertia(position, inertia);
+  }
+  void addInertia(const Vector3& position,
+                  const InertiaMatrix& inertia, const real_type& mass)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->addInertia(position, inertia, mass);
   }
 
 private:

@@ -36,17 +36,20 @@ public:
   {
     CoordinateSystem cs = getLink().getCoordinateSystem();
 
-    SpatialInertia I(cs.rotToReference(mMass->getInertia()), mMass->getMass());
+    // The inertia rotated to global axis
+    InertiaMatrix I(cs.rotToReference(mMass->getInertia()));
 
     // Contribute the inerita
-    getLink().addSpatialInertia(cs.getPosition(), I);
+    getLink().addInertia(cs.getPosition(), I, mMass->getMass());
 
     // Each inertia has a contribution to the spatial bias force.
     // This part is handled here.
     Vector6 v = getLink().getVelocity(cs.getPosition());
-    Vector6 Iv = I*v;
-    Vector6 vIv = Vector6(cross(v.getAngular(), Iv.getAngular()) +
-                          cross(v.getLinear(), Iv.getLinear()),
+    Vector6 Iv = Vector6(I*v.getAngular(), mMass->getMass()*v.getLinear());
+    Vector6 vIv = Vector6(cross(v.getAngular(), Iv.getAngular())
+                          /* Not needed since Iv.getLinear() is parallel to
+                             v.getLinear(), so the cross product is zero
+                          + cross(v.getLinear(), Iv.getLinear())*/,
                           cross(v.getAngular(), Iv.getLinear()));
     getLink().addSpatialForce(cs.getPosition(), vIv);
 
