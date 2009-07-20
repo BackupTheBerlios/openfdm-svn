@@ -133,7 +133,7 @@ normalize(const MatrixRValue<Impl,n,1>& v)
 {
   typedef typename Impl::value_type value_type;
   value_type nrm = norm(v);
-  if (fabs(nrm) <= Limits<real_type>::safe_min())
+  if (fabs(nrm) <= Limits<value_type>::safe_min())
     return Vector<value_type,n>(v);
   else
     return Vector<value_type,n>((1/nrm)*v);

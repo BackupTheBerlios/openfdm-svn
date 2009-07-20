@@ -864,7 +864,7 @@ public:
   Vector1(void)
   { }
   OpenFDM_FORCE_INLINE
-  Vector1(T v1)
+  Vector1(const T& v1)
   { (*this)(0) = v1; }
   OpenFDM_FORCE_INLINE
   Vector1(const Vector1& v)
@@ -880,10 +880,10 @@ public:
   { }
 
   OpenFDM_FORCE_INLINE
-  const real_type& x(void) const
+  const T& x(void) const
   { return Vector<T,1>::operator()(0); }
   OpenFDM_FORCE_INLINE
-  real_type& x(void)
+  T& x(void)
   { return Vector<T,1>::operator()(0); }
 };
 
@@ -895,7 +895,7 @@ public:
   Vector2(void)
   { }
   OpenFDM_FORCE_INLINE
-  Vector2(T v1, T v2)
+  Vector2(const T& v1, const T& v2)
   { (*this)(0) = v1; (*this)(1) = v2; }
   OpenFDM_FORCE_INLINE
   Vector2(const Vector2& v)
@@ -916,16 +916,16 @@ public:
   { }
 
   OpenFDM_FORCE_INLINE
-  const real_type& x(void) const
+  const T& x(void) const
   { return Vector<T,2>::operator()(0); }
   OpenFDM_FORCE_INLINE
-  real_type& x(void)
+  T& x(void)
   { return Vector<T,2>::operator()(0); }
   OpenFDM_FORCE_INLINE
-  const real_type& y(void) const
+  const T& y(void) const
   { return Vector<T,2>::operator()(1); }
   OpenFDM_FORCE_INLINE
-  real_type& y(void)
+  T& y(void)
   { return Vector<T,2>::operator()(1); }
 };
 
@@ -937,7 +937,7 @@ public:
   Vector3(void)
   { }
   OpenFDM_FORCE_INLINE
-  Vector3(T v1, T v2, T v3)
+  Vector3(const T& v1, const T& v2, const T& v3)
   { (*this)(0) = v1; (*this)(1) = v2; (*this)(2) = v3; }
   OpenFDM_FORCE_INLINE
   Vector3(const Vector3& v)
@@ -958,22 +958,22 @@ public:
   { }
 
   OpenFDM_FORCE_INLINE
-  const real_type& x(void) const
+  const T& x(void) const
   { return Vector<T,3>::operator()(0); }
   OpenFDM_FORCE_INLINE
-  real_type& x(void)
+  T& x(void)
   { return Vector<T,3>::operator()(0); }
   OpenFDM_FORCE_INLINE
-  const real_type& y(void) const
+  const T& y(void) const
   { return Vector<T,3>::operator()(1); }
   OpenFDM_FORCE_INLINE
-  real_type& y(void)
+  T& y(void)
   { return Vector<T,3>::operator()(1); }
   OpenFDM_FORCE_INLINE
-  const real_type& z(void) const
+  const T& z(void) const
   { return Vector<T,3>::operator()(2); }
   OpenFDM_FORCE_INLINE
-  real_type& z(void)
+  T& z(void)
   { return Vector<T,3>::operator()(2); }
 };
 
@@ -985,7 +985,7 @@ public:
   Vector4(void)
   { }
   OpenFDM_FORCE_INLINE
-  Vector4(T v1, T v2, T v3, T v4)
+  Vector4(const T& v1, const T& v2, const T& v3, const T& v4)
   { (*this)(0) = v1; (*this)(1) = v2; (*this)(2) = v3; (*this)(3) = v4; }
   OpenFDM_FORCE_INLINE
   Vector4(const Vector4& v)
@@ -1014,7 +1014,7 @@ public:
   Vector6(void)
   { }
   OpenFDM_FORCE_INLINE
-  Vector6(T v1, T v2, T v3, T v4, T v5, T v6)
+  Vector6(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6)
   {
     (*this)(0) = v1; (*this)(1) = v2; (*this)(2) = v3;
     (*this)(3) = v4; (*this)(4) = v5; (*this)(5) = v6;
@@ -1066,7 +1066,7 @@ public:
   Matrix22(void)
   { }
   OpenFDM_FORCE_INLINE
-  Matrix22(T m11, T m12, T m21, T m22)
+  Matrix22(const T& m11, const T& m12, const T& m21, const T& m22)
   {
     (*this)(0, 0) = m11; (*this)(0, 1) = m12;
     (*this)(1, 0) = m21; (*this)(1, 1) = m22;
@@ -1108,7 +1108,7 @@ public:
   Matrix33(void)
   { }
   OpenFDM_FORCE_INLINE
-  Matrix33(T m11, T m12, T m13, T m21, T m22, T m23, T m31, T m32, T m33)
+  Matrix33(const T& m11, const T& m12, const T& m13, const T& m21, const T& m22, const T& m23, const T& m31, const T& m32, const T& m33)
   {
     (*this)(0, 0) = m11; (*this)(0, 1) = m12; (*this)(0, 2) = m13;
     (*this)(1, 0) = m21; (*this)(1, 1) = m22; (*this)(1, 2) = m23;
@@ -1151,7 +1151,7 @@ public:
   SymMatrix3(void)
   { }
   OpenFDM_FORCE_INLINE
-  SymMatrix3(T S11, T S21, T S31, T S22, T S32, T S33)
+  SymMatrix3(const T& S11, const T& S21, const T& S31, const T& S22, const T& S32, const T& S33)
   {
     (*this)(0, 0) = S11;
     (*this)(1, 0) = S21; (*this)(1, 1) = S22;
@@ -1173,6 +1173,40 @@ public:
   OpenFDM_FORCE_INLINE
   ~SymMatrix3(void)
   { }
+
+  // Compute the inertia of a solid cylinder aligned along the z axis with
+  // tha given radius length and mass.
+  OpenFDM_FORCE_INLINE
+  static SymMatrix3
+  cylinderInertia(const T& mass, const T& length, const T& radius)
+  {
+    T r2 = radius*radius;
+    T Ixx = T(0.25)*mass*(r2 + T(1)/3*length*length);
+    T Izz = T(0.5)*mass*r2;
+    return SymMatrix<T,3>(Ixx, 0, 0, Ixx, 0, Izz);
+  }
+  
+  // Compute the inertia of a solid quad with the given lengths and mass.
+  OpenFDM_FORCE_INLINE
+  static SymMatrix3
+  quadInertia(const T& mass, const T& x, const T& y, const T& z)
+  {
+    T x2 = 1/T(12)*mass*x*x;
+    T y2 = 1/T(12)*mass*y*y;
+    T z2 = 1/T(12)*mass*z*z;
+    return SymMatrix<T,3>(y2+z2, 0, 0, x2+z2, 0, x2+y2);
+  }
+
+  // Compute the inertia of a solid ellipsoid with the given semiaxis and mass.
+  OpenFDM_FORCE_INLINE
+  static SymMatrix3
+  ellipsoidInertia(const T& mass, const T& x, const T& y, const T& z)
+  {
+    T x2 = 1/T(5)*mass*x*x;
+    T y2 = 1/T(5)*mass*y*y;
+    T z2 = 1/T(5)*mass*z*z;
+    return SymMatrix<T,3>(y2+z2, 0, 0, x2+z2, 0, x2+y2);
+  }
 };
 
 template<typename T>
@@ -1183,7 +1217,7 @@ public:
   SymMatrix6(void)
   { }
   OpenFDM_FORCE_INLINE
-  SymMatrix6(T m)
+  SymMatrix6(const T& m)
   {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0; (*this)(1,1) = 0;
@@ -1196,7 +1230,7 @@ public:
     (*this)(5,3) = 0; (*this)(5,4) = 0; (*this)(5,5) = m;
   }
   OpenFDM_FORCE_INLINE
-  SymMatrix6(const SymMatrix<T,3>& I, T m)
+  SymMatrix6(const SymMatrix<T,3>& I, const T& m)
   {
     (*this)(0,0) = I(0,0);
     (*this)(1,0) = I(1,0); (*this)(1,1) = I(1,1);
@@ -1209,23 +1243,53 @@ public:
     (*this)(5,3) = 0;      (*this)(5,4) = 0;      (*this)(5,5) = m;
   }
   OpenFDM_FORCE_INLINE
-  SymMatrix6(T S11,
-             T S21, T S22,
-             T S31, T S32, T S33,
-             T S41, T S42, T S43, T S44,
-             T S51, T S52, T S53, T S54, T S55,
-             T S61, T S62, T S63, T S64, T S65, T S66)
+  SymMatrix6(const Matrix<T,3,1>& p, const SymMatrix<T,3>& I, const T& m)
   {
-    (*this)(0,0) = S11;
-    (*this)(1,0) = S21; (*this)(1,1) = S22;
-    (*this)(2,0) = S31; (*this)(2,1) = S32; (*this)(2,2) = S33;
-    (*this)(3,0) = S41; (*this)(3,1) = S42; (*this)(3,2) = S43;
-    (*this)(3,3) = S44;
-    (*this)(4,0) = S51; (*this)(4,1) = S52; (*this)(4,2) = S53;
-    (*this)(4,3) = S54; (*this)(4,4) = S55;
-    (*this)(5,0) = S61; (*this)(5,1) = S62; (*this)(5,2) = S63;
-    (*this)(5,3) = S64; (*this)(5,4) = S65; (*this)(5,5) = S66;
+    (*this)(0,0) = I(0,0) + m*(p(1,0)*p(1,0) + p(2,0)*p(2,0));
+
+    (*this)(1,0) = I(1,0) - m*p(1,0)*p(0,0);
+    (*this)(1,1) = I(1,1) + m*(p(0,0)*p(0,0) + p(2,0)*p(2,0));
+
+    (*this)(2,0) = I(2,0) - m*p(2,0)*p(0,0);
+    (*this)(2,1) = I(2,1) - m*p(2,0)*p(1,0);
+    (*this)(2,2) = I(2,2) + m*(p(0,0)*p(0,0) + p(1,0)*p(1,0));
+
+    (*this)(3,0) = 0;
+    (*this)(3,1) = m*p(2,0);
+    (*this)(3,2) = -m*p(1,0);
+    (*this)(3,3) = m;
+
+    (*this)(4,0) = -m*p(2,0);
+    (*this)(4,1) = 0;
+    (*this)(4,2) = m*p(0,0);
+    (*this)(4,3) = 0;
+    (*this)(4,4) = m;
+
+    (*this)(5,0) = m*p(1,0);
+    (*this)(5,1) = -m*p(0,0);
+    (*this)(5,2) = 0;
+    (*this)(5,3) = 0;
+    (*this)(5,4) = 0;
+    (*this)(5,5) = m;
   }
+//   OpenFDM_FORCE_INLINE
+//   SymMatrix6(const T& S11,
+//              const T& S21, const T& S22,
+//              const T& S31, const T& S32, const T& S33,
+//              const T& S41, const T& S42, const T& S43, const T& S44,
+//              const T& S51, const T& S52, const T& S53, const T& S54, const T& S55,
+//              const T& S61, const T& S62, const T& S63, const T& S64, const T& S65, const T& S66)
+//   {
+//     (*this)(0,0) = S11;
+//     (*this)(1,0) = S21; (*this)(1,1) = S22;
+//     (*this)(2,0) = S31; (*this)(2,1) = S32; (*this)(2,2) = S33;
+//     (*this)(3,0) = S41; (*this)(3,1) = S42; (*this)(3,2) = S43;
+//     (*this)(3,3) = S44;
+//     (*this)(4,0) = S51; (*this)(4,1) = S52; (*this)(4,2) = S53;
+//     (*this)(4,3) = S54; (*this)(4,4) = S55;
+//     (*this)(5,0) = S61; (*this)(5,1) = S62; (*this)(5,2) = S63;
+//     (*this)(5,3) = S64; (*this)(5,4) = S65; (*this)(5,5) = S66;
+//   }
   OpenFDM_FORCE_INLINE
   SymMatrix6(const SymMatrix<T,6>& S)
     : SymMatrix<T,6>(S)
@@ -1247,42 +1311,6 @@ public:
   static SymMatrix6 zeros(void)
   { return SymMatrix6(Zeros<T,6,6>(6,6)); }
 
-  // Compute the inertia of a solid cylinder aligned along the z axis with
-  // tha given radius length and mass.
-  OpenFDM_FORCE_INLINE
-  static SymMatrix6
-  cylinderInertia(real_type mass, real_type length, real_type radius)
-  {
-    real_type r2 = radius*radius;
-    real_type Ixx = 0.25*mass*(r2 + real_type(1)/3*length*length);
-    real_type Izz = 0.5*mass*r2;
-    SymMatrix<T,3> I(Ixx, 0, 0, Ixx, 0, Izz);
-    return SymMatrix6(I, mass);
-  }
-  
-  // Compute the inertia of a solid quad with the given lengths and mass.
-  OpenFDM_FORCE_INLINE
-  static SymMatrix6
-  quadInertia(real_type mass, real_type x, real_type y, real_type z)
-  {
-    real_type x2 = (1.0/12.0)*mass*x*x;
-    real_type y2 = (1.0/12.0)*mass*y*y;
-    real_type z2 = (1.0/12.0)*mass*z*z;
-    SymMatrix<T,3> I(y2+z2, 0, 0, x2+z2, 0, x2+y2);
-    return SymMatrix6(I, mass);
-  }
-
-  // Compute the inertia of a solid ellipsoid with the given semiaxis and mass.
-  OpenFDM_FORCE_INLINE
-  static SymMatrix6
-  ellipsoidInertia(real_type mass, real_type x, real_type y, real_type z)
-  {
-    real_type x2 = (1.0/5.0)*mass*x*x;
-    real_type y2 = (1.0/5.0)*mass*y*y;
-    real_type z2 = (1.0/5.0)*mass*z*z;
-    SymMatrix<T,3> I(y2+z2, 0, 0, x2+z2, 0, x2+y2);
-    return SymMatrix6(I, mass);
-  }
 };
 
 } // namespace LinAlg
