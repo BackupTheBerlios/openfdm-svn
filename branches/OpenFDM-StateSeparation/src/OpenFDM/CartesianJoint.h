@@ -152,6 +152,10 @@ protected:
       Vector6 relVel = mJointMatrix*velocity;
       mChildLink.setVelocity(parentSpVel + relVel);
 
+      Vector6 parentInVel = mParentLink.getInertialVelocity();
+      parentInVel = motionTo(positionDifference, parentInVel);
+      mChildLink.setInertialVelocity(parentInVel + relVel);
+
       /**
          This is the cross product of the inertial spatial velocity
          vector with the relative spatial velocity vector (motion type
@@ -162,9 +166,9 @@ protected:
          transformed spatial velocity of the parent frame cross the
          relative velocity.
       */
-      mHdot = Vector6(cross(parentSpVel.getAngular(), relVel.getAngular()),
-                      cross(parentSpVel.getAngular(), relVel.getLinear()) + 
-                      cross(parentSpVel.getLinear(), relVel.getAngular()));
+      mHdot = Vector6(cross(parentInVel.getAngular(), relVel.getAngular()),
+                      cross(parentInVel.getAngular(), relVel.getLinear()) + 
+                      cross(parentInVel.getLinear(), relVel.getAngular()));
 
 
       mChildLink.setSpatialForce(Vector6::zeros());

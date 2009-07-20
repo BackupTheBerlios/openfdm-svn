@@ -181,7 +181,8 @@ MobileRootJoint::velocity(const Task& task, const Environment& environment,
   velocity = childLink.getCoordinateSystem().rotToReference(velocity);
   Vector3 angularBaseVelocity = environment.getAngularVelocity(task.getTime());
   Vector6 baseVelocity(angularMotionTo(position, angularBaseVelocity));
-  childLink.setVelocity(baseVelocity + velocity);
+  childLink.setVelocity(velocity);
+  childLink.setInertialVelocity(baseVelocity + velocity);
 
   childLink.setSpatialForce(Vector6::zeros());
   childLink.setSpatialInertia(SpatialInertia::zeros());

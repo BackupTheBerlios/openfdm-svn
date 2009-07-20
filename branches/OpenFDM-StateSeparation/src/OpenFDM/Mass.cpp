@@ -44,7 +44,7 @@ public:
 
     // Each inertia has a contribution to the spatial bias force.
     // This part is handled here.
-    Vector6 v = getLink().getVelocity(cs.getPosition());
+    Vector6 v = getLink().getInertialVelocity(cs.getPosition());
     Vector6 Iv = Vector6(I*v.getAngular(), mMass->getMass()*v.getLinear());
     Vector6 vIv = Vector6(cross(v.getAngular(), Iv.getAngular())
                           /* Not needed since Iv.getLinear() is parallel to

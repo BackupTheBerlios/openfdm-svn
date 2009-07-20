@@ -44,7 +44,8 @@ public:
                               mFixedRootJoint->mRootOrientation);
     mChildLink.setCoordinateSystem(coordSys);
     Vector6 vel = angularMotionTo(mFixedRootJoint->mRootPosition, angularVel);
-    mChildLink.setVelocity(vel);
+    mChildLink.setVelocity(Vector6::zeros());
+    mChildLink.setInertialVelocity(vel);
 
     mChildLink.setSpatialForce(Vector6::zeros());
     mChildLink.setSpatialInertia(SpatialInertia::zeros());

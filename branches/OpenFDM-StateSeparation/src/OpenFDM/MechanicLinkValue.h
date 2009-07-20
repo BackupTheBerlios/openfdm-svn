@@ -42,6 +42,11 @@ public:
   const Vector6& getVelocity() const
   { return mVelocity; }
 
+  void setInertialVelocity(const Vector6& inertialVelocity)
+  { mInertialVelocity = inertialVelocity; }
+  const Vector6& getInertialVelocity() const
+  { return mInertialVelocity; }
+
   /// The spatial acceleration of this mechanic link
   ///
   /// The acceleration is given in global coordinates and at this mechanic links
@@ -81,6 +86,11 @@ public:
   { return motionTo(pos - mCoordinateSystem.getPosition(), getVelocity()); }
   Vector6 getSpatialVelocity(const CoordinateSystem& cs) const
   { return cs.rotToLocal(getSpatialVelocity(cs.getPosition())); }
+
+  Vector6 getInertialVelocity(const Vector3& pos) const
+  { return motionTo(pos - mCoordinateSystem.getPosition(), getInertialVelocity()); }
+  Vector6 getInertialVelocity(const CoordinateSystem& cs) const
+  { return cs.rotToLocal(getInertialVelocity(cs.getPosition())); }
 
   Vector6 getSpatialAcceleration(const Vector3& pos) const
   { return motionTo(pos - mCoordinateSystem.getPosition(), getAcceleration()); }
@@ -191,8 +201,8 @@ protected:
   /// measured in global coordinate systems coordinates.
   /// The spacial velocities pivot point is at the coordinate systems origin.
   Vector6 mVelocity;
-  // FIXME: make use of that!! Currently relative velocities do not work
-//   Vector6 mReferenceVelocity;
+  /// Inertial velocity
+  Vector6 mInertialVelocity;
 
   /// The spatial acceleration at the origin of the coordinate system
   /// measured in global coordinate systems coordinates.
@@ -267,6 +277,17 @@ public:
     return mMechanicLinkValue->getSpatialVelocity(cs);
   }
 
+  Vector6 getInertialVelocity(const Vector3& position) const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getInertialVelocity(position);
+  }
+  Vector6 getInertialVelocity(const CoordinateSystem& cs) const
+  {
+    OpenFDMAssert(isConnected());
+    return mMechanicLinkValue->getInertialVelocity(cs);
+  }
+
   Vector6 getAcceleration(const Vector3& position) const
   {
     OpenFDMAssert(isConnected());
@@ -292,6 +313,8 @@ public:
   { return mMechanicLinkValue->getAcceleration(); }
   const Vector6& getVelocity() const
   { return mMechanicLinkValue->getVelocity(); }
+  const Vector6& getInertialVelocity() const
+  { return mMechanicLinkValue->getInertialVelocity(); }
 
   void setDesignPosition(const Vector3& position)
   {
@@ -412,6 +435,11 @@ public:
   { mMechanicLinkValue->setVelocity(velocity); }
   const Vector6& getVelocity() const
   { return mMechanicLinkValue->getVelocity(); }
+
+  void setInertialVelocity(const Vector6& velocity)
+  { mMechanicLinkValue->setInertialVelocity(velocity); }
+  const Vector6& getInertialVelocity() const
+  { return mMechanicLinkValue->getInertialVelocity(); }
 
   void setCoordinateSystem(const CoordinateSystem& coordinateSystem)
   { return mMechanicLinkValue->setCoordinateSystem(coordinateSystem); }
