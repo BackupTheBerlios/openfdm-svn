@@ -25,7 +25,7 @@ BEGIN_OPENFDM_OBJECT_DEF(ExternalInteract, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Bool, EnableBodyWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableGlobalWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnablePressure, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableStaticPressure, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableDensity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableSoundSpeed, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAltitude, Serialized)
@@ -50,7 +50,7 @@ public:
     mBodyWindVelocity(portValueList.getPortValue(externalInteract->mBodyWindVelocityPort)),
     mGlobalWindVelocity(portValueList.getPortValue(externalInteract->mGlobalWindVelocityPort)),
     mTemperature(portValueList.getPortValue(externalInteract->mTemperaturePort)),
-    mPressure(portValueList.getPortValue(externalInteract->mPressurePort)),
+    mStaticPressure(portValueList.getPortValue(externalInteract->mStaticPressurePort)),
     mDensity(portValueList.getPortValue(externalInteract->mDensityPort)),
     mSoundSpeed(portValueList.getPortValue(externalInteract->mSoundSpeedPort)),
     mAltitude(portValueList.getPortValue(externalInteract->mAltitudePort)),
@@ -119,10 +119,10 @@ public:
     bool enableAltitude = mAltitude.isConnected();
     
     bool enableTemperature = mTemperature.isConnected();
-    bool enablePressure = mPressure.isConnected();
+    bool enableStaticPressure = mStaticPressure.isConnected();
     bool enableDensity = mDensity.isConnected();
     bool enableSoundSpeed = mSoundSpeed.isConnected();
-    bool enableAtmosphere = (enableTemperature || enablePressure ||
+    bool enableAtmosphere = (enableTemperature || enableStaticPressure ||
                              enableDensity || enableSoundSpeed);
     if (enableAltitude || enableAtmosphere) {
       real_type altitude = getEnvironment().getAltitude(refPosition);
@@ -134,8 +134,8 @@ public:
         AtmosphereData data = atmosphere->getData(task.getTime(), altitude);
         if (enableTemperature)
           mTemperature = data.temperature;
-        if (enablePressure)
-          mPressure = data.pressure;
+        if (enableStaticPressure)
+          mStaticPressure = data.pressure;
         if (enableDensity)
           mDensity = data.density;
         if (enableSoundSpeed)
@@ -206,7 +206,7 @@ private:
   MatrixOutputPortHandle mGlobalWindVelocity;
 
   RealOutputPortHandle mTemperature;
-  RealOutputPortHandle mPressure;
+  RealOutputPortHandle mStaticPressure;
   RealOutputPortHandle mDensity;
   RealOutputPortHandle mSoundSpeed;
 
@@ -453,20 +453,20 @@ ExternalInteract::getEnableTemperature() const
 }
 
 void
-ExternalInteract::setEnablePressure(bool enable)
+ExternalInteract::setEnableStaticPressure(bool enable)
 {
-  if (enable == getEnablePressure())
+  if (enable == getEnableStaticPressure())
     return;
   if (enable)
-    mPressurePort = RealOutputPort(this, "pressure");
+    mStaticPressurePort = RealOutputPort(this, "staticPressure");
   else
-    mPressurePort.clear();
+    mStaticPressurePort.clear();
 }
 
 bool
-ExternalInteract::getEnablePressure() const
+ExternalInteract::getEnableStaticPressure() const
 {
-  return !mPressurePort.empty();
+  return !mStaticPressurePort.empty();
 }
 
 void
@@ -620,7 +620,7 @@ ExternalInteract::setEnableAllOutputs(bool enable)
   setEnableBodyWindVelocity(enable);
   setEnableGlobalWindVelocity(enable);
   setEnableTemperature(enable);
-  setEnablePressure(enable);
+  setEnableStaticPressure(enable);
   setEnableDensity(enable);
   setEnableSoundSpeed(enable);
   setEnableAltitude(enable);

@@ -95,10 +95,10 @@ public:
   /// Get availabilty of the temperature output port
   bool getEnableTemperature() const;
 
-  /// Set availabilty of the pressure output port
-  void setEnablePressure(bool enable);
-  /// Get availabilty of the pressure output port
-  bool getEnablePressure() const;
+  /// Set availabilty of the static pressure output port
+  void setEnableStaticPressure(bool enable);
+  /// Get availabilty of the static pressure output port
+  bool getEnableStaticPressure() const;
 
   /// Set availabilty of the density output port
   void setEnableDensity(bool enable);
@@ -167,7 +167,7 @@ protected:
   MatrixOutputPort mGlobalWindVelocityPort;
 
   RealOutputPort mTemperaturePort;
-  RealOutputPort mPressurePort;
+  RealOutputPort mStaticPressurePort;
   RealOutputPort mDensityPort;
   RealOutputPort mSoundSpeedPort;
 
