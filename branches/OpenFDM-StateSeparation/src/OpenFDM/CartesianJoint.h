@@ -171,8 +171,8 @@ protected:
                       cross(parentInVel.getLinear(), relVel.getAngular()));
 
 
-      mChildLink.setSpatialForce(Vector6::zeros());
-      mChildLink.setSpatialInertia(SpatialInertia::zeros());
+      mChildLink.setForce(Vector6::zeros());
+      mChildLink.setInertia(SpatialInertia::zeros());
     }
 
     /** This is the derivative of the joint matrix times the joint velocity
@@ -193,7 +193,7 @@ protected:
 
       // Compute the projection of the inertia matrix to the
       // joint coordinate space
-      SpatialInertia I = mChildLink.getSpatialInertia();
+      SpatialInertia I = mChildLink.getInertia();
       Matrix6N Ih = I*mJointMatrix;
       hIh = trans(mJointMatrix)*Ih;
 
@@ -206,15 +206,15 @@ protected:
 
       // Note that the momentum of the local mass is already included in the
       // child links force due the the mass model ...
-      Vector6 force = mChildLink.getSpatialForce() + I*getHdot();
+      Vector6 force = mChildLink.getForce() + I*getHdot();
 
       // Project away those axis handled with this current joint
       force -= Ih*hIh.solve(trans(mJointMatrix)*force - jointForce);
       I -= SpatialInertia(Ih*hIh.solve(trans(Ih)));
 
       // Contribute the remaining force and inertiy to the parent link
-      mParentLink.addSpatialForce(cs.getPosition(), force);
-      mParentLink.addSpatialInertia(cs.getPosition(), I);
+      mParentLink.addForce(cs.getPosition(), force);
+      mParentLink.addInertia(cs.getPosition(), I);
     }
 
     /** Compute the acceleration step for a given joint force.
@@ -230,16 +230,16 @@ protected:
 
       Vector3 positionDifference = cs.getPosition() - ps.getPosition();
 
-      Vector6 parentSpAccel = mParentLink.getAcceleration();
+      Vector6 parentSpAccel = mParentLink.getInertialAcceleration();
       parentSpAccel = motionTo(positionDifference, parentSpAccel);
 
-      Vector6 f = mChildLink.getSpatialForce();
-      f += mChildLink.getSpatialInertia()*(parentSpAccel + getHdot());
+      Vector6 f = mChildLink.getForce();
+      f += mChildLink.getInertia()*(parentSpAccel + getHdot());
 
       mVelDot = hIh.solve(mJointForce - trans(mJointMatrix)*f);
 
       Vector6 spAccel = parentSpAccel + getHdot() + mJointMatrix*mVelDot;
-      mChildLink.setAcceleration(spAccel);
+      mChildLink.setInertialAcceleration(spAccel);
     }
   
     /** Compute the articulation step for a given velocity derivative.
@@ -257,12 +257,12 @@ protected:
 
       const CoordinateSystem& cs = mChildLink.getCoordinateSystem();
 
-      const SpatialInertia& I = mChildLink.getSpatialInertia();
-      Vector6 force = mChildLink.getSpatialForce();
+      const SpatialInertia& I = mChildLink.getInertia();
+      Vector6 force = mChildLink.getForce();
       force += I*(getHdot() + mJointMatrix*mVelDot);
       
-      mParentLink.addSpatialForce(cs.getPosition(), force);
-      mParentLink.addSpatialInertia(cs.getPosition(), I);
+      mParentLink.addForce(cs.getPosition(), force);
+      mParentLink.addInertia(cs.getPosition(), I);
     }
     
     /** Compute the acceleration step for a given velocity derivative.
@@ -274,11 +274,11 @@ protected:
       const CoordinateSystem& ps = mParentLink.getCoordinateSystem();
       Vector3 positionDifference = cs.getPosition() - ps.getPosition();
 
-      Vector6 parentSpAccel = mParentLink.getAcceleration();
+      Vector6 parentSpAccel = mParentLink.getInertialAcceleration();
       parentSpAccel = motionTo(positionDifference, parentSpAccel);
 
       Vector6 spAccel = parentSpAccel + getHdot() + mJointMatrix*mVelDot;
-      mChildLink.setAcceleration(spAccel);
+      mChildLink.setInertialAcceleration(spAccel);
     }
 
     const VectorN& getVelDot() const

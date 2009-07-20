@@ -47,14 +47,14 @@ public:
     mChildLink.setVelocity(Vector6::zeros());
     mChildLink.setInertialVelocity(vel);
 
-    mChildLink.setSpatialForce(Vector6::zeros());
-    mChildLink.setSpatialInertia(SpatialInertia::zeros());
+    mChildLink.setForce(Vector6::zeros());
+    mChildLink.setInertia(SpatialInertia::zeros());
   }
   virtual void accelerations(const Task& task)
   {
     Vector6 spAccel = getEnvironment().getAcceleration(task.getTime());
     spAccel = motionTo(mFixedRootJoint->mRootPosition, spAccel);
-    mChildLink.setAcceleration(spAccel);
+    mChildLink.setInertialAcceleration(spAccel);
   }
   
 private:

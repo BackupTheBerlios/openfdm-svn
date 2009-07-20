@@ -49,10 +49,9 @@ public:
   }
   virtual void accelerations(const Task& task)
   {
-    const SpatialInertia& inertia = mChildLink.getSpatialInertia();
-    Vector6 force = -mChildLink.getSpatialForce();
-    Vector6 spatialAcceleration = solve(inertia, force);
-    mChildLink.setAcceleration(spatialAcceleration);
+    Vector6 force = -mChildLink.getForce();
+    Vector6 acceleration = solve(mChildLink.getInertia(), force);
+    mChildLink.setInertialAcceleration(acceleration);
   }
   
   virtual void derivative(const Task& task)
@@ -184,8 +183,8 @@ MobileRootJoint::velocity(const Task& task, const Environment& environment,
   childLink.setVelocity(velocity);
   childLink.setInertialVelocity(baseVelocity + velocity);
 
-  childLink.setSpatialForce(Vector6::zeros());
-  childLink.setSpatialInertia(SpatialInertia::zeros());
+  childLink.setForce(Vector6::zeros());
+  childLink.setInertia(SpatialInertia::zeros());
 }
 
 void
@@ -223,7 +222,7 @@ MobileRootJoint::derivative(const Task& task, const Environment& environment,
                          cross(pivel.getAngular(), velocity.getLinear()) + 
                          cross(pivel.getLinear(), velocity.getAngular()));
 
-  Vector6 velDeriv = childLink.getAcceleration()
+  Vector6 velDeriv = childLink.getInertialAcceleration()
     - spatialAcceleration - Hdot;
 
   derivatives[*mPositionStateInfo] = pDot;

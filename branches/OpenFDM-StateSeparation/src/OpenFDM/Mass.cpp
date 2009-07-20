@@ -51,7 +51,7 @@ public:
                              v.getLinear(), so the cross product is zero
                           + cross(v.getLinear(), Iv.getLinear())*/,
                           cross(v.getAngular(), Iv.getLinear()));
-    getLink().addSpatialForce(cs.getPosition(), vIv);
+    getLink().addForce(cs.getPosition(), vIv);
 
     // Now the gravity part
     Vector3 gravity = getEnvironment().getGravityAcceleration(cs.getPosition());

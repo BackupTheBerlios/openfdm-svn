@@ -9,7 +9,7 @@ namespace OpenFDM {
 MechanicLinkValue::MechanicLinkValue() :
   mVelocity(Vector6::zeros()),
   mInertialVelocity(Vector6::zeros()),
-  mAcceleration(Vector6::zeros()),
+  mInertialAcceleration(Vector6::zeros()),
   mForce(Vector6::zeros()),
   mInertia(SpatialInertia::zeros())
 {
