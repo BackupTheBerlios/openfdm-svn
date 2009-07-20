@@ -39,8 +39,6 @@ namespace OpenFDM {
 // TODO:
 // * Remove AbstractNodeContext ...
 
-class MechanicContext;
-
 class MechanicNode : public LeafNode {
   OPENFDM_OBJECT(MechanicNode, LeafNode);
 public:
