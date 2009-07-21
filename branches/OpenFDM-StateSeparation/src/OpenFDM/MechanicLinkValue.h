@@ -179,9 +179,6 @@ public:
   Vector6 getLocalVelocity() const
   { return mCoordinateSystem.rotToLocal(mVelocity); }
 
-  Vector6 getLocalAcceleration() const
-  { return mCoordinateSystem.rotToLocal(mInertialAcceleration); }
-
 protected:
   /// The local coordinate system of the mechanic link.
   CoordinateSystem mCoordinateSystem;
@@ -279,11 +276,6 @@ public:
   {
     OpenFDMAssert(isConnected());
     return motionTo(mLinkRelPos, mMechanicLinkValue->getLocalVelocity());
-  }
-  Vector6 getLocalAcceleration() const
-  {
-    OpenFDMAssert(isConnected());
-    return motionTo(mLinkRelPos, mMechanicLinkValue->getLocalAcceleration());
   }
   const Vector6& getInertialAcceleration() const
   { return mMechanicLinkValue->getInertialAcceleration(); }
