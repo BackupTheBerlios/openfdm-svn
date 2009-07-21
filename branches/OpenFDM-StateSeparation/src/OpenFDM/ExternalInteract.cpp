@@ -70,15 +70,15 @@ public:
     const CoordinateSystem& cs = getLink().getCoordinateSystem();
 
     // The global coordinates position
-    Vector3 refPosition = getLink().getRefPos();
+    Vector3 refPosition = cs.getPosition();
     if (mPosition.isConnected())
       mPosition = refPosition;
     
     if (mOrientation.isConnected())
-      mOrientation = getLink().getRefOr();
+      mOrientation = cs.getOrientation();
     
     if (mEulerAngles.isConnected())
-      mEulerAngles = getLink().getRefOr().getEuler();
+      mEulerAngles = cs.getOrientation().getEuler();
     
     // Velocity related sensing
     bool enableBodyAngularVelocity = mBodyAngularVelocity.isConnected();
@@ -90,28 +90,26 @@ public:
     if (enableBodyAngularVelocity || enableBodyLinearVelocity
         || enableGlobalAngularVelocity || enableGlobalLinearVelocity
         || enableBodyWindVelocity || enableGlobalWindVelocity) {
-      Vector6 refVelocity = getLink().getLocalVelocity();
+      Vector6 refVelocity = getLink().getVelocity();
       if (enableBodyAngularVelocity)
-        mBodyAngularVelocity = refVelocity.getAngular();
+        mBodyAngularVelocity = cs.rotToLocal(refVelocity.getAngular());
       if (enableGlobalAngularVelocity)
-        mGlobalAngularVelocity = cs.rotToReference(refVelocity.getAngular());
+        mGlobalAngularVelocity = refVelocity.getAngular();
       
       if (enableBodyLinearVelocity)
-        mBodyLinearVelocity = refVelocity.getLinear();
+        mBodyLinearVelocity = cs.rotToLocal(refVelocity.getLinear());
       if (enableGlobalLinearVelocity)
-        mGlobalLinearVelocity = cs.rotToReference(refVelocity.getLinear());
+        mGlobalLinearVelocity = refVelocity.getLinear();
       
       // Wind sensing
       if (enableBodyWindVelocity || enableGlobalWindVelocity) {
         Vector6 wind = getEnvironment().getWindVelocity(task.getTime(),
                                                         refPosition);
-        wind = Vector6(cs.rotToLocal(wind.getAngular()),
-                       cs.rotToLocal(wind.getLinear()));
         wind -= refVelocity;
         if (enableBodyWindVelocity)
-          mBodyWindVelocity = wind.getLinear();
+          mBodyWindVelocity = cs.rotToLocal(wind.getLinear());
         if (enableGlobalWindVelocity)
-          mGlobalWindVelocity = cs.rotToReference(wind.getLinear());
+          mGlobalWindVelocity = wind.getLinear();
       }
     }
     
@@ -170,19 +168,20 @@ public:
       = mBodyCentrifugalAcceleration.isConnected();
     bool enableBodyLoad = mBodyLoad.isConnected();
     if (enableBodyCentrifugalAcceleration || enableBodyLoad) {
-      Vector6 spatialVel = getLink().getLocalVelocity();
-      Vector6 spatialAccel = getLink().getLocalAcceleration();
+      const CoordinateSystem& cs = getLink().getCoordinateSystem();
+
+      Vector6 spatialVel = getLink().getInertialVelocity();
+      Vector6 spatialAccel = getLink().getInertialAcceleration();
       Vector3 centrifugalAccel = spatialAccel.getLinear();
       centrifugalAccel += cross(spatialVel.getAngular(),spatialVel.getLinear());
 
       if (enableBodyCentrifugalAcceleration)
-        mBodyCentrifugalAcceleration = centrifugalAccel;
+        mBodyCentrifugalAcceleration = cs.rotToLocal(centrifugalAccel);
       if (enableBodyLoad) {
         // May be cache that from the velocity step??
-        Vector3 refPosition = getLink().getRefPos();
+        Vector3 refPosition = cs.getPosition();
         Vector3 gravity = getEnvironment().getGravityAcceleration(refPosition);
-        gravity = getLink().getCoordinateSystem().rotToLocal(gravity);
-        mBodyLoad = centrifugalAccel - gravity;
+        mBodyLoad = cs.rotToLocal(Vector3(centrifugalAccel - gravity));
       }
     }
   }

@@ -242,17 +242,6 @@ public:
   CoordinateSystem getRelativeCoordinateSystem(const ParentLink& link) const
   { return getCoordinateSystem().toLocal(link.getCoordinateSystem()); }
 
-  Vector3 getRefPos() const
-  {
-    OpenFDMAssert(isConnected());
-    return mMechanicLinkValue->getCoordinateSystem().toReference(mLinkRelPos);
-  }
-  const Rotation& getRefOr() const
-  {
-    OpenFDMAssert(isConnected());
-    return mMechanicLinkValue->getCoordinateSystem().getOrientation();
-  }
-
   Vector6 getVelocity(const Vector3& position) const
   {
     OpenFDMAssert(isConnected());
