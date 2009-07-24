@@ -56,9 +56,12 @@ MechanicContext
 * System externe PortValues
 
 * Improove TransferFunction
-* Test TrasnferFunction!!
+* Test TransferFunction!!
 
 * AeroForces handling of alphadot/betadot.
+
+* Derivative by TransferFunction???
+* Stop simulation block?
 
 * Improove the WGS84 gravity
 * Add link property to tell if we already have the gravity applied at the
