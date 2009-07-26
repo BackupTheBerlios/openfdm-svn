@@ -208,6 +208,7 @@ OpenFDMModelsHEADERS = \
   Input.h \
   Integrator.h \
   LinearSpringDamper.h \
+  MatrixConcat.h \
   MaxModel.h \
   MinModel.h \
   Output.h \
@@ -237,6 +238,7 @@ OpenFDMModelsSOURCES = \
   Input.cpp \
   Integrator.cpp \
   LinearSpringDamper.cpp \
+  MatrixConcat.cpp \
   MaxModel.cpp \
   MinModel.cpp \
   Output.cpp \

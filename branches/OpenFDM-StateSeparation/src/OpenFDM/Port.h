@@ -109,14 +109,23 @@ public:
     numericPortValue = portValue->toNumericPortValue();
     if (!numericPortValue)
       return false;
-    if (mSize == Size(0, 0))
-      return true;
-    if (size(numericPortValue->getValue()) == Size(0, 0)) {
-      numericPortValue->getValue().resize(mSize(0), mSize(1));
-      return true;
+    Size sz = size(numericPortValue->getValue());
+    for (unsigned i = 0; i < 2; ++i) {
+      if (mSize(i) == 0)
+        continue;
+      if (sz(i) == 0)
+        continue;
+      if (mSize(i) != sz(i))
+        return false;
     }
-    return size(numericPortValue->getValue()) == mSize;
+    numericPortValue->getValue().resize(sz(0), sz(1));
+    return true;
   }
+
+  const Size& getSize() const
+  { return mSize; }
+  void setSize(const Size& size)
+  { mSize = size; }
 
 protected:
   Size mSize;
