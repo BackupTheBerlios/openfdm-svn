@@ -476,7 +476,7 @@ public:
           return false;
         }
         if (!mPortDataVector[i]->getPort()->acceptPortValue(portValue)) {
-          Log(Schedule, Warning) << "Failed to fetch port value \""
+          Log(Schedule, Warning) << "Failed to accept fetched port value \""
                                  << mPortDataVector[i]->getPort()->getName()
                                  << "\" of \"" << getNodeNamePath()
                                  << "\".\nAborting!" << endl;
