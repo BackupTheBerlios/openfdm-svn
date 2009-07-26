@@ -204,6 +204,7 @@ OpenFDMModelsHEADERS = \
   Delay.h \
   DiscBrake.h \
   DiscreteIntegrator.h \
+  DynamicPressure.h \
   Gain.h \
   Input.h \
   Integrator.h \
@@ -236,6 +237,7 @@ OpenFDMModelsSOURCES = \
   Delay.cpp \
   DiscBrake.cpp \
   DiscreteIntegrator.cpp \
+  DynamicPressure.cpp \
   Gain.cpp \
   Input.cpp \
   Integrator.cpp \
