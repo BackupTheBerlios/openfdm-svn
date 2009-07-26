@@ -224,7 +224,9 @@ OpenFDMModelsHEADERS = \
   TimeDerivative.h \
   TransferFunction.h \
   UnaryFunction.h \
-  UnitConversion.h
+  UnitConversion.h \
+  WindAxis.h \
+  WindAxisForce.h
 
 OpenFDMModelsSOURCES = \
   Actuator.cpp \
@@ -257,7 +259,9 @@ OpenFDMModelsSOURCES = \
   TimeDerivative.cpp \
   TransferFunction.cpp \
   UnaryFunction.cpp \
-  UnitConversion.cpp
+  UnitConversion.cpp \
+  WindAxis.cpp \
+  WindAxisForce.cpp
 
 OpenFDMMechanicHEADERS = \
   AeroForce.h \
