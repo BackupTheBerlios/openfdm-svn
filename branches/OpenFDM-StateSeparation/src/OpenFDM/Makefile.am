@@ -264,7 +264,6 @@ OpenFDMModelsSOURCES = \
   WindAxisForce.cpp
 
 OpenFDMMechanicHEADERS = \
-  AeroForce.h \
   CartesianJoint.h \
   Contact.h \
   ExternalInteract.h \
@@ -313,12 +312,10 @@ OpenFDMMechanicSOURCES = \
   WheelContact.cpp
 
 
-#   AeroForce.cpp \
 #   Tank.cpp
 
-#   Launchbar.cpp \
-#   Tailhook.cpp \
-#
+#   Launchbar.cpp
+#   Tailhook.cpp
 
 nobase_OpenFDMinclude_HEADERS = \
   $(OpenFDMCoreHEADERS) \
