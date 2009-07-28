@@ -216,6 +216,7 @@ OpenFDMModelsHEADERS = \
   MinModel.h \
   Output.h \
   Product.h \
+  SafeReciprocal.h \
   Saturation.h \
   SimpleDirectModel.h \
   SimulationTime.h \
@@ -251,6 +252,7 @@ OpenFDMModelsSOURCES = \
   MinModel.cpp \
   Output.cpp \
   Product.cpp \
+  SafeReciprocal.cpp \
   Saturation.cpp \
   SimpleDirectModel.cpp \
   SimulationTime.cpp \
