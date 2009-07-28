@@ -34,13 +34,13 @@ WindAxis::output(const Task&, const DiscreteStateValueVector&,
   Vector3 v = portValues[mVelocityPort];
   
   real_type alpha = 0;
-  if (Limits<real_type>::min() < fabs(v(0)))
+  if (Limits<real_type>::min() < fabs(v(0)*v(2)))
     alpha = atan2(v(2), v(0));
   portValues[mAlphaPort] = alpha;
   
   real_type beta = 0;
   real_type uw = sqrt(v(0)*v(0) + v(2)*v(2));
-  if (Limits<real_type>::min() < fabs(uw))
+  if (Limits<real_type>::min() < fabs(v(1)*uw))
     beta = atan2(v(1), uw);
   portValues[mBetaPort] = beta;
   
