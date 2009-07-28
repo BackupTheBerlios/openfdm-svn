@@ -24,7 +24,7 @@ class XMLElement;
 class Summer;
 class Product;
 class Port;
-class PortProvider;
+class Port;
 
 class JSBSimReader : public JSBSimReaderBase {
 public:
@@ -53,10 +53,10 @@ private:
   bool convertEngine(const XMLElement* engine, const std::string& number);
   bool convertTurbine(const XMLElement* turbine, const std::string& number,
                       const Vector3& pos, const Quaternion& orientation,
-                      PortProvider* thrusterDriver);
+                      Port* thrusterDriver);
   bool convertAerodynamics(const XMLElement* aero);
   bool convertFunction(const XMLElement* function, Summer* sum);
-  std::list<PortProvider*> readFunctionInputs(const XMLElement* operationTag,
+  std::list<Port*> readFunctionInputs(const XMLElement* operationTag,
                                       const std::string& name);
 
   unsigned getNumTableDims(const XMLElement* tableElem);

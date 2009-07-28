@@ -9,17 +9,18 @@
 #include <OpenFDM/Referenced.h>
 #include <OpenFDM/SharedPtr.h>
 #include <OpenFDM/Model.h>
+#include <OpenFDM/GroupOutput.h>
 
 namespace OpenFDM {
 
-class ModelGroup;
+class Group;
 class Gain;
 class Port;
 
 /// Just a small container mapping the JSBSim FCS component strangeness to
 /// the available OpenFDM discrete systems.
 /// As JSBSim usually munges several independent things into one thing,
-/// this is a ModelGroup for the first cut.
+/// this is a Group for the first cut.
 class JSBSimFCSComponent :
     public Referenced {
 public:
@@ -32,18 +33,22 @@ public:
 //   void invertOutput(void);
 
   /// Return /the/ output port (we have only one)
-  NumericPortProvider* getOutputPort(void);
-  NumericPortAcceptor* getInternalOutputPort(void);
+  const Port* getOutputPort(void);
+  const Port* getInternalOutputPort(void);
   /// Return /the/ normalized output port
-  NumericPortProvider* getOutputNormPort(void);
-  NumericPortAcceptor* getInternalOutputNormPort(void);
+  const Port* getOutputNormPort(void);
+  const Port* getInternalOutputNormPort(void);
 
-  ModelGroup* getModelGroup(void)
-  { return mModelGroup; }
+  /// Return /the/ group interface nodes
+  GroupOutput* getOutputModel(void);
+  GroupOutput* getOutputNormModel(void);
+
+  Group* getGroup(void)
+  { return mGroup; }
 private:
-  SharedPtr<ModelGroup> mModelGroup;
-  SharedPtr<NumericPortAcceptor> mInternalOutputPort;
-  SharedPtr<NumericPortAcceptor> mInternalOutputNormPort;
+  SharedPtr<Group> mGroup;
+  SharedPtr<GroupOutput> mOutputModel;
+  SharedPtr<GroupOutput> mOutputNormModel;
 };
 
 } //namespace OpenFDM

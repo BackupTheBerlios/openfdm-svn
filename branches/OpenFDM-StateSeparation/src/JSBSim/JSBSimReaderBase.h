@@ -36,43 +36,43 @@ class Element;
 class Summer;
 class Product;
 
-class PortProviderSet {
+class PortSet {
   struct PathPort {
     Node::GroupPath modelPath;
-    SharedPtr<PortProvider> portProvider;
+    SharedPtr<Port> portProvider;
   };
 public:
-  PortProviderSet(PortProvider* sourcePortProvider = 0)
+  PortSet(Port* sourcePort = 0)
   {
-    if (!sourcePortProvider)
+    if (!sourcePort)
       return;
     PathPort pathPort;
-    pathPort.portProvider = sourcePortProvider;
+    pathPort.portProvider = sourcePort;
 
-    SharedPtr<Node> node = sourcePortProvider->getModel().lock();
+    SharedPtr<Node> node = sourcePort->getModel().lock();
     if (node)
       pathPort.modelPath = node->getPath();
 
-    mPortProviderList.push_back(pathPort);
+    mPortList.push_back(pathPort);
   }
 
-  PortProvider* routeTo(const Node::GroupPath& path)
+  Port* routeTo(const Node::GroupPath& path)
   {
     // could happen if the initialzer failed
-    if (mPortProviderList.empty())
+    if (mPortList.empty())
       return 0;
 
     // ok, shortcut for old style connections
     if (path.empty())
-      return mPortProviderList.front().portProvider;
+      return mPortList.front().portProvider;
 
-    const Node::GroupPath& originatingPath = mPortProviderList.front().modelPath;
+    const Node::GroupPath& originatingPath = mPortList.front().modelPath;
     // fast return if the models are not connected to the same root system
     if (path.front() != originatingPath.front())
       return 0;
 
     // first check, if we already have a route
-    PortProvider* portProvider = findProvider(path);
+    Port* portProvider = findProvider(path);
     if (portProvider)
       return portProvider;
 
@@ -96,12 +96,12 @@ public:
         return 0;
       
       GroupInput* groupInput = new GroupInput(portProvider->getName());
-      path.back()->addModel(groupInput, true);
+      path.back()->addChild(groupInput, true);
 
       PathPort pathPort;
       pathPort.modelPath = groupInput->getPath();
       pathPort.portProvider = groupInput->getOutputPort(0);
-      mPortProviderList.push_back(pathPort);
+      mPortList.push_back(pathPort);
 
       Connection::connect(portProvider, groupInput->getGroupInput());
       
@@ -116,12 +116,12 @@ public:
         return 0;
 
       GroupOutput* groupOutput = new GroupOutput(portProvider->getName());
-      pathDown.back()->addModel(groupOutput, true);
+      pathDown.back()->addChild(groupOutput, true);
 
       PathPort pathPort;
       pathPort.modelPath = groupOutput->getPath();
       pathPort.portProvider = groupOutput->getGroupOutput();
-      mPortProviderList.push_back(pathPort);
+      mPortList.push_back(pathPort);
 
       Connection::connect(portProvider, groupOutput->getInputPort(0));
       
@@ -134,10 +134,10 @@ public:
     }
   }
 
-  PortProvider* findProvider(const Node::GroupPath& path)
+  Port* findProvider(const Node::GroupPath& path)
   {
-    PortProviderList::iterator i = mPortProviderList.begin();
-    while (i != mPortProviderList.end()) {
+    PortList::iterator i = mPortList.begin();
+    while (i != mPortList.end()) {
       if (i->modelPath == path)
         return i->portProvider;
       ++i;
@@ -147,8 +147,8 @@ public:
   }
 
 private:
-  typedef std::list<PathPort> PortProviderList;
-  PortProviderList mPortProviderList;
+  typedef std::list<PathPort> PortList;
+  PortList mPortList;
 };
 
 // Implements a SimGear SGProperty compatible 'path' to 'expression'
@@ -175,7 +175,7 @@ public:
   void clear()
   { mMap.clear(); }
 
-  PortProvider* routeTo(const std::string& name, const Node::GroupPath& path)
+  Port* routeTo(const std::string& name, const Node::GroupPath& path)
   {
     std::string simplifiedName = simplify(name);
     if (mMap.count(simplifiedName) <= 0)
@@ -183,7 +183,7 @@ public:
     return mMap[simplifiedName].routeTo(path);
   }
 
-  void registerPort(const std::string& name, PortProvider* port)
+  void registerPort(const std::string& name, Port* port)
   { mMap[simplify(name)] = port; }
 
   /// Returns true if this property is already registered
@@ -191,7 +191,7 @@ public:
   { return 0 < mMap.count(simplify(propertyName)); }
 
 private:
-  typedef std::map<std::string,PortProviderSet> PortMap;
+  typedef std::map<std::string,PortSet> PortMap;
 
   PortMap mMap;
 };
@@ -230,40 +230,40 @@ protected:
 
 
   /// <FIXME> document and rethink
-  PortProvider* lookupJSBExpression(const std::string& name,
+  Port* lookupJSBExpression(const std::string& name,
                                     const Node::GroupPath& path = Node::GroupPath(),
                                     bool recheckAeroProp = true);
 
-  bool connectJSBExpression(const std::string& name, PortAcceptor*,
+  bool connectJSBExpression(const std::string& name, Port*,
                             bool recheckAeroProp = true);
 
-  void registerExpression(const std::string& name, PortProvider* expr);
-  void registerJSBExpression(const std::string& name, PortProvider* expr);
+  void registerExpression(const std::string& name, Port* expr);
+  void registerJSBExpression(const std::string& name, Port* expr);
 
-  PortProvider* createAndScheduleAeroProp(const std::string& name,
+  Port* createAndScheduleAeroProp(const std::string& name,
                                           const Node::GroupPath& path);
-  PortProvider* createAndScheduleInput(const std::string& name,
+  Port* createAndScheduleInput(const std::string& name,
                                        const Node::GroupPath& path);
 
-  PortProvider* addInputModel(const std::string& name, const std::string& propName,
+  Port* addInputModel(const std::string& name, const std::string& propName,
                       real_type gain = 1);
-  void addOutputModel(PortProvider* out, const std::string& name,
+  void addOutputModel(Port* out, const std::string& name,
                       const std::string& propName, real_type gain = 1);
 
-  PortProvider* addInverterModel(const std::string& name, PortProvider* in);
-  PortProvider* addAbsModel(const std::string& name, PortProvider* in);
-  PortProvider* addConstModel(const std::string& name, real_type value,
+  Port* addInverterModel(const std::string& name, Port* in);
+  Port* addAbsModel(const std::string& name, Port* in);
+  Port* addConstModel(const std::string& name, real_type value,
                               const Node::GroupPath& path = Node::GroupPath());
-  PortProvider* addToUnit(const std::string& name, Unit u, PortProvider* in);
-  PortProvider* addFromUnit(const std::string& name, Unit u, PortProvider* in);
+  Port* addToUnit(const std::string& name, Unit u, Port* in);
+  Port* addFromUnit(const std::string& name, Unit u, Port* in);
 
-  static SharedPtr<ModelGroup> getModelGroup(PortProvider* in);
+  static SharedPtr<Group> getGroup(Port* in);
   void addFCSModel(Node* model);
 
-  PortProvider* addMultiBodyConstModel(const std::string& name, real_type value);
+  Port* addMultiBodyConstModel(const std::string& name, real_type value);
   void addMultiBodyModel(Model* model);
   /// </FIXME> document and rethink
-  PortProvider* getTablePrelookup(const std::string& name, PortProvider* in, const BreakPointVector& tl);
+  Port* getTablePrelookup(const std::string& name, Port* in, const BreakPointVector& tl);
   /// List for the aircraft search path.
   std::list<std::string> mAircraftPath;
   /// List for the engine search path.

@@ -5,7 +5,7 @@
 #include "JSBSimAerosurfaceScale.h"
 
 #include <OpenFDM/GroupInput.h>
-#include <OpenFDM/ModelGroup.h>
+#include <OpenFDM/Group.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/Table.h>
@@ -23,7 +23,7 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   //
 
   mInputSaturation = new Saturation("Input Saturation");
-  getModelGroup()->addModel(mInputSaturation);
+  getGroup()->addChild(mInputSaturation);
   Matrix tmp(1, 1);
   tmp(0, 0) = -1;
   mInputSaturation->setMinSaturation(tmp);
@@ -32,13 +32,13 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
 
   mBreakPointLookup = new BreakPointLookup("Table Lookup");
   BreakPointVector tl;
-  tl.setAtIndex(0, -1);
-  tl.setAtIndex(1, 0);
-  tl.setAtIndex(2, 1);
+  tl.insert(-1);
+  tl.insert(0);
+  tl.insert(1);
   mBreakPointLookup->setBreakPointVector(tl);
-  getModelGroup()->addModel(mBreakPointLookup);
-  Connection::connect(mBreakPointLookup->getInputPort(0),
-                      mInputSaturation->getOutputPort(0));
+  getGroup()->addChild(mBreakPointLookup);
+  getGroup()->connect(mBreakPointLookup->getPort("input"),
+                      mInputSaturation->getPort("output"));
 
   mTable = new Table1D("Table");
   TableData<1>::SizeVector sv;
@@ -52,22 +52,22 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   iv(0) = 2;
   tableData(iv) = mGain;
   mTable->setTableData(tableData);
-  getModelGroup()->addModel(mTable);
-  Connection::connect(mTable->getInputPort(0),
-                      mBreakPointLookup->getOutputPort(0));
+  getGroup()->addChild(mTable);
+  getGroup()->connect(mTable->getPort("input"),
+                      mBreakPointLookup->getPort("output"));
 
   // Now connect the input and the output to this groups in and outputs
   GroupInput* groupInput = new GroupInput("Input");
-  getModelGroup()->addModel(groupInput);
-  Connection::connect(mInputSaturation->getInputPort(0),
-                      groupInput->getOutputPort(0));
+  getGroup()->addChild(groupInput);
+  getGroup()->connect(mInputSaturation->getPort("input"),
+                      groupInput->getPort("output"));
  
   // That single output port is this one
-  Connection::connect(getInternalOutputPort(),
-                      mTable->getOutputPort(0));
+  getGroup()->connect(getInternalOutputPort(),
+                      mTable->getPort("output"));
   // FIXME, is no longer normalized ...
-  Connection::connect(getInternalOutputNormPort(),
-                      mInputSaturation->getOutputPort(0));
+  getGroup()->connect(getInternalOutputNormPort(),
+                      mInputSaturation->getPort("output"));
 }
 
 JSBSimAerosurfaceScale::~JSBSimAerosurfaceScale(void)
@@ -81,7 +81,7 @@ JSBSimAerosurfaceScale::setMinDomain(real_type minDomain)
   tmp(0, 0) = minDomain;
   mInputSaturation->setMinSaturation(tmp);
   BreakPointVector tl = mBreakPointLookup->getBreakPointVector();
-  tl.setAtIndex(0, minDomain);
+  tl.insert(minDomain);
   mBreakPointLookup->setBreakPointVector(tl);
 }
 
@@ -92,7 +92,7 @@ JSBSimAerosurfaceScale::setMaxDomain(real_type maxDomain)
   tmp(0, 0) = maxDomain;
   mInputSaturation->setMaxSaturation(tmp);
   BreakPointVector tl = mBreakPointLookup->getBreakPointVector();
-  tl.setAtIndex(tl.size()-1, maxDomain);
+  tl.insert(maxDomain);
   mBreakPointLookup->setBreakPointVector(tl);
 }
 
@@ -108,9 +108,9 @@ JSBSimAerosurfaceScale::setCentered(bool centered)
   TableData<1>::Index iv;
 
   if (centered) {
-    tl.setAtIndex(0, tlOld.getAtIndex(0));
-    tl.setAtIndex(1, 0);
-    tl.setAtIndex(2, tlOld.getAtIndex(tlOld.size()-1));
+    tl.insert(tlOld[0]);
+    tl.insert(0);
+    tl.insert(tlOld[tlOld.size()-1]);
 
     sz(0) = 3;
     tableData = TableData<1>(sz);
@@ -123,8 +123,8 @@ JSBSimAerosurfaceScale::setCentered(bool centered)
     iv(0) = 2;
     tableData(iv) = oldVal;
   } else {
-    tl.setAtIndex(0, tlOld.getAtIndex(0));
-    tl.setAtIndex(1, tlOld.getAtIndex(tlOld.size()-1));
+    tl.insert(tlOld[0]);
+    tl.insert(tlOld[tlOld.size()-1]);
 
     sz(0) = 2;
     tableData = TableData<1>(sz);

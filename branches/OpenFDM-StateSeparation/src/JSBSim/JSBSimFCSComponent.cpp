@@ -5,54 +5,66 @@
 #include "JSBSimFCSComponent.h"
 
 #include <OpenFDM/GroupOutput.h>
-#include <OpenFDM/ModelGroup.h>
+#include <OpenFDM/Group.h>
 #include <OpenFDM/Gain.h>
 
 namespace OpenFDM {
 
 JSBSimFCSComponent::JSBSimFCSComponent(const std::string& name)
 {
-  mModelGroup = new ModelGroup(name);
+  mGroup = new Group(name);
 }
 
 JSBSimFCSComponent::~JSBSimFCSComponent(void)
 {
 }
 
-NumericPortProvider*
+const Port*
 JSBSimFCSComponent::getOutputPort(void)
 {
-  return mModelGroup->getOutputPort(0);
+  unsigned index = getOutputModel()->getExternalPortIndex();
+  return mGroup->getPort(index);
 }
 
-NumericPortProvider*
+const Port*
 JSBSimFCSComponent::getOutputNormPort(void)
 {
-  return mModelGroup->getOutputPort(1);
+  unsigned index = getOutputNormModel()->getExternalPortIndex();
+  return mGroup->getPort(index);
 }
 
-NumericPortAcceptor*
+const Port*
 JSBSimFCSComponent::getInternalOutputPort(void)
 {
-  if (mInternalOutputPort)
-    return mInternalOutputPort;
-
-  GroupOutput* groupOutput = new GroupOutput("Output");
-  getModelGroup()->addModel(groupOutput);
-  mInternalOutputPort = groupOutput->getInputPort(0);
-  return mInternalOutputPort;
+  return getOutputModel()->getPort("input");
 }
 
-NumericPortAcceptor*
+const Port*
 JSBSimFCSComponent::getInternalOutputNormPort(void)
 {
-  if (mInternalOutputNormPort)
-    return mInternalOutputNormPort;
+  return getOutputNormModel()->getPort("input");
+}
 
-  GroupOutput* groupOutput = new GroupOutput("OutputNorm");
-  getModelGroup()->addModel(groupOutput);
-  mInternalOutputNormPort = groupOutput->getInputPort(0);
-  return mInternalOutputNormPort;
+GroupOutput*
+JSBSimFCSComponent::getOutputModel(void)
+{
+  if (mOutputModel)
+    return mOutputModel;
+
+  mOutputModel = new GroupOutput("Output");
+  getGroup()->addChild(mOutputModel);
+  return mOutputModel;
+}
+
+GroupOutput*
+JSBSimFCSComponent::getOutputNormModel(void)
+{
+  if (mOutputNormModel)
+    return mOutputNormModel;
+
+  mOutputNormModel = new GroupOutput("OutputNorm");
+  getGroup()->addChild(mOutputNormModel);
+  return mOutputNormModel;
 }
 
 } //namespace OpenFDM

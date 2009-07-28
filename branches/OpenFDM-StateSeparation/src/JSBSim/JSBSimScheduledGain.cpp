@@ -5,7 +5,7 @@
 #include "JSBSimScheduledGain.h"
 
 #include <OpenFDM/GroupInput.h>
-#include <OpenFDM/ModelGroup.h>
+#include <OpenFDM/Group.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/Table.h>
 
@@ -21,13 +21,13 @@ JSBSimScheduledGain::JSBSimScheduledGain(const std::string& name) :
   //
 
   Product* product = new Product("Product");
-  getModelGroup()->addModel(product);
+  getGroup()->addChild(product);
 
   mBreakPointLookup = new BreakPointLookup("Table Lookup");
-  getModelGroup()->addModel(mBreakPointLookup);
+  getGroup()->addChild(mBreakPointLookup);
 
   mTable = new Table1D("Table");
-  getModelGroup()->addModel(mTable);
+  getGroup()->addChild(mTable);
   Connection::connect(product->getInputPort(0),
                       mTable->getOutputPort(0));
   Connection::connect(mTable->getInputPort(0),
@@ -35,12 +35,12 @@ JSBSimScheduledGain::JSBSimScheduledGain(const std::string& name) :
 
   // Now connect the input and the output to this groups in and outputs
   GroupInput* groupInput = new GroupInput("Input");
-  getModelGroup()->addModel(groupInput);
+  getGroup()->addChild(groupInput);
   Connection::connect(product->getInputPort(1),
                       groupInput->getOutputPort(0));
  
   groupInput = new GroupInput("Schedule Input");
-  getModelGroup()->addModel(groupInput);
+  getGroup()->addChild(groupInput);
   Connection::connect(mBreakPointLookup->getInputPort(0),
                       groupInput->getOutputPort(0));
 

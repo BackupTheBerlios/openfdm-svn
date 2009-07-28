@@ -174,7 +174,7 @@ JSBSimReaderBase::normalizeComponentName(const std::string& name)
   return ret;
 }
 
-PortProvider*
+Port*
 JSBSimReaderBase::lookupJSBExpression(const std::string& name,
                                       const Node::GroupPath& path,
                                       bool recheckAeroProp)
@@ -182,7 +182,7 @@ JSBSimReaderBase::lookupJSBExpression(const std::string& name,
   // Convert to something being able to look up
   std::string propName = propNameFromJSBSim(name);
   
-  PortProvider* port = 0;
+  Port* port = 0;
   if (!mExpressionTable.exists(propName)) {
     // Not yet available, so look and see if it is an input
     if (recheckAeroProp)
@@ -213,18 +213,18 @@ JSBSimReaderBase::lookupJSBExpression(const std::string& name,
 
 bool
 JSBSimReaderBase::connectJSBExpression(const std::string& name,
-                                       PortAcceptor* pa, bool recheckAeroProp)
+                                       Port* pa, bool recheckAeroProp)
 {
   SharedPtr<Node> model = pa->getModel().lock();
   if (!model)
     return false;
   Node::GroupPath path = model->getPath();
-  PortProvider* pp = lookupJSBExpression(name, path, recheckAeroProp);
+  Port* pp = lookupJSBExpression(name, path, recheckAeroProp);
   return Port::Success == Connection::connect(pp, pa);
 }
 
 void
-JSBSimReaderBase::registerExpression(const std::string& name, PortProvider* port)
+JSBSimReaderBase::registerExpression(const std::string& name, Port* port)
 {
   if (name.size() <= 0)
     return;
@@ -239,7 +239,7 @@ JSBSimReaderBase::registerExpression(const std::string& name, PortProvider* port
 }
 
 void
-JSBSimReaderBase::registerJSBExpression(const std::string& name, PortProvider* port)
+JSBSimReaderBase::registerJSBExpression(const std::string& name, Port* port)
 {
   if (name.empty())
     return;
@@ -278,7 +278,7 @@ JSBSimReaderBase::registerJSBExpression(const std::string& name, PortProvider* p
   }
 }
 
-PortProvider*
+Port*
 JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
                                          const Node::GroupPath& path)
 {
@@ -291,7 +291,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
     std::string inputName = propName;
     return addInputModel("Control " + inputName, propName);
   } else {
-    PortProvider* port = 0;
+    Port* port = 0;
     if (propName == "fdm/jsbsim/fcs/aileron-cmd-norm") {
       port = addInputModel("Aileron",
                            "controls/flight/aileron");
@@ -387,15 +387,15 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
       maxModel->setNumMaxInputs(3);
       addFCSModel(maxModel);
 
-      PortProvider* pilotBr = addInputModel("Right Brake",
+      Port* pilotBr = addInputModel("Right Brake",
                                     "controls/gear/brake-right");
       Connection::connect(pilotBr, maxModel->getInputPort(0));
 
-      PortProvider* copilotBr = addInputModel("Right Copilot Brake",
+      Port* copilotBr = addInputModel("Right Copilot Brake",
                                       "controls/gear/copilot-brake-right");
       Connection::connect(copilotBr, maxModel->getInputPort(1));
 
-      PortProvider* parkBr = lookupJSBExpression("/controls/gear/brake-parking", maxModel->getPath());
+      Port* parkBr = lookupJSBExpression("/controls/gear/brake-parking", maxModel->getPath());
       Connection::connect(parkBr, maxModel->getInputPort(2));
 
       port = maxModel->getOutputPort(0);
@@ -405,15 +405,15 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
       addFCSModel(maxModel);
       maxModel->setNumMaxInputs(3);
 
-      PortProvider* pilotBr = addInputModel("Left Brake",
+      Port* pilotBr = addInputModel("Left Brake",
                                     "controls/gear/brake-left");
       Connection::connect(pilotBr, maxModel->getInputPort(0));
 
-      PortProvider* copilotBr = addInputModel("Left Copilot Brake",
+      Port* copilotBr = addInputModel("Left Copilot Brake",
                                       "controls/gear/copilot-brake-left");
       Connection::connect(copilotBr, maxModel->getInputPort(1));
       
-      PortProvider* parkBr = lookupJSBExpression("/controls/gear/brake-parking", maxModel->getPath());
+      Port* parkBr = lookupJSBExpression("/controls/gear/brake-parking", maxModel->getPath());
       Connection::connect(parkBr, maxModel->getInputPort(2));
 
       port = maxModel->getOutputPort(0);
@@ -463,7 +463,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
       // remove the 'mag-' substring here and use that as input for the
       // Abs block
       std::string name = "fcs/" + propName.substr(19);
-      PortProvider* in = lookupJSBExpression(name, path);
+      Port* in = lookupJSBExpression(name, path);
       port = addAbsModel(propName.substr(15), in);
 
     }
@@ -477,13 +477,13 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
   return 0;
 }
 
-PortProvider*
+Port*
 JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
                                             const Node::GroupPath& path)
 {
   // This routine checks if the given propName is a aerodynamic reference
   // point property. If so, it schedules and registers a discrete input model.
-  PortProvider* port = 0;
+  Port* port = 0;
   if (propName == "fdm/jsbsim/velocities/vt-mps") {
     port = mAeroForce->getOutputPort("trueSpeed");
   } else if (propName == "fdm/jsbsim/velocities/vt-fps") {
@@ -672,7 +672,7 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
   return port;
 }
 
-PortProvider*
+Port*
 JSBSimReaderBase::addInputModel(const std::string& name,
                                 const std::string& propName, real_type gain)
 {
@@ -680,61 +680,61 @@ JSBSimReaderBase::addInputModel(const std::string& name,
   input->setInputName(propName);
   input->setInputGain(gain);
   addFCSModel(input);
-  PortProvider* port = input->getOutputPort(0);
+  Port* port = input->getOutputPort(0);
   registerExpression(propName, port);
   return port;
 }
 
 void
-JSBSimReaderBase::addOutputModel(PortProvider* out,
+JSBSimReaderBase::addOutputModel(Port* out,
                                  const std::string& name,
                                  const std::string& propName, real_type gain)
 {
-  SharedPtr<ModelGroup> modelGroup = getModelGroup(out);
+  SharedPtr<Group> modelGroup = getGroup(out);
   if (!modelGroup) {
     std::cerr << "Could not add output model \"" << name << "\"" << std::endl;
     return;
   }
   Output* output = new Output(name + " Output");
-  modelGroup->addModel(output, true);
+  modelGroup->addChild(output, true);
   output->setOutputName(propName);
   output->setOutputGain(gain);
   Connection::connect(out, output->getInputPort(0));
 }
 
-PortProvider*
-JSBSimReaderBase::addInverterModel(const std::string& name, PortProvider* in)
+Port*
+JSBSimReaderBase::addInverterModel(const std::string& name, Port* in)
 {
-  SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
+  SharedPtr<Group> modelGroup = getGroup(in);
   if (!modelGroup) {
     std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
   UnaryFunction *unary
     = new UnaryFunction(name + " Inverter", UnaryFunction::Minus);
-  modelGroup->addModel(unary, true);
+  modelGroup->addChild(unary, true);
   if (Port::Success != Connection::connect(in, unary->getInputPort(0)))
     return 0;
   return unary->getOutputPort(0);
 }
 
-PortProvider*
-JSBSimReaderBase::addAbsModel(const std::string& name, PortProvider* in)
+Port*
+JSBSimReaderBase::addAbsModel(const std::string& name, Port* in)
 {
-  SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
+  SharedPtr<Group> modelGroup = getGroup(in);
   if (!modelGroup) {
     std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
   UnaryFunction *unary
     = new UnaryFunction(name + " Abs", UnaryFunction::Abs);
-  modelGroup->addModel(unary, true);
+  modelGroup->addChild(unary, true);
   if (Port::Success != Connection::connect(in, unary->getInputPort(0)))
     return 0;
   return unary->getOutputPort(0);
 }
 
-PortProvider*
+Port*
 JSBSimReaderBase::addConstModel(const std::string& name, real_type value,
                                 const Node::GroupPath& path)
 {
@@ -744,44 +744,44 @@ JSBSimReaderBase::addConstModel(const std::string& name, real_type value,
   if (path.empty())
     addFCSModel(cModel);
   else
-    path.back()->addModel(cModel, true);
+    path.back()->addChild(cModel, true);
   return cModel->getOutputPort(0);
 }
 
-PortProvider*
-JSBSimReaderBase::addToUnit(const std::string& name, Unit u, PortProvider* in)
+Port*
+JSBSimReaderBase::addToUnit(const std::string& name, Unit u, Port* in)
 {
-  SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
+  SharedPtr<Group> modelGroup = getGroup(in);
   if (!modelGroup) {
     std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
   UnitConversion* unitConv
     = new UnitConversion(name, UnitConversion::BaseUnitToUnit, u);
-  modelGroup->addModel(unitConv, true);
+  modelGroup->addChild(unitConv, true);
   if (Port::Success != Connection::connect(in, unitConv->getInputPort(0)))
     return 0;
   return unitConv->getOutputPort(0);
 }
 
-PortProvider*
-JSBSimReaderBase::addFromUnit(const std::string& name, Unit u, PortProvider* in)
+Port*
+JSBSimReaderBase::addFromUnit(const std::string& name, Unit u, Port* in)
 {
-  SharedPtr<ModelGroup> modelGroup = getModelGroup(in);
+  SharedPtr<Group> modelGroup = getGroup(in);
   if (!modelGroup) {
     std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
     return 0;
   }
   UnitConversion* unitConv
     = new UnitConversion(name, UnitConversion::UnitToBaseUnit, u);
-  modelGroup->addModel(unitConv, true);
+  modelGroup->addChild(unitConv, true);
   if (Port::Success != Connection::connect(in, unitConv->getInputPort(0)))
     return 0;
   return unitConv->getOutputPort(0);
 }
 
-SharedPtr<ModelGroup>
-JSBSimReaderBase::getModelGroup(PortProvider* in)
+SharedPtr<Group>
+JSBSimReaderBase::getGroup(Port* in)
 {
   if (!in) {
     std::cerr << "Could not find model group for input port: "
@@ -794,7 +794,7 @@ JSBSimReaderBase::getModelGroup(PortProvider* in)
       "port does not belong to a Node!" << std::endl;
     return 0;
   }
-  SharedPtr<ModelGroup> modelGroup = node->getParent(0).lock();
+  SharedPtr<Group> modelGroup = node->getParent(0).lock();
   if (!modelGroup) {
     std::cerr << "Could not find model group for input port: "
       "model has no parent!" << std::endl;
@@ -807,10 +807,10 @@ void
 JSBSimReaderBase::addFCSModel(Node* model)
 {
   // FIXME
-  mVehicle->getModelGroup()->addModel(model, true);
+  mVehicle->getGroup()->addChild(model, true);
 }
 
-PortProvider*
+Port*
 JSBSimReaderBase::addMultiBodyConstModel(const std::string& name, real_type value)
 {
   Matrix m(1, 1);
@@ -824,16 +824,16 @@ void
 JSBSimReaderBase::addMultiBodyModel(Model* model)
 {
   // FIXME
-  mVehicle->getMultiBodySystem()->addModel(model, true);
+  mVehicle->getMultiBodySystem()->addChild(model, true);
 }
 
-PortProvider*
-JSBSimReaderBase::getTablePrelookup(const std::string& name, PortProvider* in,
+Port*
+JSBSimReaderBase::getTablePrelookup(const std::string& name, Port* in,
                                     const BreakPointVector& tl)
 {
   if (!in)
     return 0;
-  NumericPortProvider* nin = dynamic_cast<NumericPortProvider*>(in);
+  Port* nin = dynamic_cast<Port*>(in);
   if (!nin)
     return 0;
 

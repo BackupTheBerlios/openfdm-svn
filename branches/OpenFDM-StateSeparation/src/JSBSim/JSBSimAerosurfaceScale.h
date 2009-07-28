@@ -7,6 +7,7 @@
 
 #include "JSBSimFCSComponent.h"
 
+#include <OpenFDM/BreakPointLookup.h>
 #include <OpenFDM/SharedPtr.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/Table.h>

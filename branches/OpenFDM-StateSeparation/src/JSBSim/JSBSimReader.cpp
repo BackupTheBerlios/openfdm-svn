@@ -14,7 +14,6 @@
 #include <OpenFDM/Matrix.h>
 #include <OpenFDM/Quaternion.h>
 
-#include <OpenFDM/AeroForce.h>
 #include <OpenFDM/Bias.h>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/DeadBand.h>
@@ -41,7 +40,6 @@
 #include <OpenFDM/TimeDerivative.h>
 #include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/Unit.h>
-#include <OpenFDM/Vehicle.h>
 #include <OpenFDM/WheelContact.h>
 #include <OpenFDM/DiscBrake.h>
 
@@ -270,11 +268,11 @@ JSBSimReader::loadAircraft(const std::string& acFileName)
   // Allocate a new vehicle
   mVehicle = new Vehicle;
   mAeroForce = new AeroForce("Aerodynamic force");
-  mVehicle->getMultiBodySystem()->addModel(mAeroForce);
+  mVehicle->getMultiBodySystem()->addChild(mAeroForce);
   mVehicle->getTopBody()->addInteract(mAeroForce);
 
   // Default discrete stepsize of JSBSim
-  mVehicle->getModelGroup()->addSampleTime(SampleTime(1.0/120));
+  mVehicle->getGroup()->addSampleTime(SampleTime(1.0/120));
 
   // Try to find the given file on the given search path
   std::ifstream acFileStream;
@@ -371,35 +369,35 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   const XMLElement* iwElem = metricsElem->getElement("wing_incidence");
   if (iwElem) {
     real_type iw = realData(iwElem, 0);
-    PortProvider* port = addMultiBodyConstModel("Wing Incidence Constant", iw);
+    Port* port = addMultiBodyConstModel("Wing Incidence Constant", iw);
     registerJSBExpression("metrics/iw-deg", port);
   }
 
   const XMLElement* htareaElem = metricsElem->getElement("htailarea");
   if (htareaElem) {
     real_type htailarea = realData(htareaElem, 0);
-    PortProvider* port = addMultiBodyConstModel("HTail Area Constant", htailarea);
+    Port* port = addMultiBodyConstModel("HTail Area Constant", htailarea);
     registerJSBExpression("metrics/Sh-sqft", port);
   }
 
   const XMLElement* htarmElem = metricsElem->getElement("htailarm");
   if (htarmElem) {
     real_type htailarm = realData(htarmElem, 0);
-    PortProvider* port = addMultiBodyConstModel("HTail Arm Constant", htailarm);
+    Port* port = addMultiBodyConstModel("HTail Arm Constant", htailarm);
     registerJSBExpression("metrics/lh-ft", port);
   }
 
   const XMLElement* vtareaElem = metricsElem->getElement("vtailarea");
   if (vtareaElem) {
     real_type vtailarea = realData(vtareaElem, 0);
-    PortProvider* port = addMultiBodyConstModel("VTail Area Constant", vtailarea);
+    Port* port = addMultiBodyConstModel("VTail Area Constant", vtailarea);
     registerJSBExpression("metrics/Sv-sqft", port);
   }
 
   const XMLElement* vtarmElem = metricsElem->getElement("vtailarm");
   if (vtarmElem) {
     real_type vtailarm = realData(vtarmElem, 0);
-    PortProvider* port = addMultiBodyConstModel("VTail Arm Constant", vtailarm);
+    Port* port = addMultiBodyConstModel("VTail Arm Constant", vtailarm);
     registerJSBExpression("metrics/lv-ft", port);
   }
 
@@ -421,10 +419,10 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   epFrame->setRelVelDot(Vector6::zeros());
   mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
   Sensor* accelSensor = new Sensor("Acceleration Sensor");
-  mVehicle->getMultiBodySystem()->addModel(accelSensor);
+  mVehicle->getMultiBodySystem()->addChild(accelSensor);
   mVehicle->getTopBody()->addInteract(accelSensor);
   accelSensor->addSampleTime(SampleTime(1.0/120));
-  PortProvider* port = accelSensor->getOutputPort("nlfz");
+  Port* port = accelSensor->getOutputPort("nlfz");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
   addOutputModel(port, "Normalized load value", "accelerations/nlf");
   port = accelSensor->getOutputPort("az");
@@ -499,7 +497,7 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
     ++it;
   }
   Mass* massModel = new Mass("Emptyweight Mass", spi);
-  mVehicle->getMultiBodySystem()->addModel(massModel);
+  mVehicle->getMultiBodySystem()->addChild(massModel);
   mVehicle->getTopBody()->addInteract(massModel);
 
   return true;
@@ -511,17 +509,17 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
                           const Vector3& parentDesignPos)
 {
   RigidBody* wheel = new RigidBody(name + " Wheel");
-  mVehicle->getMultiBodySystem()->addModel(wheel);
+  mVehicle->getMultiBodySystem()->addChild(wheel);
   InertiaMatrix wheelInertia = inertiaData(wheelElem->getElement("inertia"),
                                            InertiaMatrix(10, 0, 0, 30, 0, 10));
   real_type wheelMass = realData(wheelElem->getElement("mass"), 30);
   Mass* mass = new Mass(name + " Wheel Inertia",
                         SpatialInertia(wheelInertia, wheelMass));
-  mVehicle->getMultiBodySystem()->addModel(mass);
+  mVehicle->getMultiBodySystem()->addChild(mass);
   wheel->addInteract(mass);
   
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
-  mVehicle->getMultiBodySystem()->addModel(wj);
+  mVehicle->getMultiBodySystem()->addChild(wj);
   parent->addInteract(wj);
   wheel->setInboardJoint(wj);
   wj->setJointAxis(Vector3(0, 1, 0));
@@ -565,7 +563,7 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
   
   real_type wheelDiam = realData(wheelElem->getElement("wheelDiameter"));
   WheelContact* wc = new WheelContact(name + " Wheel Contact");
-  mVehicle->getMultiBodySystem()->addModel(wc);
+  mVehicle->getMultiBodySystem()->addChild(wc);
   wheel->addInteract(wc);
   wc->setWheelRadius(0.5*wheelDiam);
   real_type tireSpring = realData(wheelElem->getElement("tireSpring"));
@@ -575,7 +573,7 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
   real_type fc = realData(wheelElem->getElement("frictionCoef"), 0.9);
   wc->setFrictionCoeficient(fc);
   
-  PortProvider* port = wj->getOutputPort(0);
+  Port* port = wj->getOutputPort(0);
   std::string nameBase = "Wheel " + numStr + " Position";
   addOutputModel(port, nameBase,
                  "gear/gear[" + numStr + "]/wheel-position-rad");
@@ -601,7 +599,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 
         // For jsbsim use simple gears
         SimpleGear* sg = new SimpleGear(name);
-        mVehicle->getMultiBodySystem()->addModel(sg);
+        mVehicle->getMultiBodySystem()->addChild(sg);
         mVehicle->getTopBody()->addInteract(sg);
         Vector3 loc
           = locationData((*it)->getElement("location"), Vector3(0, 0, 0));
@@ -624,7 +622,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           if (!connectJSBExpression("gear/gear-pos-norm", sg->getEnablePort()))
             return error("could not connect to retract command");
           // Well, connect that directly to the input
-          PortProvider* port = lookupJSBExpression("gear/gear-pos-norm");
+          Port* port = lookupJSBExpression("gear/gear-pos-norm");
           addOutputModel(port, "Gear " + numStr + " Position",
                          "gear/gear[" + numStr + "]/position-norm");
         }
@@ -647,7 +645,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
                                     sProd->getInputPort(0)))
             return error("could not connect to steering command");
           Connection::connect(scale->getOutputPort(0), sProd->getInputPort(1));
-          PortProvider* port = sProd->getOutputPort(0);
+          Port* port = sProd->getOutputPort(0);
 
           Gain* gain = new Gain(name + " Steer Gain");
           addFCSModel(gain);
@@ -681,7 +679,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
       } else if (type == "STRUCTURE" || type == "CONTACT") {
         // Very simple contact force. Penalty method.
         SimpleContact* sc = new SimpleContact((*it)->getAttribute("name"));
-        mVehicle->getMultiBodySystem()->addModel(sc);
+        mVehicle->getMultiBodySystem()->addChild(sc);
         mVehicle->getTopBody()->addInteract(sc);
 
         Vector3 loc
@@ -713,13 +711,13 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         if (steerable == "true" || steerable == "1") {
           // A new part modelling the steering
           RigidBody* steer = new RigidBody(name + " Steer");
-          mVehicle->getMultiBodySystem()->addModel(steer);
+          mVehicle->getMultiBodySystem()->addChild(steer);
           
           // connect that via a revolute joint to the toplevel body.
           // Note the 0.05m below, most steering wheels have some kind of
           // castering auto line up behavour. That is doe with this 0.05m.
           RevoluteActuator* sj = new RevoluteActuator(name + " Steer Joint");
-          mVehicle->getMultiBodySystem()->addModel(sj);
+          mVehicle->getMultiBodySystem()->addChild(sj);
           strutParent->addInteract(sj);
           steer->setInboardJoint(sj);
           sj->setJointAxis(Vector3(0, 0, 1));
@@ -748,7 +746,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           strutParent = steer;
           
           // Prepare outputs
-          PortProvider* port = sj->getOutputPort(0);
+          Port* port = sj->getOutputPort(0);
           std::string nameBase = "Steering " + numStr + " Position";
           addOutputModel(port, nameBase,
                          "gear/gear[" + numStr + "]/steering-pos-rad");
@@ -782,7 +780,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
             return error("could not connect to launch command");
 
           // expose the launchbar position
-          PortProvider* port = launchbar->getOutputPort(0);
+          Port* port = launchbar->getOutputPort(0);
           std::string nameBase = "Launchbar Position";
           addOutputModel(port, nameBase, "gear/launchbar-pos-rad");
           port = addToUnit(nameBase + " converter", Unit::degree(), port);
@@ -792,14 +790,14 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         
         // Now the compressible part of the strut
         RigidBody* arm = new RigidBody(name + " Strut");
-        mVehicle->getMultiBodySystem()->addModel(arm);
+        mVehicle->getMultiBodySystem()->addChild(arm);
         Mass* mass = new Mass(name + " Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(100)));
-        mVehicle->getMultiBodySystem()->addModel(mass);
+        mVehicle->getMultiBodySystem()->addChild(mass);
         arm->addInteract(mass);
         
         // This time it is a prismatic joint
         PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
-        mVehicle->getMultiBodySystem()->addModel(pj);
+        mVehicle->getMultiBodySystem()->addChild(pj);
         strutParent->addInteract(pj);
         arm->setInboardJoint(pj);
         pj->setJointAxis(Vector3(0, 0, -1));
@@ -818,7 +816,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         attachWheel((*it)->getElement("wheel"), name, numStr, arm, parentPos);
         
         // Prepare some outputs ...
-        PortProvider* port = pj->getOutputPort(0);
+        Port* port = pj->getOutputPort(0);
         addOutputModel(port, "Gear " + numStr + " Compression",
                        "gear/gear[" + numStr + "]/compression-m");
         
@@ -837,14 +835,14 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 
         // This is the movable part of the strut, doing the compression
         RigidBody* arm = new RigidBody(name + " Arm");
-        mVehicle->getMultiBodySystem()->addModel(arm);
+        mVehicle->getMultiBodySystem()->addChild(arm);
         Mass* mass = new Mass(name + " Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(80)));
-        mVehicle->getMultiBodySystem()->addModel(mass);
+        mVehicle->getMultiBodySystem()->addChild(mass);
         arm->addInteract(mass);
         
         // Connect that with a revolute joint to the main body
         RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
-        mVehicle->getMultiBodySystem()->addModel(rj);
+        mVehicle->getMultiBodySystem()->addChild(rj);
         mVehicle->getTopBody()->addInteract(rj);
         arm->setInboardJoint(rj);
         Vector3 compressJointAxis = locationData((*it)->getElement("axis"),
@@ -857,7 +855,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         rj->setOrientation(Quaternion::unit());
         
         LineForce* lineForce = new LineForce(name + " Air Spring LineForce");
-        mVehicle->getMultiBodySystem()->addModel(lineForce);
+        mVehicle->getMultiBodySystem()->addChild(lineForce);
         mVehicle->getTopBody()->addInteract(lineForce);
         arm->addInteract(lineForce);
         /// FIXME that ordering in attachment is messy!
@@ -888,7 +886,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         attachWheel((*it)->getElement("wheel"), name, numStr, arm,
                     structToBody(compressJointPos));
         
-        PortProvider* port = rj->getOutputPort(0);
+        Port* port = rj->getOutputPort(0);
         addOutputModel(port, "Gear " + numStr + " Compression",
                        "gear/gear[" + numStr + "]/compression-rad");
         
@@ -902,7 +900,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         std::string name = (*it)->getAttribute("name");
 
         Tailhook* tailhook = new Tailhook(name + " Tailhook");
-        mVehicle->getMultiBodySystem()->addModel(tailhook);
+        mVehicle->getMultiBodySystem()->addChild(tailhook);
         real_type length = realData(tailhookElem->getElement("length"), 0.5);
         tailhook->setLength(length);
         real_type upAngle = realData(tailhookElem->getElement("upAngle"), 10);
@@ -919,7 +917,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           return error("could not connect to tailhook command");
         
         // expose the tailhook position
-        PortProvider* port = tailhook->getOutputPort(0);
+        Port* port = tailhook->getOutputPort(0);
         std::string nameBase = "Tailhook Position";
         addOutputModel(port, nameBase, "gear/tailhook/position-rad");
         port = addToUnit(nameBase + " converter", Unit::degree(), port);
@@ -1138,7 +1136,7 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
                              const std::string& number,
                              const Vector3& pos,
                              const Quaternion& orientation,
-                             PortProvider* thrusterDriver)
+                             Port* thrusterDriver)
 {
   // At the moment we have a *very* insufficient engine, just modulate the
   // thrust between 0 and max
@@ -1157,7 +1155,7 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
   Connection::connect(fullForce->getOutputPort(0), prod->getInputPort(1));
 
   ExternalForceModel* engineForce = new ExternalForceModel(namestr);
-  mVehicle->getMultiBodySystem()->addModel(engineForce);
+  mVehicle->getMultiBodySystem()->addChild(engineForce);
   mVehicle->getTopBody()->addInteract(engineForce);
   engineForce->setPosition(pos);
   engineForce->setOrientation(orientation);
@@ -1209,7 +1207,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
   SharedPtr<Node> model;
 
   // The final output property.
-  SharedPtr<PortProvider> out;
+  SharedPtr<Port> out;
 
   // JSBSim FCS output values contain some implicit rules.
   // From the component name a default output property is formed.
@@ -1293,7 +1291,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     kinemat->setMinValue(minVal);
     kinemat->setMaxValue(maxVal);
     kinemat->setNoScale(fcsComponent->getElement("noscale"));
-    model = kinemat->getModelGroup();
+    model = kinemat->getGroup();
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
     if (!connectJSBExpression(token, model->getInputPort(0)))
@@ -1336,7 +1334,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     std::string token = stringData(fcsComponent->getElement("zero_centered"));
     asScale->setCentered(!(token == "0" || token == "false"));
     asScale->setGain(realData(fcsComponent->getElement("gain"), 1));
-    model = asScale->getModelGroup();
+    model = asScale->getGroup();
     addFCSModel(model);
     token = stringData(fcsComponent->getElement("input"));
     if (!connectJSBExpression(token, model->getInputPort(0)))
@@ -1357,7 +1355,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("Cannot read table");
     sGain->setTableData(data, lookup);
 
-    model = sGain->getModelGroup();
+    model = sGain->getGroup();
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
     if (!connectJSBExpression(token, model->getInputPort(0)))
@@ -1519,7 +1517,7 @@ JSBSimReader::convertAerodynamics(const XMLElement* aero)
       
       if (!sum->getNumSummands())
         continue;
-      PortProvider* port = sum->getOutputPort(0);
+      Port* port = sum->getOutputPort(0);
 
       if (axisname == "LIFT") {
         port = addFromUnit("LIFT unit convert", Unit::lbf(), port);
@@ -1555,7 +1553,7 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
   std::string::size_type slachPos = bindName.rfind('/');
   if (slachPos != std::string::npos)
     name = name.substr(slachPos+1);
-  PortProvider* port = 0;
+  Port* port = 0;
   std::list<const XMLElement*> elems = function->getElements();
   std::list<const XMLElement*>::const_iterator it;
   for (it = elems.begin(); it != elems.end(); ++it) {
@@ -1564,11 +1562,11 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
     } else if ((*it)->getName() == "product") {
       SharedPtr<Product> prod = new Product(name + " product");
       addMultiBodyModel(prod);
-      std::list<PortProvider*> inputs = readFunctionInputs(*it, name);
+      std::list<Port*> inputs = readFunctionInputs(*it, name);
       if (inputs.empty())
         return error("Cannot read product inputs!");
       unsigned i = 0;
-      std::list<PortProvider*>::iterator iit = inputs.begin();
+      std::list<Port*>::iterator iit = inputs.begin();
       while (iit != inputs.end()) {
         prod->setNumFactors(i+1);
         Connection::connect(*iit++, prod->getInputPort(i++));
@@ -1592,12 +1590,12 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
   return true;
 }
 
-std::list<PortProvider*>
+std::list<Port*>
 JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
                                  const std::string& name)
 {
   Node::GroupPath path = mVehicle->getMultiBodySystem()->getGroupPath();
-  std::list<PortProvider*> inputs;
+  std::list<Port*> inputs;
   std::list<const XMLElement*> args = operationTag->getElements();
   std::list<const XMLElement*>::const_iterator ait;
   for (ait = args.begin(); ait != args.end(); ++ait) {
@@ -1615,10 +1613,10 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
         BreakPointVector lookup;
         if (!readTable1D(*ait, data, lookup)) {
           error("Cannot read 1D table data.");
-          return std::list<PortProvider*>();
+          return std::list<Port*>();
         }
         std::string token = stringData((*ait)->getElement("independentVar"));
-        PortProvider* port = getTablePrelookup(name + " lookup",
+        Port* port = getTablePrelookup(name + " lookup",
                                 lookupJSBExpression(token, path), lookup);
 
         SharedPtr<Table1D> table = new Table1D(name + " Table");
@@ -1632,21 +1630,21 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
         BreakPointVector lookup[2];
         if (!readTable2D(*ait, data, lookup)) {
           error("Cannot read 2D table data.");
-          return std::list<PortProvider*>();
+          return std::list<Port*>();
         }
 
         std::list<const XMLElement*> indeps
           = (*ait)->getElements("independentVar");
         if (indeps.size() != 2) {
           error("2DTable data does not have 2 inputs!");
-          return std::list<PortProvider*>();
+          return std::list<Port*>();
         }
         std::string rowInput = indepData(indeps, "row");
         std::string colInput = indepData(indeps, "column");
 
-        PortProvider* rPort = getTablePrelookup(name + " row lookup",
+        Port* rPort = getTablePrelookup(name + " row lookup",
                             lookupJSBExpression(rowInput, path), lookup[0]);
-        PortProvider* cPort = getTablePrelookup(name + " column lookup",
+        Port* cPort = getTablePrelookup(name + " column lookup",
                             lookupJSBExpression(colInput, path), lookup[1]);
 
         SharedPtr<Table2D> table = new Table2D(name  + " Table");
@@ -1661,24 +1659,24 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
         BreakPointVector lookup[3];
         if (!readTable3D(*ait, data, lookup)) {
           error("Cannot read 1D table data.");
-          return std::list<PortProvider*>();
+          return std::list<Port*>();
         }
 
         std::list<const XMLElement*> indeps
           = (*ait)->getElements("independentVar");
         if (indeps.size() != 3) {
           error("3DTable data does not have 3 inputs!");
-          return std::list<PortProvider*>();
+          return std::list<Port*>();
         }
         std::string rowInput = indepData(indeps, "row");
         std::string colInput = indepData(indeps, "column");
         std::string pageInput = indepData(indeps, "table");
 
-        PortProvider* rPort = getTablePrelookup(name + " row lookup",
+        Port* rPort = getTablePrelookup(name + " row lookup",
                            lookupJSBExpression(rowInput, path), lookup[0]);
-        PortProvider* cPort = getTablePrelookup(name + " column lookup",
+        Port* cPort = getTablePrelookup(name + " column lookup",
                            lookupJSBExpression(colInput, path), lookup[1]);
-        PortProvider* pPort = getTablePrelookup(name + " page lookup",
+        Port* pPort = getTablePrelookup(name + " page lookup",
                            lookupJSBExpression(pageInput, path), lookup[2]);
 
         SharedPtr<Table3D> table = new Table3D(name  + " Table");
@@ -1691,11 +1689,11 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
 
       } else {
         error("Unknown tabel dimension.");
-        return std::list<PortProvider*>();
+        return std::list<Port*>();
       }
     } else {
       error("Unknown function input");
-      return std::list<PortProvider*>();
+      return std::list<Port*>();
     }
   }
   return inputs;

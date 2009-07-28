@@ -7,7 +7,7 @@
 #include <OpenFDM/GroupInput.h>
 #include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/Gain.h>
-#include <OpenFDM/ModelGroup.h>
+#include <OpenFDM/Group.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/Summer.h>
 
@@ -37,66 +37,66 @@ JSBSimKinemat::JSBSimKinemat(const std::string& name) :
   // FIXME: implement triggers for initialization of the integrator at the
   // first time
   mInputGain = new Gain("Input Gain");
-  getModelGroup()->addModel(mInputGain);
+  getGroup()->addChild(mInputGain);
   mInputGain->setGain(1);
   
   mInputSaturation = new Saturation("Input Saturation");
-  getModelGroup()->addModel(mInputSaturation);
-  Connection::connect(mInputSaturation->getInputPort(0),
-                      mInputGain->getOutputPort(0));
+  getGroup()->addChild(mInputSaturation);
+  getGroup()->connect(mInputSaturation->getPort("input"),
+                      mInputGain->getPort("output"));
   
   Summer* inputError = new Summer("Input Sum");
-  getModelGroup()->addModel(inputError);
-  Connection::connect(inputError->getInputPort(0),
-                      mInputSaturation->getOutputPort(0));
+  getGroup()->addChild(inputError);
+  getGroup()->connect(inputError->getPort("input0"),
+                      mInputSaturation->getPort("output"));
   inputError->setNumSummands(2);
   
   Gain* errorGain = new Gain("Error Gain");
-  getModelGroup()->addModel(errorGain);
+  getGroup()->addChild(errorGain);
   errorGain->setGain(100);
-  Connection::connect(errorGain->getInputPort(0),
-                      inputError->getOutputPort(0));
+  getGroup()->connect(errorGain->getPort("input"),
+                      inputError->getPort("output"));
   
   mKinematRateLimit = new Saturation("Rate Limit");
-  getModelGroup()->addModel(mKinematRateLimit);
-  Connection::connect(mKinematRateLimit->getInputPort(0),
-                      errorGain->getOutputPort(0));
+  getGroup()->addChild(mKinematRateLimit);
+  getGroup()->connect(mKinematRateLimit->getPort("input"),
+                      errorGain->getPort("output"));
   
   DiscreteIntegrator* integrator = new DiscreteIntegrator("Integrator");
-  getModelGroup()->addModel(integrator);
-  Connection::connect(integrator->getInputPort(0),
-                      mKinematRateLimit->getOutputPort(0));
+  getGroup()->addChild(integrator);
+  getGroup()->connect(integrator->getPort("input"),
+                      mKinematRateLimit->getPort("output"));
   Matrix tmp(1, 1);
   tmp(0, 0) = 1;
   integrator->setInitialValue(tmp);
-  Connection::connect(integrator->getInputPort(1),
-                      mInputSaturation->getOutputPort(0));
+  getGroup()->connect(integrator->getPort("initialValue"),
+                      mInputSaturation->getPort("output"));
   
   Gain* feedbackGain = new Gain("Feedback Gain");
-  getModelGroup()->addModel(feedbackGain);
+  getGroup()->addChild(feedbackGain);
   feedbackGain->setGain(-1);
-  Connection::connect(feedbackGain->getInputPort(0),
-                      integrator->getOutputPort(0));
-  Connection::connect(inputError->getInputPort(1),
-                      feedbackGain->getOutputPort(0));
+  getGroup()->connect(feedbackGain->getPort("input"),
+                      integrator->getPort("output"));
+  getGroup()->connect(inputError->getPort("input1"),
+                      feedbackGain->getPort("output"));
 
   mOutputNormGain = new Gain("Output Norm Gain");
-  getModelGroup()->addModel(mOutputNormGain);
+  getGroup()->addChild(mOutputNormGain);
   mOutputNormGain->setGain(1);
-  Connection::connect(mOutputNormGain->getInputPort(0),
-                      integrator->getOutputPort(0));
+  getGroup()->connect(mOutputNormGain->getPort("input"),
+                      integrator->getPort("output"));
 
   // Now connect the input and the output to this groups in and outputs
   GroupInput* groupInput = new GroupInput("Input");
-  getModelGroup()->addModel(groupInput);
-  Connection::connect(mInputGain->getInputPort(0),
-                      groupInput->getOutputPort(0));
+  getGroup()->addChild(groupInput);
+  getGroup()->connect(mInputGain->getPort("input"),
+                      groupInput->getPort("output"));
  
   // That single output port is this one
-  Connection::connect(getInternalOutputPort(),
-                      integrator->getOutputPort(0));
-  Connection::connect(getInternalOutputNormPort(),
-                      mOutputNormGain->getOutputPort(0));
+  getGroup()->connect(getInternalOutputPort(),
+                      integrator->getPort("output"));
+  getGroup()->connect(getInternalOutputNormPort(),
+                      mOutputNormGain->getPort("output"));
 }
 
 JSBSimKinemat::~JSBSimKinemat(void)
