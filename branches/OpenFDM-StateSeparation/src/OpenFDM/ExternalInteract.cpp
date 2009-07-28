@@ -70,9 +70,8 @@ public:
     const CoordinateSystem& cs = getLink().getCoordinateSystem();
 
     // The global coordinates position
-    Vector3 refPosition = cs.getPosition();
     if (mPosition.isConnected())
-      mPosition = refPosition;
+      mPosition = cs.getPosition();
     
     if (mOrientation.isConnected())
       mOrientation = cs.getOrientation();
@@ -90,7 +89,7 @@ public:
     if (enableBodyAngularVelocity || enableBodyLinearVelocity
         || enableGlobalAngularVelocity || enableGlobalLinearVelocity
         || enableBodyWindVelocity || enableGlobalWindVelocity) {
-      Vector6 refVelocity = getLink().getVelocity();
+      Vector6 refVelocity = getLink().getVelocity(cs.getPosition());
       if (enableBodyAngularVelocity)
         mBodyAngularVelocity = cs.rotToLocal(refVelocity.getAngular());
       if (enableGlobalAngularVelocity)
@@ -104,8 +103,8 @@ public:
       // Wind sensing
       if (enableBodyWindVelocity || enableGlobalWindVelocity) {
         Vector6 wind = getEnvironment().getWindVelocity(task.getTime(),
-                                                        refPosition);
-        wind -= refVelocity;
+                                                        cs.getPosition());
+        wind = refVelocity - wind;
         if (enableBodyWindVelocity)
           mBodyWindVelocity = cs.rotToLocal(wind.getLinear());
         if (enableGlobalWindVelocity)
@@ -123,7 +122,7 @@ public:
     bool enableAtmosphere = (enableTemperature || enableStaticPressure ||
                              enableDensity || enableSoundSpeed);
     if (enableAltitude || enableAtmosphere) {
-      real_type altitude = getEnvironment().getAltitude(refPosition);
+      real_type altitude = getEnvironment().getAltitude(cs.getPosition());
       if (enableAltitude)
         mAltitude = altitude;
       
@@ -143,7 +142,8 @@ public:
     
     if (mAboveGroundLevel.isConnected()) {
       real_type agl;
-      agl = getEnvironment().getAboveGroundLevel(task.getTime(), refPosition);
+      agl = getEnvironment().getAboveGroundLevel(task.getTime(),
+                                                 cs.getPosition());
       mAboveGroundLevel = agl;
     }
   }
@@ -170,8 +170,8 @@ public:
     if (enableBodyCentrifugalAcceleration || enableBodyLoad) {
       const CoordinateSystem& cs = getLink().getCoordinateSystem();
 
-      Vector6 spatialVel = getLink().getInertialVelocity();
-      Vector6 spatialAccel = getLink().getInertialAcceleration();
+      Vector6 spatialVel = getLink().getInertialVelocity(cs.getPosition());
+      Vector6 spatialAccel = getLink().getInertialAcceleration(cs.getPosition());
       Vector3 centrifugalAccel = spatialAccel.getLinear();
       centrifugalAccel += cross(spatialVel.getAngular(),spatialVel.getLinear());
 
@@ -179,8 +179,7 @@ public:
         mBodyCentrifugalAcceleration = cs.rotToLocal(centrifugalAccel);
       if (enableBodyLoad) {
         // May be cache that from the velocity step??
-        Vector3 refPosition = cs.getPosition();
-        Vector3 gravity = getEnvironment().getGravityAcceleration(refPosition);
+        Vector3 gravity = getEnvironment().getGravityAcceleration(cs.getPosition());
         mBodyLoad = cs.rotToLocal(Vector3(centrifugalAccel - gravity));
       }
     }

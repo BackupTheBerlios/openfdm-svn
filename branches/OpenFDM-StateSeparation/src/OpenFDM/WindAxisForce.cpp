@@ -42,9 +42,9 @@ WindAxisForce::output(const Task&, const DiscreteStateValueVector&,
   // The transform from stability axis to body axis where the
   // stability axis x axis points into the wind, the y axis points
   // to the right and the z axis points downwards
-  Matrix33 Tw2b(-ca*cb, -ca*sb,  sa,
-                -sb,     cb,   0,
-                -sa*cb, -sa*sb, -ca);
+  Matrix33 Tw2b(ca*cb, -ca*sb, -sa,
+                   sb,     cb,   0,
+                sa*cb, -sa*sb,  ca);
   
   // Get the forces
   real_type drag = 0;
