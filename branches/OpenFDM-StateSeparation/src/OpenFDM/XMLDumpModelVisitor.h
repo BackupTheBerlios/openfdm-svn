@@ -10,9 +10,10 @@
 #include <sstream>
 #include <iomanip>
 
-#include "NodeVisitor.h"
-#include "Node.h"
 #include "Group.h"
+#include "Node.h"
+#include "NodeVisitor.h"
+#include "System.h"
 #include "TypeInfo.h"
 
 namespace OpenFDM {
@@ -28,39 +29,38 @@ public:
   virtual ~XMLDumpModelVisitor(void)
   { }
 
-  virtual void apply(Node& model)
+  virtual void apply(Node& node)
   {
-    indent() << "<model type=\"" << model.getTypeName() << "\">\n";
+    indent() << "<node type=\"" << node.getTypeName() << "\">\n";
     ++mIndent;
-    dumpProperties(model);
+    dumpProperties(node);
     --mIndent;
-    indent() << "</model>\n";
+    indent() << "</node>\n";
   }
-  virtual void apply(Group& modelGroup)
+  virtual void apply(Group& group)
   {
-    indent() << "<model type=\"ModelGroup\">\n";
+    indent() << "<node type=\"NodeGroup\">\n";
     ++mIndent;
-    dumpProperties(modelGroup);
-    modelGroup.traverse(*this);
-    dumpConnections(modelGroup);
+    dumpProperties(group);
+    group.traverse(*this);
+    dumpConnections(group);
     --mIndent;
-    indent() << "</model>\n";
+    indent() << "</node>\n";
   }
-//   virtual void apply(System& system)
-//   {
-//     indent() << "<?xml version=\"1.0\"?>\n";
-//     indent() << "<OpenFDM>\n";
-//     ++mIndent;
-//     indent() << "<model type=\"System\">\n";
-//     ++mIndent;
-//     dumpProperties(system);
-//     traverse(system);
-//     dumpConnections(system);
-//     --mIndent;
-//     indent() << "</model>\n";
-//     --mIndent;
-//     indent() << "</OpenFDM>\n";
-//   }
+  void apply(System& system)
+  {
+    indent() << "<?xml version=\"1.0\"?>\n";
+    indent() << "<OpenFDM>\n";
+    ++mIndent;
+    indent() << "<System>\n";
+    ++mIndent;
+    dumpProperties(system);
+    system.getNode()->accept(*this);
+    --mIndent;
+    indent() << "</System>\n";
+    --mIndent;
+    indent() << "</OpenFDM>\n";
+  }
 private:
   void dumpPort(const Port* port)
   {
@@ -69,15 +69,15 @@ private:
     SharedPtr<const Node> node = port->getNode();
     if (!node)
       return;
-    indent() << "<Port ModelName=\"" << node->getName()
-             << "\" PortName=\"" << port->getName()
+    indent() << "<port nodeName=\"" << node->getName()
+             << "\" portName=\"" << port->getName()
              << "\"/>\n";
   }
-  void dumpConnections(const Group& modelGroup)
+  void dumpConnections(const Group& group)
   {
-    unsigned numConnections = modelGroup.getNumConnects();
+    unsigned numConnections = group.getNumConnects();
     for (unsigned i = 0; i < numConnections; ++i) {
-      const Connect* connection = modelGroup.getConnect(i);
+      const Connect* connection = group.getConnect(i);
       indent() << "<connect>\n";
       ++mIndent;
       dumpPort(connection->getPort0());
@@ -122,24 +122,28 @@ private:
             valStr.precision(mPrecision);
             if (cols(mVal) == 1) {
               // A pure vector is written transposed
-              for (unsigned i = 1; i < rows(mVal); ++i)
-                valStr << mVal(i, 1) << "; ";
-              valStr << mVal(rows(mVal), 1);
+              for (unsigned i = 0; i < rows(mVal) - 1; ++i)
+                valStr << mVal(i, 0) << "; ";
+              valStr << mVal(rows(mVal) - 1, 0);
+
+              indent() << "<property name=\"" << it->getName()
+                       << "\" type=\"matrix\">"
+                       << valStr.str()
+                       << "</property>\n";
             } else {
               valStr << '\n';
-              for (unsigned i = 1; i < rows(mVal); ++i) {
+              for (unsigned i = 0; i < rows(mVal); ++i) {
                 // Indent too??
                 valStr << std::setw((mIndent+1)*mIndentWidth) << ' ';
-                valStr << mVal(cols(mVal), i) << '\n';
-                for (unsigned j = 1; j < cols(mVal); ++j)
-                  valStr << mVal(i, 1) << ' ';
-                valStr << mVal(cols(mVal), i) << '\n';
+                for (unsigned j = 0; j < cols(mVal) - 1; ++j)
+                  valStr << mVal(i, j) << ' ';
+                valStr << mVal(i, cols(mVal) - 1) << '\n';
               }
+              indent() << "<property name=\"" << it->getName()
+                       << "\" type=\"matrix\">"
+                       << valStr.str();
+              indent() << "</property>\n";
             }
-            indent() << "<property name=\"" << it->getName()
-                     << "\" type=\"matrix\">"
-                     << valStr.str()
-                     << "</property>\n";
           }
         } else if (value.isString()) {
           std::string stringValue = value.toString();
