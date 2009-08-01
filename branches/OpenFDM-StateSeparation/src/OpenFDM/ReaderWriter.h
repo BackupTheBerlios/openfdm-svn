@@ -12,7 +12,7 @@
 
 namespace OpenFDM {
 
-class Vehicle;
+class System;
 
 /** Abstract base class for a reader/writer of OpenFDM vehicles.
  * (At present only reading ...) FIXME
@@ -46,8 +46,8 @@ public:
 
   /** Returns a pointer to the vehicle.
    */
-//   Vehicle* getVehicle(void)
-//   { return mVehicle; }
+  System* getSystem(void)
+  { return mSystem; }
   
 protected:
   /** Slot where a ReaderWriter implementation should reset it's state.
@@ -63,9 +63,9 @@ protected:
    */
   bool error(const std::string& message);
 
-//   /** The Vehicle handle.
-//    */
-//   SharedPtr<Vehicle> mVehicle;
+  /** The System.
+   */
+  SharedPtr<System> mSystem;
 
 private:
   /** A list of errors during import.
