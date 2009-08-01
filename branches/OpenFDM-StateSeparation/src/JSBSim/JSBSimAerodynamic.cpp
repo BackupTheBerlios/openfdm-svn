@@ -73,11 +73,10 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(mVTailArmModel->getPort("output"),
                   mVTailArmOutputModel->getPort("input"));
 
-
   mMechanicLinkModel = new GroupMechanicLink("Mechanic Link Model");
+  mGroup->addChild(mMechanicLinkModel);
 
   mExternalInteract = new ExternalInteract("ExternalInteract");
-//   mExternalInteract->setPosition(mass->getPosition());
   mGroup->addChild(mExternalInteract);
 
   mGroup->connect(mMechanicLinkModel->getPort("link"),
@@ -132,7 +131,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
                   mAlphaOutputModel->getPort("input"));
 
   mAlphaDotOutputModel = new GroupOutput("AlphaDot Output");
-  mGroup->addChild(mAlphaOutputModel);
+  mGroup->addChild(mAlphaDotOutputModel);
   mGroup->connect(windAxis->getPort("alphaDot"),
                   mAlphaDotOutputModel->getPort("input"));
 
@@ -142,7 +141,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
                   mBetaOutputModel->getPort("input"));
 
   mBetaDotOutputModel = new GroupOutput("BetaDot Output");
-  mGroup->addChild(mBetaOutputModel);
+  mGroup->addChild(mBetaDotOutputModel);
   mGroup->connect(windAxis->getPort("betaDot"),
                   mBetaDotOutputModel->getPort("input"));
 
@@ -222,7 +221,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(angularVel->getPort("q"),
                   mQOutputModel->getPort("input"));
   mROutputModel = new GroupOutput("R Output");
-  mGroup->addChild(mQOutputModel);
+  mGroup->addChild(mROutputModel);
   mGroup->connect(angularVel->getPort("r"),
                   mROutputModel->getPort("input"));
 

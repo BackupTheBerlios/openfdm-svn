@@ -934,7 +934,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         addOutputModel(port, "Gear " + numStr + " Position",
                        "gear/gear[" + numStr + "]/position-norm");
         
-//       } else if (type == "TAILHOOK") {
+      } else if (type == "TAILHOOK") {
 //         const XMLElement* tailhookElem = (*it);
 //         std::string name = (*it)->getAttribute("name");
 

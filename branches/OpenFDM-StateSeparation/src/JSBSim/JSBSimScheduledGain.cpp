@@ -35,14 +35,14 @@ JSBSimScheduledGain::JSBSimScheduledGain(const std::string& name) :
 
   // Now connect the input and the output to this groups in and outputs
   GroupInput* groupInput = new GroupInput("Input");
-  groupInput->setExternalPortName("input");
   getGroup()->addChild(groupInput);
+  groupInput->setExternalPortName("input");
   getGroup()->connect(product->getPort("input1"),
                       groupInput->getPort("output"));
  
   groupInput = new GroupInput("Schedule Input");
-  groupInput->setExternalPortName("scheduleInput");
   getGroup()->addChild(groupInput);
+  groupInput->setExternalPortName("scheduleInput");
   getGroup()->connect(mBreakPointLookup->getPort("input"),
                       groupInput->getPort("output"));
 
