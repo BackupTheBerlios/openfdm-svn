@@ -81,8 +81,11 @@ JSBSimAerosurfaceScale::setMinDomain(real_type minDomain)
   tmp(0, 0) = minDomain;
   mInputSaturation->setMinSaturation(tmp);
   BreakPointVector tl = mBreakPointLookup->getBreakPointVector();
-  tl.insert(minDomain);
-  mBreakPointLookup->setBreakPointVector(tl);
+  BreakPointVector tl2;
+  tl2.insert(minDomain);
+  tl2.insert(tl[1]);
+  tl2.insert(tl[2]);
+  mBreakPointLookup->setBreakPointVector(tl2);
 }
 
 void
@@ -92,8 +95,11 @@ JSBSimAerosurfaceScale::setMaxDomain(real_type maxDomain)
   tmp(0, 0) = maxDomain;
   mInputSaturation->setMaxSaturation(tmp);
   BreakPointVector tl = mBreakPointLookup->getBreakPointVector();
-  tl.insert(maxDomain);
-  mBreakPointLookup->setBreakPointVector(tl);
+  BreakPointVector tl2;
+  tl2.insert(tl[0]);
+  tl2.insert(tl[1]);
+  tl2.insert(maxDomain);
+  mBreakPointLookup->setBreakPointVector(tl2);
 }
 
 void
