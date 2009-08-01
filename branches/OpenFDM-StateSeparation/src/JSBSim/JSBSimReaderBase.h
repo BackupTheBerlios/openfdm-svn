@@ -274,6 +274,7 @@ protected:
   SharedPtr<Group> mTopLevelGroup;
   PropertyMap mExpressionTable;
   SharedPtr<JSBSimAerodynamic> mAeroForce;
+  SharedPtr<RigidBody> mTopLevelBody;
   std::vector<SharedPtr<BreakPointLookup> > mBreakPointVectors;
 
   // For now just copies from the prevous try ...

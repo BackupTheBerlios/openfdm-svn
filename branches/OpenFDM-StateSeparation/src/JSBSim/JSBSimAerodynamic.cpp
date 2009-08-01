@@ -329,6 +329,12 @@ JSBSimAerodynamic::~JSBSimAerodynamic(void)
 }
 
 void
+JSBSimAerodynamic::setPosition(const Vector3& position)
+{
+  mExternalInteract->setPosition(position);
+}
+
+void
 JSBSimAerodynamic::setWingArea(const real_type& wingArea)
 {
   mWingAreaModel->setScalarValue(wingArea);
@@ -542,6 +548,12 @@ const Port*
 JSBSimAerodynamic::getHOverWingSpanPort(void)
 {
   return mGroup->getPort(mHOverWingSpanOutputModel->getExternalPortIndex());
+}
+
+const Port*
+JSBSimAerodynamic::getMechanicLink(void)
+{
+  return mGroup->getPort(mMechanicLinkModel->getExternalPortIndex());
 }
 
 const Port*

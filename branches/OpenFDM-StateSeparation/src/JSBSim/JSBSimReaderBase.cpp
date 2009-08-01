@@ -29,6 +29,7 @@
 #include <OpenFDM/Product.h>
 #include <OpenFDM/RevoluteActuator.h>
 #include <OpenFDM/RevoluteJoint.h>
+#include <OpenFDM/RigidBody.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/SimpleContact.h>
 #include <OpenFDM/SimpleGear.h>

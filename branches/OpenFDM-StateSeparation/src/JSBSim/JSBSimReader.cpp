@@ -23,11 +23,14 @@
 #include <OpenFDM/Input.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/MaxModel.h>
+#include <OpenFDM/MatrixSplit.h>
 #include <OpenFDM/AirSpring.h>
+#include <OpenFDM/InternalInteract.h>
 #include <OpenFDM/PrismaticJoint.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/RevoluteActuator.h>
 #include <OpenFDM/RevoluteJoint.h>
+#include <OpenFDM/RigidBody.h>
 #include <OpenFDM/Saturation.h>
 #include <OpenFDM/SimpleContact.h>
 #include <OpenFDM/SimpleGear.h>
@@ -37,6 +40,7 @@
 #include <OpenFDM/TimeDerivative.h>
 #include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/Unit.h>
+#include <OpenFDM/UnitConversion.h>
 #include <OpenFDM/WheelContact.h>
 #include <OpenFDM/DiscBrake.h>
 
@@ -254,6 +258,7 @@ JSBSimReader::reset(void)
   mSystem = 0;
   mTopLevelGroup = 0;
   mAeroForce = 0;
+  mTopLevelBody = 0;
 }
 
 bool
@@ -269,7 +274,10 @@ JSBSimReader::loadAircraft(const std::string& acFileName)
   mSystem->setNode(mTopLevelGroup);
   mAeroForce = new JSBSimAerodynamic("Aerodynamic force");
   mTopLevelGroup->addChild(mAeroForce->getGroup());
-  mVehicle->getTopBody()->addInteract(mAeroForce);
+  mTopLevelBody = new RigidBody("Main Aircraft Body");
+  mTopLevelGroup->addChild(mTopLevelBody);
+  mTopLevelGroup->connect(mTopLevelBody->addLink("aerodynamicLink"),
+                          mAeroForce->getMechanicLink());
 
   // Default discrete stepsize of JSBSim
   mTopLevelGroup->setSampleTime(SampleTime(1.0/120));
@@ -368,8 +376,8 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   // FIXME alphaw from aerodynamic = alpha + iw is missing
   real_type iw = realData(metricsElem->getElement("wing_incidence"), 0);
   mAeroForce->setWingIncidence(Unit::degree().convertFrom(iw));
-  registerJSBExpression("metrics/iw-rad", mAeroForce->setWingIncidencePort());
-//   registerJSBExpression("metrics/iw-deg", mAeroForce->setWingIncidencePort());
+  registerJSBExpression("metrics/iw-rad", mAeroForce->getWingIncidencePort());
+//   registerJSBExpression("metrics/iw-deg", mAeroForce->getWingIncidencePort());
 
   const XMLElement* htareaElem = metricsElem->getElement("htailarea");
   if (htareaElem) {
@@ -411,29 +419,48 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   mBodyReference = vrp;
   
   // Attach the eye point.
-  FreeFrame* epFrame = new FreeFrame("Eyepoint Frame");
-  epFrame->setPosition(structToBody(ep));
-  epFrame->setRelVel(Vector6::zeros());
-  epFrame->setRelVelDot(Vector6::zeros());
-  mVehicle->getTopBody()->getFrame()->addChildFrame(epFrame);
-  Sensor* accelSensor = new Sensor("Acceleration Sensor");
-  mVehicle->getMultiBodySystem()->addChild(accelSensor);
-  mVehicle->getTopBody()->addInteract(accelSensor);
-  accelSensor->addSampleTime(SampleTime(1.0/120));
-  const Port* port = accelSensor->getOutputPort("nlfz");
+  ExternalInteract* epInteract = new ExternalInteract("Eyepoint Sensor");
+  epInteract->setPosition(structToBody(ep));
+  epInteract->setEnablePosition(true);
+  epInteract->setEnableOrientation(true);
+  mTopLevelGroup->addChild(epInteract);
+  mTopLevelGroup->connect(mTopLevelBody->addLink("epLink"),
+                          epInteract->getPort("link"));
+
+  ExternalInteract* accelInteract = new ExternalInteract("Acceleration Sensor");
+  accelInteract->setEnableBodyLoad(true);
+  accelInteract->setEnableBodyCentrifugalAcceleration(true);
+  mTopLevelGroup->addChild(accelInteract);
+  mTopLevelGroup->connect(mTopLevelBody->addLink("accelLink"),
+                          accelInteract->getPort("link"));
+
+  MatrixSplit* load = new MatrixSplit("Body Load Split");
+  mTopLevelGroup->addChild(load);
+  mTopLevelGroup->connect(accelInteract->getPort("bodyLoad"),
+                          load->getPort("input"));
+  load->addOutputPort("x");
+  load->addOutputPort("y");
+  const Port* port = load->addOutputPort("z");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
   addOutputModel(port, "Normalized load value", "accelerations/nlf");
-  port = accelSensor->getOutputPort("az");
+
+  MatrixSplit* accel = new MatrixSplit("Body Accel Split");
+  mTopLevelGroup->addChild(accel);
+  mTopLevelGroup->connect(accelInteract->getPort("bodyCentrifugalAcceleration"),
+                          accel->getPort("input"));
+  accel->addOutputPort("x");
+  accel->addOutputPort("y");
+  port = accel->addOutputPort("z");
   registerJSBExpression("accelerations/accel-z-norm", port);
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
-  port = lookupJSBExpression("aero/alpha-deg", mAeroForce->getPath());
-  addOutputModel(port, "Alpha", "orientation/alpha-deg");
-  port = lookupJSBExpression("aero/beta-rad", mAeroForce->getPath());
-  addOutputModel(port, "Beta rad", "orientation/side-slip-rad");
-  port = lookupJSBExpression("aero/beta-deg", mAeroForce->getPath());
-  addOutputModel(port, "Beta", "orientation/side-slip-deg");
+//   port = lookupJSBExpression("aero/alpha-deg", mAeroForce->getPath());
+//   addOutputModel(port, "Alpha", "orientation/alpha-deg");
+//   port = lookupJSBExpression("aero/beta-rad", mAeroForce->getPath());
+//   addOutputModel(port, "Beta rad", "orientation/side-slip-rad");
+//   port = lookupJSBExpression("aero/beta-deg", mAeroForce->getPath());
+//   addOutputModel(port, "Beta", "orientation/side-slip-deg");
 
   return true;
 }
@@ -449,9 +476,6 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
 
   InertiaMatrix I(0, 0, 0, 0, 0, 0);
   real_type mass = 0;
-  typedef std::pair<Vector3,real_type> masspoint;
-  typedef std::list<masspoint> masslist;
-  masslist masses;
 
   real_type ixx = realData(massBalance->getElement("ixx"), 0);
   I(0, 0) = Unit::slugSquareFoot().convertFrom(ixx);
@@ -472,6 +496,11 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
   std::list<const XMLElement*> locList = massBalance->getElements("location");
   Vector3 cg = locationData(locList, "CG", Vector3(0, 0, 0));
 
+  Mass* massModel = new Mass("Emptyweight Mass", mass, I, structToBody(cg));
+  mTopLevelGroup->addChild(massModel);
+  mTopLevelGroup->connect(mTopLevelBody->addLink("emptyWeightMass"),
+                          massModel->getPort("link"));
+
   std::list<const XMLElement*> pmList = massBalance->getElements("pointmass");
   std::list<const XMLElement*>::const_iterator pmit;
   pmit = pmList.begin();
@@ -480,23 +509,13 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
     Vector3 loc = locationData(locList, "POINTMASS", Vector3(0, 0, 0));
     real_type weight = realData((*pmit)->getElement("weight"), 0);
     weight = Unit::lbs().convertFrom(weight);
-    masses.push_back(masspoint(loc, weight));
+    Mass* massModel = new Mass("Mass", weight, InertiaMatrix(0,0,0,0,0,0),
+                               structToBody(loc));
+    mTopLevelGroup->addChild(massModel);
+    mTopLevelGroup->connect(mTopLevelBody->addLink("mass"),
+                            massModel->getPort("link"));
     ++pmit;
   }
-
-  // Now collect all static inertia values starting with the emptyweight
-  // and empty inertia together in spi.
-  SpatialInertia spi(I, mass);
-  spi = inertiaFrom(structToBody(cg), spi);
-  masslist::iterator it = masses.begin();
-  while (it != masses.end()) {
-    SpatialInertia inertia(Unit::lbs().convertFrom(it->second));
-    spi += inertiaFrom(structToBody(it->first), inertia);
-    ++it;
-  }
-  Mass* massModel = new Mass("Emptyweight Mass", spi);
-  mVehicle->getMultiBodySystem()->addChild(massModel);
-  mVehicle->getTopBody()->addInteract(massModel);
 
   return true;
 }
@@ -511,21 +530,22 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
   InertiaMatrix wheelInertia = inertiaData(wheelElem->getElement("inertia"),
                                            InertiaMatrix(10, 0, 0, 30, 0, 10));
   real_type wheelMass = realData(wheelElem->getElement("mass"), 30);
-  Mass* mass = new Mass(name + " Wheel Inertia",
-                        SpatialInertia(wheelInertia, wheelMass));
+  Mass* mass = new Mass(name + " Wheel Inertia", wheelMass, wheelInertia);
   mTopLevelGroup->addChild(mass);
-  wheel->addInteract(mass);
+  mTopLevelGroup->connect(wheel->addLink("staticMass"),
+                          mass->getPort("link"));
   
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
   mTopLevelGroup->addChild(wj);
-  parent->addInteract(wj);
-  wheel->setInboardJoint(wj);
-  wj->setJointAxis(Vector3(0, 1, 0));
+  mTopLevelGroup->connect(parent->addLink("wheelJoint"),
+                          wj->getPort("link0"));
+  mTopLevelGroup->connect(wheel->addLink("wheelJoint"),
+                          wj->getPort("link1"));
+  wj->setAxis(Vector3(0, 1, 0));
   Vector3 pos = structToBody(locationData(wheelElem->getElement("location")));
   wj->setPosition(pos - parentDesignPos);
-  wj->setOrientation(Quaternion::unit());
-  wj->setJointPos(0);
-  wj->setJointVel(0);
+  wj->setInitialPosition(0);
+  wj->setInitialVelocity(0);
 
   std::string brake = stringData(wheelElem->getElement("brake_group"));
   // Add a brake force
@@ -538,40 +558,41 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
     brakeF->setMaxForce(maxForce);
     if (brake == "LEFT") {
       if (!connectJSBExpression("gear/left-brake-pos-norm",
-                                brakeF->getInputPort(0)))
+                                brakeF->getPort("brakeInput")))
         return error("could not connect to brake group LEFT");
     } else if (brake == "RIGHT") {
       if (!connectJSBExpression("gear/right-brake-pos-norm",
-                                brakeF->getInputPort(0)))
+                                brakeF->getPort("brakeInput")))
         return error("could not connect to brake group RIGHT");
     }
     // That one reads the joint position and velocity ...
-    Connection::connect(wj->getOutputPort(1), brakeF->getInputPort(1));
+    mTopLevelGroup->connect(wj->getPort("velocity"), brakeF->getPort("velocity"));
     // ... and provides an output force
-    Connection::connect(brakeF->getOutputPort(0), wj->getInputPort(0));
+    mTopLevelGroup->connect(brakeF->getPort("position"), wj->getPort("position"));
   } else {
     // Just some 'bearing friction'
     Gain* rollingFric = new Gain(name + " Bearing Friction Force");
     addMultiBodyModel(rollingFric);
     rollingFric->setGain(-10);
-    Connection::connect(wj->getOutputPort(1), rollingFric->getInputPort(0));
+    mTopLevelGroup->connect(wj->getPort("velocity"), rollingFric->getInputPort(0));
     // ... and provides an output force
-    Connection::connect(rollingFric->getOutputPort(0), wj->getInputPort(0));
+    mTopLevelGroup->connect(rollingFric->getPort("output"), wj->getPort("force"));
   }
   
   real_type wheelDiam = realData(wheelElem->getElement("wheelDiameter"));
   WheelContact* wc = new WheelContact(name + " Wheel Contact");
   mTopLevelGroup->addChild(wc);
-  wheel->addInteract(wc);
+  mTopLevelGroup->connect(wheel->addLink("wheelContact"),
+                          wc->getPort("link"));
   wc->setWheelRadius(0.5*wheelDiam);
   real_type tireSpring = realData(wheelElem->getElement("tireSpring"));
   wc->setSpringConstant(Unit::lbfPerFoot().convertFrom(tireSpring));
   real_type tireDamp = realData(wheelElem->getElement("tireDamping"));
-  wc->setSpringDamping(Unit::lbfPerFoot().convertFrom(tireDamp));
+  wc->setDamperConstant(Unit::lbfPerFoot().convertFrom(tireDamp));
   real_type fc = realData(wheelElem->getElement("frictionCoef"), 0.9);
   wc->setFrictionCoeficient(fc);
   
-  const Port* port = wj->getOutputPort(0);
+  const Port* port = wj->getPort("position");
   std::string nameBase = "Wheel " + numStr + " Position";
   addOutputModel(port, nameBase,
                  "gear/gear[" + numStr + "]/wheel-position-rad");
@@ -598,7 +619,8 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         // For jsbsim use simple gears
         SimpleGear* sg = new SimpleGear(name);
         mTopLevelGroup->addChild(sg);
-        mVehicle->getTopBody()->addInteract(sg);
+        mTopLevelGroup->connect(mTopLevelBody->addLink("simpleGearContact"),
+                                sg->getPort("link"));
         Vector3 loc
           = locationData((*it)->getElement("location"), Vector3(0, 0, 0));
         sg->setPosition(structToBody(loc));
@@ -606,7 +628,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         real_type k = realData((*it)->getElement("spring_coeff"), 0);
         sg->setSpringConstant(Unit::lbfPerFoot().convertFrom(k));
         real_type d = realData((*it)->getElement("damping_coeff"), 0);
-        sg->setSpringDamping(Unit::lbfPerFootPerSecond().convertFrom(d));
+        sg->setDamperConstant(Unit::lbfPerFootPerSecond().convertFrom(d));
         real_type fs = realData((*it)->getElement("static_friction"), 0);
         sg->setFrictionCoeficient(fs);
         
@@ -615,15 +637,16 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         // FIXME
         // missing output properties are "wow" and "tire-pressure-norm"
 
-        std::string retract = stringData((*it)->getElement("retractable"));
-        if (retract == "RETRACT" || retract == "1") {
-          if (!connectJSBExpression("gear/gear-pos-norm", sg->getEnablePort()))
-            return error("could not connect to retract command");
-          // Well, connect that directly to the input
-          const Port* port = lookupJSBExpression("gear/gear-pos-norm");
-          addOutputModel(port, "Gear " + numStr + " Position",
-                         "gear/gear[" + numStr + "]/position-norm");
-        }
+        // FIXME no retractable for the moment
+//         std::string retract = stringData((*it)->getElement("retractable"));
+//         if (retract == "RETRACT" || retract == "1") {
+//           if (!connectJSBExpression("gear/gear-pos-norm", sg->getEnablePort()))
+//             return error("could not connect to retract command");
+//           // Well, connect that directly to the input
+//           const Port* port = lookupJSBExpression("gear/gear-pos-norm");
+//           addOutputModel(port, "Gear " + numStr + " Position",
+//                          "gear/gear[" + numStr + "]/position-norm");
+//         }
 
         real_type maxSteer = realData((*it)->getElement("max_steer"), 0);
         if (maxSteer != 0) {
@@ -633,22 +656,22 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           // FIXME: FCS might later define something for that gain ...
           // "fcs/steer-pos-deg[" + numStr + "]";
           if (!connectJSBExpression("fcs/steer-cmd-norm",
-                                    scale->getInputPort(0)))
+                                    scale->getPort("input")))
             return error("could not connect to steering command");
 
           Product* sProd = new Product(name + " SProd");
           addFCSModel(sProd);
           sProd->setNumFactors(2);
           if (!connectJSBExpression("fcs/steer-cmd-norm",
-                                    sProd->getInputPort(0)))
+                                    sProd->getPort("input0")))
             return error("could not connect to steering command");
-          Connection::connect(scale->getOutputPort(0), sProd->getInputPort(1));
-          const Port* port = sProd->getOutputPort(0);
+          mTopLevelGroup->connect(scale->getPort("output"), sProd->getPort("input1"));
+          const Port* port = sProd->getPort("output");
 
           Gain* gain = new Gain(name + " Steer Gain");
           addFCSModel(gain);
           gain->setGain(maxSteer);
-          Connection::connect(port, gain->getInputPort(0));
+          mTopLevelGroup->connect(port, gain->getPort("input"));
           addOutputModel(port, "Gear " + numStr + " Steering Output",
                          "gear/gear[" + numStr + "]/steering-norm");
 
@@ -657,20 +680,23 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
                                  UnitConversion::UnitToBaseUnit,
                                  Unit::degree());
           addFCSModel(unitConv);
-          Connection::connect(gain->getOutputPort(0),
-                              unitConv->getInputPort(0));
-          Connection::connect(unitConv->getOutputPort(0),
-                              sg->getInputPort("steeringAngle"));
+          sg->setEnableSteeringAngle(true);
+          mTopLevelGroup->connect(gain->getPort("output"),
+                                  unitConv->getPort("input"));
+          mTopLevelGroup->connect(unitConv->getPort("output"),
+                                  sg->getPort("steeringAngle"));
         }
         
         std::string brake = stringData((*it)->getElement("brake_group"));
         if (brake == "LEFT") {
+          sg->setEnableBrakeCommand(true);
           if (!connectJSBExpression("gear/left-brake-pos-norm",
-                                    sg->getInputPort("brakeCommand")))
+                                    sg->getPort("brakeCommand")))
             return error("could not connect brake command for group LEFT");
         } else if (brake == "RIGHT") {
+          sg->setEnableBrakeCommand(true);
           if (!connectJSBExpression("gear/right-brake-pos-norm",
-                                    sg->getInputPort("brakeCommand")))
+                                    sg->getPort("brakeCommand")))
             return error("could not connect brake command for group RIGHT");
         }
         
@@ -678,7 +704,8 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         // Very simple contact force. Penalty method.
         SimpleContact* sc = new SimpleContact((*it)->getAttribute("name"));
         mTopLevelGroup->addChild(sc);
-        mVehicle->getTopBody()->addInteract(sc);
+        mTopLevelGroup->connect(mTopLevelBody->addLink("simpleContact"),
+                                sc->getPort("link"));
 
         Vector3 loc
           = locationData((*it)->getElement("location"), Vector3(0, 0, 0));
@@ -687,7 +714,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         real_type k = realData((*it)->getElement("spring_coeff"), 0);
         sc->setSpringConstant(Unit::lbfPerFoot().convertFrom(k));
         real_type d = realData((*it)->getElement("damping_coeff"), 0);
-        sc->setSpringDamping(Unit::lbfPerFootPerSecond().convertFrom(d));
+        sc->setDamperConstant(Unit::lbfPerFootPerSecond().convertFrom(d));
         real_type fs = realData((*it)->getElement("static_friction"), 0);
         sc->setFrictionCoeficient(fs);
         
@@ -704,7 +731,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         // Model steering here ...
         // normally we connect the compressible part to the top level body, but
         // in case of steering this is no longer true.
-        RigidBody* strutParent = mVehicle->getTopBody();
+        RigidBody* strutParent = mTopLevelBody;
         std::string steerable = stringData((*it)->getElement("steerable"));
         if (steerable == "true" || steerable == "1") {
           // A new part modelling the steering
@@ -716,35 +743,36 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           // castering auto line up behavour. That is doe with this 0.05m.
           RevoluteActuator* sj = new RevoluteActuator(name + " Steer Joint");
           mTopLevelGroup->addChild(sj);
-          strutParent->addInteract(sj);
-          steer->setInboardJoint(sj);
-          sj->setJointAxis(Vector3(0, 0, 1));
-          sj->setJointPos(0);
-          sj->setJointVel(0);
+          mTopLevelGroup->connect(strutParent->addLink("steerJoint"),
+                                  sj->getPort("link0"));
+          mTopLevelGroup->connect(steer->addLink("steerJoint"),
+                                  sj->getPort("link1"));
+          sj->setAxis(Vector3(0, 0, 1));
+          sj->setInitialPosition(0);
+          sj->setInitialVelocity(0);
           parentPos = structToBody(compressJointPos) + Vector3(0.05, 0, 0);
           sj->setPosition(parentPos);
-          sj->setOrientation(Quaternion::unit());
           
           UnaryFunction* scale
             = new UnaryFunction(name + " Scale", UnaryFunction::Abs);
           addFCSModel(scale);
           if (!connectJSBExpression("fcs/steer-cmd-norm",
-                                    scale->getInputPort(0)))
+                                    scale->getPort("input")))
             return error("could not connect to steering command");
 
           Product* sProd = new Product(name + " SProd");
           addFCSModel(sProd);
           sProd->setNumFactors(2);
           if (!connectJSBExpression("fcs/steer-cmd-norm",
-                                    sProd->getInputPort(0)))
+                                    sProd->getPort("input0")))
             return error("could not connect to steering command");
-          Connection::connect(scale->getOutputPort(0), sProd->getInputPort(1));
-          Connection::connectRoute(sProd->getOutputPort(0), sj->getInputPort(0));
+          mTopLevelGroup->connect(scale->getPort("output"), sProd->getPort("input1"));
+          mTopLevelGroup->connect(sProd->getPort("output"), sj->getPort("input"));
   
           strutParent = steer;
           
           // Prepare outputs
-          const Port* port = sj->getOutputPort(0);
+          const Port* port = sj->getPort("position");
           std::string nameBase = "Steering " + numStr + " Position";
           addOutputModel(port, nameBase,
                          "gear/gear[" + numStr + "]/steering-pos-rad");
@@ -753,52 +781,56 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
                          "gear/gear[" + numStr + "]/steering-pos-deg");
         }
         
-        const XMLElement* launchbarElem = (*it)->getElement("launchbar");
-        if (launchbarElem) {
-          Launchbar* launchbar = new Launchbar(name + " Launchbar");
-          addMultiBodyModel(launchbar);
-          strutParent->addInteract(launchbar);
-          real_type length = realData(launchbarElem->getElement("length"), 0.5);
-          launchbar->setLength(length);
-          real_type upAngle = realData(launchbarElem->getElement("upAngle"), 30);
-          launchbar->setUpAngle(Unit::degree().convertFrom(upAngle));
-          real_type downAngle = realData(launchbarElem->getElement("downAngle"), -50);
-          launchbar->setDownAngle(Unit::degree().convertFrom(downAngle));
-          real_type force = realData(launchbarElem->getElement("launchForce"), 1000);
-          launchbar->setLaunchForce(force);
-          Vector3 loc = structToBody(locationData(launchbarElem->getElement("location")));
-          launchbar->setPosition(loc - parentPos);
+//         const XMLElement* launchbarElem = (*it)->getElement("launchbar");
+//         if (launchbarElem) {
+//           Launchbar* launchbar = new Launchbar(name + " Launchbar");
+//           addMultiBodyModel(launchbar);
+//           strutParent->addInteract(launchbar);
+//           real_type length = realData(launchbarElem->getElement("length"), 0.5);
+//           launchbar->setLength(length);
+//           real_type upAngle = realData(launchbarElem->getElement("upAngle"), 30);
+//           launchbar->setUpAngle(Unit::degree().convertFrom(upAngle));
+//           real_type downAngle = realData(launchbarElem->getElement("downAngle"), -50);
+//           launchbar->setDownAngle(Unit::degree().convertFrom(downAngle));
+//           real_type force = realData(launchbarElem->getElement("launchForce"), 1000);
+//           launchbar->setLaunchForce(force);
+//           Vector3 loc = structToBody(locationData(launchbarElem->getElement("location")));
+//           launchbar->setPosition(loc - parentPos);
 
 
-          if (!connectJSBExpression("/controls/gear/launchbar",
-                                    launchbar->getInputPort("tryMount")))
-            return error("could not connect to launchbar command");
-          if (!connectJSBExpression("/controls/gear/catapult-launch-cmd",
-                                    launchbar->getInputPort("launchCommand")))
-            return error("could not connect to launch command");
+//           if (!connectJSBExpression("/controls/gear/launchbar",
+//                                     launchbar->getInputPort("tryMount")))
+//             return error("could not connect to launchbar command");
+//           if (!connectJSBExpression("/controls/gear/catapult-launch-cmd",
+//                                     launchbar->getInputPort("launchCommand")))
+//             return error("could not connect to launch command");
 
-          // expose the launchbar position
-          const Port* port = launchbar->getOutputPort(0);
-          std::string nameBase = "Launchbar Position";
-          addOutputModel(port, nameBase, "gear/launchbar-pos-rad");
-          port = addToUnit(nameBase + " converter", Unit::degree(), port);
-          addOutputModel(port, nameBase + " Deg", "gear/launchbar-pos-deg");
-        }
+//           // expose the launchbar position
+//           const Port* port = launchbar->getOutputPort(0);
+//           std::string nameBase = "Launchbar Position";
+//           addOutputModel(port, nameBase, "gear/launchbar-pos-rad");
+//           port = addToUnit(nameBase + " converter", Unit::degree(), port);
+//           addOutputModel(port, nameBase + " Deg", "gear/launchbar-pos-deg");
+//         }
 
         
         // Now the compressible part of the strut
         RigidBody* arm = new RigidBody(name + " Strut");
         mTopLevelGroup->addChild(arm);
-        Mass* mass = new Mass(name + " Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(100)));
+        Mass* mass = new Mass(name + " Strut Mass", 100,
+                              InertiaMatrix(0,0,0,0,0,0), Vector3(0, 0, 1));
         mTopLevelGroup->addChild(mass);
-        arm->addInteract(mass);
+        mTopLevelGroup->connect(arm->addLink("mass"),
+                                mass->getPort("link"));
         
         // This time it is a prismatic joint
         PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
         mTopLevelGroup->addChild(pj);
-        strutParent->addInteract(pj);
-        arm->setInboardJoint(pj);
-        pj->setJointAxis(Vector3(0, 0, -1));
+        mTopLevelGroup->connect(strutParent->addLink("strutJoint"),
+                                pj->getPort("link0"));
+        mTopLevelGroup->connect(arm->addLink("strutJoint"),
+                                pj->getPort("link1"));
+        pj->setAxis(Vector3(0, 0, -1));
         pj->setPosition(structToBody(compressJointPos) - parentPos);
         parentPos = structToBody(compressJointPos);
         
@@ -806,15 +838,15 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         const XMLElement* airSpringElem = (*it)->getElement("damper");
         AirSpring* aoDamp = getAirSpring(airSpringElem, name);
         addMultiBodyModel(aoDamp);
-        Connection::connect(aoDamp->getOutputPort(0), pj->getInputPort(0));
-        Connection::connect(pj->getOutputPort(0), aoDamp->getInputPort(0));
-        Connection::connect(pj->getOutputPort(1), aoDamp->getInputPort(1));
+        mTopLevelGroup->connect(aoDamp->getPort("force"), pj->getPort("force"));
+        mTopLevelGroup->connect(pj->getPort("position"), aoDamp->getPort("position"));
+        mTopLevelGroup->connect(pj->getPort("velocity"), aoDamp->getPort("velocity"));
         
         // Attach a wheel to that strut part.
         attachWheel((*it)->getElement("wheel"), name, numStr, arm, parentPos);
         
         // Prepare some outputs ...
-        const Port* port = pj->getOutputPort(0);
+        const Port* port = pj->getPort("position");
         addOutputModel(port, "Gear " + numStr + " Compression",
                        "gear/gear[" + numStr + "]/compression-m");
         
@@ -834,28 +866,37 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         // This is the movable part of the strut, doing the compression
         RigidBody* arm = new RigidBody(name + " Arm");
         mTopLevelGroup->addChild(arm);
-        Mass* mass = new Mass(name + " Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(80)));
+        Mass* mass = new Mass(name + " Strut Mass", 80,
+                              InertiaMatrix(0,0,0,0,0,0), Vector3(-1, 0, 0));
         mTopLevelGroup->addChild(mass);
-        arm->addInteract(mass);
+        mTopLevelGroup->connect(arm->addLink("mass"),
+                                mass->getPort("link"));
         
         // Connect that with a revolute joint to the main body
         RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
         mTopLevelGroup->addChild(rj);
-        mVehicle->getTopBody()->addInteract(rj);
-        arm->setInboardJoint(rj);
+        mTopLevelGroup->connect(mTopLevelBody->addLink("mainLangingGear"),
+                                rj->getPort("link0"));
+        mTopLevelGroup->connect(arm->addLink("compressJoint"),
+                                rj->getPort("link1"));
         Vector3 compressJointAxis = locationData((*it)->getElement("axis"),
                                                  Vector3(0, 1, 0));
-        rj->setJointAxis(normalize(compressJointAxis));
-        rj->setJointPos(0);
-        rj->setJointVel(0);
+        rj->setAxis(normalize(compressJointAxis));
+        rj->setInitialPosition(0);
+        rj->setInitialVelocity(0);
         Vector3 compressJointPos = locationData((*it)->getElement("location"));
         rj->setPosition(structToBody(compressJointPos));
-        rj->setOrientation(Quaternion::unit());
         
-        LineForce* lineForce = new LineForce(name + " Air Spring LineForce");
+        InternalInteract* lineForce = new InternalInteract(name + " Air Spring LineForce");
+        lineForce->setEnableDistance(true);
+        lineForce->setEnableVelocity(true);
+        lineForce->setEnableForce(true);
+
         mTopLevelGroup->addChild(lineForce);
-        mVehicle->getTopBody()->addInteract(lineForce);
-        arm->addInteract(lineForce);
+        mTopLevelGroup->connect(mTopLevelBody->addLink("airSpring"),
+                                lineForce->getPort("link0"));
+        mTopLevelGroup->connect(arm->addLink("airSpring"),
+                                lineForce->getPort("link1"));
         /// FIXME that ordering in attachment is messy!
         Vector3 asMnt0 = locationData((*it)->getElement("springMount0"),
                                       compressJointPos -
@@ -872,19 +913,19 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         AirSpring* aoDamp = getAirSpring(airSpringElem, name);
         addMultiBodyModel(aoDamp);
         // That one reads the joint position and velocity ...
-        Connection::connect(lineForce->getOutputPort(0),
-                            aoDamp->getInputPort(0));
-        Connection::connect(lineForce->getOutputPort(1),
-                            aoDamp->getInputPort(1));
+        mTopLevelGroup->connect(lineForce->getPort("distance"),
+                                aoDamp->getPort("position"));
+        mTopLevelGroup->connect(lineForce->getPort("velocity"),
+                                aoDamp->getPort("velocity"));
         // ... and provides an output force
-        Connection::connect(aoDamp->getOutputPort(0),
-                            lineForce->getInputPort(0));
+        mTopLevelGroup->connect(aoDamp->getPort("force"),
+                                lineForce->getPort("force"));
         
         // Attach a wheel to that strut part.
         attachWheel((*it)->getElement("wheel"), name, numStr, arm,
                     structToBody(compressJointPos));
         
-        const Port* port = rj->getOutputPort(0);
+        const Port* port = rj->getPort("position");
         addOutputModel(port, "Gear " + numStr + " Compression",
                        "gear/gear[" + numStr + "]/compression-rad");
         
@@ -893,33 +934,34 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         addOutputModel(port, "Gear " + numStr + " Position",
                        "gear/gear[" + numStr + "]/position-norm");
         
-      } else if (type == "TAILHOOK") {
-        const XMLElement* tailhookElem = (*it);
-        std::string name = (*it)->getAttribute("name");
+//       } else if (type == "TAILHOOK") {
+//         const XMLElement* tailhookElem = (*it);
+//         std::string name = (*it)->getAttribute("name");
 
-        Tailhook* tailhook = new Tailhook(name + " Tailhook");
-        mTopLevelGroup->addChild(tailhook);
-        real_type length = realData(tailhookElem->getElement("length"), 0.5);
-        tailhook->setLength(length);
-        real_type upAngle = realData(tailhookElem->getElement("upAngle"), 10);
-        tailhook->setUpAngle(Unit::degree().convertFrom(upAngle));
-        real_type downAngle = realData(tailhookElem->getElement("downAngle"), -75);
-        tailhook->setDownAngle(Unit::degree().convertFrom(downAngle));
-        Vector3 loc = structToBody(locationData(tailhookElem->getElement("location")));
-        tailhook->setPosition(loc);
-        addMultiBodyModel(tailhook);
-        mVehicle->getTopBody()->addInteract(tailhook);
+//         Tailhook* tailhook = new Tailhook(name + " Tailhook");
+//         mTopLevelGroup->addChild(tailhook);
+//         real_type length = realData(tailhookElem->getElement("length"), 0.5);
+//         tailhook->setLength(length);
+//         real_type upAngle = realData(tailhookElem->getElement("upAngle"), 10);
+//         tailhook->setUpAngle(Unit::degree().convertFrom(upAngle));
+//         real_type downAngle = realData(tailhookElem->getElement("downAngle"), -75);
+//         tailhook->setDownAngle(Unit::degree().convertFrom(downAngle));
+//         Vector3 loc = structToBody(locationData(tailhookElem->getElement("location")));
+//         tailhook->setPosition(loc);
+//         addMultiBodyModel(tailhook);
+
+//         mVehicle->getTopBody()->addInteract(tailhook);
         
-        if (!connectJSBExpression("/controls/gear/tailhook",
-                                  tailhook->getInputPort(0)))
-          return error("could not connect to tailhook command");
+//         if (!connectJSBExpression("/controls/gear/tailhook",
+//                                   tailhook->getInputPort(0)))
+//           return error("could not connect to tailhook command");
         
-        // expose the tailhook position
-        const Port* port = tailhook->getOutputPort(0);
-        std::string nameBase = "Tailhook Position";
-        addOutputModel(port, nameBase, "gear/tailhook/position-rad");
-        port = addToUnit(nameBase + " converter", Unit::degree(), port);
-        addOutputModel(port, nameBase + " Deg", "gear/tailhook/position-deg");
+//         // expose the tailhook position
+//         const Port* port = tailhook->getOutputPort(0);
+//         std::string nameBase = "Tailhook Position";
+//         addOutputModel(port, nameBase, "gear/tailhook/position-rad");
+//         port = addToUnit(nameBase + " converter", Unit::degree(), port);
+//         addOutputModel(port, nameBase + " Deg", "gear/tailhook/position-deg");
 
       } else {
         return error("Unknown groundreactions component of type " + type);
@@ -1080,11 +1122,10 @@ JSBSimReader::convertEngine(const XMLElement* engine,
 // //   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
 // //   parent->addInteract(wj);
 // //   wheel->setInLDoboardJoint(wj);
-// //   wj->setJointAxis(Vector3(0, 1, 0));
+// //   wj->setAxis(Vector3(0, 1, 0));
 // //   wj->setPosition(pos);
-// //   wj->setOrientation(Quaternion::unit());
-// //   wj->setJointPos(0);
-// //   wj->setJointVel(0);
+// //   wj->setInitialPosition(0);
+// //   wj->setInitialVelocity(0);
 
 // //     DiscBrake* brakeF = new DiscBrake(name + " Brake Force");
 // //     brakeF->setMinForce(8e1);
@@ -1148,16 +1189,20 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
   Product* prod = new Product(namestr + " modulation");
   addMultiBodyModel(prod);
   std::string throttlename = "fcs/throttle-cmd-norm[" + number + "]";
-  if (!connectJSBExpression(throttlename, prod->getInputPort(0)))
+  if (!connectJSBExpression(throttlename, prod->getPort("input0")))
     return error("could not connect to throttle command");
-  Connection::connect(fullForce->getOutputPort(0), prod->getInputPort(1));
+  mTopLevelGroup->connect(fullForce->getPort("output"), prod->getPort("input1"));
 
-  ExternalForceModel* engineForce = new ExternalForceModel(namestr);
+  ExternalInteract* engineForce = new ExternalInteract(namestr);
   mTopLevelGroup->addChild(engineForce);
-  mVehicle->getTopBody()->addInteract(engineForce);
+  engineForce->setEnableBodyForce(true);
+  mTopLevelGroup->connect(mTopLevelBody->addLink("engine"),
+                          engineForce->getPort("link"));
   engineForce->setPosition(pos);
-  engineForce->setOrientation(orientation);
-  Connection::connect(prod->getOutputPort(0), engineForce->getInputPort(0));
+  // FIXME
+//   engineForce->setOrientation(orientation);
+  mTopLevelGroup->connect(prod->getPort("output"),
+                          engineForce->getPort("bodyForce"));
 
   return true;
 }
@@ -1232,7 +1277,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     if (b != 0) {
       SharedPtr<Bias> bias = new Bias(name + " Bias");
       addFCSModel(bias);
-      Connection::connect(summer->getOutputPort(0), bias->getInputPort(0));
+      mTopLevelGroup->connect(summer->getPort("output"), bias->getInputPort(0));
       Matrix m(1, 1);
       m(0, 0) = b;
       bias->setBias(m);
@@ -1240,7 +1285,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     } else {
       model = summer;
     }
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
   } else if (type == "DEADBAND" || type == "deadband") {
     SharedPtr<DeadBand> deadband = new DeadBand(name);
     addFCSModel(deadband);
@@ -1249,16 +1294,16 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to deadband input \"" + token + "\"");
     deadband->setWidth(realData(fcsComponent->getElement("width"), 0));
     model = deadband;
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
 
   } else if (type == "GRADIENT" || type == "gradient") {
     SharedPtr<TimeDerivative> timeDeriv = new TimeDerivative(name);
     addFCSModel(timeDeriv);
     std::string token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, timeDeriv->getInputPort(0)))
+    if (!connectJSBExpression(token, timeDeriv->getPort("input")))
       return error("could not connect to gradient input \"" + token + "\"");
     model = timeDeriv;
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
 
   } else if (type == "SWITCH" || type == "switch") {
     std::cout << "Ignoring SWITCH" << std::endl;
@@ -1292,7 +1337,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model = kinemat->getGroup();
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, model->getInputPort(0)))
+    if (!connectJSBExpression(token, model->getPort("input")))
       return error("could not connect to kinemat input \"" + token + "\"");
     out = kinemat->getOutputPort();
 
@@ -1304,7 +1349,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     if (!connectJSBExpression(token, gain->getInputPort(0)))
       return error("could not connect to gain input \"" + token + "\"");
     gain->setGain(realData(fcsComponent->getElement("gain"), 1));
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
 
   } else if (type == "AEROSURFACE_SCALE" || type == "aerosurface_scale") {
     // An AEROSURFACE_SCALE component is done with n input saturation clipping
@@ -1335,7 +1380,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model = asScale->getGroup();
     addFCSModel(model);
     token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, model->getInputPort(0)))
+    if (!connectJSBExpression(token, model->getPort("input")))
       return error("could not connect to gain input \"" + token + "\"");
     out = asScale->getOutputPort();
 
@@ -1356,10 +1401,10 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model = sGain->getGroup();
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, model->getInputPort(0)))
+    if (!connectJSBExpression(token, model->getPort("input")))
       return error("could not connect to gain input \"" + token + "\"");
     token = stringData(tbl->getElement("independentVar"));
-    if (!connectJSBExpression(token, model->getInputPort(1)))
+    if (!connectJSBExpression(token, model->getPort("scheduleInput")))
       return error("could not connect to table input \"" + token + "\"");
 
     out = sGain->getOutputPort();
@@ -1368,17 +1413,17 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model = new DiscreteIntegrator(name);
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, model->getInputPort(0)))
+    if (!connectJSBExpression(token, model->getPort("input")))
       return error("could not connect to integrator input \"" + token + "\"");
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
     real_type c1 = realData(fcsComponent->getElement("c1"), 1);
     if (c1 != 1) {
       SharedPtr<Gain> gain = new Gain(name + " Gain");
       addFCSModel(gain);
-      Connection::connect(model->getOutputPort(0), gain->getInputPort(0));
+      mTopLevelGroup->connect(model->getPort("output"), gain->getInputPort(0));
       gain->setGain(c1);
       model = gain;
-      out = model->getOutputPort(0);
+      out = model->getPort("output");
     }
 
   } else if (type == "LAG_FILTER" || type == "lag_filter") {
@@ -1390,7 +1435,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model = discreteTransfFunc;
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, model->getInputPort(0)))
+    if (!connectJSBExpression(token, model->getPort("input")))
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(1);
@@ -1400,7 +1445,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     v(1) = 1;
     v(2) = realData(fcsComponent->getElement("c1"), 1);
     discreteTransfFunc->setDenominator(v);
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
 
   } else if (type == "LEAD_LAG_FILTER" || type == "lead_lag_filter") {
     // C1*s + C2
@@ -1411,7 +1456,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model = discreteTransfFunc;
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, model->getInputPort(0)))
+    if (!connectJSBExpression(token, model->getPort("input")))
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(2);
@@ -1422,7 +1467,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     v(2) = realData(fcsComponent->getElement("c4"), 1);
     discreteTransfFunc->setDenominator(v);
 
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
 
   } else if (type == "WASHOUT_FILTER" || type == "washout_filter") {
     //   s
@@ -1433,7 +1478,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model = discreteTransfFunc;
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, model->getInputPort(0)))
+    if (!connectJSBExpression(token, model->getPort("input")))
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(1);
@@ -1443,7 +1488,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     v(1) = 1;
     v(2) = realData(fcsComponent->getElement("c1"), 1);
     discreteTransfFunc->setDenominator(v);
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
 
   } else if (type == "SECOND_ORDER_FILTER" || type == "second_order_filter") {
     // C1*s + C2*s + C3
@@ -1454,7 +1499,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     model = discreteTransfFunc;
     addFCSModel(model);
     std::string token = stringData(fcsComponent->getElement("input"));
-    if (!connectJSBExpression(token, model->getInputPort(0)))
+    if (!connectJSBExpression(token, model->getPort("input")))
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(3);
@@ -1467,7 +1512,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     v(3) = realData(fcsComponent->getElement("c6"), 1);
     discreteTransfFunc->setDenominator(v);
 
-    out = model->getOutputPort(0);
+    out = model->getPort("output");
 
   } else if (type == "SENSOR" || type == "sensor") {
     std::cout << "Ignoring SENSOR" << std::endl;
@@ -1515,26 +1560,26 @@ JSBSimReader::convertAerodynamics(const XMLElement* aero)
       
       if (!sum->getNumSummands())
         continue;
-      const Port* port = sum->getOutputPort(0);
+      const Port* port = sum->getPort("output");
 
       if (axisname == "LIFT") {
         port = addFromUnit("LIFT unit convert", Unit::lbf(), port);
-        Connection::connect(port, mAeroForce->getLiftPort());
+        mTopLevelGroup->connect(port, mAeroForce->getLiftPort());
       } else if (axisname == "DRAG") {
         port = addFromUnit("DRAG unit convert", Unit::lbf(), port);
-        Connection::connect(port, mAeroForce->getDragPort());
+        mTopLevelGroup->connect(port, mAeroForce->getDragPort());
       } else if (axisname == "SIDE") {
         port = addFromUnit("SIDE unit convert", Unit::lbf(), port);
-        Connection::connect(port, mAeroForce->getSidePort());
+        mTopLevelGroup->connect(port, mAeroForce->getSidePort());
       } else if (axisname == "ROLL") {
         port = addFromUnit("ROLL unit convert", Unit::lbfFoot(), port);
-        Connection::connect(port, mAeroForce->getRollPort());
+        mTopLevelGroup->connect(port, mAeroForce->getRollPort());
       } else if (axisname == "PITCH") {
         port = addFromUnit("PITCH unit convert", Unit::lbfFoot(), port);
-        Connection::connect(port, mAeroForce->getPitchPort());
+        mTopLevelGroup->connect(port, mAeroForce->getPitchPort());
       } else if (axisname == "YAW") {
         port = addFromUnit("YAW unit convert", Unit::lbfFoot(), port);
-        Connection::connect(port, mAeroForce->getYawPort());
+        mTopLevelGroup->connect(port, mAeroForce->getYawPort());
       } else
         return error("Unknown aerodynamic axis!");
     }
@@ -1567,9 +1612,9 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
       std::list<const Port*>::iterator iit = inputs.begin();
       while (iit != inputs.end()) {
         prod->setNumFactors(i+1);
-        Connection::connect(*iit++, prod->getInputPort(i++));
+        mTopLevelGroup->connect(*iit++, prod->getInputPort(i++));
       }
-      port = prod->getOutputPort(0);
+      port = prod->getPort("output");
     } else {
       return error("Unknown tag in function");
     }
@@ -1582,7 +1627,7 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
   if (sum) {
     unsigned num = sum->getNumSummands();
     sum->setNumSummands(num+1);
-    Connection::connect(port, sum->getInputPort(num));
+    mTopLevelGroup->connect(port, sum->getInputPort(num));
   }
 
   return true;
@@ -1592,7 +1637,7 @@ std::list<const Port*>
 JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
                                  const std::string& name)
 {
-  Node::GroupPath path = mVehicle->getMultiBodySystem()->getGroupPath();
+  NodePath path = mTopLevelGroup->getNodePathList().front();
   std::list<const Port*> inputs;
   std::list<const XMLElement*> args = operationTag->getElements();
   std::list<const XMLElement*>::const_iterator ait;
@@ -1619,9 +1664,9 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
 
         SharedPtr<Table1D> table = new Table1D(name + " Table");
         addMultiBodyModel(table);
-        Connection::connect(port, table->getInputPort(0));
+        mTopLevelGroup->connect(port, table->getInputPort(0));
         table->setTableData(data);
-        inputs.push_back(table->getOutputPort(0));
+        inputs.push_back(table->getPort("output"));
 
       } else if (dim == 2) {
         TableData<2> data;
@@ -1647,10 +1692,10 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
 
         SharedPtr<Table2D> table = new Table2D(name  + " Table");
         addMultiBodyModel(table);
-        Connection::connect(rPort, table->getInputPort(0));
-        Connection::connect(cPort, table->getInputPort(1));
+        mTopLevelGroup->connect(rPort, table->getInputPort(0));
+        mTopLevelGroup->connect(cPort, table->getInputPort(1));
         table->setTableData(data);
-        inputs.push_back(table->getOutputPort(0));
+        inputs.push_back(table->getPort("output"));
 
       } else if (dim == 3) {
         TableData<3> data;
@@ -1679,11 +1724,11 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
 
         SharedPtr<Table3D> table = new Table3D(name  + " Table");
         addMultiBodyModel(table);
-        Connection::connect(rPort, table->getInputPort(0));
-        Connection::connect(cPort, table->getInputPort(1));
-        Connection::connect(pPort, table->getInputPort(2));
+        mTopLevelGroup->connect(rPort, table->getInputPort(0));
+        mTopLevelGroup->connect(cPort, table->getInputPort(1));
+        mTopLevelGroup->connect(pPort, table->getInputPort(2));
         table->setTableData(data);
-        inputs.push_back(table->getOutputPort(0));
+        inputs.push_back(table->getPort("output"));
 
       } else {
         error("Unknown tabel dimension.");

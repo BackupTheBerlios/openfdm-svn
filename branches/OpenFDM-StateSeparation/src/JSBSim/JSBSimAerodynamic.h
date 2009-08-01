@@ -24,6 +24,8 @@ public:
   JSBSimAerodynamic(const std::string& name);
   virtual ~JSBSimAerodynamic(void);
 
+  void setPosition(const Vector3& position);
+
   void setWingArea(const real_type& wingArea);
   const Port* getWingAreaPort(void);
 
@@ -71,6 +73,8 @@ public:
   const Port* getWingSpanOver2SpeedPort(void);
   const Port* getChordOver2SpeedPort(void);
   const Port* getHOverWingSpanPort(void);
+
+  const Port* getMechanicLink(void);
 
   const Port* getDragPort(void);
   const Port* getSidePort(void);
