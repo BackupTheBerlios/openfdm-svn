@@ -41,7 +41,7 @@ main(int argc, char *argv[])
   // When the reflection stuff is ready, we can dump that data to a
   // native format ...
   OpenFDM::XMLDumpModelVisitor debugDumpVisitor(std::cout);
-  system->getNode()->accept(debugDumpVisitor);
+  debugDumpVisitor.apply(*system);
 
   return 0;
 }
