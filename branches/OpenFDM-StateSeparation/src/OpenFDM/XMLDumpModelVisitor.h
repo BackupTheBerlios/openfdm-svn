@@ -10,13 +10,14 @@
 #include <sstream>
 #include <iomanip>
 
-#include "ModelVisitor.h"
-#include "Model.h"
-#include "ModelGroup.h"
+#include "NodeVisitor.h"
+#include "Node.h"
+#include "Group.h"
+#include "TypeInfo.h"
 
 namespace OpenFDM {
 
-class XMLDumpModelVisitor : public ModelVisitor {
+class XMLDumpModelVisitor : public NodeVisitor {
 public:
   XMLDumpModelVisitor(std::ostream& os) :
     mOs(os),
@@ -27,7 +28,7 @@ public:
   virtual ~XMLDumpModelVisitor(void)
   { }
 
-  virtual void apply(Model& model)
+  virtual void apply(Node& model)
   {
     indent() << "<model type=\"" << model.getTypeName() << "\">\n";
     ++mIndent;
@@ -35,63 +36,52 @@ public:
     --mIndent;
     indent() << "</model>\n";
   }
-  virtual void apply(ModelGroup& modelGroup)
+  virtual void apply(Group& modelGroup)
   {
     indent() << "<model type=\"ModelGroup\">\n";
     ++mIndent;
     dumpProperties(modelGroup);
-    traverse(modelGroup);
+    modelGroup.traverse(*this);
     dumpConnections(modelGroup);
     --mIndent;
     indent() << "</model>\n";
   }
-  virtual void apply(System& system)
-  {
-    indent() << "<?xml version=\"1.0\"?>\n";
-    indent() << "<OpenFDM>\n";
-    ++mIndent;
-    indent() << "<model type=\"System\">\n";
-    ++mIndent;
-    dumpProperties(system);
-    traverse(system);
-    dumpConnections(system);
-    --mIndent;
-    indent() << "</model>\n";
-    --mIndent;
-    indent() << "</OpenFDM>\n";
-  }
+//   virtual void apply(System& system)
+//   {
+//     indent() << "<?xml version=\"1.0\"?>\n";
+//     indent() << "<OpenFDM>\n";
+//     ++mIndent;
+//     indent() << "<model type=\"System\">\n";
+//     ++mIndent;
+//     dumpProperties(system);
+//     traverse(system);
+//     dumpConnections(system);
+//     --mIndent;
+//     indent() << "</model>\n";
+//     --mIndent;
+//     indent() << "</OpenFDM>\n";
+//   }
 private:
-  void dumpConnections(const ModelGroup& modelGroup)
+  void dumpPort(const Port* port)
   {
-    unsigned numConnections = modelGroup.getNumConnections();
+    if (!port)
+      return;
+    SharedPtr<const Node> node = port->getNode();
+    if (!node)
+      return;
+    indent() << "<Port ModelName=\"" << node->getName()
+             << "\" PortName=\"" << port->getName()
+             << "\"/>\n";
+  }
+  void dumpConnections(const Group& modelGroup)
+  {
+    unsigned numConnections = modelGroup.getNumConnects();
     for (unsigned i = 0; i < numConnections; ++i) {
-      const Connection* connection = modelGroup.getConnection(i);
-      if (connection->getName().empty())
-        indent() << "<connect>\n";
-      else
-        indent() << "<connect name=\"" << connection->getName() << "\">\n";
+      const Connect* connection = modelGroup.getConnect(i);
+      indent() << "<connect>\n";
       ++mIndent;
-      dumpProperties(*connection);
-      SharedPtr<const PortProvider> portProvider;
-      portProvider = connection->getPortProvider().lock();
-      if (portProvider) {
-        SharedPtr<Node> node = portProvider->getModel().lock();
-        if (node) {
-          indent() << "<PortProvider ModelName=\"" << node->getName()
-                   << "\" PortName=\"" << portProvider->getName()
-                   << "\"/>\n";
-        }
-      }
-      SharedPtr<const PortAcceptor> portAcceptor;
-      portAcceptor = connection->getPortAcceptor().lock();
-      if (portAcceptor) {
-        SharedPtr<Node> node = portAcceptor->getModel().lock();
-        if (node) {
-          indent() << "<PortAcceptor ModelName=\"" << node->getName()
-                   << "\" PortName=\"" << portAcceptor->getName()
-                   << "\"/>\n";
-        }
-      }
+      dumpPort(connection->getPort0());
+      dumpPort(connection->getPort1());
       --mIndent;
       indent() << "</connect>\n";
     }
