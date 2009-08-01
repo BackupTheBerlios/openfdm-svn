@@ -177,6 +177,7 @@ OpenFDMCoreSOURCES = \
   ODESolver.cpp \
   Port.cpp \
   PortValue.cpp \
+  ReaderWriter.cpp \
   RigidBody.cpp \
   RootJoint.cpp \
   SphericalEarth.cpp \

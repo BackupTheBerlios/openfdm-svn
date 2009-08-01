@@ -4,6 +4,8 @@
 
 #include "ReaderWriter.h"
 
+#include "System.h"
+
 namespace OpenFDM {
 
 ReaderWriter::ReaderWriter(void)
