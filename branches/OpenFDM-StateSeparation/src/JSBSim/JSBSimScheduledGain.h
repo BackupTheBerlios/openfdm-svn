@@ -6,6 +6,7 @@
 #define OpenFDM_JSBSimScheduledGain_H
 
 #include "JSBSimFCSComponent.h"
+#include <OpenFDM/BreakPointLookup.h>
 #include <OpenFDM/SharedPtr.h>
 #include <OpenFDM/Table.h>
 

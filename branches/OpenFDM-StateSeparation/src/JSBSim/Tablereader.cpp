@@ -16,12 +16,12 @@ parseTable1D(std::istream& s, TableData<1>& data, BreakPointVector& lookup)
     real_type in = 0;
     real_type out = 0;
     s >> in >> out;
-    lookup.setAtIndex(i, in);
+    lookup.insert(in);
     TableData<1>::Index iv;
     iv(0) = i;
     data(iv) = out;
   }
-  return lookup.isValid() && lookup.size() == data.size(0) && s;
+  return lookup.size() == data.size(0) && s;
 }
 
 bool
@@ -31,17 +31,17 @@ parseTable2D(std::istream& s, TableData<2>& data, BreakPointVector lookup[2])
   for (unsigned j = 0; s && j < data.size(1); ++j) {
     real_type in = 0;
     s >> in;
-    lookup[1].setAtIndex(j, in);
+    lookup[1].insert(in);
   }
 
-  if (!lookup[1].isValid() || lookup[1].size() != data.size(1))
+  if (lookup[1].size() != data.size(1))
     return false;
   
   for (unsigned i = 0; s && i < data.size(0); ++i) {
     real_type in = 0;
     s >> in;
 
-    lookup[0].setAtIndex(i, in);
+    lookup[0].insert(in);
 
     for (unsigned j = 0; s && j < data.size(1); ++j) {
       real_type out = 0;
@@ -53,7 +53,7 @@ parseTable2D(std::istream& s, TableData<2>& data, BreakPointVector lookup[2])
       data(iv) = out;
     }
   }
-  return lookup[0].isValid() && lookup[0].size() == data.size(0) && s;
+  return lookup[0].size() == data.size(0) && s;
 }
 
 bool
@@ -62,21 +62,21 @@ parseTable3D(std::istream& s, TableData<3>& data, BreakPointVector lookup[3])
   for (unsigned k = 0; s && k < data.size(2); ++k) {
     real_type in = 0;
     s >> in;
-    lookup[2].setAtIndex(k, in);
+    lookup[2].insert(in);
 
     for (unsigned j = 0; s && j < data.size(1); ++j) {
       real_type in = 0;
       s >> in;
-      lookup[1].setAtIndex(j, in);
+      lookup[1].insert(in);
     }
-    if (!lookup[1].isValid() || lookup[1].size() != data.size(1))
+    if (lookup[1].size() != data.size(1))
       return false;
     
     for (unsigned i = 0; s && i < data.size(0); ++i) {
       real_type in = 0;
       s >> in;
       
-      lookup[0].setAtIndex(i, in);
+      lookup[0].insert(in);
       
       for (unsigned j = 0; s && j < data.size(1); ++j) {
         real_type out = 0;
@@ -90,8 +90,8 @@ parseTable3D(std::istream& s, TableData<3>& data, BreakPointVector lookup[3])
       }
     }
   }
-  return lookup[0].isValid() && lookup[0].size() == data.size(0) &&
-    lookup[2].isValid() && lookup[2].size() == data.size(2) && s;
+  return lookup[0].size() == data.size(0) &&
+    lookup[2].size() == data.size(2) && s;
 }
 
 } // namespace OpenFDM

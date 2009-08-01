@@ -28,25 +28,25 @@ JSBSimScheduledGain::JSBSimScheduledGain(const std::string& name) :
 
   mTable = new Table1D("Table");
   getGroup()->addChild(mTable);
-  Connection::connect(product->getInputPort(0),
-                      mTable->getOutputPort(0));
-  Connection::connect(mTable->getInputPort(0),
-                      mBreakPointLookup->getOutputPort(0));
+  getGroup()->connect(product->getPort("input0"),
+                      mTable->getPort("output"));
+  getGroup()->connect(mTable->getPort("input"),
+                      mBreakPointLookup->getPort("output"));
 
   // Now connect the input and the output to this groups in and outputs
   GroupInput* groupInput = new GroupInput("Input");
   getGroup()->addChild(groupInput);
-  Connection::connect(product->getInputPort(1),
-                      groupInput->getOutputPort(0));
+  getGroup()->connect(product->getPort("input1"),
+                      groupInput->getPort("output"));
  
   groupInput = new GroupInput("Schedule Input");
   getGroup()->addChild(groupInput);
-  Connection::connect(mBreakPointLookup->getInputPort(0),
-                      groupInput->getOutputPort(0));
+  getGroup()->connect(mBreakPointLookup->getPort("input"),
+                      groupInput->getPort("output"));
 
   // That single output port is this one
-  Connection::connect(getInternalOutputPort(),
-                      product->getOutputPort(0));
+  getGroup()->connect(getInternalOutputPort(),
+                      product->getPort("output"));
 }
 
 JSBSimScheduledGain::~JSBSimScheduledGain(void)

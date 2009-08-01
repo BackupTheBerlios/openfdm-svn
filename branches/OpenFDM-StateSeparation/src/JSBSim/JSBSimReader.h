@@ -10,8 +10,6 @@
 #include <map>
 #include <iosfwd>
 
-#include <OpenFDM/AeroForce.h>
-#include <OpenFDM/Vehicle.h>
 #include <OpenFDM/ReaderWriter.h>
 #include <OpenFDM/Table.h>
 
@@ -23,7 +21,6 @@ class XMLElement;
 
 class Summer;
 class Product;
-class Port;
 class Port;
 
 class JSBSimReader : public JSBSimReaderBase {
@@ -53,11 +50,11 @@ private:
   bool convertEngine(const XMLElement* engine, const std::string& number);
   bool convertTurbine(const XMLElement* turbine, const std::string& number,
                       const Vector3& pos, const Quaternion& orientation,
-                      Port* thrusterDriver);
+                      const Port* thrusterDriver);
   bool convertAerodynamics(const XMLElement* aero);
   bool convertFunction(const XMLElement* function, Summer* sum);
-  std::list<Port*> readFunctionInputs(const XMLElement* operationTag,
-                                      const std::string& name);
+  std::list<const Port*> readFunctionInputs(const XMLElement* operationTag,
+                                            const std::string& name);
 
   unsigned getNumTableDims(const XMLElement* tableElem);
   bool readTable1D(const XMLElement* tableElem,

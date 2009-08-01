@@ -10,14 +10,12 @@
 #include <map>
 #include <iosfwd>
 
-#include <OpenFDM/AeroForce.h>
-#include <OpenFDM/Vehicle.h>
 #include <OpenFDM/ReaderWriter.h>
+#include <OpenFDM/BreakPointLookup.h>
 #include <OpenFDM/Table.h>
 #include <OpenFDM/Model.h>
 #include <OpenFDM/GroupInput.h>
 #include <OpenFDM/GroupOutput.h>
-#include <OpenFDM/Connection.h>
 #include <OpenFDM/Port.h>
 
 #include <OpenFDM/XML/XMLReader.h>
@@ -27,6 +25,7 @@
 
 #include <OpenFDM/XML/EasyXMLReader.h> // FIXME
 
+#include "JSBSimAerodynamic.h"
 #include "XMLReader.h"
 
 namespace OpenFDM {
@@ -38,25 +37,26 @@ class Product;
 
 class PortSet {
   struct PathPort {
-    Node::GroupPath modelPath;
-    SharedPtr<Port> portProvider;
+    NodePath modelPath;
+    SharedPtr<const Port> portProvider;
   };
 public:
-  PortSet(Port* sourcePort = 0)
+  PortSet(const Port* sourcePort = 0)
   {
     if (!sourcePort)
       return;
     PathPort pathPort;
     pathPort.portProvider = sourcePort;
 
-    SharedPtr<Node> node = sourcePort->getModel().lock();
+    SharedPtr<const Node> node = sourcePort->getNode();
     if (node)
-      pathPort.modelPath = node->getPath();
+      // FIXME
+      pathPort.modelPath = node->getNodePathList().front();
 
     mPortList.push_back(pathPort);
   }
 
-  Port* routeTo(const Node::GroupPath& path)
+  const Port* routeTo(const NodePath& path)
   {
     // could happen if the initialzer failed
     if (mPortList.empty())
@@ -66,20 +66,20 @@ public:
     if (path.empty())
       return mPortList.front().portProvider;
 
-    const Node::GroupPath& originatingPath = mPortList.front().modelPath;
+    const NodePath& originatingPath = mPortList.front().modelPath;
     // fast return if the models are not connected to the same root system
     if (path.front() != originatingPath.front())
       return 0;
 
     // first check, if we already have a route
-    Port* portProvider = findProvider(path);
+    const Port* portProvider = findProvider(path);
     if (portProvider)
       return portProvider;
 
     // Compute the iterators for seperating the common part of the model path
     // from the different part
-    Node::GroupPath::const_iterator mi1 = path.begin();
-    Node::GroupPath::const_iterator mi2 = originatingPath.begin();
+    NodePath::const_iterator mi1 = path.begin();
+    NodePath::const_iterator mi2 = originatingPath.begin();
     while (mi1 != path.end() && mi2 != originatingPath.end()) {
       if (*mi1 != *mi2)
         break;
@@ -89,43 +89,45 @@ public:
 
     if (mi1 != path.end()) {
       // that is: we must first go up that path and search again
-      Node::GroupPath pathUp = path;
+      NodePath pathUp = path;
       pathUp.pop_back();
       portProvider = routeTo(pathUp);
       if (!portProvider)
         return 0;
       
       GroupInput* groupInput = new GroupInput(portProvider->getName());
-      path.back()->addChild(groupInput, true);
+      Group* group = const_cast<Group*>(dynamic_cast<const Group*>(path.back().get()));
+      group->addChild(groupInput);
 
       PathPort pathPort;
-      pathPort.modelPath = groupInput->getPath();
-      pathPort.portProvider = groupInput->getOutputPort(0);
+      pathPort.modelPath = groupInput->getNodePathList().front();
+      pathPort.portProvider = group->getPort(groupInput->getExternalPortIndex());
       mPortList.push_back(pathPort);
 
-      Connection::connect(portProvider, groupInput->getGroupInput());
+      group->connect(portProvider, groupInput->getPort("input"));
       
-      return groupInput->getOutputPort(0);
+      return pathPort.portProvider.get();
 
     } else if (mi2 != originatingPath.end()) {
       // that is: we need to step deeper towards the origin of that port
-      Node::GroupPath pathDown = path;
+      NodePath pathDown = path;
       pathDown.push_back(*mi2);
       portProvider = routeTo(pathDown);
       if (!portProvider)
         return 0;
 
       GroupOutput* groupOutput = new GroupOutput(portProvider->getName());
-      pathDown.back()->addChild(groupOutput, true);
+      Group* group = const_cast<Group*>(dynamic_cast<const Group*>(pathDown.back().get()));
+      group->addChild(groupOutput);
 
       PathPort pathPort;
-      pathPort.modelPath = groupOutput->getPath();
-      pathPort.portProvider = groupOutput->getGroupOutput();
+      pathPort.modelPath = groupOutput->getNodePathList().front();
+      pathPort.portProvider = group->getPort(groupOutput->getExternalPortIndex());
       mPortList.push_back(pathPort);
 
-      Connection::connect(portProvider, groupOutput->getInputPort(0));
+      group->connect(portProvider, groupOutput->getPort("input"));
       
-      return groupOutput->getGroupOutput();
+      return pathPort.portProvider.get();
 
     } else {
       // should not happen, in this case the find provider must have been
@@ -134,7 +136,7 @@ public:
     }
   }
 
-  Port* findProvider(const Node::GroupPath& path)
+  const Port* findProvider(const NodePath& path)
   {
     PortList::iterator i = mPortList.begin();
     while (i != mPortList.end()) {
@@ -175,7 +177,7 @@ public:
   void clear()
   { mMap.clear(); }
 
-  Port* routeTo(const std::string& name, const Node::GroupPath& path)
+  const Port* routeTo(const std::string& name, const NodePath& path)
   {
     std::string simplifiedName = simplify(name);
     if (mMap.count(simplifiedName) <= 0)
@@ -183,7 +185,7 @@ public:
     return mMap[simplifiedName].routeTo(path);
   }
 
-  void registerPort(const std::string& name, Port* port)
+  void registerPort(const std::string& name, const Port* port)
   { mMap[simplify(name)] = port; }
 
   /// Returns true if this property is already registered
@@ -230,47 +232,48 @@ protected:
 
 
   /// <FIXME> document and rethink
-  Port* lookupJSBExpression(const std::string& name,
-                                    const Node::GroupPath& path = Node::GroupPath(),
-                                    bool recheckAeroProp = true);
+  const Port* lookupJSBExpression(const std::string& name,
+                                  const NodePath& path = NodePath(),
+                                  bool recheckAeroProp = true);
 
-  bool connectJSBExpression(const std::string& name, Port*,
+  bool connectJSBExpression(const std::string& name, const Port*,
                             bool recheckAeroProp = true);
 
-  void registerExpression(const std::string& name, Port* expr);
-  void registerJSBExpression(const std::string& name, Port* expr);
+  void registerExpression(const std::string& name, const Port* expr);
+  void registerJSBExpression(const std::string& name, const Port* expr);
 
-  Port* createAndScheduleAeroProp(const std::string& name,
-                                          const Node::GroupPath& path);
-  Port* createAndScheduleInput(const std::string& name,
-                                       const Node::GroupPath& path);
+  const Port* createAndScheduleAeroProp(const std::string& name,
+                                        const NodePath& path);
+  const Port* createAndScheduleInput(const std::string& name,
+                                     const NodePath& path);
 
-  Port* addInputModel(const std::string& name, const std::string& propName,
-                      real_type gain = 1);
-  void addOutputModel(Port* out, const std::string& name,
+  const Port* addInputModel(const std::string& name, const std::string& propName,
+                            real_type gain = 1);
+  void addOutputModel(const Port* out, const std::string& name,
                       const std::string& propName, real_type gain = 1);
 
-  Port* addInverterModel(const std::string& name, Port* in);
-  Port* addAbsModel(const std::string& name, Port* in);
-  Port* addConstModel(const std::string& name, real_type value,
-                              const Node::GroupPath& path = Node::GroupPath());
-  Port* addToUnit(const std::string& name, Unit u, Port* in);
-  Port* addFromUnit(const std::string& name, Unit u, Port* in);
+  const Port* addInverterModel(const std::string& name, const Port* in);
+  const Port* addAbsModel(const std::string& name, const Port* in);
+  const Port* addConstModel(const std::string& name, real_type value,
+                            const NodePath& path = NodePath());
+  const Port* addToUnit(const std::string& name, Unit u, const Port* in);
+  const Port* addFromUnit(const std::string& name, Unit u, const Port* in);
 
-  static SharedPtr<Group> getGroup(Port* in);
+  static SharedPtr<Group> getGroup(const Port* in);
   void addFCSModel(Node* model);
 
-  Port* addMultiBodyConstModel(const std::string& name, real_type value);
-  void addMultiBodyModel(Model* model);
+  const Port* addMultiBodyConstModel(const std::string& name, real_type value);
+  void addMultiBodyModel(Node* model);
   /// </FIXME> document and rethink
-  Port* getTablePrelookup(const std::string& name, Port* in, const BreakPointVector& tl);
+  const Port* getTablePrelookup(const std::string& name, const Port* in, const BreakPointVector& tl);
   /// List for the aircraft search path.
   std::list<std::string> mAircraftPath;
   /// List for the engine search path.
   std::list<std::string> mEnginePath;
 
+  SharedPtr<Group> mTopLevelGroup;
   PropertyMap mExpressionTable;
-  SharedPtr<AeroForce> mAeroForce;
+  SharedPtr<JSBSimAerodynamic> mAeroForce;
   std::vector<SharedPtr<BreakPointLookup> > mBreakPointVectors;
 
   // For now just copies from the prevous try ...

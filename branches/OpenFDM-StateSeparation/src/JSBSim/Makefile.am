@@ -9,6 +9,7 @@ jsb2openfdm_LDADD = libOpenFDMJSBReader.la ../OpenFDM/libOpenFDM.la
 OpenFDMincludedir = $(includedir)/JSBSim
 
 OpenFDMinclude_HEADERS = \
+  JSBSimAerodynamic.h \
   JSBSimAerosurfaceScale.h \
   JSBSimFCSComponent.h \
   JSBSimKinemat.h \
@@ -20,6 +21,7 @@ OpenFDMinclude_HEADERS = \
 
 lib_LTLIBRARIES = libOpenFDMJSBReader.la
 libOpenFDMJSBReader_la_SOURCES = \
+  JSBSimAerodynamic.cpp \
   JSBSimAerosurfaceScale.cpp \
   JSBSimFCSComponent.cpp \
   JSBSimKinemat.cpp \
