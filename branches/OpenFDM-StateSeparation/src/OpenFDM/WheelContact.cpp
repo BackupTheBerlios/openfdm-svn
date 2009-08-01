@@ -16,7 +16,7 @@ BEGIN_OPENFDM_OBJECT_DEF(WheelContact, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Vector3, Axis, Serialized)
   DEF_OPENFDM_PROPERTY(Real, WheelRadius, Serialized)
   DEF_OPENFDM_PROPERTY(Real, SpringConstant, Serialized)
-  DEF_OPENFDM_PROPERTY(Real, DampingConstant, Serialized)
+  DEF_OPENFDM_PROPERTY(Real, DamperConstant, Serialized)
   DEF_OPENFDM_PROPERTY(Real, FrictionCoeficient, Serialized)
   END_OPENFDM_OBJECT_DEF
 
@@ -115,7 +115,7 @@ WheelContact::WheelContact(const std::string& name) :
 {
   mWheelRadius = 0.3;
   mSpringConstant = 0;
-  mDampingConstant = 0;
+  mDamperConstant = 0;
   mFrictionCoeficient = 0.8;
 }
 
@@ -135,7 +135,7 @@ WheelContact::computeNormalForce(real_type compressLen,
                                  real_type compressVel,
                                  PortValueList&) const
 {
-  return compressLen*mSpringConstant + mDampingConstant*compressVel;
+  return compressLen*mSpringConstant + mDamperConstant*compressVel;
 }
 
 Vector2
