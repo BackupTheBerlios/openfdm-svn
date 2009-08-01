@@ -1,13 +1,14 @@
 #include <iostream>
 
 #include <OpenFDM/ReaderWriter.h>
+#include <OpenFDM/System.h>
 #include <OpenFDM/XMLDumpModelVisitor.h>
 #include "JSBSimReader.h"
 
 using OpenFDM::ReaderWriter;
 using OpenFDM::JSBSimReader;
-using OpenFDM::Vehicle;
 using OpenFDM::SharedPtr;
+using OpenFDM::System;
 
 int
 main(int argc, char *argv[])
@@ -34,13 +35,13 @@ main(int argc, char *argv[])
     
     return EXIT_FAILURE;
   }
-  SharedPtr<Vehicle> vehicle = reader.getVehicle();
+  SharedPtr<System> system = reader.getSystem();
 
   // Ok, now the Vehicle here contains the imported data
   // When the reflection stuff is ready, we can dump that data to a
   // native format ...
   OpenFDM::XMLDumpModelVisitor debugDumpVisitor(std::cout);
-  vehicle->getSystem()->accept(debugDumpVisitor);
+  system->getNode()->accept(debugDumpVisitor);
 
   return 0;
 }

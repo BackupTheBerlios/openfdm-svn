@@ -50,7 +50,7 @@
 #include <OpenFDM/XML/ErrorHandler.h>
 #include <OpenFDM/XML/Attributes.h>
 
-#include <OpenFDM/XML/EasyXMLReader.h> // FIXME
+#include <OpenFDM/XML/ExpatXMLReader.h> // FIXME
 
 #include "JSBSimAerodynamic.h"
 #include "JSBSimAerosurfaceScale.h"
@@ -110,7 +110,7 @@ SharedPtr<XMLElement>
 JSBSimReaderBase::parseXMLStream(std::istream& stream)
 {
   // Get a parser FIXME
-  SharedPtr<XML::XMLReader> reader = new XML::EasyXMLReader;
+  SharedPtr<XML::XMLReader> reader = new XML::ExpatXMLReader;
   
   // Set the handlers
   SharedPtr<SimpleContentHandler> ch = new SimpleContentHandler;

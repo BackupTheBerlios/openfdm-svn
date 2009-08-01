@@ -1,5 +1,12 @@
 INCLUDES = -I$(srcdir)/..
 
+if ENABLE_EXPAT
+xml_library = ../OpenFDM/XML/libOpenFDMexpatXML.la
+endif
+if ENABLE_EASYXML
+xml_library = ../OpenFDM/XML/libOpenFDMeasyxmlXML.la
+endif
+
 bin_PROGRAMS = jsb2openfdm
 jsb2openfdm_SOURCES = jsb2openfdm.cpp
 jsb2openfdm_LDFLAGS = 
@@ -30,6 +37,6 @@ libOpenFDMJSBReader_la_SOURCES = \
   JSBSimScheduledGain.cpp \
   Tablereader.cpp \
   XMLReader.cpp
-libOpenFDMJSBReader_la_LIBADD = ../OpenFDM/XML/libOpenFDMeasyxmlXML.la \
+libOpenFDMJSBReader_la_LIBADD = $(xml_library) \
                                 ../OpenFDM/XML/libOpenFDMXML.la \
                                 ../OpenFDM/libOpenFDM.la
