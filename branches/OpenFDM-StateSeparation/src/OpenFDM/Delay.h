@@ -15,7 +15,7 @@ namespace OpenFDM {
 class Delay : public Model {
   OPENFDM_OBJECT(Delay, Model);
 public:
-  Delay(const std::string& name);
+  Delay(const std::string& name, unsigned delay = 0);
   virtual ~Delay();
 
   virtual bool alloc(ModelContext&) const;

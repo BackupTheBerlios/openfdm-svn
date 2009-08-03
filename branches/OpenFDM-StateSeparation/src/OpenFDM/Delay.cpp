@@ -18,7 +18,7 @@ BEGIN_OPENFDM_OBJECT_DEF(Delay, Model)
   DEF_OPENFDM_PROPERTY(Unsigned, Delay, Serialized)
   END_OPENFDM_OBJECT_DEF
 
-Delay::Delay(const std::string& name) :
+Delay::Delay(const std::string& name, unsigned delay) :
   Model(name),
   mInputPort(newMatrixInputPort("input", true)),
   mOutputPort(newMatrixOutputPort("output")),
@@ -27,6 +27,8 @@ Delay::Delay(const std::string& name) :
 {
   mMatrixStateInfo = new MatrixListStateInfo;
   addDiscreteStateInfo(mMatrixStateInfo);
+
+  setDelay(delay);
 }
 
 Delay::~Delay()
