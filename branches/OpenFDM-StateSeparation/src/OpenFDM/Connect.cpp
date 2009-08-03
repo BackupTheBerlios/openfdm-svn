@@ -4,6 +4,7 @@
 
 #include "Connect.h"
 #include "Group.h"
+#include "LogStream.h"
 
 namespace OpenFDM {
 
@@ -32,8 +33,10 @@ bool
 Connect::setPort0(const Port* portInfo0)
 {
   SharedPtr<const Port> portInfo1 = mPort1.lock();
-  if (!isCompatible(portInfo0, portInfo1))
+  if (!isCompatible(portInfo0, portInfo1)) {
+    Log(Model, Warning) << "Trying to connect incompatible ports" << std::endl;
     return false;
+  }
   mPort0 = portInfo0;
   return true;
 }
@@ -48,8 +51,10 @@ bool
 Connect::setPort1(const Port* portInfo1)
 {
   SharedPtr<const Port> portInfo0 = mPort0.lock();
-  if (!isCompatible(portInfo0, portInfo1))
+  if (!isCompatible(portInfo0, portInfo1)) {
+    Log(Model, Warning) << "Trying to connect incompatible ports" << std::endl;
     return false;
+  }
   mPort1 = portInfo1;
   return true;
 }
@@ -61,10 +66,14 @@ Connect::isCompatible(const Port* portInfo0, const Port* portInfo1) const
     return true;
   if (!portInfo1)
     return true;
-  if (!isInGroup(*portInfo0))
+  if (!isInGroup(*portInfo0)) {
+    Log(Model, Warning) << "Port is in different group than model" << std::endl;
     return false;
-  if (!isInGroup(*portInfo1))
+  }
+  if (!isInGroup(*portInfo1)) {
+    Log(Model, Warning) << "Port is in different group than model" << std::endl;
     return false;
+  }
   // Just a crude first time check if this will work in principle.
   return portInfo0->canConnect(*portInfo1);
 }
