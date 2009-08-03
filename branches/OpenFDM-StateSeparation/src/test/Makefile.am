@@ -7,6 +7,7 @@ TESTS = \
 	limit \
 	linalg \
 	quattest \
+	mechanicstructure \
 	simulationtime \
 	structure \
 	unitstest
@@ -18,6 +19,7 @@ noinst_PROGRAMS = \
 	foucault \
 	inertianav \
 	mechanic \
+	mechanicstructure \
 	structure \
 	tiretestrig \
 	coordsys \
@@ -52,6 +54,9 @@ linalg_LDADD = ../OpenFDM/libOpenFDM.la
 
 mechanic_SOURCES = mechanic.cpp
 mechanic_LDADD = ../OpenFDM/libOpenFDM.la
+
+mechanicstructure_SOURCES = mechanicstructure.cpp
+mechanicstructure_LDADD = ../OpenFDM/libOpenFDM.la
 
 quattest_SOURCES = quattest.cpp
 quattest_LDADD = ../OpenFDM/libOpenFDM.la
