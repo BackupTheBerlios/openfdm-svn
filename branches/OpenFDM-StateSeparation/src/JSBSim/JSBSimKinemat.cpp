@@ -27,10 +27,10 @@ JSBSimKinemat::JSBSimKinemat(const std::string& name) :
   //  -------------------------------
   //  |
   //  o-|BreakPointVector|-o-|Minus|-| FIXME: that table lookup is still missing
-  //  |               |         |
-  //  +-|ErrorGain|--|Min|----|Max|-|Integrator|-o-|Outgain|-
-  //  |                                          |
-  //  -----------|FeedbackGain|-------------------
+  //  |                    |         |
+  //  +-|ErrorGain|-------|Min|----|Max|-|Integrator|-o-|Outgain|-
+  //  |                                               |
+  //  -----------|FeedbackGain|------------------------
   //
   // FIXME: simplify
   // FIXME: implement tables
@@ -66,9 +66,8 @@ JSBSimKinemat::JSBSimKinemat(const std::string& name) :
   getGroup()->addChild(integrator);
   getGroup()->connect(integrator->getPort("input"),
                       mKinematRateLimit->getPort("output"));
-  Matrix tmp(1, 1);
-  tmp(0, 0) = 1;
-  integrator->setInitialValue(tmp);
+
+  integrator->setEnableInitialValuePort(true);
   getGroup()->connect(integrator->getPort("initialValue"),
                       mInputSaturation->getPort("output"));
   

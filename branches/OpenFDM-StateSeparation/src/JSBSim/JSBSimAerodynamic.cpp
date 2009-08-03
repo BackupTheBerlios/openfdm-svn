@@ -20,6 +20,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->addChild(mWingAreaModel);
   mWingAreaOutputModel = new GroupOutput("Wing Area Output");
   mGroup->addChild(mWingAreaOutputModel);
+  mWingAreaOutputModel->setExternalPortName("wingArea");
   mGroup->connect(mWingAreaModel->getPort("output"),
                   mWingAreaOutputModel->getPort("input"));
 
@@ -27,6 +28,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->addChild(mWingSpanModel);
   mWingSpanOutputModel = new GroupOutput("Wing Span Output");
   mGroup->addChild(mWingSpanOutputModel);
+  mWingSpanOutputModel->setExternalPortName("wingSpan");
   mGroup->connect(mWingSpanModel->getPort("output"),
                   mWingSpanOutputModel->getPort("input"));
 
@@ -34,6 +36,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->addChild(mChordModel);
   mChordOutputModel = new GroupOutput("Chord Output");
   mGroup->addChild(mChordOutputModel);
+  mChordOutputModel->setExternalPortName("chord");
   mGroup->connect(mChordModel->getPort("output"),
                   mChordOutputModel->getPort("input"));
 
@@ -41,6 +44,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->addChild(mWingIncidenceModel);
   mWingIncidenceOutputModel = new GroupOutput("Wing Incidence Output");
   mGroup->addChild(mWingIncidenceOutputModel);
+  mWingIncidenceOutputModel->setExternalPortName("wingIncidence");
   mGroup->connect(mWingIncidenceModel->getPort("output"),
                   mWingIncidenceOutputModel->getPort("input"));
 
@@ -48,6 +52,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->addChild(mHTailAreaModel);
   mHTailAreaOutputModel = new GroupOutput("HTailArea Output");
   mGroup->addChild(mHTailAreaOutputModel);
+  mHTailAreaOutputModel->setExternalPortName("hTailArea");
   mGroup->connect(mHTailAreaModel->getPort("output"),
                   mHTailAreaOutputModel->getPort("input"));
 
@@ -55,6 +60,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->addChild(mHTailArmModel);
   mHTailArmOutputModel = new GroupOutput("HTailArm Output");
   mGroup->addChild(mHTailArmOutputModel);
+  mHTailArmOutputModel->setExternalPortName("hTailArm");
   mGroup->connect(mHTailArmModel->getPort("output"),
                   mHTailArmOutputModel->getPort("input"));
 
@@ -63,6 +69,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->addChild(mVTailAreaModel);
   mVTailAreaOutputModel = new GroupOutput("VTailArea Output");
   mGroup->addChild(mVTailAreaOutputModel);
+  mVTailAreaOutputModel->setExternalPortName("vTailArea");
   mGroup->connect(mVTailAreaModel->getPort("output"),
                   mVTailAreaOutputModel->getPort("input"));
 
@@ -70,6 +77,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->addChild(mVTailArmModel);
   mVTailArmOutputModel = new GroupOutput("VTailArm Output");
   mGroup->addChild(mVTailArmOutputModel);
+  mVTailArmOutputModel->setExternalPortName("vTailArm");
   mGroup->connect(mVTailArmModel->getPort("output"),
                   mVTailArmOutputModel->getPort("input"));
 
@@ -87,7 +95,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mExternalInteract->setEnableStaticPressure(true);
   mExternalInteract->setEnableTemperature(true);
   mExternalInteract->setEnableSoundSpeed(true);
-  mExternalInteract->setEnableAltitude(true);
+  mExternalInteract->setEnableBodyForce(true);
 
   DynamicPressure* dynamicPressure = new DynamicPressure("DynamicPressure");
   mGroup->addChild(dynamicPressure);
@@ -121,43 +129,50 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(windAxis->getPort("beta"),
                   windAxisForce->getPort("beta"));
 
-  mGroup->connect(windAxis->getPort("bodyForce"),
+  mGroup->connect(windAxisForce->getPort("bodyForce"),
                   mExternalInteract->getPort("bodyForce"));
 
 
   mAlphaOutputModel = new GroupOutput("Alpha Output");
   mGroup->addChild(mAlphaOutputModel);
+  mAlphaOutputModel->setExternalPortName("alpha");
   mGroup->connect(windAxis->getPort("alpha"),
                   mAlphaOutputModel->getPort("input"));
 
   mAlphaDotOutputModel = new GroupOutput("AlphaDot Output");
   mGroup->addChild(mAlphaDotOutputModel);
+  mAlphaDotOutputModel->setExternalPortName("alphaDot");
   mGroup->connect(windAxis->getPort("alphaDot"),
                   mAlphaDotOutputModel->getPort("input"));
 
   mBetaOutputModel = new GroupOutput("Beta Output");
   mGroup->addChild(mBetaOutputModel);
+  mBetaOutputModel->setExternalPortName("beta");
   mGroup->connect(windAxis->getPort("beta"),
                   mBetaOutputModel->getPort("input"));
 
   mBetaDotOutputModel = new GroupOutput("BetaDot Output");
   mGroup->addChild(mBetaDotOutputModel);
+  mBetaDotOutputModel->setExternalPortName("betaDot");
   mGroup->connect(windAxis->getPort("betaDot"),
                   mBetaDotOutputModel->getPort("input"));
 
   mTrueAirSpeedOutputModel = new GroupOutput("True Air Speed Output");
   mGroup->addChild(mTrueAirSpeedOutputModel);
+  mTrueAirSpeedOutputModel->setExternalPortName("airSpeed");
   mGroup->connect(windAxis->getPort("airSpeed"),
                   mTrueAirSpeedOutputModel->getPort("input"));
 
   mCalibratedAirSpeedOutputModel = new GroupOutput("Calibrated Air Speed Output");
   mGroup->addChild(mCalibratedAirSpeedOutputModel);
+  mCalibratedAirSpeedOutputModel->setExternalPortName("calibratedAirSpeed");
   /// FIXME wrong
   mGroup->connect(windAxis->getPort("airSpeed"),
                   mCalibratedAirSpeedOutputModel->getPort("input"));
 
   mEquivalentAirSpeedOutputModel = new GroupOutput("Equivalent Air Speed Output");
   mGroup->addChild(mEquivalentAirSpeedOutputModel);
+  mEquivalentAirSpeedOutputModel->setExternalPortName("equivalentAirSpeed");
   /// FIXME wrong
   mGroup->connect(windAxis->getPort("airSpeed"),
                   mEquivalentAirSpeedOutputModel->getPort("input"));
@@ -165,26 +180,32 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
 
   mMachOutputModel = new GroupOutput("Mach Output");
   mGroup->addChild(mMachOutputModel);
-  mGroup->connect(machNumber->getPort("mach"),
+  mMachOutputModel->setExternalPortName("machNumber");
+  mGroup->connect(machNumber->getPort("machNumber"),
                   mMachOutputModel->getPort("input"));
 
   mDynamicPressureOutputModel = new GroupOutput("Dynamic Pressure Output");
   mGroup->addChild(mDynamicPressureOutputModel);
+  mDynamicPressureOutputModel->setExternalPortName("dynamicPressure");
   mGroup->connect(dynamicPressure->getPort("dynamicPressure"),
                   mDynamicPressureOutputModel->getPort("input"));
 
   mStaticPressureOutputModel = new GroupOutput("Static Pressure Output");
   mGroup->addChild(mStaticPressureOutputModel);
+  mStaticPressureOutputModel->setExternalPortName("staticPressure");
   mGroup->connect(mExternalInteract->getPort("staticPressure"),
                   mStaticPressureOutputModel->getPort("input"));
 
   mTemperatureOutputModel = new GroupOutput("Temperature Output");
   mGroup->addChild(mTemperatureOutputModel);
+  mTemperatureOutputModel->setExternalPortName("temperature");
   mGroup->connect(mExternalInteract->getPort("temperature"),
                   mTemperatureOutputModel->getPort("input"));
 
   
   MatrixSplit* linearVel = new MatrixSplit("Linear Velocity Split");
+  mGroup->addChild(linearVel);
+  mExternalInteract->setEnableBodyWindVelocity(true);
   mGroup->connect(mExternalInteract->getPort("bodyWindVelocity"),
                   linearVel->getPort("input"));
   linearVel->addOutputPort("u");
@@ -193,18 +214,23 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
 
   mUOutputModel = new GroupOutput("U Output");
   mGroup->addChild(mUOutputModel);
+  mUOutputModel->setExternalPortName("u");
   mGroup->connect(linearVel->getPort("u"),
                   mUOutputModel->getPort("input"));
   mVOutputModel = new GroupOutput("V Output");
   mGroup->addChild(mVOutputModel);
+  mVOutputModel->setExternalPortName("v");
   mGroup->connect(linearVel->getPort("v"),
                   mVOutputModel->getPort("input"));
   mWOutputModel = new GroupOutput("W Output");
   mGroup->addChild(mWOutputModel);
+  mWOutputModel->setExternalPortName("w");
   mGroup->connect(linearVel->getPort("w"),
                   mWOutputModel->getPort("input"));
 
   MatrixSplit* angularVel = new MatrixSplit("Angular Velocity Split");
+  mGroup->addChild(angularVel);
+  mExternalInteract->setEnableBodyAngularVelocity(true);
   /// FIXME make wind angular velocity sensable
   mGroup->connect(mExternalInteract->getPort("bodyAngularVelocity"),
                   angularVel->getPort("input"));
@@ -214,14 +240,17 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
 
   mPOutputModel = new GroupOutput("P Output");
   mGroup->addChild(mPOutputModel);
+  mPOutputModel->setExternalPortName("p");
   mGroup->connect(angularVel->getPort("p"),
                   mPOutputModel->getPort("input"));
   mQOutputModel = new GroupOutput("Q Output");
   mGroup->addChild(mQOutputModel);
+  mQOutputModel->setExternalPortName("q");
   mGroup->connect(angularVel->getPort("q"),
                   mQOutputModel->getPort("input"));
   mROutputModel = new GroupOutput("R Output");
   mGroup->addChild(mROutputModel);
+  mROutputModel->setExternalPortName("r");
   mGroup->connect(angularVel->getPort("r"),
                   mROutputModel->getPort("input"));
 
@@ -245,6 +274,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
 
   mWingSpanOver2SpeedOutputModel = new GroupOutput("WingSpanOver2Speed Output");
   mGroup->addChild(mWingSpanOver2SpeedOutputModel);
+  mWingSpanOver2SpeedOutputModel->setExternalPortName("wingSpanOver2Speed");
   mGroup->connect(wingSpanOver2Speed->getPort("output"),
                   mWingSpanOver2SpeedOutputModel->getPort("input"));
 
@@ -258,6 +288,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
 
   mChordOver2SpeedOutputModel = new GroupOutput("ChordOver2Speed Output");
   mGroup->addChild(mChordOver2SpeedOutputModel);
+  mChordOver2SpeedOutputModel->setExternalPortName("chordOver2Speed");
   mGroup->connect(chordOver2Speed->getPort("output"),
                   mChordOver2SpeedOutputModel->getPort("input"));
 
@@ -272,13 +303,16 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(recWingSpan->getPort("output"),
                   hOverWingSpan->getPort("input0"));
   // FIXME??
+//   mExternalInteract->setEnableAltitude(true);
 //   mGroup->connect(mExternalInteract->getPort("altitude"),
 //                   hOverWingSpan->getPort("input1"));
+  mExternalInteract->setEnableAboveGroundLevel(true);
   mGroup->connect(mExternalInteract->getPort("aboveGroundLevel"),
                   hOverWingSpan->getPort("input1"));
 
   mHOverWingSpanOutputModel = new GroupOutput("HOverWingSpan Output");
   mGroup->addChild(mHOverWingSpanOutputModel);
+  mHOverWingSpanOutputModel->setExternalPortName("hOverWingSpan");
   mGroup->connect(hOverWingSpan->getPort("output"),
                   mHOverWingSpanOutputModel->getPort("input"));
 
@@ -319,6 +353,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(mYawInputModel->getPort("output"),
                   torque->addInputPort("z"));
 
+  mExternalInteract->setEnableBodyTorque(true);
   mGroup->connect(torque->getPort("output"),
                   mExternalInteract->getPort("bodyTorque"));
 }

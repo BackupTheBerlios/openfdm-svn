@@ -37,7 +37,7 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   tl.insert(1);
   mBreakPointLookup->setBreakPointVector(tl);
   getGroup()->addChild(mBreakPointLookup);
-  getGroup()->connect(mBreakPointLookup->getPort("input"),
+  getGroup()->connect(mBreakPointLookup->getInputPort(0),
                       mInputSaturation->getPort("output"));
 
   mTable = new Table1D("Table");
@@ -53,7 +53,7 @@ JSBSimAerosurfaceScale::JSBSimAerosurfaceScale(const std::string& name) :
   tableData(iv) = mGain;
   mTable->setTableData(tableData);
   getGroup()->addChild(mTable);
-  getGroup()->connect(mTable->getPort("input"),
+  getGroup()->connect(mTable->getInputPort(0),
                       mBreakPointLookup->getPort("output"));
 
   // Now connect the input and the output to this groups in and outputs

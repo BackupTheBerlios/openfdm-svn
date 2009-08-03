@@ -36,7 +36,16 @@ main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
   SharedPtr<System> system = reader.getSystem();
+  if (!system) {
+    std::cerr << "No imported aircraft system!" << std::endl;
+    return EXIT_FAILURE;
+  }
 
+  if (!system->init()) {
+    std::cerr << "Could not initialize aircraft system!" << std::endl;
+    return EXIT_FAILURE;
+  }
+  
   // Ok, now the Vehicle here contains the imported data
   // When the reflection stuff is ready, we can dump that data to a
   // native format ...

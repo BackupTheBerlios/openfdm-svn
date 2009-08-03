@@ -53,6 +53,7 @@ JSBSimFCSComponent::getOutputModel(void)
 
   mOutputModel = new GroupOutput("Output");
   getGroup()->addChild(mOutputModel);
+  mOutputModel->setExternalPortName("output");
   return mOutputModel;
 }
 
@@ -64,6 +65,7 @@ JSBSimFCSComponent::getOutputNormModel(void)
 
   mOutputNormModel = new GroupOutput("OutputNorm");
   getGroup()->addChild(mOutputNormModel);
+  mOutputNormModel->setExternalPortName("outputNorm");
   return mOutputNormModel;
 }
 

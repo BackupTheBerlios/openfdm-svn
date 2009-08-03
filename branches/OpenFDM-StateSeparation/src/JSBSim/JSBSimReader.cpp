@@ -17,6 +17,7 @@
 #include <OpenFDM/Bias.h>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/DeadBand.h>
+#include <OpenFDM/Delay.h>
 #include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/TransferFunction.h>
 #include <OpenFDM/Gain.h>
@@ -24,6 +25,7 @@
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/MaxModel.h>
 #include <OpenFDM/MatrixSplit.h>
+#include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/AirSpring.h>
 #include <OpenFDM/InternalInteract.h>
 #include <OpenFDM/PrismaticJoint.h>
@@ -279,6 +281,11 @@ JSBSimReader::loadAircraft(const std::string& acFileName)
   mTopLevelGroup->connect(mTopLevelBody->addLink("aerodynamicLink"),
                           mAeroForce->getMechanicLink());
 
+  MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
+  mTopLevelGroup->addChild(mobileRootJoint);
+  mTopLevelGroup->connect(mTopLevelBody->addLink("rootJointLink"),
+                          mobileRootJoint->getPort("link"));
+
   // Default discrete stepsize of JSBSim
   mTopLevelGroup->setSampleTime(SampleTime(1.0/120));
 
@@ -440,7 +447,11 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
                           load->getPort("input"));
   load->addOutputPort("x");
   load->addOutputPort("y");
-  const Port* port = load->addOutputPort("z");
+  load->addOutputPort("z");
+  Delay* delay = new Delay("Normalized Load Delay", 1);
+  mTopLevelGroup->addChild(delay);
+  mTopLevelGroup->connect(load->getPort("z"), delay->getPort("input"));
+  const Port* port = delay->getPort("output");
   registerJSBExpression("accelerations/n-pilot-z-norm", port);
   addOutputModel(port, "Normalized load value", "accelerations/nlf");
 
@@ -450,17 +461,24 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
                           accel->getPort("input"));
   accel->addOutputPort("x");
   accel->addOutputPort("y");
-  port = accel->addOutputPort("z");
+  accel->addOutputPort("z");
+
+  delay = new Delay("Acceleration Delay", 1);
+  mTopLevelGroup->addChild(delay);
+  mTopLevelGroup->connect(accel->getPort("z"), delay->getPort("input"));
+  port = delay->getPort("output");
+
   registerJSBExpression("accelerations/accel-z-norm", port);
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
-//   port = lookupJSBExpression("aero/alpha-deg", mAeroForce->getPath());
-//   addOutputModel(port, "Alpha", "orientation/alpha-deg");
-//   port = lookupJSBExpression("aero/beta-rad", mAeroForce->getPath());
-//   addOutputModel(port, "Beta rad", "orientation/side-slip-rad");
-//   port = lookupJSBExpression("aero/beta-deg", mAeroForce->getPath());
-//   addOutputModel(port, "Beta", "orientation/side-slip-deg");
+  NodePath nodePath = mTopLevelGroup->getNodePathList().front();
+  port = lookupJSBExpression("aero/alpha-deg", nodePath);
+  addOutputModel(port, "Alpha", "orientation/alpha-deg");
+  port = lookupJSBExpression("aero/beta-rad", nodePath);
+  addOutputModel(port, "Beta rad", "orientation/side-slip-rad");
+  port = lookupJSBExpression("aero/beta-deg", nodePath);
+  addOutputModel(port, "Beta", "orientation/side-slip-deg");
 
   return true;
 }
@@ -522,8 +540,7 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
 
 bool
 JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
-                          const std::string& numStr, RigidBody* parent,
-                          const Vector3& parentDesignPos)
+                          const std::string& numStr, RigidBody* parent)
 {
   RigidBody* wheel = new RigidBody(name + " Wheel");
   mTopLevelGroup->addChild(wheel);
@@ -543,7 +560,7 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
                           wj->getPort("link1"));
   wj->setAxis(Vector3(0, 1, 0));
   Vector3 pos = structToBody(locationData(wheelElem->getElement("location")));
-  wj->setPosition(pos - parentDesignPos);
+  wj->setPosition(pos);
   wj->setInitialPosition(0);
   wj->setInitialVelocity(0);
 
@@ -568,7 +585,8 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
     // That one reads the joint position and velocity ...
     mTopLevelGroup->connect(wj->getPort("velocity"), brakeF->getPort("velocity"));
     // ... and provides an output force
-    mTopLevelGroup->connect(brakeF->getPort("position"), wj->getPort("position"));
+    wj->setEnableExternalForce(true);
+    mTopLevelGroup->connect(brakeF->getPort("force"), wj->getPort("force"));
   } else {
     // Just some 'bearing friction'
     Gain* rollingFric = new Gain(name + " Bearing Friction Force");
@@ -576,6 +594,7 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
     rollingFric->setGain(-10);
     mTopLevelGroup->connect(wj->getPort("velocity"), rollingFric->getInputPort(0));
     // ... and provides an output force
+    wj->setEnableExternalForce(true);
     mTopLevelGroup->connect(rollingFric->getPort("output"), wj->getPort("force"));
   }
   
@@ -719,14 +738,13 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         sc->setFrictionCoeficient(fs);
         
       } else if (type == "NOSEGEAR") {
-        // Ok, a compressable gear like the F-18's main gear is.
+        // Ok, a compressable gear like the F-18's nose gear.
         // Some kind of hardcoding here ...
         std::stringstream sstr;
         sstr << gearNumber++;
         std::string numStr = sstr.str();
         std::string name = (*it)->getAttribute("name");
 
-        Vector3 parentPos = structToBody(Vector3::zeros());
         Vector3 compressJointPos = locationData((*it)->getElement("location"));
         // Model steering here ...
         // normally we connect the compressible part to the top level body, but
@@ -750,8 +768,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           sj->setAxis(Vector3(0, 0, 1));
           sj->setInitialPosition(0);
           sj->setInitialVelocity(0);
-          parentPos = structToBody(compressJointPos) + Vector3(0.05, 0, 0);
-          sj->setPosition(parentPos);
+          sj->setPosition(structToBody(compressJointPos) + Vector3(0.05, 0, 0));
           
           UnaryFunction* scale
             = new UnaryFunction(name + " Scale", UnaryFunction::Abs);
@@ -795,7 +812,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
 //           real_type force = realData(launchbarElem->getElement("launchForce"), 1000);
 //           launchbar->setLaunchForce(force);
 //           Vector3 loc = structToBody(locationData(launchbarElem->getElement("location")));
-//           launchbar->setPosition(loc - parentPos);
+//           launchbar->setPosition(loc);
 
 
 //           if (!connectJSBExpression("/controls/gear/launchbar",
@@ -831,19 +848,19 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         mTopLevelGroup->connect(arm->addLink("strutJoint"),
                                 pj->getPort("link1"));
         pj->setAxis(Vector3(0, 0, -1));
-        pj->setPosition(structToBody(compressJointPos) - parentPos);
-        parentPos = structToBody(compressJointPos);
+        pj->setPosition(structToBody(compressJointPos));
         
         // The damper element
         const XMLElement* airSpringElem = (*it)->getElement("damper");
         AirSpring* aoDamp = getAirSpring(airSpringElem, name);
         addMultiBodyModel(aoDamp);
+        pj->setEnableExternalForce(true);
         mTopLevelGroup->connect(aoDamp->getPort("force"), pj->getPort("force"));
         mTopLevelGroup->connect(pj->getPort("position"), aoDamp->getPort("position"));
         mTopLevelGroup->connect(pj->getPort("velocity"), aoDamp->getPort("velocity"));
         
         // Attach a wheel to that strut part.
-        attachWheel((*it)->getElement("wheel"), name, numStr, arm, parentPos);
+        attachWheel((*it)->getElement("wheel"), name, numStr, arm);
         
         // Prepare some outputs ...
         const Port* port = pj->getPort("position");
@@ -882,10 +899,10 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         Vector3 compressJointAxis = locationData((*it)->getElement("axis"),
                                                  Vector3(0, 1, 0));
         rj->setAxis(normalize(compressJointAxis));
-        rj->setInitialPosition(0);
-        rj->setInitialVelocity(0);
         Vector3 compressJointPos = locationData((*it)->getElement("location"));
         rj->setPosition(structToBody(compressJointPos));
+        rj->setInitialPosition(0);
+        rj->setInitialVelocity(0);
         
         InternalInteract* lineForce = new InternalInteract(name + " Air Spring LineForce");
         lineForce->setEnableDistance(true);
@@ -905,8 +922,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
                                       compressJointPos +
                                       Unit::inch().convertTo(Vector3(-0.5, 0, 0)));
         lineForce->setPosition0(structToBody(asMnt0));
-        lineForce->setPosition1(structToBody(asMnt1)
-                                - structToBody(compressJointPos));
+        lineForce->setPosition1(structToBody(asMnt1));
         
         // The damper element
         const XMLElement* airSpringElem = (*it)->getElement("damper");
@@ -922,8 +938,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
                                 lineForce->getPort("force"));
         
         // Attach a wheel to that strut part.
-        attachWheel((*it)->getElement("wheel"), name, numStr, arm,
-                    structToBody(compressJointPos));
+        attachWheel((*it)->getElement("wheel"), name, numStr, arm);
         
         const Port* port = rj->getPort("position");
         addOutputModel(port, "Gear " + numStr + " Compression",

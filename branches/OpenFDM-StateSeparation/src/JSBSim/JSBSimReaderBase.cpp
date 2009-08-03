@@ -218,6 +218,8 @@ bool
 JSBSimReaderBase::connectJSBExpression(const std::string& name,
                                        const Port* pa, bool recheckAeroProp)
 {
+  if (!pa)
+    return false;
   SharedPtr<const Node> model = pa->getNode();
   if (!model)
     return false;
@@ -858,9 +860,9 @@ JSBSimReaderBase::getTablePrelookup(const std::string& name, const Port* in,
     = new BreakPointLookup(name + " Table Prelookup");
   addMultiBodyModel(tablePreLookup);
   tablePreLookup->setBreakPointVector(tl);
-  mTopLevelGroup->connect(in, tablePreLookup->getPort("input"));
+  mTopLevelGroup->connect(in, tablePreLookup->getInputPort(0));
   mBreakPointVectors.push_back(tablePreLookup);
-  return tablePreLookup->getPort("output");
+  return tablePreLookup->getOutputPort();
 }
 
 } // namespace OpenFDM
