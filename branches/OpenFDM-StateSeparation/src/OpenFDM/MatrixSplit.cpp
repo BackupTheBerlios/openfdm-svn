@@ -9,6 +9,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(MatrixSplit, AbstractModel)
+  DEF_OPENFDM_PROPERTY(Unsigned, SplitDimension, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 MatrixSplit::Context::Context(const MatrixSplit* matrixSplit,
