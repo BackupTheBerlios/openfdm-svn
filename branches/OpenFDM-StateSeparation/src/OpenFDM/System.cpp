@@ -95,7 +95,7 @@ tsort(std::list<T>& sortedList, std::list<T>& sourceList, const D& dependency)
   /// independent item.
   typename std::list<T>::size_type size = sourceList.size();
   typename std::list<T>::size_type tryCount = 0;
-  while (!sourceList.empty() && size <= tryCount) {
+  while (!sourceList.empty() && tryCount < size) {
     
     // Check if the front item is independent of sourceList
     typename std::list<T>::iterator i = sourceList.begin();
