@@ -49,7 +49,10 @@ Input::output(const Task& ,const DiscreteStateValueVector&,
               const ContinousStateValueVector&,
               PortValueList& portValues) const
 {
-  portValues[mOutputPort] = mInputGain*mCallback->getValue();
+  real_type value = 0;
+  if (mCallback)
+    value = mInputGain*mCallback->getValue();
+  portValues[mOutputPort] = value;
 }
 
 Input::Callback*
