@@ -39,7 +39,7 @@ public:
   }
   virtual void apply(Group& group)
   {
-    indent() << "<node type=\"NodeGroup\">\n";
+    indent() << "<node type=\"" << group.getTypeName() << "\">\n";
     ++mIndent;
     dumpProperties(group);
     group.traverse(*this);
