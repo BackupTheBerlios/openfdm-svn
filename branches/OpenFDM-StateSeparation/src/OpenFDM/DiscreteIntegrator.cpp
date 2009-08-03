@@ -13,6 +13,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(DiscreteIntegrator, Model)
+  DEF_OPENFDM_PROPERTY(Bool, EnableInitialValuePort, Serialized)
   DEF_OPENFDM_PROPERTY(Matrix, InitialValue, Serialized)
   DEF_OPENFDM_PROPERTY(Matrix, MinSaturation, Serialized)
   DEF_OPENFDM_PROPERTY(Matrix, MaxSaturation, Serialized)
