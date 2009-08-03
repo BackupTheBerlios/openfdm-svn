@@ -40,18 +40,33 @@ GroupInterfaceNode::accept(ConstNodeVisitor& visitor) const
 unsigned
 GroupInterfaceNode::getExternalPortIndex() const
 {
+  if (!mExternalPort) {
+    Log(Model, Warning) << "Get ExternalPortIndex failed for \"" << getName()
+                        << "\"." << std::endl;
+    return ~0u;
+  }
   return mExternalPort->getIndex();
 }
 
 void
 GroupInterfaceNode::setExternalPortName(const std::string& portName)
 {
+  if (!mExternalPort) {
+    Log(Model, Warning) << "setExternalPortName failed for \"" << getName()
+                        << "\"." << std::endl;
+    return;
+  }
   mExternalPort->setName(portName);
 }
 
-const std::string&
+std::string
 GroupInterfaceNode::getExternalPortName() const
 {
+  if (!mExternalPort) {
+    Log(Model, Warning) << "getExternalPortName failed for \"" << getName()
+                        << "\"." << std::endl;
+    return std::string();
+  }
   return mExternalPort->getName();
 }
 

@@ -29,7 +29,7 @@ public:
   unsigned getExternalPortIndex() const;
 
   void setExternalPortName(const std::string& portName);
-  const std::string& getExternalPortName() const;
+  std::string getExternalPortName() const;
 
 protected:
   virtual bool addParent(Node* parent);
