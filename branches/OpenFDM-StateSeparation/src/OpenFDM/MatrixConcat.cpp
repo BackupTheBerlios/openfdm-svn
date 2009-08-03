@@ -9,6 +9,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(MatrixConcat, AbstractModel)
+  DEF_OPENFDM_PROPERTY(Unsigned, ConcatDimension, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 MatrixConcat::Context::Context(const MatrixConcat* matrixConcat,
