@@ -77,6 +77,47 @@ namespace OpenFDM {
 /// FIXME: IMO THIS MUST WORK THIS WAY
 ///
 
+/// Topological sorting.
+/// On success, the sourceList is empty and the sortedList contains the sorted
+/// entries.
+/// On failure, the sourceList contains those entries that could be sorted, and
+/// the sourceList still contains those that have cycles.
+template<typename T, typename D>
+static inline void
+tsort(std::list<T>& sortedList, std::list<T>& sourceList, const D& dependency)
+{
+  /// The algorithm is simple.
+  /// Just push all those items from the sourceList into the sortedList
+  /// that do not depend on any item still in the sourceList.
+  /// Items that do depend on anything still in the source list are
+  /// moved to the tail of the sourceList.
+  /// Do that until sourceList is empty or until we do no longer find any
+  /// independent item.
+  typename std::list<T>::size_type size = sourceList.size();
+  typename std::list<T>::size_type tryCount = 0;
+  while (!sourceList.empty() && size <= tryCount) {
+    
+    // Check if the front item is independent of sourceList
+    typename std::list<T>::iterator i = sourceList.begin();
+    for (; i != sourceList.end(); ++i) {
+      if (dependency(sourceList.front(), *i))
+        break;
+    }
+    // If we came here with i == end, the front item is independent so
+    // schedule it now
+    if (i == sourceList.end()) {
+      sortedList.splice(sortedList.end(), sourceList, sourceList.begin());
+      --size;
+      tryCount = 0;
+    }
+    // Else defer that item
+    else {
+      sourceList.splice(sourceList.end(), sourceList, sourceList.begin());
+      ++tryCount;
+    }
+  }
+}
+
 class ContinousSystemFunction : public Function {
 public:
   virtual size_type inSize(void) const
@@ -559,6 +600,7 @@ public:
     MechanicContext* getMechanicContext()
     { return mMechanicContext; }
 
+    // Currently unused
     bool isLinkedTo(const MechanicInstanceData& instance) const
     {
       unsigned numPorts = getNode()->getNumPorts();
@@ -635,6 +677,29 @@ public:
           instance.mParentLink = otherMechanicLink;
           return true;
         }
+      }
+      return false;
+    }
+
+    // detect if this child link is connected to any mechanic port of instance
+    bool isChildLinkedTo(const JointInstanceData& instance) const
+    {
+      unsigned i = mChildLink->getIndex();
+      OpenFDMAssert(i < mPortDataVector.size());
+      OpenFDMAssert(mPortDataVector[i]);
+
+      const Node* otherNode = instance.getNode();
+      unsigned otherNumPorts = otherNode->getNumPorts();
+      for (unsigned j = 0; j < otherNumPorts; ++j) {
+        if (!otherNode->getPort(j)->toMechanicLink())
+          continue;
+        
+        OpenFDMAssert(j < instance.mPortDataVector.size());
+        OpenFDMAssert(instance.mPortDataVector[j]);
+        if (!mPortDataVector[i]->isConnected(*instance.mPortDataVector[j]))
+          continue;
+        
+        return true;
       }
       return false;
     }
@@ -1056,6 +1121,7 @@ protected:
         
           if ((*j)->isLinkedToAndSetChild(*(*i))) {
             SharedPtr<JointInstanceData> mechanicInstanceData = *i;
+            mechanicInstanceData->makeRemainigLinksChildLinks();
             nextLevelList.push_back(mechanicInstanceData);
             i = mJointInstanceDataList.erase(i);
 
@@ -1066,7 +1132,7 @@ protected:
                  k != sortedJoints.end(); ++k) {
               if (*k == *j)
                 continue;
-              if (mechanicInstanceData->isLinkedTo(*(*k))) {
+              if (mechanicInstanceData->isChildLinkedTo(*(*k))) {
                 Log(Schedule,Warning)
                   << "Detected closed kinematic loop: MechanicNode \""
                   << mechanicInstanceData->getNodeNamePath()
@@ -1088,7 +1154,7 @@ protected:
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
         JointInstanceDataList::iterator i = j;
         for (++i; i != nextLevelList.end(); ++i) {
-          if ((*j)->isLinkedTo(*(*i))) {
+          if ((*j)->isChildLinkedTo(*(*i))) {
             Log(Schedule,Warning)
               << "Detected closed kinematic loop: MechanicNode \""
               << (*j)->getNodeNamePath()
@@ -1101,8 +1167,6 @@ protected:
       
 
       for (j = nextLevelList.begin(); j != nextLevelList.end(); ++j) {
-        // FIXME
-        (*j)->makeRemainigLinksChildLinks();
         sortedJoints.push_back(*j);
       }
     }
@@ -1237,64 +1301,32 @@ protected:
     return true;
   }
 
-  // method to sort the leafs according to their dependency
+  struct ModelInstanceDataDepend {
+    bool operator()(const SharedPtr<ModelInstanceData>& m0,
+                    const SharedPtr<ModelInstanceData>& m1) const
+    { return m0->dependsOn(*m1); }
+  };
+
   bool sortModelList(ModelInstanceDataList& modelInstanceDataList)
   {
     ModelInstanceDataList sortedModelInstanceDataList;
-    while (!modelInstanceDataList.empty()) {
-      SharedPtr<ModelInstanceData> modelInstanceData;
-      modelInstanceData = modelInstanceDataList.front();
-      modelInstanceDataList.pop_front();
+    tsort(sortedModelInstanceDataList, modelInstanceDataList,
+          ModelInstanceDataDepend());
 
-      if (modelInstanceData->dependsOn(*modelInstanceData)) {
-        Log(Schedule, Warning)
-          << "Self referencing direct dependency for Model \""
-          << modelInstanceData->getNodeNamePath()
-          << "\" detected!" << std::endl;
-        return false;
+    // Check if we have some unsorted cycles left
+    if (!modelInstanceDataList.empty()) {
+      Log(Schedule,Warning) << "Detected cyclic loop:" << std::endl;
+
+      ModelInstanceDataList::iterator i = modelInstanceDataList.begin();
+      for (; i != modelInstanceDataList.end(); ++i) {
+        Log(Schedule,Warning)
+          << "  Model \"" << (*i)->getNodeNamePath() << "\"" << std::endl;
       }
-
-      ModelInstanceDataList::iterator i;
-      for (i = sortedModelInstanceDataList.begin();
-           i != sortedModelInstanceDataList.end();
-           ++i) {
-        if (!(*i)->dependsOn(*modelInstanceData))
-          continue;
-
-        // Something already sorted in depends on modelInstanceData,
-        // so schedule that new thing just before.
-        Log(Schedule, Debug)
-          << "Inserting Model \""
-          << modelInstanceData->getNodeNamePath()
-          << "\" before Model \""
-          << (*i)->getNodeNamePath() << "\"" << std::endl;
-        i = sortedModelInstanceDataList.insert(i, modelInstanceData);
-        break;
-      }
-      if (i == sortedModelInstanceDataList.end()) {
-        // nothing found so far that depends on model instance.
-        // So put it at the end.
-        Log(Schedule, Debug)
-          << "Appending Model \""
-          << modelInstanceData->getNodeNamePath()
-          << "\"" << std::endl;
-
-        sortedModelInstanceDataList.push_back(modelInstanceData);
-      } else {
-        // If it cannot be put at the end, check if modelInstanceData depends
-        // on any model that is already scheduled behind to detect cyclic loops.
-        for (; i != sortedModelInstanceDataList.end(); ++i) {
-          if (!modelInstanceData->dependsOn(*(*i)))
-            continue;
-          Log(Schedule,Warning)
-            << "Detected cyclic loop: Model \""
-            << modelInstanceData->getNodeNamePath()
-            << "\" depends on Model \""
-            << (*i)->getNodeNamePath() << "\"" << std::endl;
-          return false;
-        }
-      }
+      modelInstanceDataList.splice(modelInstanceDataList.begin(),
+                                   sortedModelInstanceDataList);
+      return false;
     }
+
     modelInstanceDataList.swap(sortedModelInstanceDataList);
 
     Log(Schedule,Info) << "Model Schedule" << std::endl;
