@@ -1,10 +1,7 @@
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/Group.h>
-#include <OpenFDM/InternalInteract.h>
-#include <OpenFDM/LinearSpringDamper.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/MobileRootJoint.h>
-#include <OpenFDM/RevoluteJoint.h>
 #include <OpenFDM/RigidBody.h>
 #include <OpenFDM/ExternalInteract.h>
 #include <OpenFDM/System.h>
