@@ -10,6 +10,7 @@ TESTS = \
 	mechanicstructure \
 	simulationtime \
 	structure \
+	tsort \
 	unitstest
 
 # define some util programs
@@ -22,6 +23,7 @@ noinst_PROGRAMS = \
 	mechanicstructure \
 	structure \
 	tiretestrig \
+	tsort \
 	coordsys \
 	$(TESTS)
 
@@ -69,6 +71,9 @@ structure_LDADD = ../OpenFDM/libOpenFDM.la
 
 tiretestrig_SOURCES = tiretestrig.cpp
 tiretestrig_LDADD = ../OpenFDM/libOpenFDM.la
+
+tsort_SOURCES = tsort.cpp
+tsort_LDADD = ../OpenFDM/libOpenFDM.la
 
 unitstest_SOURCES = unitstest.cpp
 unitstest_LDADD = ../OpenFDM/libOpenFDM.la

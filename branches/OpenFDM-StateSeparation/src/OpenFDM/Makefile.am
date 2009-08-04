@@ -118,6 +118,7 @@ OpenFDMCoreHEADERS = \
   TemplateStateInfo.h \
   TemplateValueVector.h \
   Time.h \
+  TopologySort.h \
   Transform.h \
   TypeInfo.h \
   Types.h \
