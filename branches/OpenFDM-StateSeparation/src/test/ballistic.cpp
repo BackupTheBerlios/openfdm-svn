@@ -10,8 +10,10 @@
 #include <OpenFDM/MobileRootJoint.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/RigidBody.h>
+#include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
+#include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/WindAxis.h>
 #include <OpenFDM/WindAxisForce.h>
 
@@ -31,11 +33,15 @@ Node* buildBallistic()
   rigidBody->addLink("externalInteractLink");
   group->addChild(rigidBody);
 
-  Mass* mass = new Mass("Mass", 1, InertiaMatrix(1, 0, 0, 1, 0, 1));
+  real_type m = 0.01;
+  real_type length = 1;
+  real_type radius = 0.01;
+  InertiaMatrix I = InertiaMatrix::cylinderInertia(m, length, radius);
+  Mass* mass = new Mass("Mass", m, I);
   group->addChild(mass);
 
   ExternalInteract* externalInteract = new ExternalInteract("ExternalInteract");
-  externalInteract->setPosition(mass->getPosition());
+  externalInteract->setPosition(mass->getPosition() - Vector3(0.3, 0, 0));
   externalInteract->setEnableAllOutputs(true);
   group->addChild(externalInteract);
 
@@ -83,72 +89,57 @@ Node* buildBallistic()
   group->connect(windAxisForce->getPort("bodyForce"),
                  externalInteract->getPort("bodyForce"));
 
+  UnaryFunction* alphaAbs = new UnaryFunction("Alpha Abs", UnaryFunction::Abs);
+  group->addChild(alphaAbs);
+
+  group->connect(alphaAbs->getPort("input"),
+                 windAxis->getPort("alpha"));
+
+  UnaryFunction* betaAbs = new UnaryFunction("Beta Abs", UnaryFunction::Abs);
+  group->addChild(betaAbs);
+
+  group->connect(betaAbs->getPort("input"),
+                 windAxis->getPort("beta"));
+
+  ConstModel* dragAtZeroAlpha = new ConstModel("Drag at zero Alpha", 1);
+  group->addChild(dragAtZeroAlpha);
+
+  Summer* dragFactor = new Summer("Drag Factor");
+  dragFactor->setNumSummands(3);
+  group->addChild(dragFactor);
+
+  group->connect(dragFactor->getPort("input0"),
+                 dragAtZeroAlpha->getPort("output"));
+  group->connect(dragFactor->getPort("input1"),
+                 alphaAbs->getPort("output"));
+  group->connect(dragFactor->getPort("input2"),
+                 betaAbs->getPort("output"));
+
+  Gain* dragCoeficient = new Gain("Drag Coeficient", 0.0001);
+  group->addChild(dragCoeficient);
+
+  group->connect(dragCoeficient->getPort("input"),
+                 dragFactor->getPort("output"));
+
+  Product* drag = new Product("Drag");
+  drag->setNumFactors(2);
+  group->addChild(drag);
+
+  group->connect(drag->getPort("input0"),
+                 dynamicPressure->getPort("dynamicPressure"));
+  group->connect(drag->getPort("input1"),
+                 dragCoeficient->getPort("output"));
+
+
   ConstModel* zeroConst = new ConstModel("ConstModel 0");
   group->addChild(zeroConst);
 
+  group->connect(drag->getPort("output"),
+                 windAxisForce->getPort("drag"));
   group->connect(zeroConst->getPort("output"),
                  windAxisForce->getPort("side"));
   group->connect(zeroConst->getPort("output"),
                  windAxisForce->getPort("lift"));
-
-  Gain* dragCoeficient = new Gain("Drag Coeficient");
-  dragCoeficient->setGain(0.01);
-  group->addChild(dragCoeficient);
-
-  group->connect(dragCoeficient->getPort("input"),
-                 dynamicPressure->getPort("dynamicPressure"));
-
-  group->connect(dragCoeficient->getPort("output"),
-                 windAxisForce->getPort("drag"));
-
-
-  Product* alphaProduct = new Product("Alpha Product");
-  group->addChild(alphaProduct);
-
-  group->connect(alphaProduct->getPort("input0"),
-                 dynamicPressure->getPort("dynamicPressure"));
-  group->connect(alphaProduct->getPort("input1"),
-                 windAxis->getPort("alpha"));
-
-  Gain* alphaCoeficient = new Gain("Alpha Coeficient");
-  alphaCoeficient->setGain(-10);
-  group->addChild(alphaCoeficient);
-
-  group->connect(alphaCoeficient->getPort("input"),
-                 alphaProduct->getPort("output"));
-
-
-
-  Product* betaProduct = new Product("Beta Product");
-  group->addChild(betaProduct);
-
-  group->connect(betaProduct->getPort("input0"),
-                 dynamicPressure->getPort("dynamicPressure"));
-  group->connect(betaProduct->getPort("input1"),
-                 windAxis->getPort("beta"));
-
-  Gain* betaCoeficient = new Gain("Beta Coeficient");
-  betaCoeficient->setGain(-10);
-  group->addChild(betaCoeficient);
-
-  group->connect(betaCoeficient->getPort("input"),
-                 betaProduct->getPort("output"));
-
-
-
-  MatrixConcat* torque = new MatrixConcat("Torque");
-  group->addChild(torque);
-
-  group->connect(zeroConst->getPort("output"),
-                 torque->addInputPort("x"));
-  group->connect(alphaCoeficient->getPort("output"),
-                 torque->addInputPort("y"));
-  group->connect(betaCoeficient->getPort("output"),
-                 torque->addInputPort("z"));
-
-  externalInteract->setEnableBodyTorque(true);
-  group->connect(torque->getPort("output"),
-                 externalInteract->getPort("bodyTorque"));
 
   return group.release();
 }
