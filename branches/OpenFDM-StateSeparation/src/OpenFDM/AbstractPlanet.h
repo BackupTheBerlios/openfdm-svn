@@ -23,7 +23,7 @@ public:
    */
   AbstractPlanet(void);
 
-  /** Default destructor.
+  /** Destructor.
    */
   virtual ~AbstractPlanet(void);
 
@@ -37,7 +37,7 @@ public:
    *  reference frame as this effect is captured by the inertial
    *  frame methods.
    */
-  virtual Vector3 getGravityAcceleration(const Vector3&) const = 0;
+  virtual Vector3 getGravityAcceleration(const Vector3& position) const = 0;
 
   /** Return the global reference frames velocity and acceleration.
    *  Note that these both must fit together to make the simulation
