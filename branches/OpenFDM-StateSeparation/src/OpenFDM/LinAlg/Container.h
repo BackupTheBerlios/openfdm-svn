@@ -1181,9 +1181,9 @@ public:
   cylinderInertia(const T& mass, const T& length, const T& radius)
   {
     T r2 = radius*radius;
-    T Ixx = T(0.25)*mass*(r2 + T(1)/3*length*length);
+    T Ixx = T(0.25)*mass*(r2 + T(1)/T(3)*length*length);
     T Izz = T(0.5)*mass*r2;
-    return SymMatrix<T,3>(Ixx, 0, 0, Ixx, 0, Izz);
+    return SymMatrix3(Ixx, T(0), T(0), Ixx, T(0), Izz);
   }
   
   // Compute the inertia of a solid quad with the given lengths and mass.
@@ -1194,7 +1194,7 @@ public:
     T x2 = 1/T(12)*mass*x*x;
     T y2 = 1/T(12)*mass*y*y;
     T z2 = 1/T(12)*mass*z*z;
-    return SymMatrix<T,3>(y2+z2, 0, 0, x2+z2, 0, x2+y2);
+    return SymMatrix3(y2+z2, T(0), T(0), x2+z2, T(0), x2+y2);
   }
 
   // Compute the inertia of a solid ellipsoid with the given semiaxis and mass.
@@ -1205,7 +1205,7 @@ public:
     T x2 = 1/T(5)*mass*x*x;
     T y2 = 1/T(5)*mass*y*y;
     T z2 = 1/T(5)*mass*z*z;
-    return SymMatrix<T,3>(y2+z2, 0, 0, x2+z2, 0, x2+y2);
+    return SymMatrix3(y2+z2, T(0), T(0), x2+z2, T(0), x2+y2);
   }
 };
 
