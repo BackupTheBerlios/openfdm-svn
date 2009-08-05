@@ -50,13 +50,13 @@ public:
     // Find the table bounds for the requested input.
     vector_type::const_iterator upBoundIt;
     upBoundIt = std::upper_bound(vectorBegin, vectorEnd, input);
-    vector_type::const_iterator loBoundIt = upBoundIt;
-    --loBoundIt;
-
-    if (upBoundIt == vectorBegin)
-      return value_type(0);
     if (upBoundIt == vectorEnd)
       return value_type(mVector.size() - 1);
+    if (upBoundIt == vectorBegin)
+      return value_type(0);
+
+    vector_type::const_iterator loBoundIt = upBoundIt;
+    --loBoundIt;
 
     // Just do linear interpolation.
     value_type loIdx = value_type(std::distance(vectorBegin, loBoundIt));
