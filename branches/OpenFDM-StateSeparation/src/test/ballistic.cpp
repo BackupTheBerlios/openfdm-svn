@@ -25,8 +25,10 @@ Node* buildBallistic()
   SharedPtr<Group> group = new Group("Group");
 
   MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
-  mobileRootJoint->setInitialLinearVelocity(50*Vector3(1, 0, 0));
+  mobileRootJoint->setInitialPosition(Vector3(0, 0, -200));
   mobileRootJoint->setInitialOrientation(Quaternion::fromEulerSeq(1, 45*deg2rad));
+  mobileRootJoint->setInitialLinearVelocity(50*Vector3(1, 0, 0));
+  mobileRootJoint->setInitialAngularVelocity(Vector3(180*deg2rad, 0, 0));
   group->addChild(mobileRootJoint);
 
   RigidBody* rigidBody = new RigidBody("Rigid Body");
