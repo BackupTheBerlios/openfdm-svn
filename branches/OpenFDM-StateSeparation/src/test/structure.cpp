@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/DiscreteIntegrator.h>
 #include <OpenFDM/Integrator.h>
