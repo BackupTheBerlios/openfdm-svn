@@ -15,6 +15,7 @@ Node* buildDrop()
   SharedPtr<Group> group = new Group("Group");
 
   MobileRootJoint* mobileRootJoint = new MobileRootJoint("Root Joint");
+  mobileRootJoint->setInitialPosition(Vector3(0, 0, -10000));
   mobileRootJoint->setInitialAngularVelocity(Vector3(1, 1, 1));
   group->addChild(mobileRootJoint);
 
@@ -49,7 +50,7 @@ int main()
   if (!system->init())
     return 1;
 
-  system->simulate(10);
+  system->simulate(45);
 
   return 0;
 }
