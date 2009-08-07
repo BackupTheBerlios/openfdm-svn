@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <OpenFDM/Group.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/MobileRootJoint.h>
