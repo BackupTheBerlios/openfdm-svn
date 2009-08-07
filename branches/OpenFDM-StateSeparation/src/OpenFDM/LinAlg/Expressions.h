@@ -748,6 +748,44 @@ min(const MatrixRValue<Impl1,m1,n1>& A1,
   return ret;
 }
 
+template<typename Impl, size_type m, size_type n>
+OpenFDM_FORCE_INLINE
+Matrix<typename Impl::value_type,m,n>
+floor(const MatrixRValue<Impl,m,n>& A)
+{
+  const Impl& Ai = A.asImpl();
+
+  size_type rows = Ai.rows();
+  size_type cols = Ai.cols();
+
+  Matrix<typename Impl::value_type,m,n> ret(rows, cols);
+  size_type i, j;
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
+      ret(i,j) = OpenFDM::floor(Ai(i,j));
+
+  return ret;
+}
+
+template<typename Impl, size_type m, size_type n>
+OpenFDM_FORCE_INLINE
+Matrix<typename Impl::value_type,m,n>
+ceil(const MatrixRValue<Impl,m,n>& A)
+{
+  const Impl& Ai = A.asImpl();
+
+  size_type rows = Ai.rows();
+  size_type cols = Ai.cols();
+
+  Matrix<typename Impl::value_type,m,n> ret(rows, cols);
+  size_type i, j;
+  for (j = 0; j < cols; ++j)
+    for (i = 0; i < rows; ++i)
+      ret(i,j) = OpenFDM::ceil(Ai(i,j));
+
+  return ret;
+}
+
 template<typename Impl1, size_type m1, size_type n1,
          typename Impl2, size_type m2, size_type n2>
 OpenFDM_FORCE_INLINE
