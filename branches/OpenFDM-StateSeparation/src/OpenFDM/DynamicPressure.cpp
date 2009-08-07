@@ -9,13 +9,15 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(DynamicPressure, Model)
+  DEF_OPENFDM_PROPERTY(Vector3, Direction, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 DynamicPressure::DynamicPressure(const std::string& name) :
   Model(name),
   mVelocityPort(this, "velocity", Size(3, 1), true),
   mDensityPort(this, "density", true),
-  mDynamicPressurePort(this, "dynamicPressure")
+  mDynamicPressurePort(this, "dynamicPressure"),
+  mDirection(0, 0, 0)
 {
 }
 
