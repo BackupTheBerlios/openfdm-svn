@@ -6,7 +6,8 @@
 #define OpenFDM_MPFloat_H
 
 #include <cstring>
-#include <iostream>
+#include <iosfwd>
+#include <ostream>
 #include <mpfr.h>
 
 namespace OpenFDM {

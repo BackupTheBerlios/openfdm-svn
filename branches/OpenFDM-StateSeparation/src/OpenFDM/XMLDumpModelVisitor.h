@@ -5,10 +5,10 @@
 #ifndef OpenFDM_XMLDumpModelVisitor_H
 #define OpenFDM_XMLDumpModelVisitor_H
 
-#include <iosfwd>
-#include <iostream>
-#include <sstream>
 #include <iomanip>
+#include <iosfwd>
+#include <ostream>
+#include <sstream>
 
 #include "Group.h"
 #include "Node.h"
