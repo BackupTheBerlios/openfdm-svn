@@ -3,7 +3,7 @@
  */
 
 #include "ExpatXMLReader.h"
-#include <iostream>
+#include <istream>
 #include <cstring>
 #include <expat.h>
 #include "config.h"

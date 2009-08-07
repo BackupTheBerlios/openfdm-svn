@@ -18,7 +18,6 @@
 #include <string.h>
 #endif
 
-#include <iostream>
 #include <cstdlib>
 
 namespace OpenFDM {
