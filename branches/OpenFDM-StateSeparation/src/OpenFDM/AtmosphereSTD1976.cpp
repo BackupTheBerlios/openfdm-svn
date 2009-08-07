@@ -8,7 +8,6 @@
 #include "Types.h"
 #include "LogStream.h"
 #include "Math.h"
-#include <iostream>
 
 namespace OpenFDM {
 
