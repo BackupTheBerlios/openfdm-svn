@@ -145,6 +145,10 @@ public:
     mForce -= forceFrom(positionDiff, cs.rotToReference(force));
   }
 
+  void applyTorque(const Vector3& torque)
+  { mForce(Range(0, 2)) -= torque; }
+  void applyTorque(const CoordinateSystem& cs, const Vector3& torque)
+  { applyTorque(cs.rotToReference(torque)); }
 
   void addForce(const Vector3& position, const Vector6& force)
   {
@@ -236,8 +240,21 @@ public:
     return mMechanicLinkValue->getCoordinateSystem().getRelative(mLinkRelPos);
   }
 
+  CoordinateSystem getRelativeCoordinateSystem(const CoordinateSystem& cs) const
+  { return getCoordinateSystem().toLocal(cs); }
   CoordinateSystem getRelativeCoordinateSystem(const ParentLink& link) const
-  { return getCoordinateSystem().toLocal(link.getCoordinateSystem()); }
+  { return getRelativeCoordinateSystem(link.getCoordinateSystem()); }
+
+  Vector3 getPosition(const CoordinateSystem& cs) const
+  {
+    OpenFDMAssert(isConnected());
+    return cs.toLocal(mMechanicLinkValue->getCoordinateSystem().getPosition());
+  }
+  Quaternion getOrientation(const CoordinateSystem& cs) const
+  {
+    OpenFDMAssert(isConnected());
+    return cs.toLocal(mMechanicLinkValue->getCoordinateSystem().getOrientation());
+  }
 
   Vector6 getVelocity(const Vector3& position) const
   {
@@ -353,6 +370,17 @@ public:
     OpenFDMAssert(isConnected());
     mMechanicLinkValue->applyForce(cs, force);
   }
+  void applyTorque(const Vector3& torque)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyTorque(torque);
+  }
+  void applyTorque(const CoordinateSystem& cs, const Vector3& torque)
+  {
+    OpenFDMAssert(isConnected());
+    mMechanicLinkValue->applyTorque(cs, torque);
+  }
+
 
   void addForce(const Vector3& position, const Vector6& force)
   {

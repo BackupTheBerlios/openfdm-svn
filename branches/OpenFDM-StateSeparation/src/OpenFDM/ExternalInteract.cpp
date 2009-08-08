@@ -13,23 +13,26 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(ExternalInteract, SingleLinkInteract)
+  DEF_OPENFDM_PROPERTY(Quaternion, Orientation, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnablePosition, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableOrientation, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableEulerAngles, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableBodyLinearVelocity, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableBodyAngularVelocity, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableGlobalLinearVelocity, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableGlobalAngularVelocity, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableBodyCentrifugalAcceleration, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableBodyLoad, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableBodyWindVelocity, Serialized)
-  DEF_OPENFDM_PROPERTY(Bool, EnableGlobalWindVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableLinearVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableAngularVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableCentrifugalAcceleration, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableLoad, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableAngularAcceleration, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableLinearWindVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableAngularWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableStaticPressure, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableDensity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableSoundSpeed, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableSpecificHeatRatio, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAltitude, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAboveGroundLevel, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableForce, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableTorque, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 class ExternalInteract::Context : public SingleLinkInteract::Context {
@@ -41,74 +44,102 @@ public:
     mPosition(portValueList.getPortValue(externalInteract->mPositionPort)),
     mOrientation(portValueList.getPortValue(externalInteract->mOrientationPort)),
     mEulerAngles(portValueList.getPortValue(externalInteract->mEulerAnglesPort)),
-    mBodyLinearVelocity(portValueList.getPortValue(externalInteract->mBodyLinearVelocityPort)),
-    mBodyAngularVelocity(portValueList.getPortValue(externalInteract->mBodyAngularVelocityPort)),
-    mGlobalLinearVelocity(portValueList.getPortValue(externalInteract->mGlobalLinearVelocityPort)),
-    mGlobalAngularVelocity(portValueList.getPortValue(externalInteract->mGlobalAngularVelocityPort)),
-    mBodyCentrifugalAcceleration(portValueList.getPortValue(externalInteract->mBodyCentrifugalAccelerationPort)),
-    mBodyLoad(portValueList.getPortValue(externalInteract->mBodyLoadPort)),
-    mBodyWindVelocity(portValueList.getPortValue(externalInteract->mBodyWindVelocityPort)),
-    mGlobalWindVelocity(portValueList.getPortValue(externalInteract->mGlobalWindVelocityPort)),
+    mLinearVelocity(portValueList.getPortValue(externalInteract->mLinearVelocityPort)),
+    mAngularVelocity(portValueList.getPortValue(externalInteract->mAngularVelocityPort)),
+    mCentrifugalAcceleration(portValueList.getPortValue(externalInteract->mCentrifugalAccelerationPort)),
+    mLoad(portValueList.getPortValue(externalInteract->mLoadPort)),
+    mAngularAcceleration(portValueList.getPortValue(externalInteract->mAngularAccelerationPort)),
+    mLinearWindVelocity(portValueList.getPortValue(externalInteract->mLinearWindVelocityPort)),
+    mAngularWindVelocity(portValueList.getPortValue(externalInteract->mAngularWindVelocityPort)),
     mTemperature(portValueList.getPortValue(externalInteract->mTemperaturePort)),
     mStaticPressure(portValueList.getPortValue(externalInteract->mStaticPressurePort)),
     mDensity(portValueList.getPortValue(externalInteract->mDensityPort)),
     mSoundSpeed(portValueList.getPortValue(externalInteract->mSoundSpeedPort)),
+    mSpecificHeatRatio(portValueList.getPortValue(externalInteract->mSpecificHeatRatioPort)),
     mAltitude(portValueList.getPortValue(externalInteract->mAltitudePort)),
     mAboveGroundLevel(portValueList.getPortValue(externalInteract->mAboveGroundLevelPort)),
-    mBodyForce(portValueList.getPortValue(externalInteract->mBodyForcePort)),
-    mBodyTorque(portValueList.getPortValue(externalInteract->mBodyTorquePort)),
-    mGlobalForce(portValueList.getPortValue(externalInteract->mGlobalForcePort)),
-    mGlobalTorque(portValueList.getPortValue(externalInteract->mGlobalTorquePort))
+    mForce(portValueList.getPortValue(externalInteract->mForcePort)),
+    mTorque(portValueList.getPortValue(externalInteract->mTorquePort))
   { }
   virtual ~Context() {}
     
   virtual const ExternalInteract& getNode() const
   { return *mExternalInteract; }
   
+  virtual void init(const /*Init*/Task& task)
+  {
+    switch (mExternalInteract->getCoordinates()) {
+    case BodyFixedCoordinates:
+      break;
+    case GlobalCoordinates:
+    default:
+      mCoordinateSystem.setPosition(mExternalInteract->getPosition());
+      mCoordinateSystem.setOrientation(mExternalInteract->getOrientation());
+      break;
+    }
+  }
+
   virtual void velocities(const Task& task)
   {
-    const CoordinateSystem& cs = getLink().getCoordinateSystem();
+    switch (mExternalInteract->getCoordinates()) {
+    case BodyFixedCoordinates:
+      // FIXME Is this the expected semantic??
 
-    // The global coordinates position
-    if (mPosition.isConnected())
-      mPosition = cs.getPosition();
-    
-    if (mOrientation.isConnected())
-      mOrientation = cs.getOrientation();
-    
-    if (mEulerAngles.isConnected())
-      mEulerAngles = cs.getOrientation().getEuler();
-    
-    // Velocity related sensing
-    bool enableBodyAngularVelocity = mBodyAngularVelocity.isConnected();
-    bool enableGlobalAngularVelocity = mGlobalAngularVelocity.isConnected();
-    bool enableBodyLinearVelocity = mBodyLinearVelocity.isConnected();
-    bool enableGlobalLinearVelocity = mGlobalLinearVelocity.isConnected();
-    bool enableBodyWindVelocity = mBodyWindVelocity.isConnected();
-    bool enableGlobalWindVelocity = mGlobalWindVelocity.isConnected();
-    if (enableBodyAngularVelocity || enableBodyLinearVelocity
-        || enableGlobalAngularVelocity || enableGlobalLinearVelocity
-        || enableBodyWindVelocity || enableGlobalWindVelocity) {
-      Vector6 refVelocity = getLink().getVelocity(cs.getPosition());
-      if (enableBodyAngularVelocity)
-        mBodyAngularVelocity = cs.rotToLocal(refVelocity.getAngular());
-      if (enableGlobalAngularVelocity)
-        mGlobalAngularVelocity = refVelocity.getAngular();
+      mCoordinateSystem = getLink().getCoordinateSystem().
+        getRelative(mExternalInteract->getOrientation());
       
-      if (enableBodyLinearVelocity)
-        mBodyLinearVelocity = cs.rotToLocal(refVelocity.getLinear());
-      if (enableGlobalLinearVelocity)
-        mGlobalLinearVelocity = refVelocity.getLinear();
+      // The global coordinates position
+      if (mPosition.isConnected())
+        mPosition = mCoordinateSystem.getPosition();
+      
+      if (mOrientation.isConnected())
+        mOrientation = mCoordinateSystem.getOrientation();
+      
+      if (mEulerAngles.isConnected())
+        mEulerAngles = mCoordinateSystem.getOrientation().getEuler();
+
+      break;
+    case GlobalCoordinates:
+    default:
+      // FIXME Is this the expected semantic??
+      // FIXME bad optimized.
+      
+      // The global coordinates position
+      if (mPosition.isConnected())
+        mPosition = getLink().getPosition(mCoordinateSystem);
+      
+      if (mOrientation.isConnected())
+        mOrientation = getLink().getOrientation(mCoordinateSystem);
+      
+      if (mEulerAngles.isConnected())
+        mEulerAngles = getLink().getOrientation(mCoordinateSystem).getEuler();
+
+      break;
+    }
+
+    // Velocity related sensing
+    bool enableLinearVelocity = mLinearVelocity.isConnected();
+    bool enableAngularVelocity = mAngularVelocity.isConnected();
+    bool enableLinearWindVelocity = mLinearWindVelocity.isConnected();
+    bool enableAngularWindVelocity = mAngularWindVelocity.isConnected();
+    if (enableLinearVelocity || enableAngularVelocity
+        || enableLinearWindVelocity || enableAngularWindVelocity) {
+      Vector6 refVelocity = getLink().getVelocity(mCoordinateSystem);
+      if (enableLinearVelocity)
+        mLinearVelocity = refVelocity.getLinear();
+      if (enableAngularVelocity)
+        mAngularVelocity = refVelocity.getAngular();
+     
       
       // Wind sensing
-      if (enableBodyWindVelocity || enableGlobalWindVelocity) {
+      if (enableLinearWindVelocity || enableAngularWindVelocity) {
         Vector6 wind = getEnvironment().getWindVelocity(task.getTime(),
-                                                        cs.getPosition());
+                                                        mCoordinateSystem.getPosition());
         wind = refVelocity - wind;
-        if (enableBodyWindVelocity)
-          mBodyWindVelocity = cs.rotToLocal(wind.getLinear());
-        if (enableGlobalWindVelocity)
-          mGlobalWindVelocity = wind.getLinear();
+        if (enableLinearWindVelocity)
+          mLinearWindVelocity = wind.getLinear();
+        if (enableAngularWindVelocity)
+          mAngularWindVelocity = wind.getAngular();
       }
     }
     
@@ -119,10 +150,12 @@ public:
     bool enableStaticPressure = mStaticPressure.isConnected();
     bool enableDensity = mDensity.isConnected();
     bool enableSoundSpeed = mSoundSpeed.isConnected();
+    bool enableSpecificHeatRatio = mSpecificHeatRatio.isConnected();
     bool enableAtmosphere = (enableTemperature || enableStaticPressure ||
-                             enableDensity || enableSoundSpeed);
+                             enableDensity || enableSoundSpeed ||
+                             enableSpecificHeatRatio);
     if (enableAltitude || enableAtmosphere) {
-      real_type altitude = getEnvironment().getAltitude(cs.getPosition());
+      real_type altitude = getEnvironment().getAltitude(mCoordinateSystem.getPosition());
       if (enableAltitude)
         mAltitude = altitude;
       
@@ -137,88 +170,88 @@ public:
           mDensity = data.density;
         if (enableSoundSpeed)
           mSoundSpeed = atmosphere->getSoundSpeed(data.temperature);
+        if (enableSpecificHeatRatio)
+          mSpecificHeatRatio = atmosphere->getSpecificHeatRatio(data.temperature);
       }
     }
     
     if (mAboveGroundLevel.isConnected()) {
       real_type agl;
       agl = getEnvironment().getAboveGroundLevel(task.getTime(),
-                                                 cs.getPosition());
+                                                 mCoordinateSystem.getPosition());
       mAboveGroundLevel = agl;
     }
   }
   virtual void articulation(const Task& task)
   {
     // Apply all the forces ...
-    if (mBodyForce.isConnected())
-      getLink().applyBodyForce(Vector3(mBodyForce.getValue()));
-
-    if (mBodyTorque.isConnected())
-      getLink().applyBodyTorque(Vector3(mBodyTorque.getValue()));
-
-    if (mGlobalForce.isConnected())
-      getLink().applyGlobalForce(Vector3(mGlobalForce.getValue()));
-
-    if (mGlobalTorque.isConnected())
-      getLink().applyGlobalTorque(Vector3(mGlobalTorque.getValue()));
+    if (mForce.isConnected())
+      getLink().applyForce(mCoordinateSystem, Vector3(mForce.getValue()));
+    if (mTorque.isConnected())
+      getLink().applyTorque(mCoordinateSystem, mTorque.getValue());
   }
   virtual void accelerations(const Task& task)
   {
-    bool enableBodyCentrifugalAcceleration
-      = mBodyCentrifugalAcceleration.isConnected();
-    bool enableBodyLoad = mBodyLoad.isConnected();
-    if (enableBodyCentrifugalAcceleration || enableBodyLoad) {
-      const CoordinateSystem& cs = getLink().getCoordinateSystem();
-
-      Vector6 spatialVel = getLink().getInertialVelocity(cs.getPosition());
-      Vector6 spatialAccel = getLink().getInertialAcceleration(cs.getPosition());
+    bool enableCentrifugalAcceleration
+      = mCentrifugalAcceleration.isConnected();
+    bool enableLoad = mLoad.isConnected();
+    bool enableAngularAcceleration
+      = mAngularAcceleration.isConnected();
+    if (enableCentrifugalAcceleration || enableLoad ||
+        enableAngularAcceleration) {
+      Vector6 spatialVel = getLink().getInertialVelocity(mCoordinateSystem);
+      Vector6 spatialAccel = getLink().getInertialAcceleration(mCoordinateSystem);
       Vector3 centrifugalAccel = spatialAccel.getLinear();
       centrifugalAccel += cross(spatialVel.getAngular(),spatialVel.getLinear());
 
-      if (enableBodyCentrifugalAcceleration)
-        mBodyCentrifugalAcceleration = cs.rotToLocal(centrifugalAccel);
-      if (enableBodyLoad) {
+      if (enableCentrifugalAcceleration)
+        mCentrifugalAcceleration = centrifugalAccel;
+      if (enableLoad) {
         // May be cache that from the velocity step??
-        Vector3 gravity = getEnvironment().getGravityAcceleration(cs.getPosition());
-        mBodyLoad = cs.rotToLocal(Vector3(centrifugalAccel - gravity));
+        Vector3 gravity = getEnvironment().getGravityAcceleration(mCoordinateSystem.getPosition());
+        mLoad = Vector3(centrifugalAccel - gravity);
       }
+      if (enableAngularAcceleration)
+        mAngularAcceleration = spatialAccel.getAngular();
     }
   }
   
 private:
   SharedPtr<const ExternalInteract> mExternalInteract;
 
+  CoordinateSystem mCoordinateSystem;
+
   MatrixOutputPortHandle mPosition;
   MatrixOutputPortHandle mOrientation;
   MatrixOutputPortHandle mEulerAngles;
 
-  MatrixOutputPortHandle mBodyLinearVelocity;
-  MatrixOutputPortHandle mBodyAngularVelocity;
-  MatrixOutputPortHandle mGlobalLinearVelocity;
-  MatrixOutputPortHandle mGlobalAngularVelocity;
+  MatrixOutputPortHandle mLinearVelocity;
+  MatrixOutputPortHandle mAngularVelocity;
 
-  MatrixOutputPortHandle mBodyCentrifugalAcceleration;
-  MatrixOutputPortHandle mBodyLoad;
+  MatrixOutputPortHandle mCentrifugalAcceleration;
+  MatrixOutputPortHandle mLoad;
+  MatrixOutputPortHandle mAngularAcceleration;
 
-  MatrixOutputPortHandle mBodyWindVelocity;
-  MatrixOutputPortHandle mGlobalWindVelocity;
+  MatrixOutputPortHandle mLinearWindVelocity;
+  MatrixOutputPortHandle mAngularWindVelocity;
 
   RealOutputPortHandle mTemperature;
   RealOutputPortHandle mStaticPressure;
   RealOutputPortHandle mDensity;
   RealOutputPortHandle mSoundSpeed;
+  RealOutputPortHandle mSpecificHeatRatio;
 
   RealOutputPortHandle mAltitude;
   RealOutputPortHandle mAboveGroundLevel;
 
-  MatrixInputPortHandle mBodyForce;
-  MatrixInputPortHandle mBodyTorque;
-  MatrixInputPortHandle mGlobalForce;
-  MatrixInputPortHandle mGlobalTorque;
+  MatrixInputPortHandle mForce;
+  MatrixInputPortHandle mTorque;
 };
 
 ExternalInteract::ExternalInteract(const std::string& name) :
-  SingleLinkInteract(name)
+  SingleLinkInteract(name),
+  mCoordinates(BodyFixedCoordinates),
+  mOrientation(Quaternion::unit())
 {
 }
 
@@ -237,6 +270,18 @@ ExternalInteract::newMechanicContext(const Environment* environment,
     return 0;
   }
   return context.release();
+}
+
+void
+ExternalInteract::setCoordinates(Coordinates coordinates)
+{
+  mCoordinates = coordinates;
+}
+
+void
+ExternalInteract::setOrientation(const Quaternion& orientation)
+{
+  mOrientation = orientation;
 }
 
 void
@@ -291,146 +336,127 @@ ExternalInteract::getEnableEulerAngles() const
 }
 
 void
-ExternalInteract::setEnableBodyLinearVelocity(bool enable)
+ExternalInteract::setEnableLinearVelocity(bool enable)
 {
-  if (enable == getEnableBodyLinearVelocity())
+  if (enable == getEnableLinearVelocity())
     return;
   if (enable)
-    mBodyLinearVelocityPort
-      = MatrixOutputPort(this, "bodyLinearVelocity", Size(3, 1));
+    mLinearVelocityPort = MatrixOutputPort(this, "linearVelocity", Size(3, 1));
   else
-    mBodyLinearVelocityPort.clear();
+    mLinearVelocityPort.clear();
 }
 
 bool
-ExternalInteract::getEnableBodyLinearVelocity() const
+ExternalInteract::getEnableLinearVelocity() const
 {
-  return !mBodyLinearVelocityPort.empty();
+  return !mLinearVelocityPort.empty();
 }
 
 void
-ExternalInteract::setEnableBodyAngularVelocity(bool enable)
+ExternalInteract::setEnableAngularVelocity(bool enable)
 {
-  if (enable == getEnableBodyAngularVelocity())
+  if (enable == getEnableAngularVelocity())
     return;
   if (enable)
-    mBodyAngularVelocityPort
-      = MatrixOutputPort(this, "bodyAngularVelocity", Size(3, 1));
+    mAngularVelocityPort
+      = MatrixOutputPort(this, "angularVelocity", Size(3, 1));
   else
-    mBodyAngularVelocityPort.clear();
+    mAngularVelocityPort.clear();
 }
 
 bool
-ExternalInteract::getEnableBodyAngularVelocity() const
+ExternalInteract::getEnableAngularVelocity() const
 {
-  return !mBodyAngularVelocityPort.empty();
+  return !mAngularVelocityPort.empty();
 }
 
 void
-ExternalInteract::setEnableGlobalLinearVelocity(bool enable)
+ExternalInteract::setEnableCentrifugalAcceleration(bool enable)
 {
-  if (enable == getEnableGlobalLinearVelocity())
+  if (enable == getEnableCentrifugalAcceleration())
     return;
   if (enable)
-    mGlobalLinearVelocityPort
-      = MatrixOutputPort(this, "globalLinearVelocity", Size(3, 1));
+    mCentrifugalAccelerationPort
+      = MatrixOutputPort(this, "centrifugalAcceleration", Size(3, 1), true);
   else
-    mGlobalLinearVelocityPort.clear();
+    mCentrifugalAccelerationPort.clear();
 }
 
 bool
-ExternalInteract::getEnableGlobalLinearVelocity() const
+ExternalInteract::getEnableCentrifugalAcceleration() const
 {
-  return !mGlobalLinearVelocityPort.empty();
+  return !mCentrifugalAccelerationPort.empty();
 }
 
 void
-ExternalInteract::setEnableGlobalAngularVelocity(bool enable)
+ExternalInteract::setEnableLoad(bool enable)
 {
-  if (enable == getEnableGlobalAngularVelocity())
+  if (enable == getEnableLoad())
     return;
   if (enable)
-    mGlobalAngularVelocityPort
-      = MatrixOutputPort(this, "globalAngularVelocity", Size(3, 1));
+    mLoadPort = MatrixOutputPort(this, "load", Size(3, 1), true);
   else
-    mGlobalAngularVelocityPort.clear();
+    mLoadPort.clear();
 }
 
 bool
-ExternalInteract::getEnableGlobalAngularVelocity() const
+ExternalInteract::getEnableLoad() const
 {
-  return !mGlobalAngularVelocityPort.empty();
+  return !mLoadPort.empty();
 }
 
 void
-ExternalInteract::setEnableBodyCentrifugalAcceleration(bool enable)
+ExternalInteract::setEnableAngularAcceleration(bool enable)
 {
-  if (enable == getEnableBodyCentrifugalAcceleration())
+  if (enable == getEnableAngularAcceleration())
     return;
   if (enable)
-    mBodyCentrifugalAccelerationPort
-      = MatrixOutputPort(this, "bodyCentrifugalAcceleration", Size(3, 1), true);
+    mAngularAccelerationPort
+      = MatrixOutputPort(this, "angularAcceleration", Size(3, 1), true);
   else
-    mBodyCentrifugalAccelerationPort.clear();
+    mAngularAccelerationPort.clear();
 }
 
 bool
-ExternalInteract::getEnableBodyCentrifugalAcceleration() const
+ExternalInteract::getEnableAngularAcceleration() const
 {
-  return !mBodyCentrifugalAccelerationPort.empty();
+  return !mAngularAccelerationPort.empty();
 }
 
 void
-ExternalInteract::setEnableBodyLoad(bool enable)
+ExternalInteract::setEnableLinearWindVelocity(bool enable)
 {
-  if (enable == getEnableBodyLoad())
+  if (enable == getEnableLinearWindVelocity())
     return;
   if (enable)
-    mBodyLoadPort = MatrixOutputPort(this, "bodyLoad", Size(3, 1), true);
+    mLinearWindVelocityPort
+      = MatrixOutputPort(this, "linearWindVelocity", Size(3, 1));
   else
-    mBodyLoadPort.clear();
+    mLinearWindVelocityPort.clear();
 }
 
 bool
-ExternalInteract::getEnableBodyLoad() const
+ExternalInteract::getEnableLinearWindVelocity() const
 {
-  return !mBodyLoadPort.empty();
+  return !mLinearWindVelocityPort.empty();
 }
 
 void
-ExternalInteract::setEnableBodyWindVelocity(bool enable)
+ExternalInteract::setEnableAngularWindVelocity(bool enable)
 {
-  if (enable == getEnableBodyWindVelocity())
+  if (enable == getEnableAngularWindVelocity())
     return;
   if (enable)
-    mBodyWindVelocityPort
-      = MatrixOutputPort(this, "bodyWindVelocity", Size(3, 1));
+    mAngularWindVelocityPort
+      = MatrixOutputPort(this, "angularWindVelocity", Size(3, 1));
   else
-    mBodyWindVelocityPort.clear();
+    mAngularWindVelocityPort.clear();
 }
 
 bool
-ExternalInteract::getEnableBodyWindVelocity() const
+ExternalInteract::getEnableAngularWindVelocity() const
 {
-  return !mBodyWindVelocityPort.empty();
-}
-
-void
-ExternalInteract::setEnableGlobalWindVelocity(bool enable)
-{
-  if (enable == getEnableGlobalWindVelocity())
-    return;
-  if (enable)
-    mGlobalWindVelocityPort
-      = MatrixOutputPort(this, "globalWindVelocity", Size(3, 1));
-  else
-    mGlobalWindVelocityPort.clear();
-}
-
-bool
-ExternalInteract::getEnableGlobalWindVelocity() const
-{
-  return !mGlobalWindVelocityPort.empty();
+  return !mAngularWindVelocityPort.empty();
 }
 
 void
@@ -502,6 +528,23 @@ ExternalInteract::getEnableSoundSpeed() const
 }
 
 void
+ExternalInteract::setEnableSpecificHeatRatio(bool enable)
+{
+  if (enable == getEnableSpecificHeatRatio())
+    return;
+  if (enable)
+    mSpecificHeatRatioPort = RealOutputPort(this, "specificHeatRatio");
+  else
+    mSpecificHeatRatioPort.clear();
+}
+
+bool
+ExternalInteract::getEnableSpecificHeatRatio() const
+{
+  return !mSpecificHeatRatioPort.empty();
+}
+
+void
 ExternalInteract::setEnableAltitude(bool enable)
 {
   if (enable == getEnableAltitude())
@@ -536,71 +579,37 @@ ExternalInteract::getEnableAboveGroundLevel() const
 }
 
 void
-ExternalInteract::setEnableBodyForce(bool enable)
+ExternalInteract::setEnableForce(bool enable)
 {
-  if (enable == getEnableBodyForce())
+  if (enable == getEnableForce())
     return;
   if (enable)
-    mBodyForcePort = MatrixInputPort(this, "bodyForce", Size(3, 1), true);
+    mForcePort = MatrixInputPort(this, "force", Size(3, 1), true);
   else
-    mBodyForcePort.clear();
+    mForcePort.clear();
 }
 
 bool
-ExternalInteract::getEnableBodyForce() const
+ExternalInteract::getEnableForce() const
 {
-  return !mBodyForcePort.empty();
+  return !mForcePort.empty();
 }
 
 void
-ExternalInteract::setEnableBodyTorque(bool enable)
+ExternalInteract::setEnableTorque(bool enable)
 {
-  if (enable == getEnableBodyTorque())
+  if (enable == getEnableTorque())
     return;
   if (enable)
-    mBodyTorquePort = MatrixInputPort(this, "bodyTorque", Size(3, 1), true);
+    mTorquePort = MatrixInputPort(this, "torque", Size(3, 1), true);
   else
-    mBodyTorquePort.clear();
+    mTorquePort.clear();
 }
 
 bool
-ExternalInteract::getEnableBodyTorque() const
+ExternalInteract::getEnableTorque() const
 {
-  return !mBodyTorquePort.empty();
-}
-
-void
-ExternalInteract::setEnableGlobalForce(bool enable)
-{
-  if (enable == getEnableGlobalForce())
-    return;
-  if (enable)
-    mGlobalForcePort = MatrixInputPort(this, "globalForce", Size(3, 1), true);
-  else
-    mGlobalForcePort.clear();
-}
-
-bool
-ExternalInteract::getEnableGlobalForce() const
-{
-  return !mGlobalForcePort.empty();
-}
-
-void
-ExternalInteract::setEnableGlobalTorque(bool enable)
-{
-  if (enable == getEnableGlobalTorque())
-    return;
-  if (enable)
-    mGlobalTorquePort = MatrixInputPort(this, "globalTorque", Size(3, 1), true);
-  else
-    mGlobalTorquePort.clear();
-}
-
-bool
-ExternalInteract::getEnableGlobalTorque() const
-{
-  return !mGlobalTorquePort.empty();
+  return !mTorquePort.empty();
 }
 
 void
@@ -609,18 +618,18 @@ ExternalInteract::setEnableAllOutputs(bool enable)
   setEnablePosition(enable);
   setEnableOrientation(enable);
   setEnableEulerAngles(enable);
-  setEnableBodyLinearVelocity(enable);
-  setEnableBodyAngularVelocity(enable);
-  setEnableGlobalLinearVelocity(enable);
-  setEnableGlobalAngularVelocity(enable);
-  setEnableBodyCentrifugalAcceleration(enable);
-  setEnableBodyLoad(enable);
-  setEnableBodyWindVelocity(enable);
-  setEnableGlobalWindVelocity(enable);
+  setEnableLinearVelocity(enable);
+  setEnableAngularVelocity(enable);
+  setEnableLinearWindVelocity(enable);
+  setEnableAngularWindVelocity(enable);
+  setEnableCentrifugalAcceleration(enable);
+  setEnableLoad(enable);
+  setEnableAngularAcceleration(enable);
   setEnableTemperature(enable);
   setEnableStaticPressure(enable);
   setEnableDensity(enable);
   setEnableSoundSpeed(enable);
+  setEnableSpecificHeatRatio(enable);
   setEnableAltitude(enable);
   setEnableAboveGroundLevel(enable);
 }

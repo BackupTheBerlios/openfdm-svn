@@ -435,15 +435,15 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
                           epInteract->getPort("link"));
 
   ExternalInteract* accelInteract = new ExternalInteract("Acceleration Sensor");
-  accelInteract->setEnableBodyLoad(true);
-  accelInteract->setEnableBodyCentrifugalAcceleration(true);
+  accelInteract->setEnableLoad(true);
+  accelInteract->setEnableCentrifugalAcceleration(true);
   mTopLevelGroup->addChild(accelInteract);
   mTopLevelGroup->connect(mTopLevelBody->addLink("accelLink"),
                           accelInteract->getPort("link"));
 
   MatrixSplit* load = new MatrixSplit("Body Load Split");
   mTopLevelGroup->addChild(load);
-  mTopLevelGroup->connect(accelInteract->getPort("bodyLoad"),
+  mTopLevelGroup->connect(accelInteract->getPort("load"),
                           load->getPort("input"));
   load->addOutputPort("x");
   load->addOutputPort("y");
@@ -457,7 +457,7 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
 
   MatrixSplit* accel = new MatrixSplit("Body Accel Split");
   mTopLevelGroup->addChild(accel);
-  mTopLevelGroup->connect(accelInteract->getPort("bodyCentrifugalAcceleration"),
+  mTopLevelGroup->connect(accelInteract->getPort("centrifugalAcceleration"),
                           accel->getPort("input"));
   accel->addOutputPort("x");
   accel->addOutputPort("y");
@@ -1210,12 +1210,11 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
 
   ExternalInteract* engineForce = new ExternalInteract(namestr);
   mTopLevelGroup->addChild(engineForce);
-  engineForce->setEnableBodyForce(true);
+  engineForce->setEnableForce(true);
   mTopLevelGroup->connect(mTopLevelBody->addLink("engine"),
                           engineForce->getPort("link"));
   engineForce->setPosition(pos);
-  // FIXME
-//   engineForce->setOrientation(orientation);
+  engineForce->setOrientation(orientation);
   mTopLevelGroup->connect(prod->getPort("output"),
                           engineForce->getPort("bodyForce"));
 

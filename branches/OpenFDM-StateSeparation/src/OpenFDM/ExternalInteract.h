@@ -15,13 +15,27 @@ namespace OpenFDM {
 
 class ExternalInteract : public SingleLinkInteract {
   OPENFDM_OBJECT(ExternalInteract, SingleLinkInteract);
-  class Context;
 public:
   ExternalInteract(const std::string& name);
   virtual ~ExternalInteract(void);
 
   virtual MechanicContext*
   newMechanicContext(const Environment*, PortValueList&) const;
+
+  enum Coordinates {
+    BodyFixedCoordinates,
+    GlobalCoordinates
+  };
+
+  /// The Coordinates
+  Coordinates getCoordinates() const
+  { return mCoordinates; }
+  void setCoordinates(Coordinates coordinates);
+
+  /// The orientation of the coordinate system this Interact measures its values
+  const Quaternion& getOrientation() const
+  { return mOrientation; }
+  void setOrientation(const Quaternion& orientation);
 
   /// Set availabilty of the position output port
   void setEnablePosition(bool enable);
@@ -40,54 +54,42 @@ public:
 
 
   /// Set availabilty of the linear velocity output port
-  /// The output vector is measured in body coordinates
-  void setEnableBodyLinearVelocity(bool enable);
+  void setEnableLinearVelocity(bool enable);
   /// Get availabilty of the linear velocity output port
-  bool getEnableBodyLinearVelocity() const;
+  bool getEnableLinearVelocity() const;
 
   /// Set availabilty of the angular velocity output port
-  /// The output vector is measured in body coordinates
-  void setEnableBodyAngularVelocity(bool enable);
+  void setEnableAngularVelocity(bool enable);
   /// Get availabilty of the angular velocity output port
-  bool getEnableBodyAngularVelocity() const;
+  bool getEnableAngularVelocity() const;
 
-  /// Set availabilty of the linear velocity output port
-  /// The output vector is measured in global coordinates
-  void setEnableGlobalLinearVelocity(bool enable);
-  /// Get availabilty of the linear velocity output port
-  bool getEnableGlobalLinearVelocity() const;
 
-  /// Set availabilty of the angular velocity output port
-  /// The output vector is measured in global coordinates
-  void setEnableGlobalAngularVelocity(bool enable);
-  /// Get availabilty of the angular velocity output port
-  bool getEnableGlobalAngularVelocity() const;
-
+  /// Set availabilty of the angular acceleration output port
+  void setEnableAngularAcceleration(bool enable);
+  /// Get availabilty of the angular acceleration output port
+  bool getEnableAngularAcceleration() const;
 
   /// Set availabilty of the linear acceleration output port
-  /// The output vector is measured in body coordinates
-  void setEnableBodyCentrifugalAcceleration(bool enable);
+  void setEnableCentrifugalAcceleration(bool enable);
   /// Get availabilty of the linear acceleration output port
-  bool getEnableBodyCentrifugalAcceleration() const;
+  bool getEnableCentrifugalAcceleration() const;
 
   /// Set availabilty of the load output port
-  /// The output vector is measured in body coordinates
-  void setEnableBodyLoad(bool enable);
+  void setEnableLoad(bool enable);
   /// Get availabilty of the load output port
-  bool getEnableBodyLoad() const;
+  bool getEnableLoad() const;
 
 
   /// Set availabilty of the wind velocity output port
-  /// The output vector is measured in body coordinates
-  void setEnableBodyWindVelocity(bool enable);
+  void setEnableLinearWindVelocity(bool enable);
   /// Get availabilty of the wind velocity output port
-  bool getEnableBodyWindVelocity() const;
+  bool getEnableLinearWindVelocity() const;
 
   /// Set availabilty of the wind velocity output port
   /// The output vector is measured in global coordinates
-  void setEnableGlobalWindVelocity(bool enable);
+  void setEnableAngularWindVelocity(bool enable);
   /// Get availabilty of the wind velocity output port
-  bool getEnableGlobalWindVelocity() const;
+  bool getEnableAngularWindVelocity() const;
 
 
   /// Set availabilty of the temperature output port
@@ -110,6 +112,11 @@ public:
   /// Get availabilty of the sound speed output port
   bool getEnableSoundSpeed() const;
 
+  /// Set availabilty of the specific heat ratio output port
+  void setEnableSpecificHeatRatio(bool enable);
+  /// Get availabilty of the specific heat ratio output port
+  bool getEnableSpecificHeatRatio() const;
+
 
   /// Set availabilty of the altitude output port
   void setEnableAltitude(bool enable);
@@ -123,25 +130,14 @@ public:
 
 
   /// Set availabilty of the body force input port
-  void setEnableBodyForce(bool enable);
+  void setEnableForce(bool enable);
   /// Get availabilty of the body force input port
-  bool getEnableBodyForce() const;
+  bool getEnableForce() const;
 
   /// Set availabilty of the body torque input port
-  void setEnableBodyTorque(bool enable);
+  void setEnableTorque(bool enable);
   /// Get availabilty of the body torque input port
-  bool getEnableBodyTorque() const;
-
-
-  /// Set availabilty of the global force input port
-  void setEnableGlobalForce(bool enable);
-  /// Get availabilty of the global force input port
-  bool getEnableGlobalForce() const;
-
-  /// Set availabilty of the global torque input port
-  void setEnableGlobalTorque(bool enable);
-  /// Get availabilty of the global torque input port
-  bool getEnableGlobalTorque() const;
+  bool getEnableTorque() const;
 
 
   /// Set availabilty of all output ports
@@ -149,35 +145,42 @@ public:
   void setEnableAllOutputs(bool enable);
 
 protected:
+  class Context;
+
+  Coordinates mCoordinates;
+
+  Quaternion mOrientation;
+
   /// Positional state sensing
   MatrixOutputPort mPositionPort;
   MatrixOutputPort mOrientationPort;
   MatrixOutputPort mEulerAnglesPort;
 
   /// Velocity state sensing
-  MatrixOutputPort mBodyLinearVelocityPort;
-  MatrixOutputPort mBodyAngularVelocityPort;
-  MatrixOutputPort mGlobalLinearVelocityPort;
-  MatrixOutputPort mGlobalAngularVelocityPort;
+  MatrixOutputPort mLinearVelocityPort;
+  MatrixOutputPort mAngularVelocityPort;
 
-  MatrixOutputPort mBodyCentrifugalAccelerationPort;
-  MatrixOutputPort mBodyLoadPort;
+  /// Acceleration sensing
+  MatrixOutputPort mAngularAccelerationPort;
+  MatrixOutputPort mCentrifugalAccelerationPort;
+  MatrixOutputPort mLoadPort;
 
-  MatrixOutputPort mBodyWindVelocityPort;
-  MatrixOutputPort mGlobalWindVelocityPort;
+  /// Wind sensing
+  MatrixOutputPort mLinearWindVelocityPort;
+  MatrixOutputPort mAngularWindVelocityPort;
 
   RealOutputPort mTemperaturePort;
   RealOutputPort mStaticPressurePort;
   RealOutputPort mDensityPort;
   RealOutputPort mSoundSpeedPort;
+  RealOutputPort mSpecificHeatRatioPort;
 
   RealOutputPort mAltitudePort;
   RealOutputPort mAboveGroundLevelPort;
 
-  MatrixInputPort mBodyForcePort;
-  MatrixInputPort mBodyTorquePort;
-  MatrixInputPort mGlobalForcePort;
-  MatrixInputPort mGlobalTorquePort;
+  /// Force inputs
+  MatrixInputPort mForcePort;
+  MatrixInputPort mTorquePort;
 };
 
 } // namespace OpenFDM

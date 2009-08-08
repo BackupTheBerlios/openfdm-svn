@@ -90,17 +90,17 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(mMechanicLinkModel->getPort("link"),
                   mExternalInteract->getPort("link"));
 
-  mExternalInteract->setEnableBodyWindVelocity(true);
+  mExternalInteract->setEnableLinearWindVelocity(true);
   mExternalInteract->setEnableDensity(true);
   mExternalInteract->setEnableStaticPressure(true);
   mExternalInteract->setEnableTemperature(true);
   mExternalInteract->setEnableSoundSpeed(true);
-  mExternalInteract->setEnableBodyForce(true);
+  mExternalInteract->setEnableForce(true);
 
   DynamicPressure* dynamicPressure = new DynamicPressure("DynamicPressure");
   mGroup->addChild(dynamicPressure);
 
-  mGroup->connect(mExternalInteract->getPort("bodyWindVelocity"),
+  mGroup->connect(mExternalInteract->getPort("linearWindVelocity"),
                   dynamicPressure->getPort("velocity"));
   mGroup->connect(mExternalInteract->getPort("density"),
                   dynamicPressure->getPort("density"));
@@ -109,7 +109,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   MachNumber* machNumber = new MachNumber("MachNumber");
   mGroup->addChild(machNumber);
 
-  mGroup->connect(mExternalInteract->getPort("bodyWindVelocity"),
+  mGroup->connect(mExternalInteract->getPort("linearWindVelocity"),
                   machNumber->getPort("velocity"));
   mGroup->connect(mExternalInteract->getPort("soundSpeed"),
                   machNumber->getPort("soundSpeed"));
@@ -117,7 +117,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
 
   WindAxis* windAxis = new WindAxis("WindAxis");
   mGroup->addChild(windAxis);
-  mGroup->connect(mExternalInteract->getPort("bodyWindVelocity"),
+  mGroup->connect(mExternalInteract->getPort("linearWindVelocity"),
                   windAxis->getPort("bodyVelocity"));
 
 
@@ -130,7 +130,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
                   windAxisForce->getPort("beta"));
 
   mGroup->connect(windAxisForce->getPort("bodyForce"),
-                  mExternalInteract->getPort("bodyForce"));
+                  mExternalInteract->getPort("force"));
 
 
   mAlphaOutputModel = new GroupOutput("Alpha Output");
@@ -205,8 +205,8 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   
   MatrixSplit* linearVel = new MatrixSplit("Linear Velocity Split");
   mGroup->addChild(linearVel);
-  mExternalInteract->setEnableBodyWindVelocity(true);
-  mGroup->connect(mExternalInteract->getPort("bodyWindVelocity"),
+  mExternalInteract->setEnableLinearWindVelocity(true);
+  mGroup->connect(mExternalInteract->getPort("linearWindVelocity"),
                   linearVel->getPort("input"));
   linearVel->addOutputPort("u");
   linearVel->addOutputPort("v");
@@ -230,9 +230,8 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
 
   MatrixSplit* angularVel = new MatrixSplit("Angular Velocity Split");
   mGroup->addChild(angularVel);
-  mExternalInteract->setEnableBodyAngularVelocity(true);
-  /// FIXME make wind angular velocity sensable
-  mGroup->connect(mExternalInteract->getPort("bodyAngularVelocity"),
+  mExternalInteract->setEnableAngularWindVelocity(true);
+  mGroup->connect(mExternalInteract->getPort("angularWindVelocity"),
                   angularVel->getPort("input"));
   angularVel->addOutputPort("p");
   angularVel->addOutputPort("q");
@@ -302,10 +301,7 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   hOverWingSpan->setNumFactors(2);
   mGroup->connect(recWingSpan->getPort("output"),
                   hOverWingSpan->getPort("input0"));
-  // FIXME??
-//   mExternalInteract->setEnableAltitude(true);
-//   mGroup->connect(mExternalInteract->getPort("altitude"),
-//                   hOverWingSpan->getPort("input1"));
+
   mExternalInteract->setEnableAboveGroundLevel(true);
   mGroup->connect(mExternalInteract->getPort("aboveGroundLevel"),
                   hOverWingSpan->getPort("input1"));
@@ -353,9 +349,9 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(mYawInputModel->getPort("output"),
                   torque->addInputPort("z"));
 
-  mExternalInteract->setEnableBodyTorque(true);
+  mExternalInteract->setEnableTorque(true);
   mGroup->connect(torque->getPort("output"),
-                  mExternalInteract->getPort("bodyTorque"));
+                  mExternalInteract->getPort("torque"));
 }
 
 JSBSimAerodynamic::~JSBSimAerodynamic(void)

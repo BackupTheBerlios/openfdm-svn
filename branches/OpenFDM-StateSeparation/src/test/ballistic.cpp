@@ -57,7 +57,7 @@ Node* buildBallistic()
   DynamicPressure* dynamicPressure = new DynamicPressure("DynamicPressure");
   group->addChild(dynamicPressure);
 
-  group->connect(externalInteract->getPort("bodyWindVelocity"),
+  group->connect(externalInteract->getPort("linearWindVelocity"),
                  dynamicPressure->getPort("velocity"));
   group->connect(externalInteract->getPort("density"),
                  dynamicPressure->getPort("density"));
@@ -66,7 +66,7 @@ Node* buildBallistic()
   MachNumber* machNumber = new MachNumber("MachNumber");
   group->addChild(machNumber);
 
-  group->connect(externalInteract->getPort("bodyWindVelocity"),
+  group->connect(externalInteract->getPort("linearWindVelocity"),
                  machNumber->getPort("velocity"));
   group->connect(externalInteract->getPort("soundSpeed"),
                  machNumber->getPort("soundSpeed"));
@@ -75,7 +75,7 @@ Node* buildBallistic()
   WindAxis* windAxis = new WindAxis("WindAxis");
   group->addChild(windAxis);
 
-  group->connect(externalInteract->getPort("bodyWindVelocity"),
+  group->connect(externalInteract->getPort("linearWindVelocity"),
                  windAxis->getPort("bodyVelocity"));
 
 
@@ -87,9 +87,9 @@ Node* buildBallistic()
   group->connect(windAxis->getPort("beta"),
                  windAxisForce->getPort("beta"));
 
-  externalInteract->setEnableBodyForce(true);
+  externalInteract->setEnableForce(true);
   group->connect(windAxisForce->getPort("bodyForce"),
-                 externalInteract->getPort("bodyForce"));
+                 externalInteract->getPort("force"));
 
   UnaryFunction* alphaAbs = new UnaryFunction("Alpha Abs", UnaryFunction::Abs);
   group->addChild(alphaAbs);
