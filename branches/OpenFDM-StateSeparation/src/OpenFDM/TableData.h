@@ -79,46 +79,16 @@ public:
   typedef LinAlg::Vector<unsigned,numDims>  SizeVector;
   typedef LinAlg::Vector<real_type,numDims> InterpVector;
 
-  TableData(void) :
-    mData(0)
+  TableData(void)
   {}
   TableData(const SizeVector& size) :
-    mData(new real_type[product(size)]), mSize(size)
-  {
-    unsigned totalLen = product(mSize);
-    for (unsigned i = 0; i < totalLen; ++i)
-      mData[i] = 0;
-  }
+    mData(product(size), real_type(0)), mSize(size)
+  { }
   TableData(const TableData& ndarray) :
-    mData(new real_type[product(ndarray.size())]), mSize(ndarray.size())
-  {
-    unsigned totalLen = product(mSize);
-    for (unsigned i = 0; i < totalLen; ++i)
-      mData[i] = ndarray.mData[i];
-  }
+    mData(ndarray.mData), mSize(ndarray.size())
+  { }
   ~TableData(void)
-  { delete[] mData; }
-
-  TableData& operator=(const TableData& ndarray)
-  {
-    if (this == &ndarray)
-      return *this;
-    delete[] mData;
-    if (ndarray.mData) {
-      mSize = ndarray.size();
-      unsigned totalLen = product(mSize);
-      if (0 < totalLen) {
-        mData = new real_type[totalLen];
-        for (unsigned i = 0; i < totalLen; ++i)
-          mData[i] = ndarray.mData[i];
-      } else {
-        mData = 0;
-      }
-    } else {
-      mData = 0;
-    }
-    return *this;
-  }
+  { }
 
   const SizeVector& size(void) const
   { return mSize; }
@@ -201,7 +171,7 @@ private:
     return value;
   }
 
-  real_type* mData;
+  std::vector<real_type> mData;
   SizeVector mSize;
 };
 
