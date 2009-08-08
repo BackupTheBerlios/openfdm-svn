@@ -35,9 +35,6 @@ public:
   void setChord(const real_type& chord);
   const Port* getChordPort(void);
 
-  void setWingIncidence(const real_type& wingIncidence);
-  const Port* getWingIncidencePort(void);
-
   void setHTailArea(const real_type& hTailArea);
   const Port* getHTailAreaPort(void);
 
@@ -98,9 +95,6 @@ private:
 
   SharedPtr<ConstModel> mChordModel;
   SharedPtr<GroupOutput> mChordOutputModel;
-
-  SharedPtr<ConstModel> mWingIncidenceModel;
-  SharedPtr<GroupOutput> mWingIncidenceOutputModel;
 
   SharedPtr<ConstModel> mHTailAreaModel;
   SharedPtr<GroupOutput> mHTailAreaOutputModel;

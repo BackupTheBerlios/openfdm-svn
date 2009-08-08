@@ -40,14 +40,6 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(mChordModel->getPort("output"),
                   mChordOutputModel->getPort("input"));
 
-  mWingIncidenceModel = new ConstModel("Wing Incidence Constant", 0);
-  mGroup->addChild(mWingIncidenceModel);
-  mWingIncidenceOutputModel = new GroupOutput("Wing Incidence Output");
-  mGroup->addChild(mWingIncidenceOutputModel);
-  mWingIncidenceOutputModel->setExternalPortName("wingIncidence");
-  mGroup->connect(mWingIncidenceModel->getPort("output"),
-                  mWingIncidenceOutputModel->getPort("input"));
-
   mHTailAreaModel = new ConstModel("HTailArea Constant", 0);
   mGroup->addChild(mHTailAreaModel);
   mHTailAreaOutputModel = new GroupOutput("HTailArea Output");
@@ -398,18 +390,6 @@ const Port*
 JSBSimAerodynamic::getChordPort(void)
 {
   return mGroup->getPort(mChordOutputModel->getExternalPortIndex());
-}
-
-void
-JSBSimAerodynamic::setWingIncidence(const real_type& wingIncidence)
-{
-  mWingIncidenceModel->setScalarValue(wingIncidence);
-}
-
-const Port*
-JSBSimAerodynamic::getWingIncidencePort(void)
-{
-  return mGroup->getPort(mWingIncidenceOutputModel->getExternalPortIndex());
 }
 
 void

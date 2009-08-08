@@ -380,40 +380,28 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   real_type chord = realData(metricsElem->getElement("chord"), 0);
   mAeroForce->setChord(Unit::foot().convertFrom(chord));
 
-  // FIXME alphaw from aerodynamic = alpha + iw is missing
   real_type iw = realData(metricsElem->getElement("wing_incidence"), 0);
-  mAeroForce->setWingIncidence(Unit::degree().convertFrom(iw));
-  registerJSBExpression("metrics/iw-rad", mAeroForce->getWingIncidencePort());
-//   registerJSBExpression("metrics/iw-deg", mAeroForce->getWingIncidencePort());
+  const Port* iwPort = addMultiBodyConstModel("Wing Incidence", iw);
+  registerJSBExpression("metrics/iw-rad", iwPort);
 
-  const XMLElement* htareaElem = metricsElem->getElement("htailarea");
-  if (htareaElem) {
-    real_type htailarea = realData(htareaElem, 0);
-    const Port* port = addMultiBodyConstModel("HTail Area Constant", htailarea);
-    registerJSBExpression("metrics/Sh-sqft", port);
-  }
+  Summer* summer = new Summer("Alpha Wing Incidence");
+  summer->setNumSummands(2);
+  addMultiBodyModel(summer);
+  connectJSBExpression("metrics/iw-rad", summer->getInputPort(0));
+  connectJSBExpression("aero/alpha-rad", summer->getInputPort(1));
+  registerJSBExpression("aero/alpha-wing-rad", summer->getOutputPort());
 
-  const XMLElement* htarmElem = metricsElem->getElement("htailarm");
-  if (htarmElem) {
-    real_type htailarm = realData(htarmElem, 0);
-    const Port* port = addMultiBodyConstModel("HTail Arm Constant", htailarm);
-    registerJSBExpression("metrics/lh-ft", port);
-  }
+  real_type htailarea = realData(metricsElem->getElement("htailarea"), 0);
+  mAeroForce->setHTailArea(htailarea);
 
-  const XMLElement* vtareaElem = metricsElem->getElement("vtailarea");
-  if (vtareaElem) {
-    real_type vtailarea = realData(vtareaElem, 0);
-    const Port* port = addMultiBodyConstModel("VTail Area Constant", vtailarea);
-    registerJSBExpression("metrics/Sv-sqft", port);
-  }
+  real_type htailarm = realData(metricsElem->getElement("htailarm"), 0);
+  mAeroForce->setHTailArm(htailarm);
 
-  const XMLElement* vtarmElem = metricsElem->getElement("vtailarm");
-  if (vtarmElem) {
-    real_type vtailarm = realData(vtarmElem, 0);
-    const Port* port = addMultiBodyConstModel("VTail Arm Constant", vtailarm);
-    registerJSBExpression("metrics/lv-ft", port);
-  }
+  real_type vtailarea = realData(metricsElem->getElement("vtailarea"), 0);
+  mAeroForce->setVTailArea(vtailarea);
 
+  real_type vtailarm = realData(metricsElem->getElement("vtailarm"), 0);
+  mAeroForce->setVTailArm(vtailarm);
 
   std::list<const XMLElement*> locList = metricsElem->getElements("location");
   Vector3 ap = locationData(locList, "AERORP", Vector3(0, 0, 0));
