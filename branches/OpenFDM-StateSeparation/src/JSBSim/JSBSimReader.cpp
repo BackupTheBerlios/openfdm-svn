@@ -344,11 +344,27 @@ JSBSimReader::convertDocument(const XMLElement* topElem)
       return error("Cannot convert ground_reactions");
   }
 
+  // external_reactions - neat
+  const XMLElement* externalReactionsElem = topElem->getElement("external_reactions");
+  if (externalReactionsElem) {
+    std::cout << "Ignoring external_reactions section" << std::endl;
+//     if (!convertGroundReactionsElem(groundReactionsElem))
+//       return error("Cannot convert ground_reactions");
+  }
+
   // Parse the propulsion section.
   const XMLElement* propulsionElem = topElem->getElement("propulsion");
   if (propulsionElem) {
     if (!convertPropulsion(propulsionElem))
       return error("Cannot convert propulsion data");
+  }
+
+  // Include the system tags.
+  std::list<const XMLElement*> systemElems = topElem->getElements("system");
+  if (!systemElems.empty()) {
+    std::cout << "Ignoring system sections" << std::endl;
+//     if (!convertPropulsion(propulsionElem))
+//       return error("Cannot convert propulsion data");
   }
   
   // Convert the aerodynamic force.
@@ -1518,8 +1534,29 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
 
     out = model->getPort("output");
 
+  } else if (type == "FCS_FUNCTION" || type == "fcs_function") {
+    SharedPtr<Summer> summer = new Summer(name);
+    addFCSModel(summer);
+    
+    if (!convertFunction(fcsComponent->getElement("function"), summer))
+      return error("could not read fcs_function \"" + name + "\"");
+    model = summer;
+    out = summer->getOutputPort();
+
+  } else if (type == "PID" || type == "pid") {
+    std::cout << "Ignoring PID" << std::endl;
+
+  } else if (type == "PROPERTY" || type == "property") {
+    std::cout << "Ignoring PROPERTY" << std::endl;
+
   } else if (type == "SENSOR" || type == "sensor") {
     std::cout << "Ignoring SENSOR" << std::endl;
+
+  } else if (type == "ACCELEROMETER" || type == "accelerometer") {
+    std::cout << "Ignoring ACCELEROMETER" << std::endl;
+
+  } else if (type == "ACTUATOR" || type == "actuator") {
+    std::cout << "Ignoring ACTUATOR" << std::endl;
 
   } else
     return error("Unknown FCS COMPONENT type: \"" + type
