@@ -348,14 +348,14 @@ JSBSimReader::convertDocument(const XMLElement* topElem)
   const XMLElement* propulsionElem = topElem->getElement("propulsion");
   if (propulsionElem) {
     if (!convertPropulsion(propulsionElem))
-      return error("Cannot convert PROPULSION data");
+      return error("Cannot convert propulsion data");
   }
   
   // Convert the aerodynamic force.
   const XMLElement* aeroElem = topElem->getElement("aerodynamics");
   if (aeroElem) {
     if (!convertAerodynamics(aeroElem))
-      return error("Cannot convert AERODYNAMICS elements");
+      return error("Cannot convert aerodynamics elements");
   }
 
   return true;
@@ -1085,16 +1085,16 @@ JSBSimReader::convertEngine(const XMLElement* engine,
     if (!convertTurbine(engineTopElem, number, loc, orientation, 0))
       return error("Error readinge turbine configuration");
     
-//   } else if (engineTopElem->getName() == "piston_engine") {
-//     if (!convertPiston(engineTopElem, number, 0))
-//       return error("Error readinge piston configuration");
+  } else if (engineTopElem->getName() == "piston_engine") {
+    if (!convertPiston(engineTopElem, number, 0))
+      return error("Error readinge piston configuration");
 
 //   } else if (engineTopElem->getName() == "rocket_engine") {
 //     return error("FG_ROCKET's are not (yet?) supported!");
 
-//   } else if (engineTopElem->getName() == "electric_engine") {
-//     if (!convertElectric(engineTopElem, number, 0))
-//       return error("Error readinge electric configuration");
+  } else if (engineTopElem->getName() == "electric_engine") {
+    if (!convertElectric(engineTopElem, number, 0))
+      return error("Error readinge electric configuration");
 
   } else
     return error("Unknown toplevel xml element for engine file \""
@@ -1221,21 +1221,23 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
   return true;
 }
 
-// bool
-// JSBSimReader::convertElectric(const XMLElement* turbine,
-//                               const std::string& number,
-//                               const Port* thrusterDriver)
-// {
-//   return true;
-// }
+bool
+JSBSimReader::convertElectric(const XMLElement* turbine,
+                              const std::string& number,
+                              const Port* thrusterDriver)
+{
+  std::cout << "Skipping electric engine!" << std::endl;
+  return true;
+}
 
-// bool
-// JSBSimReader::convertPiston(const XMLElement* turbine,
-//                             const std::string& number,
-//                             const Port* thrusterDriver)
-// {
-//   return true;
-// }
+bool
+JSBSimReader::convertPiston(const XMLElement* turbine,
+                            const std::string& number,
+                            const Port* thrusterDriver)
+{
+  std::cout << "Skipping piston engine!" << std::endl;
+  return true;
+}
 
 bool
 JSBSimReader::convertFCSList(const XMLElement* fcsElem)
@@ -1621,7 +1623,8 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
       addMultiBodyModel(prod);
       std::list<const Port*> inputs = readFunctionInputs(*it, name);
       if (inputs.empty())
-        return error("Cannot read product inputs!");
+        return error("Cannot read product inputs of function \"" + bindName
+                     + "\"!");
       unsigned i = 0;
       std::list<const Port*>::iterator iit = inputs.begin();
       while (iit != inputs.end()) {
@@ -1630,12 +1633,12 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
       }
       port = prod->getPort("output");
     } else {
-      return error("Unknown tag in function");
+      return error("Unknown tag in function \"" + bindName + "\"!");
     }
   }
 
   if (!port)
-    return error("function without output!");
+    return error("function without output \"" + bindName + "\"!");
 
   registerJSBExpression(bindName, port);
   if (sum) {
@@ -1838,6 +1841,7 @@ JSBSimReader::readTable2D(const XMLElement* tableElem,
     if (!stream)
       break;
     lookup[0].insert(val);
+    ++rows;
 
     for (unsigned i = 0; i < cols; ++i) {
       stream >> val;
@@ -1861,7 +1865,7 @@ JSBSimReader::readTable2D(const XMLElement* tableElem,
     }
   }
 
-  return lookup[0].size() == data.size(1) && lookup[1].size() == data.size(2);
+  return lookup[0].size() == data.size(0) && lookup[1].size() == data.size(1);
 }
 
 bool

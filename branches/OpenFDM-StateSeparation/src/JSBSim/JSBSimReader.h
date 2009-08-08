@@ -50,6 +50,10 @@ private:
   bool convertTurbine(const XMLElement* turbine, const std::string& number,
                       const Vector3& pos, const Quaternion& orientation,
                       const Port* thrusterDriver);
+  bool convertElectric(const XMLElement* turbine, const std::string& number,
+                       const Port* thrusterDriver);
+  bool convertPiston(const XMLElement* turbine, const std::string& number,
+                     const Port* thrusterDriver);
   bool convertAerodynamics(const XMLElement* aero);
   bool convertFunction(const XMLElement* function, Summer* sum);
   std::list<const Port*> readFunctionInputs(const XMLElement* operationTag,
