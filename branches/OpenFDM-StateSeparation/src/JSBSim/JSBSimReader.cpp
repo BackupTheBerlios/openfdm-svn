@@ -1096,6 +1096,10 @@ JSBSimReader::convertEngine(const XMLElement* engine,
     if (!convertTurbine(engineTopElem, number, loc, orientation, 0))
       return error("Error readinge turbine configuration");
     
+  } else if (engineTopElem->getName() == "turboprop_engine") {
+    if (!convertTurboProp(engineTopElem, number, loc, orientation, 0))
+      return error("Error readinge turbine configuration");
+    
   } else if (engineTopElem->getName() == "piston_engine") {
     if (!convertPiston(engineTopElem, number, 0))
       return error("Error readinge piston configuration");
@@ -1243,6 +1247,17 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
   mTopLevelGroup->connect(force->getPort("output"),
                           engineForce->getPort("force"));
 
+  return true;
+}
+
+bool
+JSBSimReader::convertTurboProp(const XMLElement* turbine,
+                               const std::string& number,
+                               const Vector3& pos,
+                               const Quaternion& orientation,
+                               const Port* thrusterDriver)
+{
+  std::cout << "Skipping turboprop engine!" << std::endl;
   return true;
 }
 

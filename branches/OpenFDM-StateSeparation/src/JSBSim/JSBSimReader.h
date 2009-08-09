@@ -50,6 +50,9 @@ private:
   bool convertTurbine(const XMLElement* turbine, const std::string& number,
                       const Vector3& pos, const Quaternion& orientation,
                       const Port* thrusterDriver);
+  bool convertTurboProp(const XMLElement* turbine, const std::string& number,
+                        const Vector3& pos, const Quaternion& orientation,
+                        const Port* thrusterDriver);
   bool convertElectric(const XMLElement* turbine, const std::string& number,
                        const Port* thrusterDriver);
   bool convertPiston(const XMLElement* turbine, const std::string& number,
