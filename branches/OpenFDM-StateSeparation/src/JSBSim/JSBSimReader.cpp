@@ -1698,12 +1698,22 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
   std::list<const XMLElement*>::const_iterator ait;
   for (ait = args.begin(); ait != args.end(); ++ait) {
     if ((*ait)->getName() == "value") {
-      std::stringstream stream((*ait)->getData());
-      real_type value;
-      stream >> value;
+      real_type value = asciiToReal((*ait)->getData());
       inputs.push_back(addMultiBodyConstModel(name + " Constant", value));
     } else if ((*ait)->getName() == "property") {
       inputs.push_back(lookupJSBExpression(stringData(*ait), path));
+    } else if ((*ait)->getName() == "abs") {
+      std::list<const Port*> absInput = readFunctionInputs(*ait, "abs-" + name);
+      if (absInput.size() != 1) {
+          error("abs function inputtag must have 2DTable data does not have 2 inputs!");
+          return std::list<const Port*>();
+      }
+      
+      SharedPtr<UnaryFunction> absModel;
+      absModel = new UnaryFunction("Abs " + name, UnaryFunction::Abs);
+      addMultiBodyModel(absModel);
+      mTopLevelGroup->connect(absInput.front(), absModel->getInputPort(0));
+      inputs.push_back(absModel->getOutputPort());
     } else if ((*ait)->getName() == "table") {
       unsigned dim = getNumTableDims(*ait);
       if (dim == 1) {
