@@ -55,16 +55,22 @@
 namespace OpenFDM {
 
 static real_type
-realData(const XMLElement* element, real_type def = 0)
+asciiToReal(const std::string& s, const real_type& def = 0)
 {
-  if (!element)
-    return def;
-  std::stringstream stream(element->getData());
+  std::stringstream stream(s);
   real_type value;
   stream >> value;
   if (!stream)
     return def;
   return value;
+}
+
+static real_type
+realData(const XMLElement* element, real_type def = 0)
+{
+  if (!element)
+    return def;
+  return asciiToReal(element->getData(), def);
 }
 
 static Vector3
@@ -1547,7 +1553,13 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     std::cout << "Ignoring PID" << std::endl;
 
   } else if (type == "PROPERTY" || type == "property") {
-    std::cout << "Ignoring PROPERTY" << std::endl;
+    name = fcsComponent->getData();
+    real_type value = asciiToReal(fcsComponent->getAttribute("value"), 0);
+    SharedPtr<ConstModel> constModel;
+    constModel = new ConstModel("Property " + name, value);
+    addFCSModel(constModel);
+    model = constModel;
+    out = constModel->getPort("output");
 
   } else if (type == "SENSOR" || type == "sensor") {
     std::cout << "Ignoring SENSOR" << std::endl;
@@ -1563,8 +1575,9 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
                  + "\". Ignoring whole FCS component \"" + name + "\"" );
 
   // Register all output property names.
-  std::string implicitOutname = normalizeComponentName(name);
-  registerJSBExpression(std::string("fcs/") + implicitOutname, out);
+  std::string implicitOutname = std::string("fcs/")
+    + normalizeComponentName(name);
+  registerJSBExpression(implicitOutname, out);
   if (fcsComponent->getElement("output")) {
     std::string outname = stringData(fcsComponent->getElement("output"));
     if (outname != implicitOutname)
