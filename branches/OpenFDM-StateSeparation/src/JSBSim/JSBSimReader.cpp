@@ -14,20 +14,21 @@
 #include <OpenFDM/Matrix.h>
 #include <OpenFDM/Quaternion.h>
 
+#include <OpenFDM/AirSpring.h>
 #include <OpenFDM/Bias.h>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/DeadBand.h>
 #include <OpenFDM/Delay.h>
+#include <OpenFDM/DiscBrake.h>
 #include <OpenFDM/DiscreteIntegrator.h>
-#include <OpenFDM/TransferFunction.h>
 #include <OpenFDM/Gain.h>
 #include <OpenFDM/Input.h>
+#include <OpenFDM/InternalInteract.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/MaxModel.h>
+#include <OpenFDM/MatrixConcat.h>
 #include <OpenFDM/MatrixSplit.h>
 #include <OpenFDM/MobileRootJoint.h>
-#include <OpenFDM/AirSpring.h>
-#include <OpenFDM/InternalInteract.h>
 #include <OpenFDM/PrismaticJoint.h>
 #include <OpenFDM/Product.h>
 #include <OpenFDM/RevoluteActuator.h>
@@ -40,11 +41,11 @@
 #include <OpenFDM/System.h>
 #include <OpenFDM/Table.h>
 #include <OpenFDM/TimeDerivative.h>
+#include <OpenFDM/TransferFunction.h>
 #include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/Unit.h>
 #include <OpenFDM/UnitConversion.h>
 #include <OpenFDM/WheelContact.h>
-#include <OpenFDM/DiscBrake.h>
 
 #include <OpenFDM/ReaderWriter.h>
 
@@ -1207,16 +1208,30 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
   real_type maxThrust = realData(turbine->getElement("milthrust"), 0);
 
   std::string namestr = "Engine<" + number + ">";
-  ConstModel* fullForce = new ConstModel(namestr + " full");
+  real_type fullThrustN = Unit::lbf().convertFrom(maxThrust);
+  ConstModel* fullForce = new ConstModel(namestr + " full", fullThrustN);
   addMultiBodyModel(fullForce);
-  fullForce->setValue(Vector6(0, 0, 0, Unit::lbf().convertFrom(maxThrust), 0, 0));
 
   Product* prod = new Product(namestr + " modulation");
   addMultiBodyModel(prod);
   std::string throttlename = "fcs/throttle-cmd-norm[" + number + "]";
   if (!connectJSBExpression(throttlename, prod->getPort("input0")))
     return error("could not connect to throttle command");
-  mTopLevelGroup->connect(fullForce->getPort("output"), prod->getPort("input1"));
+  mTopLevelGroup->connect(fullForce->getPort("output"),
+                          prod->getPort("input1"));
+
+  ConstModel* zeroComponent = new ConstModel(namestr + " zero", 0);
+  addMultiBodyModel(zeroComponent);
+
+  MatrixConcat* force = new MatrixConcat(namestr + " Force");
+  addMultiBodyModel(force);
+
+  mTopLevelGroup->connect(prod->getPort("output"),
+                          force->addInputPort("x"));
+  mTopLevelGroup->connect(zeroComponent->getPort("output"),
+                          force->addInputPort("y"));
+  mTopLevelGroup->connect(zeroComponent->getPort("output"),
+                          force->addInputPort("z"));
 
   ExternalInteract* engineForce = new ExternalInteract(namestr);
   mTopLevelGroup->addChild(engineForce);
@@ -1225,8 +1240,8 @@ JSBSimReader::convertTurbine(const XMLElement* turbine,
                           engineForce->getPort("link"));
   engineForce->setPosition(pos);
   engineForce->setOrientation(orientation);
-  mTopLevelGroup->connect(prod->getPort("output"),
-                          engineForce->getPort("bodyForce"));
+  mTopLevelGroup->connect(force->getPort("output"),
+                          engineForce->getPort("force"));
 
   return true;
 }
