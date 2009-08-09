@@ -1665,39 +1665,15 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
   std::string::size_type slachPos = bindName.rfind('/');
   if (slachPos != std::string::npos)
     name = name.substr(slachPos+1);
-  const Port* port = 0;
-  std::list<const XMLElement*> elems = function->getElements();
-  std::list<const XMLElement*>::const_iterator it;
-  for (it = elems.begin(); it != elems.end(); ++it) {
-    if ((*it)->getName() == "description") {
-      // Just ignore
-    } else if ((*it)->getName() == "product") {
-      SharedPtr<Product> prod = new Product(name + " product");
-      addMultiBodyModel(prod);
-      std::list<const Port*> inputs = readFunctionInputs(*it, name);
-      if (inputs.empty())
-        return error("Cannot read product inputs of function \"" + bindName
-                     + "\"!");
-      unsigned i = 0;
-      std::list<const Port*>::iterator iit = inputs.begin();
-      while (iit != inputs.end()) {
-        prod->setNumFactors(i+1);
-        mTopLevelGroup->connect(*iit++, prod->getInputPort(i++));
-      }
-      port = prod->getPort("output");
-    } else {
-      return error("Unknown tag in function \"" + bindName + "\"!");
-    }
-  }
-
-  if (!port)
+  std::list<const Port*> inputs = readFunctionInputs(function, name);
+  if (inputs.size() != 1)
     return error("function without output \"" + bindName + "\"!");
 
-  registerJSBExpression(bindName, port);
+  registerJSBExpression(bindName, inputs.front());
   if (sum) {
     unsigned num = sum->getNumSummands();
     sum->setNumSummands(num+1);
-    mTopLevelGroup->connect(port, sum->getInputPort(num));
+    mTopLevelGroup->connect(inputs.front(), sum->getInputPort(num));
   }
 
   return true;
@@ -1712,7 +1688,9 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
   std::list<const XMLElement*> args = operationTag->getElements();
   std::list<const XMLElement*>::const_iterator ait;
   for (ait = args.begin(); ait != args.end(); ++ait) {
-    if ((*ait)->getName() == "value") {
+    if ((*ait)->getName() == "description") {
+      // Just ignore
+    } else if ((*ait)->getName() == "value") {
       real_type value = asciiToReal((*ait)->getData());
       inputs.push_back(addMultiBodyConstModel(name + " Constant", value));
     } else if ((*ait)->getName() == "property") {
@@ -1729,6 +1707,38 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
       addMultiBodyModel(absModel);
       mTopLevelGroup->connect(absInput.front(), absModel->getInputPort(0));
       inputs.push_back(absModel->getOutputPort());
+    } else if ((*ait)->getName() == "product") {
+      SharedPtr<Product> prod = new Product(name + " product");
+      addMultiBodyModel(prod);
+      std::list<const Port*> pInputs = readFunctionInputs(*ait, name);
+      if (pInputs.empty()) {
+        error("Cannot read product inputs of function \"" + name + "\"!");
+        return std::list<const Port*>();
+      }
+      unsigned i = 0;
+      std::list<const Port*>::iterator iit = pInputs.begin();
+      while (iit != pInputs.end()) {
+        prod->setNumFactors(i+1);
+        mTopLevelGroup->connect(*iit++, prod->getInputPort(i++));
+      }
+      inputs.push_back(prod->getPort("output"));
+
+    } else if ((*ait)->getName() == "sum") {
+      SharedPtr<Summer> summer = new Summer(name + " sum");
+      addMultiBodyModel(summer);
+      std::list<const Port*> pInputs = readFunctionInputs(*ait, name);
+      if (pInputs.empty()) {
+        error("Cannot read sum inputs of function \"" + name + "\"!");
+        return std::list<const Port*>();
+      }
+      unsigned i = 0;
+      std::list<const Port*>::iterator iit = pInputs.begin();
+      while (iit != pInputs.end()) {
+        summer->setNumSummands(i+1);
+        mTopLevelGroup->connect(*iit++, summer->getInputPort(i++));
+      }
+      inputs.push_back(summer->getPort("output"));
+
     } else if ((*ait)->getName() == "table") {
       unsigned dim = getNumTableDims(*ait);
       if (dim == 1) {
