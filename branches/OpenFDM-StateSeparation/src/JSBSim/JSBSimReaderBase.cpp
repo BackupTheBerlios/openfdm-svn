@@ -293,7 +293,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
   // input property. If so, it schedules and registers a discrete input model.
   // If the propName points directly into the controls directory,
   // schedule an input
-  if (propName.substr(0, 9) == "controls/") {
+  if (propName.find("controls/") == 0) {
 //     std::string inputName = propName.substr(propName.rfind('/'));
     std::string inputName = propName;
     return addInputModel("Control " + inputName, propName);
@@ -331,7 +331,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
       // if this is replaced note that the above line needs to be chenged too
       port = addInputModel("Rudder", "controls/flight/rudder");
 
-    } else if (propName.substr(0, 28) == "fdm/jsbsim/fcs/steer-pos-deg") {
+    } else if (propName.find("fdm/jsbsim/fcs/steer-pos-deg") == 0) {
       return lookupJSBExpression("fcs/steer-cmd-norm", path);
 
     } else if (propName == "fdm/jsbsim/fcs/flap-cmd-norm") {
@@ -347,34 +347,39 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
                            "controls/flight/spoiler");
 
 
-    } else if (propName.substr(0, 32) == "fdm/jsbsim/fcs/throttle-cmd-norm") {
+    } else if (propName.find("fdm/jsbsim/fcs/throttle-cmd-norm") == 0) {
       std::string control = "controls/engines/engine" +
         propName.substr(32) + "/throttle";
       port = addInputModel("Throttle Input " + propName.substr(32),
                            control);
 
-    } else if (propName.substr(0, 32) == "fdm/jsbsim/fcs/throttle-pos-norm") {
+    } else if (propName.find("fdm/jsbsim/fcs/throttle-pos-norm") == 0) {
       std::string cmd = "fcs/throttle-cmd-norm" + propName.substr(32);
       return lookupJSBExpression(cmd, path);
 
 
-    } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/mixture-cmd-norm") {
+    } else if (propName.find("fdm/jsbsim/fcs/mixture-cmd-norm") == 0) {
       std::string control = "controls/engines/engine" + 
         propName.substr(31) + "/mixture";
-      port = addInputModel("Mixture Input " + propName.substr(32, 1), control);
+      std::string number = "0";
+      if (32 <= propName.size())
+        number = propName.substr(32, 1);
+      port = addInputModel("Mixture Input " + number, control);
 
-    } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/mixture-pos-norm") {
+    } else if (propName.find("fdm/jsbsim/fcs/mixture-pos-norm") == 0) {
       std::string cmd = "fcs/mixture-cmd-norm" + propName.substr(31);
       return lookupJSBExpression(cmd, path);
 
 
-    } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/advance-cmd-norm") {
+    } else if (propName.find("fdm/jsbsim/fcs/advance-cmd-norm") == 0) {
       std::string control = "controls/engines/engine" + 
         propName.substr(31) + "/propeller-pitch";
-      port = addInputModel("Propeller Pitch Input " + propName.substr(32, 1),
-                           control);
+      std::string number = "0";
+      if (32 <= propName.size())
+        number = propName.substr(32, 1);
+      port = addInputModel("Propeller Pitch Input " + number, control);
 
-    } else if (propName.substr(0, 31) == "fdm/jsbsim/fcs/advance-pos-norm") {
+    } else if (propName.find("fdm/jsbsim/fcs/advance-pos-norm") == 0) {
       std::string cmd = "fcs/advance-cmd-norm" + propName.substr(31);
       return lookupJSBExpression(cmd, path);
 
@@ -466,7 +471,7 @@ JSBSimReaderBase::createAndScheduleInput(const std::string& propName,
       port = lookupJSBExpression("fcs/rudder-pos-rad", path, false);
       port = addToUnit("rudder-pos-deg unit", Unit::degree(), port);
 
-    } else if (propName.substr(0, 19) == "fdm/jsbsim/fcs/mag-") {
+    } else if (propName.find("fdm/jsbsim/fcs/mag-") == 0) {
       // Special absolute modules for fcs/mag-*
       // remove the 'mag-' substring here and use that as input for the
       // Abs block
