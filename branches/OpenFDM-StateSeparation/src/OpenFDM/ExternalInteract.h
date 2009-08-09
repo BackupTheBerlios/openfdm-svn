@@ -92,6 +92,12 @@ public:
   bool getEnableAngularWindVelocity() const;
 
 
+  /// Set availabilty of the ground speed output port
+  void setEnableGroundSpeed(bool enable);
+  /// Get availabilty of the ground speed output port
+  bool getEnableGroundSpeed() const;
+
+
   /// Set availabilty of the temperature output port
   void setEnableTemperature(bool enable);
   /// Get availabilty of the temperature output port
@@ -168,6 +174,8 @@ protected:
   /// Wind sensing
   MatrixOutputPort mLinearWindVelocityPort;
   MatrixOutputPort mAngularWindVelocityPort;
+
+  RealOutputPort mGroundSpeedPort;
 
   RealOutputPort mTemperaturePort;
   RealOutputPort mStaticPressurePort;

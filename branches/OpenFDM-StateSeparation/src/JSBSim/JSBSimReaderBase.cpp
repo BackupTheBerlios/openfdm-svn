@@ -615,6 +615,12 @@ JSBSimReaderBase::createAndScheduleAeroProp(const std::string& propName,
   } else if (propName == "fdm/jsbsim/velocities/pt-lbs_sqft") {
     port = lookupJSBExpression("propulsion/pt-lbs_sqft", path);
 
+  } else if (propName == "fdm/jsbsim/velocities/vg-mps") {
+    port = mAeroForce->getGroundSpeedPort();
+  } else if (propName == "fdm/jsbsim/velocities/vg-fps") {
+    port = mAeroForce->getGroundSpeedPort();
+    port = addToUnit("Ground Speed fps", Unit::footPerSecond(), port);
+
   } else if (propName == "fdm/jsbsim/aero/alpha-rad") {
     port = mAeroForce->getAlphaPort();
   } else if (propName == "fdm/jsbsim/aero/mag-alpha-rad") {

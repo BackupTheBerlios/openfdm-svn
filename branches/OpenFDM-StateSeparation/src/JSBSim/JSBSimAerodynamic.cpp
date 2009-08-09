@@ -155,6 +155,13 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(windAxis->getPort("airSpeed"),
                   mTrueAirSpeedOutputModel->getPort("input"));
 
+  mGroundSpeedOutputModel = new GroupOutput("Ground Speed Output");
+  mGroup->addChild(mGroundSpeedOutputModel);
+  mGroundSpeedOutputModel->setExternalPortName("groundSpeed");
+  mExternalInteract->setEnableGroundSpeed(true);
+  mGroup->connect(mExternalInteract->getPort("groundSpeed"),
+                  mGroundSpeedOutputModel->getPort("input"));
+
   mCalibratedAirSpeedOutputModel = new GroupOutput("Calibrated Air Speed Output");
   mGroup->addChild(mCalibratedAirSpeedOutputModel);
   mCalibratedAirSpeedOutputModel->setExternalPortName("calibratedAirSpeed");
@@ -468,6 +475,12 @@ const Port*
 JSBSimAerodynamic::getTrueAirSpeedPort(void)
 {
   return mGroup->getPort(mTrueAirSpeedOutputModel->getExternalPortIndex());
+}
+
+const Port*
+JSBSimAerodynamic::getGroundSpeedPort(void)
+{
+  return mGroup->getPort(mGroundSpeedOutputModel->getExternalPortIndex());
 }
 
 const Port*

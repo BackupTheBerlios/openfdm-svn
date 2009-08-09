@@ -24,6 +24,7 @@ BEGIN_OPENFDM_OBJECT_DEF(ExternalInteract, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Bool, EnableAngularAcceleration, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableLinearWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAngularWindVelocity, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableGroundSpeed, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableStaticPressure, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableDensity, Serialized)
@@ -51,6 +52,7 @@ public:
     mAngularAcceleration(portValueList.getPortValue(externalInteract->mAngularAccelerationPort)),
     mLinearWindVelocity(portValueList.getPortValue(externalInteract->mLinearWindVelocityPort)),
     mAngularWindVelocity(portValueList.getPortValue(externalInteract->mAngularWindVelocityPort)),
+    mGroundSpeed(portValueList.getPortValue(externalInteract->mGroundSpeedPort)),
     mTemperature(portValueList.getPortValue(externalInteract->mTemperaturePort)),
     mStaticPressure(portValueList.getPortValue(externalInteract->mStaticPressurePort)),
     mDensity(portValueList.getPortValue(externalInteract->mDensityPort)),
@@ -122,8 +124,10 @@ public:
     bool enableAngularVelocity = mAngularVelocity.isConnected();
     bool enableLinearWindVelocity = mLinearWindVelocity.isConnected();
     bool enableAngularWindVelocity = mAngularWindVelocity.isConnected();
+    bool enableGroundSpeed = mGroundSpeed.isConnected();
     if (enableLinearVelocity || enableAngularVelocity
-        || enableLinearWindVelocity || enableAngularWindVelocity) {
+        || enableLinearWindVelocity || enableAngularWindVelocity
+        || enableGroundSpeed) {
       Vector6 refVelocity = getLink().getVelocity(mCoordinateSystem);
       if (enableLinearVelocity)
         mLinearVelocity = refVelocity.getLinear();
@@ -140,6 +144,11 @@ public:
           mLinearWindVelocity = wind.getLinear();
         if (enableAngularWindVelocity)
           mAngularWindVelocity = wind.getAngular();
+      }
+
+      if (enableGroundSpeed) {
+        Plane plane = getEnvironment().getHorizontalLocalPlane(mCoordinateSystem.getPosition());
+        mGroundSpeed = norm(plane.projectToPlane(refVelocity.getLinear()));
       }
     }
     
@@ -234,6 +243,8 @@ private:
 
   MatrixOutputPortHandle mLinearWindVelocity;
   MatrixOutputPortHandle mAngularWindVelocity;
+
+  RealOutputPortHandle mGroundSpeed;
 
   RealOutputPortHandle mTemperature;
   RealOutputPortHandle mStaticPressure;
@@ -460,6 +471,24 @@ ExternalInteract::getEnableAngularWindVelocity() const
 }
 
 void
+ExternalInteract::setEnableGroundSpeed(bool enable)
+{
+  if (enable == getEnableGroundSpeed())
+    return;
+  if (enable)
+    mGroundSpeedPort = RealOutputPort(this, "groundSpeed");
+  else
+    mGroundSpeedPort.clear();
+}
+
+bool
+ExternalInteract::getEnableGroundSpeed() const
+{
+  return !mGroundSpeedPort.empty();
+}
+
+
+void
 ExternalInteract::setEnableTemperature(bool enable)
 {
   if (enable == getEnableTemperature())
@@ -625,6 +654,7 @@ ExternalInteract::setEnableAllOutputs(bool enable)
   setEnableCentrifugalAcceleration(enable);
   setEnableLoad(enable);
   setEnableAngularAcceleration(enable);
+  setEnableGroundSpeed(enable);
   setEnableTemperature(enable);
   setEnableStaticPressure(enable);
   setEnableDensity(enable);
