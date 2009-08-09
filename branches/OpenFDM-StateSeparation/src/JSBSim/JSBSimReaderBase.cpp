@@ -852,13 +852,11 @@ JSBSimReaderBase::getTablePrelookup(const std::string& name, const Port* in,
 
   // First check if we already have a table lookup for this port/brakepoint
   // combination. If so return that output port
-  // FIXME: cannot share the brakepoint lookups ???
-//   std::vector<SharedPtr<BreakPointLookup> >::iterator it;
-//   for (it = mBreakPointVectors.begin(); it != mBreakPointVectors.end(); ++it) {
-//     if (tl == (*it)->getBreakPointVector() &&
-//         in->getPortInterface() == (*it)->getPort("input")->getPortInterface())
-//       return (*it)->getPort("output");
-//   }
+  std::vector<BreakPointLookupEntry>::iterator it;
+  for (it = mBreakPointVectors.begin(); it != mBreakPointVectors.end(); ++it) {
+    if (tl == it->lookup->getBreakPointVector() && in == it->inputConnection)
+      return it->lookup->getPort("output");
+  }
 
   // No sharable table lookup found, we need to create a new one
   BreakPointLookup* tablePreLookup
@@ -866,7 +864,7 @@ JSBSimReaderBase::getTablePrelookup(const std::string& name, const Port* in,
   addMultiBodyModel(tablePreLookup);
   tablePreLookup->setBreakPointVector(tl);
   mTopLevelGroup->connect(in, tablePreLookup->getInputPort(0));
-  mBreakPointVectors.push_back(tablePreLookup);
+  mBreakPointVectors.push_back(BreakPointLookupEntry(in, tablePreLookup));
   return tablePreLookup->getOutputPort();
 }
 
