@@ -25,6 +25,8 @@ DiscreteTransferFunction::DiscreteTransferFunction(const std::string& name) :
   mDen(1),
   mNum(1)
 {
+  mMatrixStateInfo = new MatrixStateInfo;
+  addDiscreteStateInfo(mMatrixStateInfo);
   mNum(0) = 1;
   mDen(0) = 1;
 }
@@ -114,7 +116,7 @@ DiscreteTransferFunction::alloc(ModelContext& context) const
                    << ", denominator: " << trans(mDenNorm)
                    << ", direct factor: " << mD << endl;
 
-  return true;
+  return Model::alloc(context);
 }
 
 void
