@@ -123,6 +123,7 @@ OpenFDMCoreHEADERS = \
   TypeInfo.h \
   Types.h \
   TypeTraits.h \
+  UniqueNameVisitor.h \
   Unit.h \
   Variant.h \
   Vector.h \
