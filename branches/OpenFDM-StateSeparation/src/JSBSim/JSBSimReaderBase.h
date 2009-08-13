@@ -5,11 +5,14 @@
 #ifndef OpenFDM_JSBSimReaderBase_H
 #define OpenFDM_JSBSimReaderBase_H
 
+#include <map>
 #include <string>
+#include <cstring>
 #include <list>
 #include <map>
 #include <iosfwd>
 
+#include <OpenFDM/Assert.h>
 #include <OpenFDM/ReaderWriter.h>
 #include <OpenFDM/BreakPointLookup.h>
 #include <OpenFDM/Table.h>
@@ -29,8 +32,6 @@
 #include "XMLReader.h"
 
 namespace OpenFDM {
-
-class Element;
 
 class Summer;
 class Product;
@@ -104,7 +105,8 @@ public:
       pathPort.portProvider = group->getPort(groupInput->getExternalPortIndex());
       mPortList.push_back(pathPort);
 
-      group->connect(portProvider, groupInput->getPort("input"));
+      if (!group->connect(portProvider, groupInput->getPort("input")))
+        return 0;
       
       return pathPort.portProvider.get();
 
@@ -125,7 +127,8 @@ public:
       pathPort.portProvider = group->getPort(groupOutput->getExternalPortIndex());
       mPortList.push_back(pathPort);
 
-      group->connect(portProvider, groupOutput->getPort("input"));
+      if (!group->connect(portProvider, groupOutput->getPort("input")))
+        return 0;
       
       return pathPort.portProvider.get();
 
@@ -153,49 +156,169 @@ private:
   PortList mPortList;
 };
 
-// Implements a SimGear SGProperty compatible 'path' to 'expression'
-// mapping.
-// It is used to map the value names occuring in JSBSim configuration files
-// to OpenFDM::ObsoleteExpressions which will contain the values later.
-// This is done by wrapping all map accesses where a key_type argument is given
-// with a function which first simplyfys the given key and then performs the
-// map operations with the simplyfied key instead of the original one.
-// 
-/// FIXME!!!!!!!!
-class PropertyMap {
+
+
+
+
+
+
+
+
+
+
+
+class JSBSimProperty {
 public:
+  typedef std::pair<SharedPtr<const Port>, SharedPtr<Group> > PortGroupPair;
+
+  void setProvider(const Port* port)
+  {
+    if (!port)
+      return;
+    SharedPtr<const Node> node = port->getNode();
+    OpenFDMAssert(node);
+    NodePathList nodePathList = node->getNodePathList();
+    OpenFDMAssert(nodePathList.size() == 1);
+    Group* group = dynamic_cast<Group*>(const_cast<Node*>(nodePathList.front().back().get()));
+    setProvider(port, group);
+  }
+  void setProvider(const Port* port, Group* group)
+  { setProvider(PortGroupPair(port, group)); }
+  void setProvider(const PortGroupPair& portPathPair)
+  { mProvider = portPathPair; }
+  const SharedPtr<const Port>& getProviderPort() const
+  { return mProvider.first; }
+  const SharedPtr<Group>& getProviderGroup() const
+  { return mProvider.second; }
+
+  bool hasProviderPort() const
+  { return mProvider.first.valid(); }
+
+  void addConsumer(const Port* port)
+  {
+    if (!port)
+      return;
+    SharedPtr<const Node> node = port->getNode();
+    OpenFDMAssert(node);
+    NodePathList nodePathList = node->getNodePathList();
+    OpenFDMAssert(nodePathList.size() == 1);
+    Group* group = dynamic_cast<Group*>(const_cast<Node*>(nodePathList.front().back().get()));
+    addConsumer(port, group);
+  }
+  void addConsumer(const Port* port, Group* group)
+  { addConsumer(PortGroupPair(port, group)); }
+  void addConsumer(const PortGroupPair& portPathPair)
+  { mConsumers.push_back(portPathPair); }
+
+  /// Connect all the loose ends stored here
+  bool connect()
+  {
+    if (!hasProviderPort())
+      return false;
+
+    PortSet portSet(mProvider.first);
+    for (unsigned i = 0; i < mConsumers.size(); ++i) {
+      SharedPtr<const Node> node = mConsumers[i].first->getNode();
+      OpenFDMAssert(node);
+      NodePathList nodePathList = node->getNodePathList();
+      const Port* p = portSet.routeTo(nodePathList.front());
+      if (!mConsumers[i].second->connect(p, mConsumers[i].first))
+        return false;
+    }
+
+    return true;
+  }
+
   static std::string simplify(std::string path)
   {
     std::string::size_type idx;
     while ((idx = path.find("[0]")) != std::string::npos) {
       path.erase(idx, 3);
     }
+    while ((idx = path.find("//")) != std::string::npos) {
+      path.erase(idx, 1);
+    }
     return path;
   }
+  static std::string propertyPath(const std::string& path)
+  {
+    std::string simplePath = simplify(path);
+    std::string::size_type idx = simplePath.rfind('/');
+    if (idx == std::string::npos)
+      return std::string();
+    simplePath = simplePath.substr(0, idx);
+    while (!simplePath.empty() && simplePath[simplePath.size() - 1] == '/')
+      simplePath = simplePath.substr(0, simplePath.size() - 1);
+    return simplePath.substr(0, idx);
+  }
+  static std::string propertyName(const std::string& path)
+  {
+    std::string simplePath = simplify(path);
+    std::string::size_type idx = simplePath.rfind('/');
+    if (idx == std::string::npos)
+      return simplePath;
+    return simplePath.substr(idx+1);
+  }
+  static bool startsWith(const std::string& path, const char* start)
+  {
+    return path.find(start) == 0;
+  }
+  static bool endsWith(const std::string& path, const char* start)
+  {
+    return path.size() - path.rfind(start) == strlen(start);
+  }
+
+private:
+  /// The port that delivers the value
+  PortGroupPair mProvider;
+  /// The ports that need that value as input
+  std::vector<PortGroupPair> mConsumers;
+};
+
+class JSBSimPropertyManager {
+public:
+  typedef std::map<std::string,JSBSimProperty> PropertyMap;
+
+  const PropertyMap& getPropertyMap() const
+  { return mPropertyMap; }
+  PropertyMap& getPropertyMap()
+  { return mPropertyMap; }
 
   /// Clears the property map. Is used in the readers to reuse a reader
   void clear()
-  { mMap.clear(); }
+  { mPropertyMap.clear(); }
 
-  const Port* routeTo(const std::string& name, const NodePath& path)
-  {
-    std::string simplifiedName = simplify(name);
-    if (mMap.count(simplifiedName) <= 0)
-      return 0;
-    return mMap[simplifiedName].routeTo(path);
-  }
+  /// Set the port providing this property value
+  void setProvider(const std::string& name, const Port* port)
+  { mPropertyMap[JSBSimProperty::simplify(name)].setProvider(port); }
 
-  void registerPort(const std::string& name, const Port* port)
-  { mMap[simplify(name)] = port; }
+  /// Add a port that consumes this property value
+  void addConsumer(const std::string& name, const Port* port)
+  { mPropertyMap[JSBSimProperty::simplify(name)].addConsumer(port); }
 
   /// Returns true if this property is already registered
   bool exists(const std::string& propertyName) const
-  { return 0 < mMap.count(simplify(propertyName)); }
+  {
+    PropertyMap::const_iterator i = mPropertyMap.find(JSBSimProperty::simplify(propertyName));
+    if (i == mPropertyMap.end())
+      return false;
+    return i->second.hasProviderPort();
+  }
+
+  bool connect()
+  {
+    for (PropertyMap::iterator i = mPropertyMap.begin();
+         i != mPropertyMap.end(); ++i) {
+      if (!i->second.connect()) {
+        std::cerr << "Connecting " << i->first << " failed" << std::endl;
+        return false;
+      }
+    }
+    return true;
+  }
 
 private:
-  typedef std::map<std::string,PortSet> PortMap;
-
-  PortMap mMap;
+  PropertyMap mPropertyMap;
 };
 
 class JSBSimReaderBase : public ReaderWriter {
@@ -232,6 +355,12 @@ protected:
 
 
   /// <FIXME> document and rethink
+  // Deprecated
+  // const Port* lookupJSBExpression2(const std::string& name,
+  //                                 const NodePath& path = NodePath(),
+  //                                 bool recheckAeroProp = true);
+
+  // FIXME
   const Port* lookupJSBExpression(const std::string& name,
                                   const NodePath& path = NodePath(),
                                   bool recheckAeroProp = true);
@@ -239,25 +368,34 @@ protected:
   bool connectJSBExpression(const std::string& name, const Port*,
                             bool recheckAeroProp = true);
 
+  std::string canonicalJSBProperty(std::string name);
+
   void registerExpression(const std::string& name, const Port* expr);
   void registerJSBExpression(const std::string& name, const Port* expr);
 
-  const Port* createAndScheduleAeroProp(const std::string& name,
-                                        const NodePath& path);
-  const Port* createAndScheduleInput(const std::string& name,
-                                     const NodePath& path);
+  bool provideSubstitutes();
+  bool provideSubstitute(const std::string&, const JSBSimProperty& property);
 
-  const Port* addInputModel(const std::string& name, const std::string& propName,
-                            real_type gain = 1);
+  const Port* addInputModel(const std::string& name,
+                            const std::string& propName, real_type gain = 1);
   void addOutputModel(const Port* out, const std::string& name,
+                      const std::string& propName, real_type gain = 1);
+  void addOutputModel(const std::string& inputProp, const std::string& name,
                       const std::string& propName, real_type gain = 1);
 
   const Port* addInverterModel(const std::string& name, const Port* in);
+  const Port* addInverterModel(const std::string& name,
+                               const std::string& inProp);
   const Port* addAbsModel(const std::string& name, const Port* in);
+  const Port* addAbsModel(const std::string& name, const std::string& inProp);
   const Port* addConstModel(const std::string& name, real_type value,
                             const NodePath& path = NodePath());
   const Port* addToUnit(const std::string& name, Unit u, const Port* in);
+  const Port* addToUnit(const std::string& name, Unit u,
+                        const std::string& inProp);
   const Port* addFromUnit(const std::string& name, Unit u, const Port* in);
+  const Port* addFromUnit(const std::string& name, Unit u,
+                          const std::string& inProp);
 
   static SharedPtr<Group> getGroup(const Port* in);
   void addFCSModel(Node* model);
@@ -265,7 +403,8 @@ protected:
   const Port* addMultiBodyConstModel(const std::string& name, real_type value);
   void addMultiBodyModel(Node* model);
   /// </FIXME> document and rethink
-  const Port* getTablePrelookup(const std::string& name, const Port* in,
+  const Port* getTablePrelookup(const std::string& name,
+                                const std::string& inputProperty,
                                 const BreakPointVector& tl);
   /// List for the aircraft search path.
   std::list<std::string> mAircraftPath;
@@ -273,13 +412,13 @@ protected:
   std::list<std::string> mEnginePath;
 
   SharedPtr<Group> mTopLevelGroup;
-  PropertyMap mExpressionTable;
+  JSBSimPropertyManager mPropertyManager;
   SharedPtr<JSBSimAerodynamic> mAeroForce;
   SharedPtr<RigidBody> mTopLevelBody;
   struct BreakPointLookupEntry {
-    BreakPointLookupEntry(const Port* in = 0, BreakPointLookup* tl = 0) :
-      inputConnection(in), lookup(tl) {}
-    SharedPtr<const Port> inputConnection;
+    BreakPointLookupEntry(const std::string& pname = std::string(), BreakPointLookup* tl = 0) :
+      propertyName(pname), lookup(tl) {}
+    std::string propertyName;
     SharedPtr<BreakPointLookup> lookup;
   };
   std::vector<BreakPointLookupEntry> mBreakPointVectors;

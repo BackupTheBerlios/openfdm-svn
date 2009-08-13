@@ -276,7 +276,7 @@ JSBSimReader::loadAircraft(const std::string& acFileName)
   // Reset the vehicle.
   resetErrorState();
 
-  mExpressionTable.clear();
+  mPropertyManager.clear();
   // Allocate a new system
   mSystem = new System("JSBSim system");
   mTopLevelGroup = new Group("TopLevelGroup");
@@ -302,7 +302,18 @@ JSBSimReader::loadAircraft(const std::string& acFileName)
     return false;
 
   // Get a parser FIXME
-  return convertDocument(parseXMLStream(acFileStream));
+  if (!convertDocument(parseXMLStream(acFileStream)))
+    return false;
+
+  // Provide substitutes for still unresolved properties
+  if (!provideSubstitutes())
+    return false;
+
+  // Finnaly connect all the collected properties ports together
+  if (!mPropertyManager.connect())
+    return false;
+
+  return true;
 }
 
 bool
@@ -483,13 +494,11 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
 
   // Set the position of the aerodynamic force frame.
   mAeroForce->setPosition(structToBody(ap));
+
   NodePath nodePath = mTopLevelGroup->getNodePathList().front();
-  port = lookupJSBExpression("aero/alpha-deg", nodePath);
-  addOutputModel(port, "Alpha", "orientation/alpha-deg");
-  port = lookupJSBExpression("aero/beta-rad", nodePath);
-  addOutputModel(port, "Beta rad", "orientation/side-slip-rad");
-  port = lookupJSBExpression("aero/beta-deg", nodePath);
-  addOutputModel(port, "Beta", "orientation/side-slip-deg");
+  addOutputModel("aero/alpha-deg", "Alpha", "orientation/alpha-deg");
+  addOutputModel("aero/beta-rad", "Beta rad", "orientation/side-slip-rad");
+  addOutputModel("aero/beta-deg", "Beta", "orientation/side-slip-deg");
 
   return true;
 }
@@ -585,11 +594,11 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
     real_type maxForce = realData(wheelElem->getElement("maxBrakeTorque"), 1e4);
     brakeF->setMaxForce(maxForce);
     if (brake == "LEFT") {
-      if (!connectJSBExpression("gear/left-brake-pos-norm",
+      if (!connectJSBExpression("gear/left-brake-cmd-norm",
                                 brakeF->getPort("brakeInput")))
         return error("could not connect to brake group LEFT");
     } else if (brake == "RIGHT") {
-      if (!connectJSBExpression("gear/right-brake-pos-norm",
+      if (!connectJSBExpression("gear/right-brake-cmd-norm",
                                 brakeF->getPort("brakeInput")))
         return error("could not connect to brake group RIGHT");
     }
@@ -670,7 +679,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         // FIXME no retractable for the moment
 //         std::string retract = stringData((*it)->getElement("retractable"));
 //         if (retract == "RETRACT" || retract == "1") {
-//           if (!connectJSBExpression("gear/gear-pos-norm", sg->getEnablePort()))
+//           if (!connectJSBExpression("gear/gear-cmd-norm", sg->getEnablePort()))
 //             return error("could not connect to retract command");
 //           // Well, connect that directly to the input
 //           const Port* port = lookupJSBExpression("gear/gear-pos-norm");
@@ -720,12 +729,12 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         std::string brake = stringData((*it)->getElement("brake_group"));
         if (brake == "LEFT") {
           sg->setEnableBrakeCommand(true);
-          if (!connectJSBExpression("gear/left-brake-pos-norm",
+          if (!connectJSBExpression("gear/left-brake-cmd-norm",
                                     sg->getPort("brakeCommand")))
             return error("could not connect brake command for group LEFT");
         } else if (brake == "RIGHT") {
           sg->setEnableBrakeCommand(true);
-          if (!connectJSBExpression("gear/right-brake-pos-norm",
+          if (!connectJSBExpression("gear/right-brake-cmd-norm",
                                     sg->getPort("brakeCommand")))
             return error("could not connect brake command for group RIGHT");
         }
@@ -878,8 +887,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         addOutputModel(port, "Gear " + numStr + " Compression",
                        "gear/gear[" + numStr + "]/compression-m");
         
-        port = lookupJSBExpression("gear/gear-pos-norm");
-        addOutputModel(port, "Gear " + numStr + " Position",
+        addOutputModel("gear/gear-pos-norm", "Gear " + numStr + " Position",
                        "gear/gear[" + numStr + "]/position-norm");
         
         
@@ -956,8 +964,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
                        "gear/gear[" + numStr + "]/compression-rad");
         
         /// FIXME add a retract joint ...
-        port = lookupJSBExpression("gear/gear-pos-norm");
-        addOutputModel(port, "Gear " + numStr + " Position",
+        addOutputModel("gear/gear-pos-norm", "Gear " + numStr + " Position",
                        "gear/gear[" + numStr + "]/position-norm");
         
       } else if (type == "TAILHOOK") {
@@ -1161,10 +1168,10 @@ JSBSimReader::convertEngine(const XMLElement* engine,
 // //     brakeF->setMinForce(8e1);
 // //     brakeF->setMaxForce(1e4);
 // //     if (brake == "LEFT") {
-// //       const Port* port = lookupJSBExpression("gear/left-brake-pos-norm");
+// //       const Port* port = lookupJSBExpression("gear/left-brake-cmd-norm");
 // //       brakeF->getInputPort(0)->connect(port);
 // //     } else if (brake == "RIGHT") {
-// //       const Port* port = lookupJSBExpression("gear/right-brake-pos-norm");
+// //       const Port* port = lookupJSBExpression("gear/right-brake-cmd-norm");
 // //       brakeF->getInputPort(0)->connect(port);
 // //     }
 // //     // That one reads the joint position and velocity ...
@@ -1333,7 +1340,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     if (b != 0) {
       SharedPtr<Bias> bias = new Bias(name + " Bias");
       addFCSModel(bias);
-      mTopLevelGroup->connect(summer->getPort("output"), bias->getInputPort(0));
+      mTopLevelGroup->connect(summer->getOutputPort(), bias->getInputPort(0));
       Matrix m(1, 1);
       m(0, 0) = b;
       bias->setBias(m);
@@ -1341,6 +1348,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     } else {
       model = summer;
     }
+    // FIXME clipto is missing ...
     out = model->getPort("output");
   } else if (type == "DEADBAND" || type == "deadband") {
     SharedPtr<DeadBand> deadband = new DeadBand(name);
@@ -1713,7 +1721,7 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
     } else if ((*ait)->getName() == "abs") {
       std::list<const Port*> absInput = readFunctionInputs(*ait, "abs-" + name);
       if (absInput.size() != 1) {
-          error("abs function inputtag must have 2DTable data does not have 2 inputs!");
+          error("abs function inputtag must have 1 input!");
           return std::list<const Port*>();
       }
       
@@ -1764,8 +1772,7 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
           return std::list<const Port*>();
         }
         std::string token = stringData((*ait)->getElement("independentVar"));
-        const Port* port = getTablePrelookup(name + " lookup",
-                                lookupJSBExpression(token, path), lookup);
+        const Port* port = getTablePrelookup(name + " lookup", token, lookup);
 
         SharedPtr<Table1D> table = new Table1D(name + " Table");
         addMultiBodyModel(table);
@@ -1790,10 +1797,10 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
         std::string rowInput = indepData(indeps, "row");
         std::string colInput = indepData(indeps, "column");
 
-        const Port* rPort = getTablePrelookup(name + " row lookup",
-                            lookupJSBExpression(rowInput, path), lookup[0]);
-        const Port* cPort = getTablePrelookup(name + " column lookup",
-                            lookupJSBExpression(colInput, path), lookup[1]);
+        const Port* rPort = getTablePrelookup(name + " row lookup", rowInput,
+                                              lookup[0]);
+        const Port* cPort = getTablePrelookup(name + " column lookup", colInput,
+                                              lookup[1]);
 
         SharedPtr<Table2D> table = new Table2D(name  + " Table");
         addMultiBodyModel(table);
@@ -1820,12 +1827,12 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
         std::string colInput = indepData(indeps, "column");
         std::string pageInput = indepData(indeps, "table");
 
-        const Port* rPort = getTablePrelookup(name + " row lookup",
-                           lookupJSBExpression(rowInput, path), lookup[0]);
-        const Port* cPort = getTablePrelookup(name + " column lookup",
-                           lookupJSBExpression(colInput, path), lookup[1]);
-        const Port* pPort = getTablePrelookup(name + " page lookup",
-                           lookupJSBExpression(pageInput, path), lookup[2]);
+        const Port* rPort = getTablePrelookup(name + " row lookup", rowInput,
+                                              lookup[0]);
+        const Port* cPort = getTablePrelookup(name + " column lookup", colInput,
+                                              lookup[1]);
+        const Port* pPort = getTablePrelookup(name + " page lookup", pageInput,
+                                              lookup[2]);
 
         SharedPtr<Table3D> table = new Table3D(name  + " Table");
         addMultiBodyModel(table);

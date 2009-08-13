@@ -64,6 +64,11 @@ public:
   const Port* getQPort(void);
   const Port* getRPort(void);
 
+  // FIXME
+  const Port* getPAeroPort(void) { return getPPort(); }
+  const Port* getQAeroPort(void) { return getQPort(); }
+  const Port* getRAeroPort(void) { return getRPort(); }
+
   const Port* getUPort(void);
   const Port* getVPort(void);
   const Port* getWPort(void);
