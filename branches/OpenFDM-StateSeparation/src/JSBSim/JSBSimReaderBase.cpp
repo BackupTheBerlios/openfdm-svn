@@ -89,6 +89,12 @@ JSBSimReaderBase::addEnginePath(const std::string& path)
   mEnginePath.push_back(path);
 }
 
+void
+JSBSimReaderBase::addSystemPath(const std::string& path)
+{
+  mSystemPath.push_back(path);
+}
+
 bool
 JSBSimReaderBase::openFile(const std::list<std::string>& paths,
                            const std::string& file, std::ifstream& fs)

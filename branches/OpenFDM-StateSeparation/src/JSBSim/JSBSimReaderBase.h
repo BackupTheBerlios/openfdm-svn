@@ -49,6 +49,10 @@ public:
   /// no getter available
   void addEnginePath(const std::string& path);
 
+  /// Add a new path component to search for system configurations
+  /// no getter available
+  void addSystemPath(const std::string& path);
+
 protected:
   /// Locates a file from a given path list
   static bool openFile(const std::list<std::string>& paths,
@@ -124,6 +128,8 @@ protected:
   std::list<std::string> mAircraftPath;
   /// List for the engine search path.
   std::list<std::string> mEnginePath;
+  /// List for the system search path.
+  std::list<std::string> mSystemPath;
 
   SharedPtr<Group> mTopLevelGroup;
   JSBSimPropertyManager mPropertyManager;

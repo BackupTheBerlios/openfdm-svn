@@ -379,10 +379,10 @@ JSBSimReader::convertDocument(const XMLElement* topElem)
 
   // Include the system tags.
   std::list<const XMLElement*> systemElems = topElem->getElements("system");
-  if (!systemElems.empty()) {
-    std::cout << "Ignoring system sections" << std::endl;
-//     if (!convertPropulsion(propulsionElem))
-//       return error("Cannot convert propulsion data");
+  for (std::list<const XMLElement*>::iterator i = systemElems.begin();
+       i != systemElems.end(); ++i) {
+    if (!convertSystem(*i))
+      return error("Cannot convert system data");
   }
   
   // Convert the aerodynamic force.
@@ -1611,6 +1611,7 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
   } else if (type == "ACTUATOR" || type == "actuator") {
     std::cout << "Ignoring ACTUATOR" << std::endl;
 
+  } else if (type == "documentation") {
   } else
     return error("Unknown FCS COMPONENT type: \"" + type
                  + "\". Ignoring whole FCS component \"" + name + "\"" );
@@ -1624,6 +1625,23 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     if (outname != implicitOutname)
       registerJSBExpression(outname, out);
   }
+
+  return true;
+}
+
+bool
+JSBSimReader::convertSystem(const XMLElement* system)
+{
+  std::string systemName = system->getAttribute("file");
+  std::string sFileName = systemName + ".xml";
+  std::ifstream sFileStream;
+  if (!openFile(mSystemPath, sFileName, sFileStream))
+    return error("Cannot find system \"" + systemName + "\"");
+
+  SharedPtr<XMLElement> systemTopElem = parseXMLStream(sFileStream);
+
+  if (!convertFCSList(systemTopElem))
+    return error("Cannot convert system file \"" + sFileName + "\"");
 
   return true;
 }

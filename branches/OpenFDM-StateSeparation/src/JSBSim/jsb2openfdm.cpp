@@ -21,11 +21,13 @@ main(int argc, char *argv[])
 
   std::string aircraftDir = argv[1];
   std::string engineDir = aircraftDir + "/Engines";
+  std::string systemDir = aircraftDir + "/Systems";
   std::string aircraftFile = argv[2];
 
   JSBSimReader reader;
   reader.addAircraftPath(aircraftDir);
   reader.addEnginePath(engineDir);
+  reader.addSystemPath(systemDir);
   reader.loadAircraft(aircraftFile);
   if (reader.getErrorState()) {
     std::cerr << "Cannot read aircraft!" << std::endl;

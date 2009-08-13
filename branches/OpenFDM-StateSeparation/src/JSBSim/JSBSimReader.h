@@ -40,6 +40,7 @@ private:
   bool convertMassBalance(const XMLElement* massBalanceElement);
   bool convertFCSList(const XMLElement* fcsElem);
   bool convertFCSComponent(const XMLElement* fcsComponent);
+  bool convertSystem(const XMLElement* system);
   bool attachWheel(const XMLElement* wheelElem, const std::string& name,
                    const std::string& numStr, RigidBody* parent);
   bool convertGroundReactionsElem(const XMLElement* gr);
