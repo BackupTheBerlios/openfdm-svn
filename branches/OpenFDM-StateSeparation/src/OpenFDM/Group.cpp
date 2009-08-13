@@ -5,6 +5,7 @@
 #include "Group.h"
 
 #include "ConstNodeVisitor.h"
+#include "LogStream.h"
 #include "NodeVisitor.h"
 #include "TypeInfo.h"
 #include "Variant.h"
@@ -172,11 +173,25 @@ Group::getConnectIndex(const Connect* connect) const
 Connect*
 Group::connect(const Port* port0, const Port* port1)
 {
+  if (!port0) {
+    Log(Model, Warning) << "Port0 is zero." << std::endl;
+    return 0;
+  }
+  if (!port1) {
+    Log(Model, Warning) << "Port1 is zero." << std::endl;
+    return 0;
+  }
+
   SharedPtr<Connect> connect = new Connect(this);
-  if (!connect->setPort0(port0))
+  if (!connect->setPort0(port0)) {
+    Log(Model, Warning) << "Could not set port0" << std::endl;
     return 0;
-  if (!connect->setPort1(port1))
+  }
+  if (!connect->setPort1(port1)) {
+    Log(Model, Warning) << "Could not set port1" << std::endl;
     return 0;
+  }
+
   mConnectList.push_back(connect);
   return connect.get();
 }
