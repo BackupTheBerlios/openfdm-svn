@@ -310,7 +310,7 @@ JSBSimReader::loadAircraft(const std::string& acFileName)
     return false;
 
   // Finnaly connect all the collected properties ports together
-  if (!mPropertyManager.connect())
+  if (!connect())
     return false;
 
   return true;

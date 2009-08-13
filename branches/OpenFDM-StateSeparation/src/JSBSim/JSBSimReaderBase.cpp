@@ -205,10 +205,8 @@ JSBSimReaderBase::connectJSBExpression(const std::string& name,
     mPropertyManager.addConsumer(canonicalJSBProperty(name), pa);
   } else {
     SharedPtr<Group> group = getGroup(pa);
-    if (!group) {
-      std::cerr << "Could not add output model \"" << name << "\"" << std::endl;
-      return false;
-    }
+    if (!group)
+      return error("Could not add output model \"" + name + "\"");
 
     Gain* gain = new Gain("Minus " + canonicalJSBProperty(name), -1);
     group->addChild(gain);
@@ -222,19 +220,18 @@ JSBSimReaderBase::connectJSBExpression(const std::string& name,
   return true;
 }
 
-void
+bool
 JSBSimReaderBase::registerExpression(const std::string& name, const Port* port)
 {
   if (name.empty())
-    return;
+    return false;
   if (!port)
-    return;
-  if (mPropertyManager.exists(name)) {
-    std::cerr << "Already have an expression for " << name << std::endl;
-    return;
-  }
+    return false;
+  if (mPropertyManager.exists(name))
+    return error("Already have an expression for \"" + name + "\"");
 
   mPropertyManager.setProvider(name, port);
+  return true;
 }
 
 std::string
@@ -257,13 +254,13 @@ JSBSimReaderBase::canonicalJSBProperty(std::string fullName)
   return JSBSimProperty::simplify(path + '/' + name);
 }
 
-void
+bool
 JSBSimReaderBase::registerJSBExpression(const std::string& name, const Port* port)
 {
   if (name.empty())
-    return;
+    return error("Registering empty property?");
   if (!port)
-    return;
+    return error("Registering zero port?");
   if (name[0] == '/')
     registerExpression(name.substr(1), port);
   else
@@ -295,6 +292,7 @@ JSBSimReaderBase::registerJSBExpression(const std::string& name, const Port* por
     addOutputModel(port, name.substr(4),
                    "surface-positions/flap-pos-norm");
   }
+  return true;
 }
 
 bool
@@ -308,7 +306,7 @@ JSBSimReaderBase::provideSubstitutes()
          i != mPropertyManager.getPropertyMap().end(); ++i) {
       if (i->second.hasProviderPort())
         continue;
-      if (!provideSubstitute(i->first, i->second))
+      if (!provideSubstitute(i->first))
         return false;
       foundSubstitute = true;
     }
@@ -318,8 +316,7 @@ JSBSimReaderBase::provideSubstitutes()
 }
 
 bool
-JSBSimReaderBase::provideSubstitute(const std::string& propName,
-                                    const JSBSimProperty& property)
+JSBSimReaderBase::provideSubstitute(const std::string& propName)
 {
   if (propName.find("/") == 0) {
     addInputModel("Property Input " + propName, propName);
@@ -673,6 +670,18 @@ JSBSimReaderBase::provideSubstitute(const std::string& propName,
   return false;
 }
 
+bool
+JSBSimReaderBase::connect()
+{
+  JSBSimPropertyManager::PropertyMap::iterator i;
+  for (i = mPropertyManager.getPropertyMap().begin();
+       i != mPropertyManager.getPropertyMap().end(); ++i) {
+    if (!i->second.connect())
+      return error("Error connecting \"" + i->first + "\"");
+  }
+  return true;
+}
+
 const Port*
 JSBSimReaderBase::addInputModel(const std::string& name,
                                 const std::string& propName, real_type gain)
@@ -693,7 +702,7 @@ JSBSimReaderBase::addOutputModel(const Port* out,
 {
   SharedPtr<Group> group = getGroup(out);
   if (!group) {
-    std::cerr << "Could not add output model \"" << name << "\"" << std::endl;
+    error("Could not add output model \"" + name + "\"");
     return;
   }
   Output* output = new Output(name + " Output");
@@ -720,7 +729,7 @@ JSBSimReaderBase::addInverterModel(const std::string& name, const Port* in)
 {
   SharedPtr<Group> group = getGroup(in);
   if (!group) {
-    std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
+    error("Could not add inverter model \"" + name + "\"");
     return 0;
   }
   UnaryFunction *unary
@@ -749,7 +758,7 @@ JSBSimReaderBase::addAbsModel(const std::string& name, const Port* in)
 {
   SharedPtr<Group> group = getGroup(in);
   if (!group) {
-    std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
+    error("Could not add inverter model \"" + name + "\"");
     return 0;
   }
   UnaryFunction *unary
@@ -795,7 +804,7 @@ JSBSimReaderBase::addToUnit(const std::string& name, Unit u, const Port* in)
 {
   SharedPtr<Group> group = getGroup(in);
   if (!group) {
-    std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
+    error("Could not add unit conversion model \"" + name + "\"");
     return 0;
   }
   UnitConversion* unitConv
@@ -824,7 +833,7 @@ JSBSimReaderBase::addFromUnit(const std::string& name, Unit u, const Port* in)
 {
   SharedPtr<Group> group = getGroup(in);
   if (!group) {
-    std::cerr << "Could not add inverter model \"" << name << "\"" << std::endl;
+    error("Could not add unit conversion model \"" + name + "\"");
     return 0;
   }
   UnitConversion* unitConv
@@ -852,21 +861,20 @@ SharedPtr<Group>
 JSBSimReaderBase::getGroup(const Port* in)
 {
   if (!in) {
-    std::cerr << "Could not find model group for input port: "
-      "no port given!" << std::endl;
+    error("Could not find model group for input port: no port given!");
     return 0;
   }
   SharedPtr<const Node> node = in->getNode();
   if (!node) {
-    std::cerr << "Could not find model group for input port: "
-      "port does not belong to a Node!" << std::endl;
+    error("Could not find model group for input port: "
+          "port does not belong to a Node!");
     return 0;
   }
   SharedPtr<const Node> parent = node->getParent(0).lock();
   SharedPtr<Group> group = const_cast<Group*>(dynamic_cast<const Group*>(parent.get()));
   if (!group) {
-    std::cerr << "Could not find model group for input port: "
-      "model has no parent!" << std::endl;
+    error("Could not find model group for input port: "
+          "model has no parent!");
     return 0;
   }
   return group;
