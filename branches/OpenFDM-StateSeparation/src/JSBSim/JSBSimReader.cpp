@@ -999,6 +999,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
       } else {
         return error("Unknown groundreactions component of type " + type);
       }
+    } else if ((*it)->getName() == "documentation") {
     } else {
       return error("Unknown groundreactions tag " + (*it)->getName());
     }
@@ -1027,6 +1028,8 @@ JSBSimReader::convertPropulsion(const XMLElement* pElem)
       sstr << tankNumber++;
       if (!convertTank(*it, sstr.str()))
         return error("Cannot parse tank");
+    }
+    else if ((*it)->getName() == "documentation") {
     }
     else
       return error("Unexpected PROPULSION element \"" + (*it)->getName() + "\"");
