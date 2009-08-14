@@ -21,8 +21,7 @@ class Port;
 /// the available OpenFDM discrete systems.
 /// As JSBSim usually munges several independent things into one thing,
 /// this is a Group for the first cut.
-class JSBSimFCSComponent :
-    public Referenced {
+class JSBSimFCSComponent : public Referenced {
 public:
   JSBSimFCSComponent(const std::string& name);
   virtual ~JSBSimFCSComponent(void);
@@ -42,6 +41,8 @@ public:
   /// Return /the/ group interface nodes
   GroupOutput* getOutputModel(void);
   GroupOutput* getOutputNormModel(void);
+
+  // FIXME clipto??? here ???
 
   Group* getGroup(void)
   { return mGroup; }

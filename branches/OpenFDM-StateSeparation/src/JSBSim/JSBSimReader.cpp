@@ -51,9 +51,27 @@
 
 #include "JSBSimAerosurfaceScale.h"
 #include "JSBSimKinemat.h"
+#include "JSBSimPID.h"
 #include "JSBSimScheduledGain.h"
 
 namespace OpenFDM {
+
+static bool
+isReal(const std::string& s)
+{
+  std::stringstream stream(s);
+  real_type value;
+  stream >> value;
+  return stream;
+}
+
+static bool
+isReal(const XMLElement* element)
+{
+  if (!element)
+    return false;
+  return isReal(element->getData());
+}
 
 static real_type
 asciiToReal(const std::string& s, const real_type& def = 0)
@@ -1591,7 +1609,25 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     out = summer->getOutputPort();
 
   } else if (type == "PID" || type == "pid") {
-    std::cout << "Ignoring PID" << std::endl;
+    SharedPtr<JSBSimPID> pid = new JSBSimPID(name);
+    addFCSModel(pid->getGroup());
+
+    std::string data = stringData(fcsComponent->getElement("ki"));
+    if (!connectJSBExpression(data, pid->getKIPort())){
+      pid->setKI(realData(fcsComponent->getElement("ki"), 0));
+    }
+
+    data = stringData(fcsComponent->getElement("kp"));
+    if (!connectJSBExpression(data, pid->getKPPort())){
+      pid->setKP(realData(fcsComponent->getElement("kp"), 0));
+    }
+
+    data = stringData(fcsComponent->getElement("kd"));
+    if (!connectJSBExpression(data, pid->getKDPort())){
+      pid->setKD(realData(fcsComponent->getElement("kd"), 0));
+    }
+    model = pid->getGroup();
+    out = pid->getOutputPort();
 
   } else if (type == "PROPERTY" || type == "property") {
     name = fcsComponent->getData();

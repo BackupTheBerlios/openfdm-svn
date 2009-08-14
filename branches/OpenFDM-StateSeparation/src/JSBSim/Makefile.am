@@ -20,6 +20,7 @@ OpenFDMinclude_HEADERS = \
   JSBSimAerosurfaceScale.h \
   JSBSimFCSComponent.h \
   JSBSimKinemat.h \
+  JSBSimPID.h \
   JSBSimPropertyManager.h \
   JSBSimReader.h \
   JSBSimReaderBase.h \
@@ -33,6 +34,7 @@ libOpenFDMJSBReader_la_SOURCES = \
   JSBSimAerosurfaceScale.cpp \
   JSBSimFCSComponent.cpp \
   JSBSimKinemat.cpp \
+  JSBSimPID.cpp \
   JSBSimPropertyManager.cpp \
   JSBSimReader.cpp \
   JSBSimReaderBase.cpp \
