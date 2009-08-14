@@ -348,6 +348,10 @@ JSBSimReaderBase::provideSubstitute(const std::string& propName)
     registerExpression(propName, mAeroForce->getGroundSpeedPort());
     return true;
 
+  } else if (propName == "fdm/jsbsim/velocities/hdot-mps") {
+    registerExpression(propName, mAeroForce->getClimbSpeedPort());
+    return true;
+
   } else if (propName == "fdm/jsbsim/velocities/mach-norm" ||
              propName == "fdm/jsbsim/velocities/mach") {
     registerExpression(propName, mAeroForce->getMachPort());

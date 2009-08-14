@@ -25,6 +25,7 @@ BEGIN_OPENFDM_OBJECT_DEF(ExternalInteract, SingleLinkInteract)
   DEF_OPENFDM_PROPERTY(Bool, EnableLinearWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableAngularWindVelocity, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableGroundSpeed, Serialized)
+  DEF_OPENFDM_PROPERTY(Bool, EnableClimbSpeed, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableTemperature, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableStaticPressure, Serialized)
   DEF_OPENFDM_PROPERTY(Bool, EnableDensity, Serialized)
@@ -53,6 +54,7 @@ public:
     mLinearWindVelocity(portValueList.getPortValue(externalInteract->mLinearWindVelocityPort)),
     mAngularWindVelocity(portValueList.getPortValue(externalInteract->mAngularWindVelocityPort)),
     mGroundSpeed(portValueList.getPortValue(externalInteract->mGroundSpeedPort)),
+    mClimbSpeed(portValueList.getPortValue(externalInteract->mClimbSpeedPort)),
     mTemperature(portValueList.getPortValue(externalInteract->mTemperaturePort)),
     mStaticPressure(portValueList.getPortValue(externalInteract->mStaticPressurePort)),
     mDensity(portValueList.getPortValue(externalInteract->mDensityPort)),
@@ -125,9 +127,10 @@ public:
     bool enableLinearWindVelocity = mLinearWindVelocity.isConnected();
     bool enableAngularWindVelocity = mAngularWindVelocity.isConnected();
     bool enableGroundSpeed = mGroundSpeed.isConnected();
+    bool enableClimbSpeed = mClimbSpeed.isConnected();
     if (enableLinearVelocity || enableAngularVelocity
         || enableLinearWindVelocity || enableAngularWindVelocity
-        || enableGroundSpeed) {
+        || enableGroundSpeed || enableClimbSpeed) {
       Vector6 refVelocity = getLink().getVelocity(mCoordinateSystem);
       if (enableLinearVelocity)
         mLinearVelocity = refVelocity.getLinear();
@@ -146,12 +149,16 @@ public:
           mAngularWindVelocity = wind.getAngular();
       }
 
-      if (enableGroundSpeed) {
+      if (enableGroundSpeed || enableClimbSpeed) {
+        Vector3 linVel = mCoordinateSystem.rotToReference(refVelocity.getLinear());
         Plane plane = getEnvironment().getHorizontalLocalPlane(mCoordinateSystem.getPosition());
-        mGroundSpeed = norm(plane.projectToPlane(refVelocity.getLinear()));
+        if (enableGroundSpeed)
+          mGroundSpeed = norm(plane.projectToPlane(linVel));
+        if (enableClimbSpeed)
+          mClimbSpeed = -dot(plane.getNormal(), linVel);
       }
     }
-    
+
     // Atmosphere related sensing
     bool enableAltitude = mAltitude.isConnected();
     
@@ -245,6 +252,7 @@ private:
   MatrixOutputPortHandle mAngularWindVelocity;
 
   RealOutputPortHandle mGroundSpeed;
+  RealOutputPortHandle mClimbSpeed;
 
   RealOutputPortHandle mTemperature;
   RealOutputPortHandle mStaticPressure;
@@ -487,6 +495,23 @@ ExternalInteract::getEnableGroundSpeed() const
   return !mGroundSpeedPort.empty();
 }
 
+void
+ExternalInteract::setEnableClimbSpeed(bool enable)
+{
+  if (enable == getEnableClimbSpeed())
+    return;
+  if (enable)
+    mClimbSpeedPort = RealOutputPort(this, "climbSpeed");
+  else
+    mClimbSpeedPort.clear();
+}
+
+bool
+ExternalInteract::getEnableClimbSpeed() const
+{
+  return !mClimbSpeedPort.empty();
+}
+
 
 void
 ExternalInteract::setEnableTemperature(bool enable)
@@ -655,6 +680,7 @@ ExternalInteract::setEnableAllOutputs(bool enable)
   setEnableLoad(enable);
   setEnableAngularAcceleration(enable);
   setEnableGroundSpeed(enable);
+  setEnableClimbSpeed(enable);
   setEnableTemperature(enable);
   setEnableStaticPressure(enable);
   setEnableDensity(enable);

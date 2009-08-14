@@ -53,6 +53,7 @@ public:
   const Port* getBetaDotPort(void);
   const Port* getTrueAirSpeedPort(void);
   const Port* getGroundSpeedPort(void);
+  const Port* getClimbSpeedPort(void);
   const Port* getCalibratedAirSpeedPort(void);
   const Port* getEquivalentAirSpeedPort(void);
   const Port* getMachPort(void);
@@ -120,6 +121,7 @@ private:
   SharedPtr<GroupOutput> mBetaDotOutputModel;
   SharedPtr<GroupOutput> mTrueAirSpeedOutputModel;
   SharedPtr<GroupOutput> mGroundSpeedOutputModel;
+  SharedPtr<GroupOutput> mClimbSpeedOutputModel;
   SharedPtr<GroupOutput> mCalibratedAirSpeedOutputModel;
   SharedPtr<GroupOutput> mEquivalentAirSpeedOutputModel;
   SharedPtr<GroupOutput> mMachOutputModel;

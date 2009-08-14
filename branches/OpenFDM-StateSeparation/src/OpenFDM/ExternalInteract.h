@@ -97,6 +97,11 @@ public:
   /// Get availabilty of the ground speed output port
   bool getEnableGroundSpeed() const;
 
+  /// Set availabilty of the climb speed output port
+  void setEnableClimbSpeed(bool enable);
+  /// Get availabilty of the climb speed output port
+  bool getEnableClimbSpeed() const;
+
 
   /// Set availabilty of the temperature output port
   void setEnableTemperature(bool enable);
@@ -176,6 +181,7 @@ protected:
   MatrixOutputPort mAngularWindVelocityPort;
 
   RealOutputPort mGroundSpeedPort;
+  RealOutputPort mClimbSpeedPort;
 
   RealOutputPort mTemperaturePort;
   RealOutputPort mStaticPressurePort;

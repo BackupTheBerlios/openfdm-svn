@@ -162,6 +162,13 @@ JSBSimAerodynamic::JSBSimAerodynamic(const std::string& name) :
   mGroup->connect(mExternalInteract->getPort("groundSpeed"),
                   mGroundSpeedOutputModel->getPort("input"));
 
+  mClimbSpeedOutputModel = new GroupOutput("Climb Speed Output");
+  mGroup->addChild(mClimbSpeedOutputModel);
+  mClimbSpeedOutputModel->setExternalPortName("climbSpeed");
+  mExternalInteract->setEnableClimbSpeed(true);
+  mGroup->connect(mExternalInteract->getPort("climbSpeed"),
+                  mClimbSpeedOutputModel->getPort("input"));
+
   mCalibratedAirSpeedOutputModel = new GroupOutput("Calibrated Air Speed Output");
   mGroup->addChild(mCalibratedAirSpeedOutputModel);
   mCalibratedAirSpeedOutputModel->setExternalPortName("calibratedAirSpeed");
@@ -481,6 +488,12 @@ const Port*
 JSBSimAerodynamic::getGroundSpeedPort(void)
 {
   return mGroup->getPort(mGroundSpeedOutputModel->getExternalPortIndex());
+}
+
+const Port*
+JSBSimAerodynamic::getClimbSpeedPort(void)
+{
+  return mGroup->getPort(mClimbSpeedOutputModel->getExternalPortIndex());
 }
 
 const Port*
