@@ -16,6 +16,7 @@
 
 #include <OpenFDM/AirSpring.h>
 #include <OpenFDM/Bias.h>
+#include <OpenFDM/BinaryFunction.h>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/DeadBand.h>
 #include <OpenFDM/Delay.h>
@@ -1652,14 +1653,14 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     return error("Unknown FCS COMPONENT type: \"" + type
                  + "\". Ignoring whole FCS component \"" + name + "\"" );
 
-  // Register all output property names.
-  std::string implicitOutname = std::string("fcs/")
-    + normalizeComponentName(name);
-  registerJSBExpression(implicitOutname, out);
+  // Register output property names.
   if (fcsComponent->getElement("output")) {
     std::string outname = stringData(fcsComponent->getElement("output"));
-    if (outname != implicitOutname)
-      registerJSBExpression(outname, out);
+    registerJSBExpression(outname, out);
+  } else {
+    std::string implicitOutname = std::string("fcs/")
+      + normalizeComponentName(name);
+    registerJSBExpression(implicitOutname, out);
   }
 
   return true;
@@ -1775,6 +1776,33 @@ JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
       inputs.push_back(addMultiBodyConstModel(name + " Constant", value));
     } else if ((*ait)->getName() == "property") {
       inputs.push_back(lookupJSBExpression(stringData(*ait), path));
+    } else if ((*ait)->getName() == "difference") {
+      std::list<const Port*> differenceInput = readFunctionInputs(*ait, "difference-" + name);
+      if (differenceInput.size() != 2) {
+          error("difference function inputtag must have 2 inputs!");
+          return std::list<const Port*>();
+      }
+      SharedPtr<Summer> summer = new Summer(name + " Difference");
+      addMultiBodyModel(summer);
+      mTopLevelGroup->connect(differenceInput.front(), summer->getInputPort(0));
+
+      SharedPtr<Gain> gain = new Gain(name + " Minus", -1);
+      addMultiBodyModel(gain);
+      mTopLevelGroup->connect(differenceInput.back(), gain->getInputPort(0));
+      mTopLevelGroup->connect(gain->getOutputPort(), summer->getInputPort(1));
+      inputs.push_back(summer->getOutputPort());
+    } else if ((*ait)->getName() == "quotient") {
+      std::list<const Port*> divInput = readFunctionInputs(*ait, "div-" + name);
+      if (divInput.size() != 2) {
+          error("div function inputtag must have 2 inputs!");
+          return std::list<const Port*>();
+      }
+      SharedPtr<BinaryFunction> div;
+      div = new BinaryFunction(name + " Difference", BinaryFunction::Div);
+      addMultiBodyModel(div);
+      mTopLevelGroup->connect(divInput.front(), div->getInputPort(0));
+      mTopLevelGroup->connect(divInput.back(), div->getInputPort(1));
+      inputs.push_back(div->getOutputPort());
     } else if ((*ait)->getName() == "abs") {
       std::list<const Port*> absInput = readFunctionInputs(*ait, "abs-" + name);
       if (absInput.size() != 1) {
