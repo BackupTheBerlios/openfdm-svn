@@ -6,6 +6,7 @@
 #define OpenFDM_JSBSimPID_H
 
 #include "JSBSimFCSComponent.h"
+#include <OpenFDM/Connect.h>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/GroupInput.h>
 #include <OpenFDM/Product.h>
@@ -32,14 +33,17 @@ public:
 private:
   SharedPtr<ConstModel> mKIConstant;
   SharedPtr<GroupInput> mKIGroupInput;
+  SharedPtr<Connect> mKIConnect;
   SharedPtr<Product> mKIProduct;
 
   SharedPtr<ConstModel> mKPConstant;
   SharedPtr<GroupInput> mKPGroupInput;
+  SharedPtr<Connect> mKPConnect;
   SharedPtr<Product> mKPProduct;
 
   SharedPtr<ConstModel> mKDConstant;
   SharedPtr<GroupInput> mKDGroupInput;
+  SharedPtr<Connect> mKDConnect;
   SharedPtr<Product> mKDProduct;
 };
 

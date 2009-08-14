@@ -75,12 +75,15 @@ JSBSimPID::setKI(real_type ki)
   if (mKIGroupInput) {
     getGroup()->removeChild(mKIGroupInput);
     mKIGroupInput = 0;
-    // FIXME disconnect ...
+  }
+  if (mKIConnect) {
+    getGroup()->removeConnect(mKIConnect);
+    mKIConnect = 0;
   }
   mKIConstant = new ConstModel("ki", ki);
   getGroup()->addChild(mKIConstant);
-  getGroup()->connect(mKIConstant->getPort("output"),
-                      mKIProduct->getInputPort(1));
+  mKIConnect = getGroup()->connect(mKIConstant->getPort("output"),
+                                   mKIProduct->getInputPort(1));
 }
 
 const Port*
@@ -89,13 +92,16 @@ JSBSimPID::getKIPort()
   if (mKIConstant) {
     getGroup()->removeChild(mKIConstant);
     mKIConstant = 0;
-    // FIXME disconnect ...
+  }
+  if (mKIConnect) {
+    getGroup()->removeConnect(mKIConnect);
+    mKIConnect = 0;
   }
   mKIGroupInput = new GroupInput("ki");
   getGroup()->addChild(mKIConstant);
   mKIGroupInput->setExternalPortName("ki");
-  getGroup()->connect(mKIGroupInput->getPort("output"),
-                      mKIProduct->getInputPort(1));
+  mKIConnect = getGroup()->connect(mKIGroupInput->getPort("output"),
+                                   mKIProduct->getInputPort(1));
   
   return getGroup()->getPort(mKIGroupInput->getExternalPortIndex());
 }
@@ -106,12 +112,15 @@ JSBSimPID::setKP(real_type kp)
   if (mKPGroupInput) {
     getGroup()->removeChild(mKPGroupInput);
     mKPGroupInput = 0;
-    // FIXME disconnect ...
+  }
+  if (mKPConnect) {
+    getGroup()->removeConnect(mKPConnect);
+    mKPConnect = 0;
   }
   mKPConstant = new ConstModel("kp", kp);
   getGroup()->addChild(mKPConstant);
-  getGroup()->connect(mKPConstant->getPort("output"),
-                      mKPProduct->getInputPort(1));
+  mKPConnect = getGroup()->connect(mKPConstant->getPort("output"),
+                                   mKPProduct->getInputPort(1));
 }
 
 const Port*
@@ -120,13 +129,16 @@ JSBSimPID::getKPPort()
   if (mKPConstant) {
     getGroup()->removeChild(mKPConstant);
     mKPConstant = 0;
-    // FIXME disconnect ...
+  }
+  if (mKPConnect) {
+    getGroup()->removeConnect(mKPConnect);
+    mKPConnect = 0;
   }
   mKPGroupInput = new GroupInput("kp");
   getGroup()->addChild(mKPConstant);
   mKPGroupInput->setExternalPortName("kp");
-  getGroup()->connect(mKPGroupInput->getPort("output"),
-                      mKPProduct->getInputPort(1));
+  mKPConnect = getGroup()->connect(mKPGroupInput->getPort("output"),
+                                   mKPProduct->getInputPort(1));
 
   return getGroup()->getPort(mKPGroupInput->getExternalPortIndex());
 }
@@ -137,12 +149,15 @@ JSBSimPID::setKD(real_type kd)
   if (mKDGroupInput) {
     getGroup()->removeChild(mKDGroupInput);
     mKDGroupInput = 0;
-    // FIXME disconnect ...
+  }
+  if (mKDConnect) {
+    getGroup()->removeConnect(mKDConnect);
+    mKDConnect = 0;
   }
   mKDConstant = new ConstModel("kd", kd);
   getGroup()->addChild(mKDConstant);
-  getGroup()->connect(mKDConstant->getPort("output"),
-                      mKDProduct->getInputPort(1));
+  mKDConnect = getGroup()->connect(mKDConstant->getPort("output"),
+                                   mKDProduct->getInputPort(1));
 }
 
 const Port*
@@ -151,13 +166,16 @@ JSBSimPID::getKDPort()
   if (mKDConstant) {
     getGroup()->removeChild(mKDConstant);
     mKDConstant = 0;
-    // FIXME disconnect ...
+  }
+  if (mKDConnect) {
+    getGroup()->removeConnect(mKDConnect);
+    mKDConnect = 0;
   }
   mKDGroupInput = new GroupInput("kd");
   getGroup()->addChild(mKDConstant);
   mKDGroupInput->setExternalPortName("kd");
-  getGroup()->connect(mKDGroupInput->getPort("output"),
-                      mKDProduct->getInputPort(1));
+  mKDConnect = getGroup()->connect(mKDGroupInput->getPort("output"),
+                                   mKDProduct->getInputPort(1));
 
   return getGroup()->getPort(mKDGroupInput->getExternalPortIndex());
 }
