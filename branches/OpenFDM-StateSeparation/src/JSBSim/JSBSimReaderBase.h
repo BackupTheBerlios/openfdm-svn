@@ -70,18 +70,6 @@ protected:
   /// Returns the name of the output property given the fcs component's name
   static std::string normalizeComponentName(const std::string& name);
 
-
-  /// <FIXME> document and rethink
-  // Deprecated
-  // const Port* lookupJSBExpression2(const std::string& name,
-  //                                 const NodePath& path = NodePath(),
-  //                                 bool recheckAeroProp = true);
-
-  // FIXME
-  const Port* lookupJSBExpression(const std::string& name,
-                                  const NodePath& path = NodePath(),
-                                  bool recheckAeroProp = true);
-
   bool connectJSBExpression(const std::string& name, const Port*,
                             bool recheckAeroProp = true);
 

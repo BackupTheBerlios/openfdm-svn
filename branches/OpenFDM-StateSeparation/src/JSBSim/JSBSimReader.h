@@ -12,6 +12,8 @@
 
 #include <OpenFDM/ReaderWriter.h>
 #include <OpenFDM/Table.h>
+#include <OpenFDM/UnaryFunction.h>
+#include <OpenFDM/BinaryFunction.h>
 
 #include "JSBSimReaderBase.h"
 
@@ -60,8 +62,18 @@ private:
                      const Port* thrusterDriver);
   bool convertAerodynamics(const XMLElement* aero);
   bool convertFunction(const XMLElement* function, Summer* sum);
-  std::list<const Port*> readFunctionInputs(const XMLElement* operationTag,
-                                            const std::string& name);
+
+  bool connectUnaryFunctionInput(const std::string& name,
+                                 UnaryFunction::Type type,
+                                 const XMLElement* element,
+                                 const Port* port, Group* parentGroup);
+  bool connectBinaryFunctionInput(const std::string& name,
+                                  BinaryFunction::Type type,
+                                  const XMLElement* element,
+                                  const Port* port, Group* parentGroup);
+
+  bool connectFunctionInput(const XMLElement* element, const Port* port,
+                            Group* parentGroup);
 
   unsigned getNumTableDims(const XMLElement* tableElem);
   bool readTable1D(const XMLElement* tableElem,

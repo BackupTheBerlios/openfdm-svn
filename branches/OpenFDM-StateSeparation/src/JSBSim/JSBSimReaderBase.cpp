@@ -183,23 +183,6 @@ JSBSimReaderBase::normalizeComponentName(const std::string& name)
   return ret;
 }
 
-const Port*
-JSBSimReaderBase::lookupJSBExpression(const std::string& name,
-                                      const NodePath& path,
-                                      bool recheckAeroProp)
-{
-  Group* parent = 0;
-  if (path.empty())
-    parent = mTopLevelGroup;
-  else
-    parent = const_cast<Group*>(dynamic_cast<const Group*>(path.back().get()));
-  OpenFDMAssert(parent);
-  Gain* gain = new Gain("FIXME dummy");
-  parent->addChild(gain);
-  connectJSBExpression(name, gain->getInputPort(0), recheckAeroProp);
-  return gain->getOutputPort();
-}
-
 bool
 JSBSimReaderBase::connectJSBExpression(const std::string& name,
                                        const Port* pa, bool recheckAeroProp)

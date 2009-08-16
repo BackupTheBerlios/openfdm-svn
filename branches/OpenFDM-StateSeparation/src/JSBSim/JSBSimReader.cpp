@@ -1707,8 +1707,9 @@ JSBSimReader::convertAerodynamics(const XMLElement* aero)
         if (!convertFunction(*fit, sum))
           return error("Cannot convert function");
       }
-      
+
       if (!sum->getNumSummands())
+        // FIXME connect that then with a zero port ...
         continue;
       const Port* port = sum->getPort("output");
 
@@ -1746,197 +1747,339 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
   std::string::size_type slachPos = bindName.rfind('/');
   if (slachPos != std::string::npos)
     name = name.substr(slachPos+1);
-  std::list<const Port*> inputs = readFunctionInputs(function, name);
-  if (inputs.size() != 1)
-    return error("function without output \"" + bindName + "\"!");
 
-  registerJSBExpression(bindName, inputs.front());
+  // FIXME put that into a group and use a GroupOutput for that
+  SharedPtr<Gain> gain = new Gain(name);
+  mTopLevelGroup->addChild(gain);
+
+  std::list<const XMLElement*> elements = function->getElements();
+  std::list<const XMLElement*>::iterator i;
+  for (i = elements.begin(); i != elements.end(); ++i) {
+    if ((*i)->getName() == "description")
+      continue;
+    if (!connectFunctionInput(*i, gain->getInputPort(0), mTopLevelGroup))
+      return error("Can not connect product input!");
+    // FIXME check that we get here only once
+  }
+
+  registerJSBExpression(bindName, gain->getOutputPort());
   if (sum) {
     unsigned num = sum->getNumSummands();
     sum->setNumSummands(num+1);
-    mTopLevelGroup->connect(inputs.front(), sum->getInputPort(num));
+    mTopLevelGroup->connect(gain->getOutputPort(), sum->getInputPort(num));
   }
 
   return true;
 }
 
-std::list<const Port*>
-JSBSimReader::readFunctionInputs(const XMLElement* operationTag,
-                                 const std::string& name)
+bool
+JSBSimReader::connectUnaryFunctionInput(const std::string& name,
+                                        UnaryFunction::Type type,
+                                        const XMLElement* element,
+                                        const Port* port, Group* parentGroup)
 {
-  NodePath path = mTopLevelGroup->getNodePathList().front();
-  std::list<const Port*> inputs;
-  std::list<const XMLElement*> args = operationTag->getElements();
-  std::list<const XMLElement*>::const_iterator ait;
-  for (ait = args.begin(); ait != args.end(); ++ait) {
-    if ((*ait)->getName() == "description") {
-      // Just ignore
-    } else if ((*ait)->getName() == "value") {
-      real_type value = asciiToReal((*ait)->getData());
-      inputs.push_back(addMultiBodyConstModel(name + " Constant", value));
-    } else if ((*ait)->getName() == "property") {
-      inputs.push_back(lookupJSBExpression(stringData(*ait), path));
-    } else if ((*ait)->getName() == "difference") {
-      std::list<const Port*> differenceInput = readFunctionInputs(*ait, "difference-" + name);
-      if (differenceInput.size() != 2) {
-          error("difference function inputtag must have 2 inputs!");
-          return std::list<const Port*>();
-      }
-      SharedPtr<Summer> summer = new Summer(name + " Difference");
-      addMultiBodyModel(summer);
-      mTopLevelGroup->connect(differenceInput.front(), summer->getInputPort(0));
+  SharedPtr<UnaryFunction> unaryFunction;
+  unaryFunction = new UnaryFunction(name, type);
+  parentGroup->addChild(unaryFunction);
+  
+  if (!parentGroup->connect(port, unaryFunction->getOutputPort()))
+    return error("Can not connect UnaryFunction output to port!");
+  
+  std::list<const XMLElement*> elements = element->getElements();
+  if (elements.size() != 1)
+    return error("Input ports to Unary models must have exactly one input!");
+  if (!connectFunctionInput(elements.front(), unaryFunction->getInputPort(0),
+                            parentGroup))
+    return error("Can not connect UnaryFunction input to port!");
+  
+  return true;
+}
 
-      SharedPtr<Gain> gain = new Gain(name + " Minus", -1);
-      addMultiBodyModel(gain);
-      mTopLevelGroup->connect(differenceInput.back(), gain->getInputPort(0));
-      mTopLevelGroup->connect(gain->getOutputPort(), summer->getInputPort(1));
-      inputs.push_back(summer->getOutputPort());
-    } else if ((*ait)->getName() == "quotient") {
-      std::list<const Port*> divInput = readFunctionInputs(*ait, "div-" + name);
-      if (divInput.size() != 2) {
-          error("div function inputtag must have 2 inputs!");
-          return std::list<const Port*>();
-      }
-      SharedPtr<BinaryFunction> div;
-      div = new BinaryFunction(name + " Difference", BinaryFunction::Div);
-      addMultiBodyModel(div);
-      mTopLevelGroup->connect(divInput.front(), div->getInputPort(0));
-      mTopLevelGroup->connect(divInput.back(), div->getInputPort(1));
-      inputs.push_back(div->getOutputPort());
-    } else if ((*ait)->getName() == "abs") {
-      std::list<const Port*> absInput = readFunctionInputs(*ait, "abs-" + name);
-      if (absInput.size() != 1) {
-          error("abs function inputtag must have 1 input!");
-          return std::list<const Port*>();
-      }
-      
-      SharedPtr<UnaryFunction> absModel;
-      absModel = new UnaryFunction("Abs " + name, UnaryFunction::Abs);
-      addMultiBodyModel(absModel);
-      mTopLevelGroup->connect(absInput.front(), absModel->getInputPort(0));
-      inputs.push_back(absModel->getOutputPort());
-    } else if ((*ait)->getName() == "product") {
-      SharedPtr<Product> prod = new Product(name + " product");
-      addMultiBodyModel(prod);
-      std::list<const Port*> pInputs = readFunctionInputs(*ait, name);
-      if (pInputs.empty()) {
-        error("Cannot read product inputs of function \"" + name + "\"!");
-        return std::list<const Port*>();
-      }
-      unsigned i = 0;
-      std::list<const Port*>::iterator iit = pInputs.begin();
-      while (iit != pInputs.end()) {
-        prod->setNumFactors(i+1);
-        mTopLevelGroup->connect(*iit++, prod->getInputPort(i++));
-      }
-      inputs.push_back(prod->getPort("output"));
 
-    } else if ((*ait)->getName() == "sum") {
-      SharedPtr<Summer> summer = new Summer(name + " sum");
-      addMultiBodyModel(summer);
-      std::list<const Port*> pInputs = readFunctionInputs(*ait, name);
-      if (pInputs.empty()) {
-        error("Cannot read sum inputs of function \"" + name + "\"!");
-        return std::list<const Port*>();
-      }
-      unsigned i = 0;
-      std::list<const Port*>::iterator iit = pInputs.begin();
-      while (iit != pInputs.end()) {
-        summer->setNumSummands(i+1);
-        mTopLevelGroup->connect(*iit++, summer->getInputPort(i++));
-      }
-      inputs.push_back(summer->getPort("output"));
+bool
+JSBSimReader::connectBinaryFunctionInput(const std::string& name,
+                                         BinaryFunction::Type type,
+                                         const XMLElement* element,
+                                         const Port* port, Group* parentGroup)
+{
+  SharedPtr<BinaryFunction> binaryFunction;
+  binaryFunction = new BinaryFunction(name, type);
+  parentGroup->addChild(binaryFunction);
+  
+  if (!parentGroup->connect(port, binaryFunction->getOutputPort()))
+    return error("Can not connect BinaryFunction output to port!");
+  
+  std::list<const XMLElement*> elements = element->getElements();
+  if (elements.size() != 2)
+    return error("Input ports to Binary models must have exactly two inputs!");
+  if (!connectFunctionInput(elements.front(), binaryFunction->getInputPort(0),
+                            parentGroup))
+    return error("Can not connect BinaryFunction input to port0!");
+  if (!connectFunctionInput(elements.back(), binaryFunction->getInputPort(1),
+                            parentGroup))
+    return error("Can not connect BinaryFunction input to port1!");
+  
+  return true;
+}
 
-    } else if ((*ait)->getName() == "table") {
-      unsigned dim = getNumTableDims(*ait);
-      if (dim == 1) {
-        TableData<1> data;
-        BreakPointVector lookup;
-        if (!readTable1D(*ait, data, lookup)) {
-          error("Cannot read 1D table data.");
-          return std::list<const Port*>();
-        }
-        std::string token = stringData((*ait)->getElement("independentVar"));
-        const Port* port = getTablePrelookup(name + " lookup", token, lookup);
+bool
+JSBSimReader::connectFunctionInput(const XMLElement* element, const Port* port,
+                                   Group* parentGroup)
+{
+  if (element->getName() == "abs") {
+    if (!connectUnaryFunctionInput("abs", UnaryFunction::Abs,
+                                   element, port, parentGroup))
+        return error("Can not connect abs output to port!");
+    return true;
 
-        SharedPtr<Table1D> table = new Table1D(name + " Table");
-        addMultiBodyModel(table);
-        mTopLevelGroup->connect(port, table->getInputPort(0));
-        table->setTableData(data);
-        inputs.push_back(table->getPort("output"));
+  } else if (element->getName() == "acos") {
+    if (!connectUnaryFunctionInput("acos", UnaryFunction::Acos,
+                                   element, port, parentGroup))
+        return error("Can not connect acos output to port!");
+    return true;
 
-      } else if (dim == 2) {
-        TableData<2> data;
-        BreakPointVector lookup[2];
-        if (!readTable2D(*ait, data, lookup)) {
-          error("Cannot read 2D table data.");
-          return std::list<const Port*>();
-        }
+  } else if (element->getName() == "asin") {
+    if (!connectUnaryFunctionInput("asin", UnaryFunction::Asin,
+                                   element, port, parentGroup))
+        return error("Can not connect asin output to port!");
+    return true;
 
-        std::list<const XMLElement*> indeps
-          = (*ait)->getElements("independentVar");
-        if (indeps.size() != 2) {
-          error("2DTable data does not have 2 inputs!");
-          return std::list<const Port*>();
-        }
-        std::string rowInput = indepData(indeps, "row");
-        std::string colInput = indepData(indeps, "column");
+  } else if (element->getName() == "atan") {
+    if (!connectUnaryFunctionInput("atan", UnaryFunction::Atan,
+                                   element, port, parentGroup))
+        return error("Can not connect atan output to port!");
+    return true;
 
-        const Port* rPort = getTablePrelookup(name + " row lookup", rowInput,
-                                              lookup[0]);
-        const Port* cPort = getTablePrelookup(name + " column lookup", colInput,
-                                              lookup[1]);
+  } else if (element->getName() == "atan2") {
+    if (!connectBinaryFunctionInput("Atan2", BinaryFunction::Atan2,
+                                    element, port, parentGroup))
+        return error("Can not connect atan2 output to port!");
+    return true;
 
-        SharedPtr<Table2D> table = new Table2D(name  + " Table");
-        addMultiBodyModel(table);
-        mTopLevelGroup->connect(rPort, table->getInputPort(0));
-        mTopLevelGroup->connect(cPort, table->getInputPort(1));
-        table->setTableData(data);
-        inputs.push_back(table->getPort("output"));
+  } else if (element->getName() == "ceil") {
+    if (!connectUnaryFunctionInput("ceil", UnaryFunction::Ceil,
+                                   element, port, parentGroup))
+        return error("Can not connect ceil output to port!");
+    return true;
 
-      } else if (dim == 3) {
-        TableData<3> data;
-        BreakPointVector lookup[3];
-        if (!readTable3D(*ait, data, lookup)) {
-          error("Cannot read 1D table data.");
-          return std::list<const Port*>();
-        }
+  } else if (element->getName() == "cos") {
+    if (!connectUnaryFunctionInput("cos", UnaryFunction::Cos,
+                                   element, port, parentGroup))
+        return error("Can not connect cos output to port!");
+    return true;
 
-        std::list<const XMLElement*> indeps
-          = (*ait)->getElements("independentVar");
-        if (indeps.size() != 3) {
-          error("3DTable data does not have 3 inputs!");
-          return std::list<const Port*>();
-        }
-        std::string rowInput = indepData(indeps, "row");
-        std::string colInput = indepData(indeps, "column");
-        std::string pageInput = indepData(indeps, "table");
+  } else if (element->getName() == "difference") {
+    SharedPtr<Summer> summer = new Summer("Difference");
+    parentGroup->addChild(summer);
 
-        const Port* rPort = getTablePrelookup(name + " row lookup", rowInput,
-                                              lookup[0]);
-        const Port* cPort = getTablePrelookup(name + " column lookup", colInput,
-                                              lookup[1]);
-        const Port* pPort = getTablePrelookup(name + " page lookup", pageInput,
-                                              lookup[2]);
+    SharedPtr<UnaryFunction> unaryFunction;
+    unaryFunction = new UnaryFunction("Minus", UnaryFunction::Minus);
+    parentGroup->addChild(unaryFunction);
+    
+    if (!parentGroup->connect(unaryFunction->getOutputPort(),
+                              summer->getInputPort(1)))
+      return error("Can not connect negative Summer input to port!");
+    if (!parentGroup->connect(port, summer->getOutputPort()))
+      return error("Can not connect Summer output to port!");
+    
+    std::list<const XMLElement*> elements = element->getElements();
+    if (elements.size() != 2)
+      return error("Input ports to Difference model must have exactly two inputs!");
+    if (!connectFunctionInput(elements.front(), summer->getInputPort(0),
+                              parentGroup))
+      return error("Can not connect UnaryFunction input to port!");
 
-        SharedPtr<Table3D> table = new Table3D(name  + " Table");
-        addMultiBodyModel(table);
-        mTopLevelGroup->connect(rPort, table->getInputPort(0));
-        mTopLevelGroup->connect(cPort, table->getInputPort(1));
-        mTopLevelGroup->connect(pPort, table->getInputPort(2));
-        table->setTableData(data);
-        inputs.push_back(table->getPort("output"));
+    if (!connectFunctionInput(elements.back(), unaryFunction->getInputPort(0),
+                              parentGroup))
+      return error("Can not connect UnaryFunction input to port!");
 
-      } else {
-        error("Unknown tabel dimension.");
-        return std::list<const Port*>();
-      }
-    } else {
-      error("Unknown function input");
-      return std::list<const Port*>();
+    return true;
+
+  } else if (element->getName() == "exp") {
+    if (!connectUnaryFunctionInput("Exp", UnaryFunction::Exp,
+                                   element, port, parentGroup))
+        return error("Can not connect exp output to port!");
+    return true;
+
+  } else if (element->getName() == "floor") {
+    if (!connectUnaryFunctionInput("Floor", UnaryFunction::Floor,
+                                   element, port, parentGroup))
+        return error("Can not connect floor output to port!");
+    return true;
+
+  } else if (element->getName() == "log") {
+    if (!connectUnaryFunctionInput("Log", UnaryFunction::Log,
+                                   element, port, parentGroup))
+        return error("Can not connect log output to port!");
+    return true;
+
+  } else if (element->getName() == "log10") {
+    if (!connectUnaryFunctionInput("Log10", UnaryFunction::Log10,
+                                   element, port, parentGroup))
+        return error("Can not connect log10 output to port!");
+    return true;
+
+  } else if (element->getName() == "log10") {
+    if (!connectUnaryFunctionInput("Log10", UnaryFunction::Log10,
+                                   element, port, parentGroup))
+        return error("Can not connect log10 output to port!");
+    return true;
+
+  } else if (element->getName() == "product") {
+    SharedPtr<Product> product = new Product("product");
+    parentGroup->addChild(product);
+  
+    if (!parentGroup->connect(port, product->getOutputPort()))
+      return error("Can not connect product output to port!");
+  
+    product->setNumFactors(0);
+    std::list<const XMLElement*> elements = element->getElements();
+    std::list<const XMLElement*>::iterator i;
+    for (i = elements.begin(); i != elements.end(); ++i) {
+      unsigned idx = product->getNumFactors();
+      product->setNumFactors(idx + 1);
+      if (!connectFunctionInput(*i, product->getInputPort(idx),
+                                parentGroup))
+        return error("Can not connect product input!");
     }
+  
+    return true;
+
+  } else if (element->getName() == "property") {
+    if (!connectJSBExpression(stringData(element), port))
+        return error("Can not connect property to port!");
+    return true;
+
+  } else if (element->getName() == "quotient") {
+    if (!connectBinaryFunctionInput("Div", BinaryFunction::Div,
+                                    element, port, parentGroup))
+        return error("Can not connect quotient output to port!");
+    return true;
+
+  } else if (element->getName() == "sin") {
+    if (!connectUnaryFunctionInput("Sin", UnaryFunction::Sin,
+                                   element, port, parentGroup))
+        return error("Can not connect sin output to port!");
+    return true;
+
+  } else if (element->getName() == "sum") {
+    SharedPtr<Summer> summer = new Summer("sum");
+    parentGroup->addChild(summer);
+  
+    if (!parentGroup->connect(port, summer->getOutputPort()))
+      return error("Can not connect sum output to port!");
+  
+    summer->setNumSummands(0);
+    std::list<const XMLElement*> elements = element->getElements();
+    std::list<const XMLElement*>::iterator i;
+    for (i = elements.begin(); i != elements.end(); ++i) {
+      unsigned idx = summer->getNumSummands();
+      summer->setNumSummands(idx + 1);
+      if (!connectFunctionInput(*i, summer->getInputPort(idx),
+                                parentGroup))
+        return error("Can not connect product input!");
+    }
+  
+    return true;
+
+  } else if (element->getName() == "sqr") {
+    if (!connectUnaryFunctionInput("sqr", UnaryFunction::Sqr,
+                                   element, port, parentGroup))
+        return error("Can not connect sqr output to port!");
+    return true;
+
+  } else if (element->getName() == "sqrt") {
+    if (!connectUnaryFunctionInput("sqrt", UnaryFunction::Sqrt,
+                                   element, port, parentGroup))
+        return error("Can not connect sqrt output to port!");
+    return true;
+
+  } else if (element->getName() == "table") {
+    unsigned dim = getNumTableDims(element);
+    if (dim == 1) {
+      TableData<1> data;
+      BreakPointVector lookup;
+      if (!readTable1D(element, data, lookup))
+        return error("Cannot read 1D table data.");
+      std::string token = stringData(element->getElement("independentVar"));
+      const Port* portP = getTablePrelookup("lookup", token, lookup);
+
+      SharedPtr<Table1D> table = new Table1D("Table");
+      parentGroup->addChild(table);
+      parentGroup->connect(portP, table->getInputPort(0));
+      table->setTableData(data);
+      parentGroup->connect(port, table->getPort("output"));
+      return true;
+
+    } else if (dim == 2) {
+      TableData<2> data;
+      BreakPointVector lookup[2];
+      if (!readTable2D(element, data, lookup))
+        return error("Cannot read 2D table data.");
+      
+      std::list<const XMLElement*> indeps
+        = element->getElements("independentVar");
+      if (indeps.size() != 2)
+        return error("2DTable data does not have 2 inputs!");
+      std::string rowInput = indepData(indeps, "row");
+      std::string colInput = indepData(indeps, "column");
+      
+      const Port* rPort = getTablePrelookup("Row lookup", rowInput, lookup[0]);
+      const Port* cPort = getTablePrelookup("Column lookup", colInput, lookup[1]);
+      
+      SharedPtr<Table2D> table = new Table2D("Table");
+      parentGroup->addChild(table);
+      parentGroup->connect(rPort, table->getInputPort(0));
+      parentGroup->connect(cPort, table->getInputPort(1));
+      table->setTableData(data);
+      parentGroup->connect(port, table->getPort("output"));
+      return true;
+
+    } else if (dim == 3) {
+      TableData<3> data;
+      BreakPointVector lookup[3];
+      if (!readTable3D(element, data, lookup))
+        return error("Cannot read 1D table data.");
+      
+      std::list<const XMLElement*> indeps
+        = element->getElements("independentVar");
+      if (indeps.size() != 3)
+        return error("3DTable data does not have 3 inputs!");
+      std::string rowInput = indepData(indeps, "row");
+      std::string colInput = indepData(indeps, "column");
+      std::string pageInput = indepData(indeps, "table");
+      
+      const Port* rPort = getTablePrelookup("Row lookup", rowInput, lookup[0]);
+      const Port* cPort = getTablePrelookup("Column lookup", colInput, lookup[1]);
+      const Port* pPort = getTablePrelookup("Page lookup", pageInput, lookup[2]);
+      
+      SharedPtr<Table3D> table = new Table3D("Table");
+      parentGroup->addChild(table);
+      parentGroup->connect(rPort, table->getInputPort(0));
+      parentGroup->connect(cPort, table->getInputPort(1));
+      parentGroup->connect(pPort, table->getInputPort(2));
+      table->setTableData(data);
+      parentGroup->connect(port, table->getPort("output"));
+      return true;
+
+    }
+
+  } else if (element->getName() == "tan") {
+    if (!connectUnaryFunctionInput("tan", UnaryFunction::Tan,
+                                   element, port, parentGroup))
+        return error("Can not connect tan output to port!");
+    return true;
+
+  } else if (element->getName() == "value") {
+    real_type value = realData(element, 0);
+    SharedPtr<ConstModel> constModel = new ConstModel("Value", value);
+    parentGroup->addChild(constModel);
+    if (!parentGroup->connect(port, constModel->getPort("output")))
+      return error("Can not connect ConstModel output to port!");
+    return true;
+
   }
-  return inputs;
+  return false;
 }
 
 unsigned
