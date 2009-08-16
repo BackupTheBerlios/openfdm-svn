@@ -98,7 +98,7 @@ JSBSimPID::getKIPort()
     mKIConnect = 0;
   }
   mKIGroupInput = new GroupInput("ki");
-  getGroup()->addChild(mKIConstant);
+  getGroup()->addChild(mKIGroupInput);
   mKIGroupInput->setExternalPortName("ki");
   mKIConnect = getGroup()->connect(mKIGroupInput->getPort("output"),
                                    mKIProduct->getInputPort(1));
@@ -135,7 +135,7 @@ JSBSimPID::getKPPort()
     mKPConnect = 0;
   }
   mKPGroupInput = new GroupInput("kp");
-  getGroup()->addChild(mKPConstant);
+  getGroup()->addChild(mKPGroupInput);
   mKPGroupInput->setExternalPortName("kp");
   mKPConnect = getGroup()->connect(mKPGroupInput->getPort("output"),
                                    mKPProduct->getInputPort(1));
@@ -172,7 +172,7 @@ JSBSimPID::getKDPort()
     mKDConnect = 0;
   }
   mKDGroupInput = new GroupInput("kd");
-  getGroup()->addChild(mKDConstant);
+  getGroup()->addChild(mKDGroupInput);
   mKDGroupInput->setExternalPortName("kd");
   mKDConnect = getGroup()->connect(mKDGroupInput->getPort("output"),
                                    mKDProduct->getInputPort(1));
