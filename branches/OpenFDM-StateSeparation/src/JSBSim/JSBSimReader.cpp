@@ -50,6 +50,7 @@
 
 #include <OpenFDM/ReaderWriter.h>
 
+#include "JSBSimActuator.h"
 #include "JSBSimAerosurfaceScale.h"
 #include "JSBSimKinemat.h"
 #include "JSBSimPID.h"
@@ -1646,7 +1647,15 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     std::cout << "Ignoring ACCELEROMETER" << std::endl;
 
   } else if (type == "ACTUATOR" || type == "actuator") {
-    std::cout << "Ignoring ACTUATOR" << std::endl;
+    SharedPtr<JSBSimActuator> actuator = new JSBSimActuator(name);
+    addFCSModel(actuator->getGroup());
+
+    std::string token = stringData(fcsComponent->getElement("input"));
+    if (!connectJSBExpression(token, actuator->getInputPort()))
+      return error("could not connect to actuator input \"" + token + "\"");
+
+    model = actuator->getGroup();
+    out = actuator->getOutputPort();
 
   } else if (type == "documentation") {
   } else
