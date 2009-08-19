@@ -27,6 +27,10 @@ public:
     for (unsigned i = 0; i < group.getNumChildren(); ++i) {
       Node* node = group.getChild(i);
       std::string name = node->getName();
+      if (name.empty()) {
+        name = "Unnamed";
+        node->setName(name);
+      }
       unsigned counter = 0;
       while (nameSet.find(node->getName()) != nameSet.end()) {
         std::stringstream ss;
