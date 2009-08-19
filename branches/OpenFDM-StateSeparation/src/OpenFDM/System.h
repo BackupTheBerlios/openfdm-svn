@@ -11,6 +11,7 @@
 #include "Node.h"
 #include "Object.h"
 #include "SampleTime.h"
+#include "SystemOutput.h"
 
 namespace OpenFDM {
 

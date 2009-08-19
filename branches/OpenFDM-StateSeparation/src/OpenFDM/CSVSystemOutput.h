@@ -9,6 +9,7 @@
 #include <set>
 #include <fstream>
 #include "Group.h"
+#include "System.h"
 #include "SystemOutput.h"
 #include "ConstNodeVisitor.h"
 #include "NodeInstance.h"

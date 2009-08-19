@@ -9,6 +9,7 @@
 #include <set>
 #include <hdf5.h>
 #include "Group.h"
+#include "System.h"
 #include "SystemOutput.h"
 #include "ConstNodeVisitor.h"
 #include "NodeInstance.h"

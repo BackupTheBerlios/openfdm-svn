@@ -13,6 +13,8 @@
 #endif
 #include "CSVSystemOutput.h"
 
+#include "System.h"
+
 namespace OpenFDM {
 
 SystemOutput::~SystemOutput()
@@ -33,6 +35,12 @@ SystemOutput::newDefaultSystemOutput(const std::string& filename)
 #else
   return new CSVSystemOutput(filename);
 #endif
+}
+
+SharedPtr<const System>
+SystemOutput::getSystem() const
+{
+  return mSystem.lock();
 }
 
 } // namespace OpenFDM

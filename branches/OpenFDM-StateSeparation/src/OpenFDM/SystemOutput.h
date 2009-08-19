@@ -5,9 +5,15 @@
 #ifndef OpenFDM_SystemOutput_H
 #define OpenFDM_SystemOutput_H
 
-#include "System.h"
+#include <string>
+#include "Referenced.h"
+#include "SharedPtr.h"
+#include "Types.h"
+#include "WeakPtr.h"
 
 namespace OpenFDM {
+
+class System;
 
 class SystemOutput : public Referenced {
 public:
@@ -21,8 +27,7 @@ public:
   virtual void attachTo(const System* system) = 0;
 
 protected:
-  SharedPtr<const System> getSystem() const
-  { return mSystem.lock(); }
+  SharedPtr<const System> getSystem() const;
 
 private:
   WeakPtr<const System> mSystem;
