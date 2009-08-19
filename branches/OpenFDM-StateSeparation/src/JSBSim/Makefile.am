@@ -26,6 +26,7 @@ OpenFDMinclude_HEADERS = \
   JSBSimReader.h \
   JSBSimReaderBase.h \
   JSBSimScheduledGain.h \
+  JSBSimSwitch.h \
   Tablereader.h \
   XMLReader.h
 
@@ -41,6 +42,7 @@ libOpenFDMJSBReader_la_SOURCES = \
   JSBSimReader.cpp \
   JSBSimReaderBase.cpp \
   JSBSimScheduledGain.cpp \
+  JSBSimSwitch.cpp \
   Tablereader.cpp \
   XMLReader.cpp
 libOpenFDMJSBReader_la_LIBADD = $(xml_library) \

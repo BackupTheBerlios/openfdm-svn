@@ -55,6 +55,7 @@
 #include "JSBSimKinemat.h"
 #include "JSBSimPID.h"
 #include "JSBSimScheduledGain.h"
+#include "JSBSimSwitch.h"
 
 namespace OpenFDM {
 
@@ -1393,7 +1394,11 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
     out = model->getPort("output");
 
   } else if (type == "SWITCH" || type == "switch") {
-    std::cout << "Ignoring SWITCH" << std::endl;
+    SharedPtr<JSBSimSwitch> sw = new JSBSimSwitch(name);
+    addFCSModel(sw->getGroup());
+
+    model = sw->getGroup();
+    out = sw->getOutputPort();
 
   } else if (type == "KINEMAT" || type == "kinematic") {
     // Use that special proxy class
@@ -1663,14 +1668,13 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
                  + "\". Ignoring whole FCS component \"" + name + "\"" );
 
   // Register output property names.
-  if (fcsComponent->getElement("output")) {
-    std::string outname = stringData(fcsComponent->getElement("output"));
+  std::string implicitOutname = std::string("fcs/")
+    + normalizeComponentName(name);
+  registerJSBExpression(implicitOutname, out);
+  std::string outname = stringData(fcsComponent->getElement("output"));
+  if (!outname.empty() &&
+      canonicalJSBProperty(outname) != canonicalJSBProperty(implicitOutname))
     registerJSBExpression(outname, out);
-  } else {
-    std::string implicitOutname = std::string("fcs/")
-      + normalizeComponentName(name);
-    registerJSBExpression(implicitOutname, out);
-  }
 
   return true;
 }
@@ -1771,7 +1775,8 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
     // FIXME check that we get here only once
   }
 
-  registerJSBExpression(bindName, gain->getOutputPort());
+  if (!bindName.empty())
+    registerJSBExpression(bindName, gain->getOutputPort());
   if (sum) {
     unsigned num = sum->getNumSummands();
     sum->setNumSummands(num+1);
@@ -1932,6 +1937,12 @@ JSBSimReader::connectFunctionInput(const XMLElement* element, const Port* port,
     if (!connectUnaryFunctionInput("Log10", UnaryFunction::Log10,
                                    element, port, parentGroup))
         return error("Can not connect log10 output to port!");
+    return true;
+
+  } else if (element->getName() == "pow") {
+    if (!connectBinaryFunctionInput("pow", BinaryFunction::Pow,
+                                    element, port, parentGroup))
+        return error("Can not connect pow output to port!");
     return true;
 
   } else if (element->getName() == "product") {

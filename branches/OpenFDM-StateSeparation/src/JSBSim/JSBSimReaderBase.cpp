@@ -217,7 +217,9 @@ JSBSimReaderBase::registerExpression(const std::string& name, const Port* port)
   if (!port)
     return false;
   if (mPropertyManager.exists(name))
-    return error("Already have an expression for \"" + name + "\"");
+    // FIXME, at least warn about that ...
+    return true;
+    // return error("Already have an expression for \"" + name + "\"");
 
   mPropertyManager.setProvider(name, port);
   return true;
@@ -479,6 +481,12 @@ JSBSimReaderBase::provideSubstitute(const std::string& propName)
   } else if (propName == "fdm/jsbsim/fcs/flap-cmd-norm") {
     std::string control = "/controls/flight/flaps";
     registerExpression(propName, addInputModel("Flaps Input", control));
+    return true;
+  } else if (propName == "fdm/jsbsim/fcs/flap-pos-norm") {
+    Gain* gain = new Gain("Implicit fdm/jsbsim/fcs/flap-pos-norm");
+    addFCSModel(gain);
+    connectJSBExpression("fdm/jsbsim/fcs/flap-cmd-norm", gain->getInputPort(0));
+    registerExpression(propName, gain->getOutputPort());
     return true;
   } else if (propName == "fdm/jsbsim/fcs/speedbrake-cmd-norm") {
     std::string control = "/controls/flight/speedbrake";
