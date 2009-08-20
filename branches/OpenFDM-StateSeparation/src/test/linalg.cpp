@@ -7,6 +7,7 @@
 #include <OpenFDM/Quaternion.h>
 #include <OpenFDM/Matrix.h>
 #include <OpenFDM/Vector.h>
+#include <OpenFDM/Time.h>
 
 namespace OpenFDM {
 
@@ -117,7 +118,10 @@ solvetest()
 int
 main(int argc, char *argv[])
 {
+  OpenFDM::TimeCounter timeCounter;
+  timeCounter.start();
   if (!OpenFDM::solvetest())
     return EXIT_FAILURE;
+  std::cout << "SUCCESS execution time: " << timeCounter.getTime() << std::endl;
   return EXIT_SUCCESS;
 }

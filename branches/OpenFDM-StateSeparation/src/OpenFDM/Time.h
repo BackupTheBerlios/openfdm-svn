@@ -6,6 +6,7 @@
 #define OpenFDM_Time_H
 
 #include <ctime>
+#include <sstream>
 #include <istream>
 #include <ostream>
 #include <iomanip>
@@ -149,7 +150,7 @@ class TimeCounter {
 public:
   TimeCounter(Time::Type type = Time::CPUTime) :
     mType(type),
-    mTime(real_type(0)),
+    mTime(0, 0),
     mRunCounter(0)
   { }
   

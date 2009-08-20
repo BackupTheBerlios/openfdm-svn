@@ -2,6 +2,7 @@
  *
  */
 
+#include <iostream>
 #include <OpenFDM/Bias.h>
 #include <OpenFDM/BinaryFunction.h>
 #include <OpenFDM/ConstModel.h>
@@ -25,6 +26,7 @@
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
+#include <OpenFDM/Time.h>
 #include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/Pacejka89.h>
 #include <OpenFDM/Pacejka94.h>
@@ -288,6 +290,9 @@ main(int argc, char *argv[])
   normalForceNode->setPropertyValue("Value", Variant(Matrix(normalForce)));
   sideslipNode->setPropertyValue("Value", Variant(Matrix(0)));
 
+  OpenFDM::TimeCounter timeCounter;
+  timeCounter.start();
+
   if (!system->init())
     return EXIT_FAILURE;
 
@@ -302,6 +307,11 @@ main(int argc, char *argv[])
   
   sideslipNode->setPropertyValue("Value", Variant(Matrix(0)));
   system->simulate(system->getTime() + alphaRange/alphaSpeed);
+
+  timeCounter.stop();
+  std::cout << "Execution time: " << timeCounter.getTime()
+            << "s (" << double(timeCounter.getTime())/system->getTime() << ")"
+            << std::endl;
 
   return EXIT_SUCCESS;
 }

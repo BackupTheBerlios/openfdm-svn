@@ -1,3 +1,4 @@
+#include <iostream>
 #include <OpenFDM/Group.h>
 #include <OpenFDM/Mass.h>
 #include <OpenFDM/FixedRootJoint.h>
@@ -6,6 +7,7 @@
 #include <OpenFDM/ExternalInteract.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
+#include <OpenFDM/Time.h>
 #include <OpenFDM/WGS84Planet.h>
 
 using namespace OpenFDM;
@@ -58,12 +60,20 @@ int main()
   system->getEnvironment()->setPlanet(planet);
   system->attach(SystemOutput::newDefaultSystemOutput("foucault"));
 
+  OpenFDM::TimeCounter timeCounter;
+  timeCounter.start();
+
   if (!system->init())
     return 1;
 
 //   system->simulate(24*60*60);
 //   system->simulate(60*60);
   system->simulate(60);
+
+  timeCounter.stop();
+  std::cout << "Execution time: " << timeCounter.getTime()
+            << "s (" << double(timeCounter.getTime())/system->getTime() << ")"
+            << std::endl;
 
   return 0;
 }

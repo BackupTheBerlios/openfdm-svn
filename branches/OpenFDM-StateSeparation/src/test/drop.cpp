@@ -1,3 +1,4 @@
+#include <iostream>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/Group.h>
 #include <OpenFDM/Mass.h>
@@ -6,6 +7,7 @@
 #include <OpenFDM/ExternalInteract.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
+#include <OpenFDM/Time.h>
 
 using namespace OpenFDM;
 
@@ -47,10 +49,18 @@ int main()
 
   system->attach(SystemOutput::newDefaultSystemOutput("drop"));
 
+  OpenFDM::TimeCounter timeCounter;
+  timeCounter.start();
+
   if (!system->init())
     return 1;
 
   system->simulate(45);
+
+  timeCounter.stop();
+  std::cout << "Execution time: " << timeCounter.getTime()
+            << "s (" << double(timeCounter.getTime())/system->getTime() << ")"
+            << std::endl;
 
   return 0;
 }

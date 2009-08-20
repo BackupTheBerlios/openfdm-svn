@@ -1,3 +1,4 @@
+#include <iostream>
 #include <OpenFDM/ConstModel.h>
 #include <OpenFDM/DynamicPressure.h>
 #include <OpenFDM/ExternalInteract.h>
@@ -13,6 +14,7 @@
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
 #include <OpenFDM/SystemOutput.h>
+#include <OpenFDM/Time.h>
 #include <OpenFDM/UnaryFunction.h>
 #include <OpenFDM/WindAxis.h>
 #include <OpenFDM/WindAxisForce.h>
@@ -152,10 +154,18 @@ int main()
 
   system->attach(SystemOutput::newDefaultSystemOutput("ballistic"));
 
+  OpenFDM::TimeCounter timeCounter;
+  timeCounter.start();
+
   if (!system->init())
     return 1;
 
   system->simulate(10);
+
+  timeCounter.stop();
+  std::cout << "Execution time: " << timeCounter.getTime()
+            << "s (" << double(timeCounter.getTime())/system->getTime() << ")"
+            << std::endl;
 
   return 0;
 }

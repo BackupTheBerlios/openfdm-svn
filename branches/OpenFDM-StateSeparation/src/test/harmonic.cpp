@@ -12,6 +12,7 @@
 #include <OpenFDM/SimulationTime.h>
 #include <OpenFDM/Summer.h>
 #include <OpenFDM/System.h>
+#include <OpenFDM/Time.h>
 #include <OpenFDM/UnaryFunction.h>
 #include "ErrorCollectorCallback.h"
 
@@ -97,12 +98,20 @@ main(int argc, char *argv[])
   SharedPtr<System> system = new System("Harmonic Oszilator");
   system->setNode(group);
 
+  OpenFDM::TimeCounter timeCounter;
+  timeCounter.start();
+
   if (!system->init()) {
     std::cout << "Could not initialize the system" << std::endl;
     return EXIT_FAILURE;
   }
 
   system->simulate(10);
+
+  timeCounter.stop();
+  std::cout << "Execution time: " << timeCounter.getTime()
+            << "s (" << double(timeCounter.getTime())/system->getTime() << ")"
+            << std::endl;
 
   real_type posError = posErrorCallback->error();
   std::cout << "Position error check with error = " << posError << std::endl;
