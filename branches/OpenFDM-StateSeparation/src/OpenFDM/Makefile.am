@@ -202,6 +202,7 @@ OpenFDMModelsHEADERS = \
   Bias.h \
   BinaryFunction.h \
   BreakPointLookup.h \
+  ComparisonOperator.h \
   ConstModel.h \
   DeadBand.h \
   Delay.h \
@@ -212,6 +213,7 @@ OpenFDMModelsHEADERS = \
   Input.h \
   Integrator.h \
   LinearSpringDamper.h \
+  LogicalOperator.h \
   MachNumber.h \
   MatrixConcat.h \
   MatrixSplit.h \
@@ -238,6 +240,7 @@ OpenFDMModelsSOURCES = \
   Bias.cpp \
   BinaryFunction.cpp \
   BreakPointLookup.cpp \
+  ComparisonOperator.cpp \
   ConstModel.cpp \
   DeadBand.cpp \
   Delay.cpp \
@@ -248,6 +251,7 @@ OpenFDMModelsSOURCES = \
   Input.cpp \
   Integrator.cpp \
   LinearSpringDamper.cpp \
+  LogicalOperator.cpp \
   MachNumber.cpp \
   MatrixConcat.cpp \
   MatrixSplit.cpp \

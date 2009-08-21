@@ -12,6 +12,7 @@
 namespace OpenFDM {
 
 BEGIN_OPENFDM_OBJECT_DEF(BinaryFunction, SimpleDirectModel)
+  DEF_OPENFDM_PROPERTY(Unsigned, Type, Serialized)
   END_OPENFDM_OBJECT_DEF
 
 BinaryFunction::BinaryFunction(const std::string& name, Type type) :
