@@ -33,9 +33,9 @@ public:
     if (mPortList.empty())
       return 0;
 
-    // ok, shortcut for old style connections
+    // Should also not happen!
     if (path.empty())
-      return mPortList.front().portProvider;
+      return 0;
 
     const NodePath& originatingPath = mPortList.front().modelPath;
     // fast return if the models are not connected to the same root system
@@ -70,12 +70,18 @@ public:
       Group* group = const_cast<Group*>(dynamic_cast<const Group*>(path.back().get()));
       group->addChild(groupInput);
 
+      SharedPtr<Node> parentNode = group->getParent(0).lock();
+      SharedPtr<Group> parentGroup = dynamic_cast<Group*>(parentNode.get());
+
+
+
+
       PathPort pathPort;
       pathPort.modelPath = groupInput->getNodePathList().front();
-      pathPort.portProvider = group->getPort(groupInput->getExternalPortIndex());
+      pathPort.portProvider = groupInput->getPort("output");
       mPortList.push_back(pathPort);
 
-      if (!group->connect(portProvider, groupInput->getPort("input")))
+      if (!parentGroup->connect(portProvider, group->getPort(groupInput->getExternalPortIndex())))
         return 0;
       
       return pathPort.portProvider.get();
@@ -144,6 +150,23 @@ JSBSimProperty::connect()
   }
   
   return true;
+}
+
+bool
+JSBSimPropertyManager::connect(const Port* port0, Group* group0,
+                               const Port* port1, Group* group1)
+{
+  if (!port0)
+    return false;
+  if (!port1)
+    return false;
+  PortSet portSet(port0);
+  SharedPtr<const Node> node = port1->getNode();
+  if (!node.valid())
+    return false;
+  NodePathList nodePathList = node->getNodePathList();
+  const Port* p = portSet.routeTo(nodePathList.front());
+  return group1->connect(p, port1);
 }
 
 } // namespace OpenFDM

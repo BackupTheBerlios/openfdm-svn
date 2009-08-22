@@ -147,11 +147,15 @@ public:
   /// Returns true if this property is already registered
   bool exists(const std::string& propertyName) const
   {
-    PropertyMap::const_iterator i = mPropertyMap.find(JSBSimProperty::simplify(propertyName));
+    PropertyMap::const_iterator i;
+    i = mPropertyMap.find(JSBSimProperty::simplify(propertyName));
     if (i == mPropertyMap.end())
       return false;
     return i->second.hasProviderPort();
   }
+
+  static bool connect(const Port* port0, Group* group0,
+                      const Port* port1, Group* group1);
 
 private:
   PropertyMap mPropertyMap;

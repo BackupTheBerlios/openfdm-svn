@@ -1761,26 +1761,27 @@ JSBSimReader::convertFunction(const XMLElement* function, Summer* sum)
   if (slachPos != std::string::npos)
     name = name.substr(slachPos+1);
 
-  // FIXME put that into a group and use a GroupOutput for that
-  SharedPtr<Gain> gain = new Gain(name);
-  mTopLevelGroup->addChild(gain);
-
+  SharedPtr<Group> group = new Group(name);
+  mTopLevelGroup->addChild(group);
+  GroupOutput* groupOutput = new GroupOutput("Output");
+  group->addChild(groupOutput);
+  
   std::list<const XMLElement*> elements = function->getElements();
   std::list<const XMLElement*>::iterator i;
   for (i = elements.begin(); i != elements.end(); ++i) {
     if ((*i)->getName() == "description")
       continue;
-    if (!connectFunctionInput(*i, gain->getInputPort(0), mTopLevelGroup))
+    if (!connectFunctionInput(*i, groupOutput->getPort("input"), group))
       return error("Can not connect product input!");
     // FIXME check that we get here only once
   }
 
   if (!bindName.empty())
-    registerJSBExpression(bindName, gain->getOutputPort());
+    registerJSBExpression(bindName, group->getPort(groupOutput->getExternalPortIndex()));
   if (sum) {
     unsigned num = sum->getNumSummands();
     sum->setNumSummands(num+1);
-    mTopLevelGroup->connect(gain->getOutputPort(), sum->getInputPort(num));
+    mTopLevelGroup->connect(group->getPort(groupOutput->getExternalPortIndex()), sum->getInputPort(num));
   }
 
   return true;
@@ -2026,9 +2027,12 @@ JSBSimReader::connectFunctionInput(const XMLElement* element, const Port* port,
 
       SharedPtr<Table1D> table = new Table1D("Table");
       parentGroup->addChild(table);
-      parentGroup->connect(portP, table->getInputPort(0));
       table->setTableData(data);
-      parentGroup->connect(port, table->getPort("output"));
+      if (!JSBSimPropertyManager::connect(portP, mTopLevelGroup,
+                                          table->getInputPort(0), parentGroup))
+        return false;
+      if (!parentGroup->connect(port, table->getPort("output")))
+        return false;
       return true;
 
     } else if (dim == 2) {
@@ -2049,10 +2053,16 @@ JSBSimReader::connectFunctionInput(const XMLElement* element, const Port* port,
       
       SharedPtr<Table2D> table = new Table2D("Table");
       parentGroup->addChild(table);
-      parentGroup->connect(rPort, table->getInputPort(0));
-      parentGroup->connect(cPort, table->getInputPort(1));
       table->setTableData(data);
-      parentGroup->connect(port, table->getPort("output"));
+
+      if (!JSBSimPropertyManager::connect(rPort, mTopLevelGroup,
+                                          table->getInputPort(0), parentGroup))
+        return false;
+      if (!JSBSimPropertyManager::connect(cPort, mTopLevelGroup,
+                                          table->getInputPort(1), parentGroup))
+        return false;
+      if (!parentGroup->connect(port, table->getPort("output")))
+        return false;
       return true;
 
     } else if (dim == 3) {
@@ -2075,11 +2085,20 @@ JSBSimReader::connectFunctionInput(const XMLElement* element, const Port* port,
       
       SharedPtr<Table3D> table = new Table3D("Table");
       parentGroup->addChild(table);
-      parentGroup->connect(rPort, table->getInputPort(0));
-      parentGroup->connect(cPort, table->getInputPort(1));
-      parentGroup->connect(pPort, table->getInputPort(2));
       table->setTableData(data);
-      parentGroup->connect(port, table->getPort("output"));
+
+      if (!JSBSimPropertyManager::connect(rPort, mTopLevelGroup,
+                                          table->getInputPort(0), parentGroup))
+        return false;
+      if (!JSBSimPropertyManager::connect(cPort, mTopLevelGroup,
+                                          table->getInputPort(1), parentGroup))
+        return false;
+      if (!JSBSimPropertyManager::connect(pPort, mTopLevelGroup,
+                                          table->getInputPort(2), parentGroup))
+        return false;
+      if (!parentGroup->connect(port, table->getPort("output")))
+        return false;
+
       return true;
 
     }

@@ -923,7 +923,7 @@ JSBSimReaderBase::getTablePrelookup(const std::string& name,
   // No sharable table lookup found, we need to create a new one
   BreakPointLookup* tablePreLookup
     = new BreakPointLookup(name + " Table Prelookup");
-  addMultiBodyModel(tablePreLookup);
+  mTopLevelGroup->addChild(tablePreLookup);
   tablePreLookup->setBreakPointVector(tl);
   connectJSBExpression(normalizedInputProperty,
                        tablePreLookup->getInputPort(0));
