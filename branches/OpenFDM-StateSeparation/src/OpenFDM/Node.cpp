@@ -221,6 +221,7 @@ public:
       node.ascend(*this);
     } else {
       mNodePathList.push_back(getNodePath());
+      std::reverse(mNodePathList.back().begin(), mNodePathList.back().end());
     }
   }
 
