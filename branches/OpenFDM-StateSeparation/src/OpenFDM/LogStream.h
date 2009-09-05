@@ -8,10 +8,11 @@
 #include <iosfwd>
 // FIXME: because of using std::endl;
 #include <ostream>
+#include "Referenced.h"
 
 namespace OpenFDM {
 
-class Logger {
+class Logger : public Referenced {
 public:
   enum Category {
     ArtBody          = 1,

@@ -9,6 +9,7 @@
 #include <sstream>
 #include "Mutex.h"
 #include "ScopeLock.h"
+#include "SharedPtr.h"
 
 namespace OpenFDM {
 
@@ -66,7 +67,7 @@ Logger::getStream(Logger::Priority priority)
 Logger*
 Logger::Instance(void)
 {
-  static Logger* ptr = 0;
+  static SharedPtr<Logger> ptr;
   if (!ptr) {
     static Mutex mutex;
     ScopeLock scopeLock(mutex);
