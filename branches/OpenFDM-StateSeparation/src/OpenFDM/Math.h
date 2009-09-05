@@ -103,34 +103,23 @@ template<typename T>
 inline T
 smoothSaturate(const T& val)
 {
-  return atan(val*Constants<T>::pi()/2)*2/Constants<T>::pi();
+  // The tanh function has values in [-1, 1].
+  // The slope at zero is 1. The two squares/roots make the edges sharper.
+  // An alernative implementation uses atan to get a saturation, but atan is
+  // less sharp at its edges, thus requires more squares/roots or the very
+  // expensive pow function.
+  // The tanh function appears to be much cheaper to compute.
+  return sqrt(sqrt(tanh(sqr(sqr(val)))));
 }
 
 // Saturate value between -saturate and saturate.
-// template<typename T>
-// inline T
-// smoothSaturate(const T& val, const T& saturation)
-// {
-//   if (saturation <= Limits<T>::min())
-//     return 0;
-//   return saturation*smoothSaturate(val/saturation);
-// }
-
-// Saturate value between -saturate and saturate.
-// The higher the p value the sharper the edge.
 template<typename T>
 inline T
-smoothSaturate(const T& val, const T& saturation, const T& p = T(10))
+smoothSaturate(const T& val, const T& saturation)
 {
   if (saturation <= Limits<T>::min())
     return 0;
-
-  T sEpsP = pow(Limits<T>::epsilon(), T(1)/(T(2)*p));
-  T absVal = fabs(val/saturation);
-  if (absVal <= sEpsP)
-    return val;
-  T limitedVal = min(T(1), pow(smoothSaturate(pow(absVal, p)), T(1)/p));
-  return saturation*sign(val)*limitedVal;
+  return saturation*smoothSaturate(val/saturation);
 }
 
 template<typename T>
