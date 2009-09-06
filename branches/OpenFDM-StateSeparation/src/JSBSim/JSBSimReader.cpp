@@ -2069,7 +2069,7 @@ JSBSimReader::connectFunctionInput(const XMLElement* element, const Port* port,
       TableData<3> data;
       BreakPointVector lookup[3];
       if (!readTable3D(element, data, lookup))
-        return error("Cannot read 1D table data.");
+        return error("Cannot read 3D table data.");
       
       std::list<const XMLElement*> indeps
         = element->getElements("independentVar");
