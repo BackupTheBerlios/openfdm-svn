@@ -109,7 +109,7 @@ smoothSaturate(const T& val)
   // less sharp at its edges, thus requires more squares/roots or the very
   // expensive pow function.
   // The tanh function appears to be much cheaper to compute.
-  return sqrt(sqrt(tanh(sqr(sqr(val)))));
+  return sign(val)*sqrt(sqrt(tanh(sqr(sqr(val)))));
 }
 
 // Saturate value between -saturate and saturate.
