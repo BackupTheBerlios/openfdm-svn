@@ -1267,7 +1267,7 @@ protected:
     { return m0->dependsOn(*m1); }
   };
 
-  bool sortModelList(ModelInstanceDataList& modelInstanceDataList)
+  static bool sortModelList(ModelInstanceDataList& modelInstanceDataList)
   {
     ModelInstanceDataList sortedModelInstanceDataList;
     tsort(sortedModelInstanceDataList, modelInstanceDataList,
