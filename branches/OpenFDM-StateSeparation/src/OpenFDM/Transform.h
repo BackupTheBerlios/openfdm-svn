@@ -420,6 +420,38 @@ inertiaFrom(const Rotation& r, const SpatialInertia& I)
   
   return It2;
 }
+OpenFDM_FORCE_INLINE SpatialInertia
+inertiaTo(const Vector3& p, const SpatialInertia& I)
+{
+  return inertiaFrom(-p, I);
+}
+
+OpenFDM_FORCE_INLINE Vector3
+centerOfGravity(const SpatialInertia& I)
+{
+  // Compute a position so that the inertia transformed to that position
+  // is a block diagonal matrix. From the transform fuctions above you can see
+  // that the left lower matrix block reads:
+  //  0 = T(I21) = I21 - I22*cross(p)
+  // Which means that the cross product matrix could be computed with
+  //  cross(p) = I22^(-1) * I21
+  // then read the values of p from the cross product matrix.
+  // FIXME: proof when I22^(-1) * I21 is such a skew symmetric cross matrix.
+
+  // The right lower diagnoal of the inertia matrix.
+  InertiaMatrix I22(I(3,3), I(4,3), I(5,3), I(4,4), I(5,4), I(5,5));
+  Matrix33Factors inv22(I22);
+  
+  // The left lower corner of the inertia matrix.
+  Matrix33 I21(I(3,0), I(3,1), I(3,2),
+               I(4,0), I(4,1), I(4,2),
+               I(5,0), I(5,1), I(5,2));
+  // The cross product matrix
+  Matrix33 cp = inv22.solve(I21);
+  
+  // And the resulting vector.
+  return Vector3(cp(2, 1), cp(0, 2), cp(1, 0));
+}
 
 } // namespace OpenFDM
 
