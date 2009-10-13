@@ -92,7 +92,7 @@ AtmosphereSTD1976::getData(const real_type&, const real_type& altitude) const
 
   Log(Environment, Debug) << "p = " << data.pressure << ", T = "
                           << data.temperature << ", rho = "
-                          << data.density << endl;
+                          << data.density << std::endl;
   
   return data;
 }

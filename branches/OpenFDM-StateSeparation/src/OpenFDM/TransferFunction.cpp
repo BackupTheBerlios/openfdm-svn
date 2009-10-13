@@ -68,7 +68,7 @@ DiscreteTransferFunction::alloc(ModelContext& context) const
 
   Log(Model, Info) << "Processing transfer function \"" << getName()
                    << "\", nummerator: " << trans(mNum)
-                   << ", denominator" << trans(mDen) << endl;
+                   << ", denominator" << trans(mDen) << std::endl;
 
   // Make sure the first, not stored coefficient in the denominator is 1
   // Rescale the other coefficient vectors
@@ -89,7 +89,7 @@ DiscreteTransferFunction::alloc(ModelContext& context) const
   if ((rows(mDenNorm) + 1) < rows(mNumNorm)) {
     Log(Model, Error) << "Cannot handle higher degree numerator than "
                       << "denoninator polynomials for transfer function \""
-                      << getName() << "\"!" << endl;
+                      << getName() << "\"!" << std::endl;
     return false;
   }
 
@@ -114,7 +114,7 @@ DiscreteTransferFunction::alloc(ModelContext& context) const
   Log(Model, Info) << "Normalized Processing transfer function \"" << getName()
                    << "\", nummerator: " << trans(mNumNorm)
                    << ", denominator: " << trans(mDenNorm)
-                   << ", direct factor: " << mD << endl;
+                   << ", direct factor: " << mD << std::endl;
 
   return Model::alloc(context);
 }

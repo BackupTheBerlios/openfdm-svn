@@ -41,7 +41,7 @@ private:
 ImplicitEuler::ImplicitEuler(void)
 {
   Log(TimeStep, Warning) << "Using mostly hacked implicit Euler method!!!"
-                         << endl;
+                         << std::endl;
   mJacStepsize = 0;
 }
 
@@ -77,10 +77,10 @@ ImplicitEuler::integrate(real_type toTEnd)
     }
 
     if (mJacDecomp.singular())
-      Log(TimeStep, Warning) << "Have singular jacobian!" << endl;
+      Log(TimeStep, Warning) << "Have singular jacobian!" << std::endl;
     bool conv = Newton(iefun, mJacDecomp, mTime+h, fState, 1e-4, 1e-10);
     if (!conv)
-      Log(TimeStep, Warning) << "Have singular jacobian!" << endl;
+      Log(TimeStep, Warning) << "Have singular jacobian!" << std::endl;
 
     mState += fState;
     mTime += h;

@@ -101,7 +101,7 @@ MobileRootJoint::newJointContext(const Environment* environment,
                                            childLinkValue, portValueList);
   if (!context->allocStates()) {
     Log(Model, Warning) << "Could not alloc for model \""
-                        << getName() << "\"" << endl;
+                        << getName() << "\"" << std::endl;
     return false;
   }
   return context.release();

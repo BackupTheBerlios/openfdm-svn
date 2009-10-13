@@ -285,7 +285,7 @@ ExternalInteract::newMechanicContext(const Environment* environment,
   SharedPtr<Context> context = new Context(this, environment, portValueList);
   if (!context->alloc()) {
     Log(Model, Warning) << "Could not alloc for model \""
-                        << getName() << "\"" << endl;
+                        << getName() << "\"" << std::endl;
     return 0;
   }
   return context.release();

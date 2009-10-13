@@ -96,7 +96,7 @@ MidpointRule::integrate(real_type toTEnd)
       // If we cannot solve the nonlinear equation, do an explicit euler step
       mCollocationPolynomialValid = false;
 
-      Log(TimeStep, Warning) << "MidpointRule did not converge" << endl;
+      Log(TimeStep, Warning) << "MidpointRule did not converge" << std::endl;
 
       evalFunction(t, mState, mDeriv);
       mState += h*mDeriv;

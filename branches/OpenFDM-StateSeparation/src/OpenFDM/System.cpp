@@ -448,12 +448,12 @@ public:
         Log(Schedule, Debug3) << "Try to create port value \""
                               << mPortDataVector[i]->getPort()->getName()
                               << "\" of \"" << getNodeNamePath()
-                              << "\"" << endl;
+                              << "\"" << std::endl;
         if (!mPortDataVector[i]->createPortValue()) {
           Log(Schedule, Warning) << "Failed to create port value \""
                                  << mPortDataVector[i]->getPort()->getName()
                                  << "\" of \"" << getNodeNamePath()
-                                 << "\".\nAborting!" << endl;
+                                 << "\".\nAborting!" << std::endl;
 
           return false;
         }
@@ -467,20 +467,20 @@ public:
         Log(Schedule, Debug3) << "Try to fetch port value \""
                               << mPortDataVector[i]->getPort()->getName()
                               << "\" of \"" << getNodeNamePath()
-                              << "\"" << endl;
+                              << "\"" << std::endl;
         PortValue* portValue = mPortDataVector[i]->getPortValue();
         if (!portValue) {
           Log(Schedule, Warning) << "Failed to fetch port value \""
                                  << mPortDataVector[i]->getPort()->getName()
                                  << "\" of \"" << getNodeNamePath()
-                                 << "\".\nAborting!" << endl;
+                                 << "\".\nAborting!" << std::endl;
           return false;
         }
         if (!mPortDataVector[i]->getPort()->acceptPortValue(portValue)) {
           Log(Schedule, Warning) << "Failed to accept fetched port value \""
                                  << mPortDataVector[i]->getPort()->getName()
                                  << "\" of \"" << getNodeNamePath()
-                                 << "\".\nAborting!" << endl;
+                                 << "\".\nAborting!" << std::endl;
           return false;
         }
 
@@ -528,7 +528,7 @@ public:
       mModelContext = mModel->newModelContext(mPortValueList);
       if (!mModelContext) {
         Log(Schedule, Warning) << "Could not create context for model \""
-                               << getNodeNamePath() << "\"" << endl;
+                               << getNodeNamePath() << "\"" << std::endl;
         return false;
       }
       return true;
@@ -604,7 +604,7 @@ public:
       if (!mMechanicContext) {
         Log(Schedule, Warning) << "Could not create context for mechanic "
                                << "node \"" << getNodeNamePath()
-                               << "\"" << endl;
+                               << "\"" << std::endl;
         return false;
       }
       return true;
@@ -700,7 +700,7 @@ public:
       if (!mMechanicContext) {
         Log(Schedule, Warning) << "Could not create context for mechanic "
                                << "node \"" << getNodeNamePath()
-                               << "\"" << endl;
+                               << "\"" << std::endl;
         return false;
       }
       return true;

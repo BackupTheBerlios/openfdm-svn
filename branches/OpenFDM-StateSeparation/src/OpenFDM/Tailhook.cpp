@@ -56,7 +56,7 @@ Tailhook::init(void)
   if (!mHookPositionPort.isConnected()) {
     Log(Model, Error) << "Initialization of Tailhook model \"" << getName()
                       << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
+                      << "\" is not connected!" << std::endl;
     return false;
   }
 
@@ -69,7 +69,7 @@ Tailhook::output(const TaskInfo& taskInfo)
   if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
                           SampleTime::PerTimestep)) {
     Log(Model, Debug) << "Tailhook::output(): \"" << getName()
-                      << "\" computing ground plane below" << endl;
+                      << "\" computing ground plane below" << std::endl;
     getGround(taskInfo.getTime());
   }
 
@@ -94,7 +94,7 @@ Tailhook::output(const TaskInfo& taskInfo)
   Vector3 wireEnd0 = mWireFrame->posToParent(width*0.5*Vector3::unit(1));
   Vector3 wireEnd1 = mWireFrame->posToParent(-width*0.5*Vector3::unit(1));
 
-//   Log(Model,Error) << trans(wireEnd0) << trans(wireEnd1) << endl;
+//   Log(Model,Error) << trans(wireEnd0) << trans(wireEnd1) << std::endl;
 
   // The intersection of the x/z plane with the line between the wire ends
   Vector3 wireDir = wireEnd1 - wireEnd0;
@@ -127,7 +127,7 @@ Tailhook::output(const TaskInfo& taskInfo)
   real_type vel0 = dot(relVel0.getLinear(), wireDir0);
   real_type vel1 = dot(relVel0.getLinear(), wireDir1);
 
-// Log(Model,Error) << vel0 << "  " << vel1 << endl;
+// Log(Model,Error) << vel0 << "  " << vel1 << std::endl;
   
   real_type v = 0.5*(vel0 + vel1);
   if (v < 0.1) {
@@ -155,7 +155,7 @@ Tailhook::update(const TaskInfo& taskInfo)
     const Ground* ground = mEnvironment->getGround();
     mHasWire = ground->caughtWire(mOldHookPosition, currentPosition);
     if (mHasWire)
-      Log(Model,Debug) << "Caught wire!" << endl;
+      Log(Model,Debug) << "Caught wire!" << std::endl;
   }
   mOldHookPosition = currentPosition;
   mFirstTime = false;

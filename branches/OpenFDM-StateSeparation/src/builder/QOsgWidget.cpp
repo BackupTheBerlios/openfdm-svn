@@ -233,7 +233,7 @@ QOsgWidget::getOsgTime(void)
 void
 QOsgWidget::initializeGL()
 {
-//   cout << __PRETTY_FUNCTION__ << endl;
+//   cout << __PRETTY_FUNCTION__ << std::endl;
 
   glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
   glColorMaterial(GL_BACK, GL_AMBIENT_AND_DIFFUSE);
@@ -255,7 +255,7 @@ QOsgWidget::initializeGL()
 void
 QOsgWidget::resizeGL(int w, int h)
 {
-//   cout << __PRETTY_FUNCTION__ << endl;
+//   cout << __PRETTY_FUNCTION__ << std::endl;
 
   if (!isValid())
     return;
@@ -268,7 +268,7 @@ QOsgWidget::resizeGL(int w, int h)
 void
 QOsgWidget::paintGL()
 {
-//   cout << __PRETTY_FUNCTION__ << endl;
+//   cout << __PRETTY_FUNCTION__ << std::endl;
 
   if (!isValid())
     return;

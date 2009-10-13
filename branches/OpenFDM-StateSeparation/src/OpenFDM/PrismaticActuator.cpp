@@ -66,7 +66,7 @@ PrismaticActuator::setAxis(const Vector3& axis)
 {
   real_type nrm = norm(axis);
   if (nrm <= Limits<real_type>::min()) {
-    Log(Initialization, Error) << "JointAxis is zero ..." << endl;
+    Log(Initialization, Error) << "JointAxis is zero ..." << std::endl;
     return;
   }
   mAxis = (1/nrm)*axis;

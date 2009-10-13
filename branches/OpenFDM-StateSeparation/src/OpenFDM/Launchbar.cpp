@@ -62,7 +62,7 @@ Launchbar::init(void)
   if (!mTryMountPort.isConnected()) {
     Log(Model, Error) << "Initialization of Launchbar model \"" << getName()
                       << "\" failed: Input port \"" << getInputPortName(0)
-                      << "\" is not connected!" << endl;
+                      << "\" is not connected!" << std::endl;
     return false;
   }
 
@@ -70,7 +70,7 @@ Launchbar::init(void)
   if (!mLaunchCommandPort.isConnected()) {
     Log(Model, Error) << "Initialization of Launchbar model \"" << getName()
                       << "\" failed: Input port \"" << getInputPortName(1)
-                      << "\" is not connected!" << endl;
+                      << "\" is not connected!" << std::endl;
     return false;
   }
 
@@ -83,7 +83,7 @@ Launchbar::output(const TaskInfo& taskInfo)
   if (nonZeroIntersection(taskInfo.getSampleTimeSet(),
                           SampleTime::PerTimestep)) {
     Log(Model, Debug) << "Launchbar::output(): \"" << getName()
-                      << "\" computing ground plane below" << endl;
+                      << "\" computing ground plane below" << std::endl;
     getGround(taskInfo.getTime());
   }
 

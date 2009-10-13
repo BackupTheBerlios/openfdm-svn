@@ -59,9 +59,9 @@ DoPri5::integrate(real_type toTEnd)
     real_type en = scaledErr(y7, err, atol, rtol);
 
     if (1 < en)
-      Log(TimeStep, Warning) << "DOPRI5: error too big: " << en << endl;
+      Log(TimeStep, Warning) << "DOPRI5: error too big: " << en << std::endl;
     else
-      Log(TimeStep, Info) << "DOPRI5: local error: " << en << endl;
+      Log(TimeStep, Info) << "DOPRI5: local error: " << en << std::endl;
 
     // Need to save that here
     mRCont[0] = mState;
@@ -87,7 +87,7 @@ DoPri5::denseOutput(real_type t, Vector& out)
   if (t < mTime - mStepsize || mTime < t) {
     Log(TimeStep, Error) << "Request for dense output at t = " << t
                          << " out of range [" << mTime - mStepsize
-                         << "," << mTime << "]" << endl;
+                         << "," << mTime << "]" << std::endl;
 //     return false;
   }
 

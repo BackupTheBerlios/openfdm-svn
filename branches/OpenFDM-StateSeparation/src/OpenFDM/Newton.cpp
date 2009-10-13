@@ -65,14 +65,14 @@ NewtonTypeMethod(Function& f,
   // x_new is the potential solution at the next iteration step.
   Vector x_new;
 
-  Log(NewtonMethod, Debug) << "__________________________" << endl;
+  Log(NewtonMethod, Debug) << "__________________________" << std::endl;
   // The displacement of the undamped newton method for the first
   // iteration step.
   Vector err;
   f.eval(t, x, err);
-  Log(NewtonMethod, Debug1) << "err " << trans(err) << endl;
+  Log(NewtonMethod, Debug1) << "err " << trans(err) << std::endl;
   Vector dx_bar = jacInv.solve(err);
-  Log(NewtonMethod, Debug2) << "dx_bar " << trans(dx_bar) << endl;
+  Log(NewtonMethod, Debug2) << "dx_bar " << trans(dx_bar) << std::endl;
   do {
     // Increment the iteration counter. Just statistics ...
     if (itCount)
@@ -88,7 +88,7 @@ NewtonTypeMethod(Function& f,
     if (normdx == 0.0)
       return true;
 
-    Log(NewtonMethod, Debug1) << "outer " << normdx << endl;
+    Log(NewtonMethod, Debug1) << "outer " << normdx << std::endl;
 
     // Damped newton method:
     // Use lambda*dx with 0 < lambda <= 1 instead of just dx as displacement.
@@ -106,13 +106,13 @@ NewtonTypeMethod(Function& f,
       // Compute the error of that new approximation.
       f.eval(t, x_new, err);
 
-      Log(NewtonMethod, Debug) << "err " << trans(err) << endl;
+      Log(NewtonMethod, Debug) << "err " << trans(err) << std::endl;
 
       // Check if we get some kind of convergence with this lambda.
       // This jacobian evaluation will also be used for the next step if
       // this lambda truns out to be acceptable.
       dx_bar = jacInv.solve(err);
-      Log(NewtonMethod, Debug2) << "dx_bar " << trans(dx_bar) << endl;
+      Log(NewtonMethod, Debug2) << "dx_bar " << trans(dx_bar) << std::endl;
 
       // The convergence criterion parameter theta.
       real_type theta = 1.0 - 0.5*lambda;
@@ -121,12 +121,12 @@ NewtonTypeMethod(Function& f,
       // to the current solution.
       real_type normdx_bar = norm(dx_bar);
 
-      Log(NewtonMethod, Debug) << "inner " << normdx_bar << endl;
+      Log(NewtonMethod, Debug) << "inner " << normdx_bar << std::endl;
 
       const real_type min_conv_rate = 1e-10;
       if (normdx == 0.0) {
         Log(NewtonMethod, Error) << "Whow: we have most likely an exact "
-          "solution and we iterate furter:  normdx = " << normdx << endl;
+          "solution and we iterate furter:  normdx = " << normdx << std::endl;
         convergenceRate = min_conv_rate;
       } else
         convergenceRate = max(min_conv_rate, normdx_bar/normdx);
@@ -155,16 +155,16 @@ NewtonTypeMethod(Function& f,
     } else if (0 <= maxjac) {
       --maxjac;
 
-      Log(NewtonMethod, Debug) << "Computing new jacobian" << endl;
+      Log(NewtonMethod, Debug) << "Computing new jacobian" << std::endl;
 
       // get a new jacobian ...
       f.jac(t, x, jacInv.data());
-      Log(NewtonMethod, Debug2) << jacInv.data() << endl;
+      Log(NewtonMethod, Debug2) << jacInv.data() << std::endl;
       jacInv.factorize();
-      Log(NewtonMethod, Debug2) << "decomposed qr\n" << jacInv.data() << endl;
+      Log(NewtonMethod, Debug2) << "decomposed qr\n" << jacInv.data() << std::endl;
 
       if (jacInv.singular())
-        Log(NewtonMethod, Warning) << "Have singular jacobian!" << endl;
+        Log(NewtonMethod, Warning) << "Have singular jacobian!" << std::endl;
 
       converging = true;
     }
@@ -174,7 +174,7 @@ NewtonTypeMethod(Function& f,
   } while (!converged && converging && 0 < maxit);
 
   Log(NewtonMethod, Info) << "Newton type method: converged = "
-                          << converged << endl;
+                          << converged << std::endl;
   
   // Tell the caller if it worked or not.
   return converged;
@@ -216,7 +216,7 @@ LineSearch(Function& f, real_type t, const Vector& xk, const Vector& dk,
 
   while (norm1(v - w) > thresh) {
     Log(NewtonMethod, Debug2) << " Line Search: errv = " << fv
-                              << ", errw = " << fw << endl;
+                              << ", errw = " << fw << std::endl;
     // check for isfinite ...
     if (fv > fw) {
       v = v + vfac*(w-v);
@@ -255,7 +255,7 @@ GaussNewton(Function& f,
   do {
     // Compute in each step a new jacobian
     f.jac(t, x, J);
-    Log(NewtonMethod, Debug) << "Jacobian is:\n" << J << endl;
+    Log(NewtonMethod, Debug) << "Jacobian is:\n" << J << std::endl;
 #ifdef USE_QR
     jacFactors = J;
 #else
@@ -263,7 +263,7 @@ GaussNewton(Function& f,
 #endif
     Log(NewtonMethod, Debug) << "Jacobian is "
                              << (jacFactors.singular() ? "singular" : "ok")
-                             << endl;
+                             << std::endl;
    
     // Compute the actual error
     f.eval(t, x, err);
@@ -275,9 +275,9 @@ GaussNewton(Function& f,
     dx = jacFactors.solve(trans(J)*err);
 #endif
     Log(NewtonMethod, Debug) << "dx residual "
-                             << trans(J*dx - err) << endl
+                             << trans(J*dx - err) << std::endl
                              << trans(J*dx - err)*J
-                             << endl;
+                             << std::endl;
 
     // Get a better search guess
     if (1 < norm(dx))
@@ -289,7 +289,7 @@ GaussNewton(Function& f,
     
 
     Log(NewtonMethod, Debug) << "Convergence test: |dx| = " << norm(xnew - x)
-                             << ", converged = " << converged << endl;
+                             << ", converged = " << converged << std::endl;
     // New guess is the better one
     x = xnew;
   } while (!converged);
@@ -305,7 +305,7 @@ LevenbergMarquart(Function& f,
                   unsigned *itCount,
                   unsigned maxit)
 {
-  Log(NewtonMethod, Debug3) << "Start guess\nx = " << trans(x) << endl;
+  Log(NewtonMethod, Debug3) << "Start guess\nx = " << trans(x) << std::endl;
 
   Matrix J;
   LinAlg::MatrixFactors<real_type,0,0,LinAlg::LUTag> jacFactors;
@@ -316,7 +316,7 @@ LevenbergMarquart(Function& f,
 
   // Compute in each step a new jacobian
   f.jac(t, x, J);
-  Log(NewtonMethod, Debug3) << "Jacobian is:\n" << J << endl;
+  Log(NewtonMethod, Debug3) << "Jacobian is:\n" << J << std::endl;
   real_type mu = tau*norm1(J);
 
   Vector fx;
@@ -328,12 +328,12 @@ LevenbergMarquart(Function& f,
     jacFactors = trans(J)*J + mu*LinAlg::Eye<real_type,0,0>(rows(x), rows(x));
     Log(NewtonMethod, Debug) << "Jacobian is "
                              << (jacFactors.singular() ? "singular" : "ok")
-                             << endl;
+                             << std::endl;
    
     // Compute the search direction
     Vector h = jacFactors.solve(-g);
     Log(NewtonMethod, Debug) << "Solve Residual "
-                             << norm(trans(J)*J*h + mu*h + g)/norm(g) << endl;
+                             << norm(trans(J)*J*h + mu*h + g)/norm(g) << std::endl;
 
     // Get a better search guess
     Vector xnew = x + h;
@@ -341,7 +341,7 @@ LevenbergMarquart(Function& f,
     // check convergence
     converged = equal(x, xnew, atol, rtol);
     Log(NewtonMethod, Debug) << "Convergence test: ||h||_1 = " << norm1(h)
-                             << ", converged = " << converged << endl;
+                             << ", converged = " << converged << std::endl;
     if (converged)
       break;
 
@@ -353,22 +353,22 @@ LevenbergMarquart(Function& f,
     Log(NewtonMethod, Debug) << "Rho = " << rho
                              << ", Fxnew = " << Fxnew 
                              << ", Fx = " << Fx
-                             << endl;
+                             << std::endl;
     if (0 < rho) {
-      Log(NewtonMethod, Debug) << "Accepted step!" << endl;
-      Log(NewtonMethod, Debug3) << "xnew = " << trans(xnew) << endl;
-      Log(NewtonMethod, Debug3) << "h    = " << trans(h) << endl;
+      Log(NewtonMethod, Debug) << "Accepted step!" << std::endl;
+      Log(NewtonMethod, Debug3) << "xnew = " << trans(xnew) << std::endl;
+      Log(NewtonMethod, Debug3) << "h    = " << trans(h) << std::endl;
 
       // New guess is the better one
       x = xnew;
 
       f.jac(t, x, J);
-      Log(NewtonMethod, Debug3) << "Jacobian is:\n" << J << endl;
+      Log(NewtonMethod, Debug3) << "Jacobian is:\n" << J << std::endl;
       // Compute the actual error
       f.eval(t, x, fx);
       g = trans(J)*fx;
       converged = norm1(g) < atol;
-      Log(NewtonMethod, Debug) << "||g||_1 = " << norm1(g) << endl;
+      Log(NewtonMethod, Debug) << "||g||_1 = " << norm1(g) << std::endl;
 
       mu = mu * max(real_type(1)/3, 1-pow(2*rho-1, real_type(3)));
       nu = 2;

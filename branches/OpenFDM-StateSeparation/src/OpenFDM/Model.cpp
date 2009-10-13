@@ -79,14 +79,14 @@ Model::newModelContext(PortValueList& portValueList) const
     if (!portValue) {
       Log(Model, Error) << "No port value given for model \"" << getName()
                         << "\" and port \"" << getPort(i)->getName()
-                        << "\"" << endl;
+                        << "\"" << std::endl;
       return false;
     }
     context->setPortValue(*getPort(i), portValue);
   }
   if (!context->alloc()) {
     Log(Model, Warning) << "Could not alloc for model \""
-                        << getName() << "\"" << endl;
+                        << getName() << "\"" << std::endl;
     return false;
   }
   return context.release();

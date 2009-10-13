@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2009 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2009 Mathias Froehlich
  *
  */
 
@@ -19,6 +19,7 @@
 #endif
 
 #include <cstdlib>
+#include <ostream>
 
 namespace OpenFDM {
 
@@ -26,7 +27,7 @@ void Assertion(const char* file, int line, const char* condition)
 {
   Log(Assert, Error) << "Assertion OpenFDMAssert(" << condition
                      << ") failed at line "
-                     << line << " in " << file << endl;
+                     << line << " in " << file << std::endl;
 
 #if defined(HAVE_BACKTRACE_SYMBOLS) && defined(HAVE_BACKTRACE)
 
@@ -36,10 +37,10 @@ void Assertion(const char* file, int line, const char* condition)
   size_t size = backtrace(array, 1 + BACKTRACE_SIZE);
   char **strings = backtrace_symbols(array, size);
 
-  Log(Assert, Error) << " Backtrace:" << endl;
+  Log(Assert, Error) << " Backtrace:" << std::endl;
 
   for (size_t i = 1; i < size; ++i) {
-    Log(Assert, Error) << "  " << strings[i] << endl;
+    Log(Assert, Error) << "  " << strings[i] << std::endl;
 #ifdef HAVE_CXXABI_H
     char *mangled = ::strchr(strings[i], '(');
     char *rest = 0;
@@ -47,8 +48,8 @@ void Assertion(const char* file, int line, const char* condition)
       rest = ::strchr(mangled+1, '+');
       if (!rest)
         rest = ::strchr(mangled+1, ')');
-    }        
-     
+    }
+
     if (mangled && rest && rest-mangled < 1024) {
       char manglebuf[1024];
       ::memcpy(manglebuf, mangled+1, rest-mangled-1);
@@ -58,7 +59,7 @@ void Assertion(const char* file, int line, const char* condition)
       int status = 0;
       abi::__cxa_demangle(manglebuf, demangled, &length, &status);
       if (status == 0)
-        Log(Assert, Error) << "    (" << demangled << ")" << endl;
+        Log(Assert, Error) << "    (" << demangled << ")" << std::endl;
     }
 #endif
   }

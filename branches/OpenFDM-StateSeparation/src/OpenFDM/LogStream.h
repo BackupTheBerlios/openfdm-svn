@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2009 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2009 Mathias Froehlich
  *
  */
 
@@ -6,8 +6,6 @@
 #define OpenFDM_LogStream_H
 
 #include <iosfwd>
-// FIXME: because of using std::endl;
-#include <ostream>
 #include "Referenced.h"
 
 namespace OpenFDM {
@@ -28,7 +26,7 @@ public:
     Schedule         = Model << 1,
     Assert           = ~0
   };
-  
+
   enum Priority {
     /// Non recoverable error, either due to an implementation problem or
     /// due to a user problem probably ignoring previous error return values.
@@ -50,7 +48,7 @@ public:
     Debug2           = Debug1 + 1,
     Debug3           = Debug2 + 1
   };
-  
+
   static void setCategoryEnable(Category category, bool enable = true);
   static void setCategoryDisable(Category category);
   static void setPriority(Priority priority);
@@ -66,7 +64,7 @@ public:
 #endif
     return Instance()->getEnabled(category, priority);
   }
-  
+
   static std::ostream& getStream(Priority priority);
 
 protected:
@@ -84,8 +82,6 @@ private:
 #define Log(category, priority) \
 if (Logger::getStaticEnabled(Logger::category, Logger::priority)) \
   Logger::getStream(Logger::priority)
-
-using std::endl;
 
 } // namespace OpenFDM
 

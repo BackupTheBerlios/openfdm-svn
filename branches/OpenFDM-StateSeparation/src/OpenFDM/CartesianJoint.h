@@ -36,12 +36,12 @@ public:
   {
     if (!parentLinkValue) {
       Log(Model, Error) << "Parent link is not set while creating context "
-                        << "for model \"" << getName() << "\"" << endl;
+                        << "for model \"" << getName() << "\"" << std::endl;
       return 0;
     }
     if (!childLinkValue) {
       Log(Model, Error) << "Child link is not set while creating context "
-                        << "for model \"" << getName() << "\"" << endl;
+                        << "for model \"" << getName() << "\"" << std::endl;
       return 0;
     }
     SharedPtr<Context> context;
@@ -49,7 +49,7 @@ public:
                           parentLinkValue, childLinkValue, portValueList);
     if (!context->allocStates()) {
       Log(Model, Warning) << "Could not alloc for model \""
-                          << getName() << "\"" << endl;
+                          << getName() << "\"" << std::endl;
       return 0;
     }
     return context.release();
@@ -200,7 +200,7 @@ protected:
       if (hIh.singular()) {
         Log(ArtBody,Error) << "Detected singular mass matrix for "
                            << "CartesianJoint \"" << mCartesianJoint->getName()
-                           << "\": Fix your model!" << endl;
+                           << "\": Fix your model!" << std::endl;
         return;
       }
 
