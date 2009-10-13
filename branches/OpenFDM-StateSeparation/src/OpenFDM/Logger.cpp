@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2009 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2009 Mathias Froehlich
  *
  */
 
@@ -52,18 +52,6 @@ Logger::setPriority(Logger::Priority priority)
   logger->mPriority = priority;
 }
 
-std::ostream&
-Logger::getStream(Logger::Priority priority)
-{
-  Logger* logger = Instance();
-  if (logger->mStream)
-    return *logger->mStream;
-  else if (Info <= priority)
-    return std::cout;
-  else
-    return std::cerr;
-}
-
 Logger*
 Logger::Instance(void)
 {
@@ -79,14 +67,18 @@ Logger::Instance(void)
   return ptr;
 }
 
-bool
-Logger::getEnabled(Logger::Category category, Logger::Priority priority)
+std::ostream*
+Logger::getStream(Category category, Logger::Priority priority)
 {
-  if (priority == Error)
-    return true;
-  if (!(category & mCategory))
-    return false;
-  return priority <= mPriority;
+  if (!getEnabled(category, priority))
+    return 0;
+
+  if (mStream)
+    return mStream;
+  else if (Info <= priority)
+    return &std::cout;
+  else
+    return &std::cerr;
 }
 
 Logger::Logger(std::ostream* stream) :
@@ -98,7 +90,7 @@ Logger::Logger(std::ostream* stream) :
   unsigned value = atou(std::getenv("OPENFDM_DEBUG_PRIORITY"));
   if (value)
     mPriority = value;
-      
+
   value = atou(std::getenv("OPENFDM_DEBUG_CATEGORY"));
   if (value)
     mCategory = value;

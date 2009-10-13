@@ -53,23 +53,28 @@ public:
   static void setCategoryDisable(Category category);
   static void setPriority(Priority priority);
 
-  static inline bool
-  getStaticEnabled(Category category, Priority priority)
+  static std::ostream* getStaticStream(Category category, Priority priority)
   {
 #if defined(NDEBUG) || defined(_NDEBUG)
     // In the NDEBUG case, give the compilers optimizer a chance to
-    // completely remove the code.
+    // completely remove some code.
     if (Debug <= priority)
-      return false;
+      return 0;
 #endif
-    return Instance()->getEnabled(category, priority);
+    return Instance()->getStream(category, priority);
   }
-
-  static std::ostream& getStream(Priority priority);
 
 protected:
   static Logger* Instance(void);
-  bool getEnabled(Category category, Priority priority);
+  std::ostream* getStream(Category category, Priority priority);
+  bool getEnabled(Category category, Priority priority)
+  {
+    if (priority == Error)
+      return true;
+    if (!(category & mCategory))
+      return false;
+    return priority <= mPriority;
+  }
 
 private:
   Logger(std::ostream* stream = 0);
@@ -79,9 +84,9 @@ private:
   int mPriority;
 };
 
-#define Log(category, priority) \
-if (Logger::getStaticEnabled(Logger::category, Logger::priority)) \
-  Logger::getStream(Logger::priority)
+#define Log(cat, pri) \
+if (std::ostream* stream = Logger::getStaticStream(Logger::cat, Logger::pri)) \
+  *stream
 
 } // namespace OpenFDM
 
