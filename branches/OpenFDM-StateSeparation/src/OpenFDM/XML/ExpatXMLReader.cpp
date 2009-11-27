@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2009 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2009 Mathias Froehlich
  *
  */
 
@@ -166,14 +166,14 @@ ExpatXMLReader::parse(std::istream& stream)
   XML_SetSkippedEntityHandler(parser, ExpatSkippedEntity);
 #endif
 
-  if (mContentHandler)
+  if (mContentHandler.valid())
     mContentHandler->startDocument();
 
   unsigned bufSize = 32*1024;
   char* buf = new char[bufSize];
   while (!stream.eof()) {
     if (!stream.good()) {
-      if (mErrorHandler)
+      if (mErrorHandler.valid())
         mErrorHandler->fatalError("ExpatXMLReader: "
                                   "Can not read from input stream",
                                   XML_GetCurrentLineNumber(parser),
@@ -185,7 +185,7 @@ ExpatXMLReader::parse(std::istream& stream)
 
     stream.read(buf, bufSize);
     if (!XML_Parse(parser, buf, stream.gcount(), false)) {
-      if (mErrorHandler)
+      if (mErrorHandler.valid())
         mErrorHandler->fatalError("ExpatXMLReader: Error from Parser",
                                   XML_GetCurrentLineNumber(parser),
                                   XML_GetCurrentColumnNumber(parser));
@@ -196,7 +196,7 @@ ExpatXMLReader::parse(std::istream& stream)
   }
 
   if (!XML_Parse(parser, buf, 0, true)) {
-    if (mErrorHandler)
+    if (mErrorHandler.valid())
       mErrorHandler->fatalError("ExpatXMLReader: Error from Parser",
                                 XML_GetCurrentLineNumber(parser),
                                 XML_GetCurrentColumnNumber(parser));
@@ -208,7 +208,7 @@ ExpatXMLReader::parse(std::istream& stream)
   XML_ParserFree(parser);
   delete [] buf;
 
-  if (mContentHandler)
+  if (mContentHandler.valid())
     mContentHandler->endDocument();
 }
 
