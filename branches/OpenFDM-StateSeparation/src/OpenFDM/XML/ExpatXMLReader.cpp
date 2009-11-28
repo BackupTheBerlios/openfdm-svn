@@ -36,8 +36,8 @@ ExpatXMLAttributes::ExpatXMLAttributes(const char ** atts) :
 int
 ExpatXMLAttributes::getIndex(const char* qName) const
 {
-  for (unsigned i = 0; mAtts[i] != 0; i += 2) {
-    if (strcmp(mAtts[i*2], qName) == 0)
+  for (unsigned i = 0; mAtts[2*i] != 0; ++i) {
+    if (strcmp(mAtts[2*i], qName) == 0)
       return i;
   }
   return -1;
@@ -70,15 +70,15 @@ ExpatXMLAttributes::getType(const char*) const
 const char*
 ExpatXMLAttributes::getValue(int index) const
 {
-  return (index < mLength) ? mAtts[index*2+1] : 0;
+  return (0 <= index && index < mLength) ? mAtts[index*2+1] : 0;
 }
 
 const char*
 ExpatXMLAttributes::getValue(const char* qName) const
 {
   for (unsigned i = 0; mAtts[i] != 0; i += 2) {
-    if (strcmp(mAtts[i*2], qName) == 0)
-      return mAtts[i*2+1];
+    if (strcmp(mAtts[i], qName) == 0)
+      return mAtts[i+1];
   }
   return 0;
 }
