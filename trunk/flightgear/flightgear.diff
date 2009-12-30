@@ -1,11 +1,11 @@
 Index: configure.ac
 ===================================================================
 RCS file: /var/cvs/FlightGear-0.9/source/configure.ac,v
-retrieving revision 1.146
-diff -u -r1.146 configure.ac
---- configure.ac	2 Feb 2009 05:35:52 -0000	1.146
-+++ configure.ac	25 Feb 2009 06:03:31 -0000
-@@ -458,6 +458,14 @@
+retrieving revision 1.161
+diff -u -r1.161 configure.ac
+--- configure.ac	30 Dec 2009 14:11:16 -0000	1.161
++++ configure.ac	30 Dec 2009 18:47:56 -0000
+@@ -550,6 +550,14 @@
  fi
  AM_CONDITIONAL(ENABLE_JPEG_SERVER, test "x$ac_cv_header_simgear_screen_jpgfactory_hxx" = "xyes")
  
@@ -18,9 +18,9 @@ diff -u -r1.146 configure.ac
 +fi
 +
  # Check for "plib" without which we cannot go on
- AC_CHECK_HEADER(plib/ul.h)
- if test "x$ac_cv_header_plib_ul_h" != "xyes"; then
-@@ -688,6 +696,7 @@
+ case "${host}" in
+ *-apple-darwin*)
+@@ -816,6 +824,7 @@
  	src/FDM/JSBSim/models/atmosphere/Makefile \
  	src/FDM/JSBSim/models/propulsion/Makefile \
  	src/FDM/LaRCsim/Makefile \
@@ -34,7 +34,7 @@ RCS file: /var/cvs/FlightGear-0.9/source/src/FDM/Makefile.am,v
 retrieving revision 1.8
 diff -u -r1.8 Makefile.am
 --- src/FDM/Makefile.am	25 Jul 2008 18:38:30 -0000	1.8
-+++ src/FDM/Makefile.am	25 Feb 2009 06:03:32 -0000
++++ src/FDM/Makefile.am	30 Dec 2009 18:47:56 -0000
 @@ -4,8 +4,14 @@
  SP_DIR =
  endif
@@ -54,11 +54,11 @@ diff -u -r1.8 Makefile.am
 Index: src/FDM/flight.hxx
 ===================================================================
 RCS file: /var/cvs/FlightGear-0.9/source/src/FDM/flight.hxx,v
-retrieving revision 1.18
-diff -u -r1.18 flight.hxx
---- src/FDM/flight.hxx	27 Jul 2008 16:25:14 -0000	1.18
-+++ src/FDM/flight.hxx	25 Feb 2009 06:03:32 -0000
-@@ -347,7 +347,10 @@
+retrieving revision 1.22
+diff -u -r1.22 flight.hxx
+--- src/FDM/flight.hxx	17 Mar 2009 06:51:52 -0000	1.22
++++ src/FDM/flight.hxx	30 Dec 2009 18:47:56 -0000
+@@ -345,7 +345,10 @@
  	FG_PARACHUTE = 9,
  
  	// Driven externally via a serial port, net, file, etc.
@@ -73,25 +73,25 @@ diff -u -r1.18 flight.hxx
 Index: src/Main/Makefile.am
 ===================================================================
 RCS file: /var/cvs/FlightGear-0.9/source/src/Main/Makefile.am,v
-retrieving revision 1.88
-diff -u -r1.88 Makefile.am
---- src/Main/Makefile.am	13 Feb 2009 11:52:49 -0000	1.88
-+++ src/Main/Makefile.am	25 Feb 2009 06:03:33 -0000
+retrieving revision 1.94
+diff -u -r1.94 Makefile.am
+--- src/Main/Makefile.am	30 Dec 2009 14:11:38 -0000	1.94
++++ src/Main/Makefile.am	30 Dec 2009 18:47:57 -0000
 @@ -9,6 +9,13 @@
  SP_FDM_LIBS = 
  endif
  
 +if ENABLE_OpenFDM_FDM
 +OpenFDM_LIBS = $(top_builddir)/src/FDM/OpenFDM/libFGOpenFDM.a \
-+               -lOpenFDMJSBReader -lOpenFDMeasyxmlXML -lOpenFDMXML -lOpenFDM
++               -lOpenFDMJSBReader -lOpenFDMeasyxmlXML -lOpenFDMXML -lOpenFDM -lrt
 +else
 +OpenFDM_LIBS = 
 +endif
 +
- if WITH_THREADS
- THREAD_LIBS = -lsgthreads $(thread_LIBS)
+ if ENABLE_ATCDCL
+ ATCDCL_LIBS = $(top_builddir)/src/ATCDCL/libATCDCL.a
  else
-@@ -74,6 +81,7 @@
+@@ -100,6 +107,7 @@
  	$(top_builddir)/src/FDM/LaRCsim/libLaRCsim.a \
  	$(top_builddir)/src/FDM/UIUCModel/libUIUCModel.a \
  	$(SP_FDM_LIBS) \
@@ -102,11 +102,11 @@ diff -u -r1.88 Makefile.am
 Index: src/Main/fg_init.cxx
 ===================================================================
 RCS file: /var/cvs/FlightGear-0.9/source/src/Main/fg_init.cxx,v
-retrieving revision 1.227
-diff -u -r1.227 fg_init.cxx
---- src/Main/fg_init.cxx	10 Jan 2009 16:48:22 -0000	1.227
-+++ src/Main/fg_init.cxx	25 Feb 2009 06:03:34 -0000
-@@ -91,6 +91,9 @@
+retrieving revision 1.246
+diff -u -r1.246 fg_init.cxx
+--- src/Main/fg_init.cxx	30 Dec 2009 14:11:41 -0000	1.246
++++ src/Main/fg_init.cxx	30 Dec 2009 18:47:58 -0000
+@@ -101,6 +101,9 @@
  #include <FDM/UFO.hxx>
  #include <FDM/NullFDM.hxx>
  #include <FDM/YASim/YASim.hxx>
@@ -116,7 +116,7 @@ diff -u -r1.227 fg_init.cxx
  #include <GUI/new_gui.hxx>
  #include <Include/general.hxx>
  #include <Input/input.hxx>
-@@ -1279,6 +1282,10 @@
+@@ -1298,6 +1301,10 @@
          cur_fdm_state = new FGNullFDM( dt );
      } else if ( model == "yasim" ) {
          cur_fdm_state = new YASim( dt );
@@ -125,5 +125,5 @@ diff -u -r1.227 fg_init.cxx
 +        cur_fdm_state = new OpenFDM::FGOpenFDM();
 +#endif
      } else {
-         throw sg_throwable(string("Unrecognized flight model '") + model
+         throw sg_exception(string("Unrecognized flight model '") + model
                 + "', cannot init flight dynamics model.");
