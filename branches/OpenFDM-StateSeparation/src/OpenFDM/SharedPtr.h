@@ -19,7 +19,7 @@ public:
   SharedPtr(void) : _ptr(0)
   {}
   SharedPtr(T* ptr) : _ptr(ptr)
-  { T::get(_ptr); }
+  { T::getFirst(_ptr); }
   SharedPtr(const SharedPtr& p) : _ptr(p.get())
   { T::get(_ptr); }
   template<typename U>
@@ -35,7 +35,7 @@ public:
   { assign(p.get()); return *this; }
   template<typename U>
   SharedPtr& operator=(U* p)
-  { assign(p); return *this; }
+  { assignFirst(p); return *this; }
 
   T* operator->(void) const
   { return _ptr; }
@@ -49,7 +49,7 @@ public:
   T* get() const
   { return _ptr; }
   T* release()
-  { T* tmp = _ptr; _ptr = 0; T::put(tmp); return tmp; }
+  { T* tmp = _ptr; _ptr = 0; T::release(tmp); return tmp; }
 
   bool isShared(void) const
   { return T::shared(_ptr); }
@@ -67,6 +67,8 @@ public:
 private:
   void assign(T* p)
   { T::get(p); put(); _ptr = p; }
+  void assignFirst(T* p)
+  { T::getFirst(p); put(); _ptr = p; }
   void assignNonRef(T* p)
   { put(); _ptr = p; }
 

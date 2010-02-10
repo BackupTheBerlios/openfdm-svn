@@ -24,6 +24,33 @@ public:
   /// have an atomic decision using the reference count of this current object
   /// if the backref is still valid. At the time where the atomic count is
   /// equal to zero the object is considered dead.
+  ///
+  /// Special care is taken for objects that are not yet assigned to
+  /// a shared pointer but weak pointers are already assigned and actions need
+  /// to be taken with the weak referenced objects.
+  /// To make this work, a new allocated object has its last bit set in the
+  /// reference count. Consequently you can already call WeakRef::lock() and
+  /// get back a valid object, even if we do not yet have assigned that to
+  /// a SharedPtr. Once we assign the pointer to s SharedPtr through a raw
+  /// pointer argument, this bit is cleared. This way, the object is not
+  /// deleted until we have a more permanent reference to the object assigned.
+  /// The following example shows the intented use of that:
+  ///
+  /// O* object = new Object;
+  /// { // assume some scope that might be called in initialization of Object
+  ///   WeakPtr<O> w = o;
+  ///   SharedPtr<O> s = o.lock(); // valid
+  /// }
+  /// SharedPtr<O> permanent = object;
+  ///
+  /// Whereas the following code doesn't work as expected:
+  ///
+  /// WeakPtr<O> w = new Object;
+  /// SharedPtr<O> s = w.lock();
+  ///
+  /// In this case the last bit is still set and the Object instance is
+  /// never destroyed.
+  ///
   WeakReferenced(void) :
     mWeakData(new WeakData(this))
   {}
@@ -31,7 +58,7 @@ public:
     mWeakData(new WeakData(this))
   {}
   ~WeakReferenced(void)
-  { mWeakData->mWeakReferenced = 0; }
+  { mWeakData->clear(); }
 
   /// Do not copy the weak backward references ...
   WeakReferenced& operator=(const WeakReferenced&)
@@ -39,12 +66,16 @@ public:
 
   /// The usual operations on weak pointers.
   /// The interface should stay the same then what we have in Referenced.
-  static unsigned get(const WeakReferenced* ref)
-  { if (ref) return ++(ref->mWeakData->mRefcount); else return 0u; }
+  static void get(const WeakReferenced* ref)
+  { if (!ref) return; ref->mWeakData->weakReferencedGet(); }
+  static void getFirst(const WeakReferenced* ref)
+  { if (!ref) return; ref->mWeakData->weakReferencedGetFirst(); }
   static unsigned put(const WeakReferenced* ref)
-  { if (ref) return --(ref->mWeakData->mRefcount); else return ~0u; }
+  { if (!ref) return ~0u; return ref->mWeakData->weakReferencedPut(); }
+  static void release(const WeakReferenced* ref)
+  { if (!ref) return; return ref->mWeakData->weakReferencedRelease(); }
   static unsigned count(const WeakReferenced* ref)
-  { if (ref) return ref->mWeakData->mRefcount; else return 0u; }
+  { if (!ref) return ~0u; return ref->mWeakData->weakReferencedCount(); }
 
   template<typename T>
   static void destroy(T* ref)
@@ -56,36 +87,34 @@ private:
   /// reference which is zeroed out on destruction of the current object
   class WeakData : public Referenced {
   public:
-    WeakData(WeakReferenced* weakReferenced) :
-      mRefcount(0u),
-      mWeakReferenced(weakReferenced)
-    { }
+    WeakData(WeakReferenced* weakReferenced);
+    ~WeakData();
 
-    template<typename T>
-    T* getPointer()
-    {
-      // Try to increment the reference count if the count is greater
-      // then zero. Since it should only be incremented iff it is nonzero, we
-      // need to check that value and try to do an atomic test and set. If this
-      // fails, try again. The usual lockless algorithm ...
-      unsigned count;
-      do {
-        count = mRefcount;
-        if (count == 0)
-          return 0;
-      } while (!mRefcount.compareAndExchange(count, count + 1));
-      // We know that as long as the refcount is not zero, the pointer still
-      // points to valid data. So it is safe to work on it.
-      return static_cast<T*>(mWeakReferenced);
-    }
+    void weakReferencedGet()
+    { ++mRefcount; }
+    void weakReferencedGetFirst();
 
-    Atomic mRefcount;
-    WeakReferenced* mWeakReferenced;
+    unsigned weakReferencedPut()
+    { return --mRefcount; }
+    void weakReferencedRelease();
+    unsigned weakReferencedCount()
+    { return mRefcount & (~lastbit()); }
+
+    void clear()
+    { mWeakReferenced = 0; }
+
+    WeakReferenced* getWeakReferenced();
+
+    static unsigned lastbit()
+    { return ~((~unsigned(0)) >> 1); }
 
   private:
     WeakData(void);
     WeakData(const WeakData&);
     WeakData& operator=(const WeakData&);
+
+    Atomic mRefcount;
+    WeakReferenced* mWeakReferenced;
   };
 
   SharedPtr<WeakData> mWeakData;

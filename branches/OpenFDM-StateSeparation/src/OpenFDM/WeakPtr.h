@@ -47,7 +47,7 @@ public:
     if (!mWeakData)
       return SharedPtr<T>();
     SharedPtr<T> sharedPtr;
-    sharedPtr.assignNonRef(mWeakData->getPointer<T>());
+    sharedPtr.assignNonRef(static_cast<T*>(mWeakData->getWeakReferenced()));
     return sharedPtr;
   }
 

@@ -189,6 +189,7 @@ OpenFDMCoreSOURCES = \
   Time.cpp \
   Unit.cpp \
   Variant.cpp \
+  WeakReferenced.cpp \
   WGS84Planet.cpp
 
 #   ReaderWriter.cpp

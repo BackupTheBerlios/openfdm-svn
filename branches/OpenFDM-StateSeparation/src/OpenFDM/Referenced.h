@@ -21,10 +21,14 @@ public:
   Referenced& operator=(const Referenced&)
   { return *this; }
 
-  static unsigned get(const Referenced* ref)
-  { if (ref) return ++(ref->_refcount); else return 0u; }
+  static void get(const Referenced* ref)
+  { if (!ref) return; ++(ref->_refcount); }
+  static void getFirst(const Referenced* ref)
+  { get(ref); }
   static unsigned put(const Referenced* ref)
   { if (ref) return --(ref->_refcount); else return ~0u; }
+  static void release(const Referenced* ref)
+  { if (!ref) return; --(ref->_refcount); }
   static unsigned count(const Referenced* ref)
   { if (ref) return ref->_refcount; else return 0u; }
   static bool shared(const Referenced* ref)
