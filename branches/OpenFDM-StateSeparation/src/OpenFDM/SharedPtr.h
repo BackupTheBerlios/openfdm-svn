@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich
  *
  */
 
@@ -27,7 +27,7 @@ public:
   { T::get(_ptr); }
   ~SharedPtr(void)
   { put(); }
-  
+
   SharedPtr& operator=(const SharedPtr& p)
   { assign(p.get()); return *this; }
   template<typename U>
@@ -50,6 +50,8 @@ public:
   { return _ptr; }
   T* release()
   { T* tmp = _ptr; _ptr = 0; T::release(tmp); return tmp; }
+  SharedPtr take()
+  { SharedPtr sharedPtr; sharedPtr.swap(*this); return sharedPtr; }
 
   bool isShared(void) const
   { return T::shared(_ptr); }
@@ -74,7 +76,7 @@ private:
 
   void put(void)
   { if (!T::put(_ptr)) T::destroy(_ptr); _ptr = 0; }
-  
+
   // The reference itself.
   T* _ptr;
 
