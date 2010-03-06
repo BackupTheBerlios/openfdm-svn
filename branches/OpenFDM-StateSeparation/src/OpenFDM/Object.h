@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich
  *
  */
 
@@ -115,8 +115,8 @@ public:
   /// Sets the objects user data
   void setUserData(Object* userData);
 
-  /// overwrites the destroy function in Referenced
-  static void destroy(const Object* object);
+  /// overwrites the destruct function in Referenced
+  static void destruct(const Object* object);
 
 protected:
   /// Objects must not be put onto the stack

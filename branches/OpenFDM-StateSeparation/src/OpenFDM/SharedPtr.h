@@ -75,7 +75,7 @@ private:
   { put(); _ptr = p; }
 
   void put(void)
-  { if (!T::put(_ptr)) T::destroy(_ptr); _ptr = 0; }
+  { if (!T::put(_ptr)) T::destruct(_ptr); _ptr = 0; }
 
   // The reference itself.
   T* _ptr;

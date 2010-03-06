@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2007-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2007-2010 Mathias Froehlich
  *
  */
 
@@ -21,7 +21,7 @@ public:
   virtual MechanicLinkValue* toMechanicLinkValue();
   virtual const MechanicLinkValue* toMechanicLinkValue() const;
 
-  static void destroy(const PortValue* portValue);
+  static void destruct(const PortValue* portValue);
 
 protected:
   virtual ~PortValue();

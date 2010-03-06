@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich
  *
  */
 
@@ -100,7 +100,7 @@ Object::setUserData(Object* userData)
 }
 
 void
-Object::destroy(const Object* object)
+Object::destruct(const Object* object)
 {
   delete object;
 }

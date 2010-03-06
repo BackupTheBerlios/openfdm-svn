@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2007-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2007-2010 Mathias Froehlich
  *
  */
 
@@ -12,7 +12,7 @@ namespace OpenFDM {
 class StateValue : public Referenced {
 public:
 
-  static void destroy(StateValue* stateValue)
+  static void destruct(StateValue* stateValue)
   { delete stateValue; }
 
 protected:

@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich
  *
  */
 
@@ -78,7 +78,7 @@ public:
   { if (!ref) return ~0u; return ref->mWeakData->weakReferencedCount(); }
 
   template<typename T>
-  static void destroy(T* ref)
+  static void destruct(T* ref)
   { delete ref; }
 
 private:

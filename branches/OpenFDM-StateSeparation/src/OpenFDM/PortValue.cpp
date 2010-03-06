@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2007-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2007-2010 Mathias Froehlich
  *
  */
 
@@ -11,7 +11,7 @@ PortValue::~PortValue()
 }
 
 void
-PortValue::destroy(const PortValue* portValue)
+PortValue::destruct(const PortValue* portValue)
 {
   delete portValue;
 }

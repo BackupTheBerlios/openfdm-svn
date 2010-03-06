@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2007-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2007-2010 Mathias Froehlich
  *
  */
 
@@ -31,7 +31,7 @@ public:
   // virtual real_type trimError(const StateValue&, const StateValue&) const
   // { return 0; }
 
-  static void destroy(StateInfo* stateInfo)
+  static void destruct(StateInfo* stateInfo)
   { delete stateInfo; }
 
 protected:
