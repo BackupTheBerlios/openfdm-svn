@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich
  *
  */
 
@@ -33,7 +33,7 @@ protected:
   /// This *should* not be required but the standard does not provide
   /// guarantees about that. Access through the reflection framework
   /// should not happen on the fast path, so do that here ...
-  mutable Mutex mMutex;
+  Mutex mMutex;
 
 private:
   TypeInfo(const TypeInfo&);
@@ -168,12 +168,12 @@ public:
   typedef O ReflectedType;
 
   TypeInfoTemplate(const char* name) : TypeInfo(name) {}
-  
+
   bool
   getPropertyValue(const O* obj, const std::string& name, Variant& value) const
   {
     ScopeLock scopeLock(mMutex);
-    
+
     typename std::vector<SharedPtr<PropertyAccessor<O> > >::const_iterator it;
     it = mProperyList.begin();
     while (it != mProperyList.end()) {
@@ -216,7 +216,7 @@ public:
 protected:
   template<typename T>
   void addProperty(const char* name, bool serializable,
-                   const T& (O::*getter) () const, 
+                   const T& (O::*getter) () const,
                    void (O::*setter) (const T&))
   {
     ScopeLock scopeLock(mMutex);
@@ -226,7 +226,7 @@ protected:
 
   template<typename T>
   void addProperty(const char* name, bool serializable,
-                   T (O::*getter) () const, 
+                   T (O::*getter) () const,
                    void (O::*setter) (T))
   {
     ScopeLock scopeLock(mMutex);
@@ -241,7 +241,7 @@ protected:
     mProperyList.push_back(new TypedPropertyAccessor<O, T>(name, false,
                                                            getter, 0));
   }
-  
+
   template<typename T>
   void addProperty(const char* name, T (O::*getter) () const)
   {
@@ -249,11 +249,11 @@ protected:
     mProperyList.push_back(new TypedPropertyAccessor2<O, T>(name, false,
                                                             getter, 0));
   }
-  
+
 private:
   TypeInfoTemplate(const TypeInfoTemplate&);
   TypeInfoTemplate& operator=(const TypeInfoTemplate&);
-  
+
   std::vector<SharedPtr<PropertyAccessor<O> > > mProperyList;
 };
 

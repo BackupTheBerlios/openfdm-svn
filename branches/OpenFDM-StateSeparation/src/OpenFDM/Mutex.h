@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich
  *
  */
 
@@ -40,7 +40,7 @@ public:
 #endif
   }
 
-  void lock(void)
+  void lock(void) const
   {
 #ifndef OPENFDM_DISABLE_THREADS
 #ifdef _WIN32
@@ -51,7 +51,7 @@ public:
 #endif
   }
 
-  void unlock(void)
+  void unlock(void) const
   {
 #ifndef OPENFDM_DISABLE_THREADS
 #ifdef _WIN32
@@ -68,9 +68,9 @@ private:
 
 #ifndef OPENFDM_DISABLE_THREADS
 #ifdef _WIN32
-  CRITICAL_SECTION mCriticalSection;
+  mutable CRITICAL_SECTION mCriticalSection;
 #else
-  pthread_mutex_t mMutex;
+  mutable pthread_mutex_t mMutex;
 #endif
 #endif
 };

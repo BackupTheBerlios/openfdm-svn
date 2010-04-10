@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich
  *
  */
 
@@ -96,7 +96,7 @@ private:
   Atomic& operator=(const Atomic&);
 
 #if defined(OpenFDM_USE_MUTEX)
-  mutable Mutex mMutex;
+  Mutex mMutex;
 #endif
   unsigned mValue;
 };

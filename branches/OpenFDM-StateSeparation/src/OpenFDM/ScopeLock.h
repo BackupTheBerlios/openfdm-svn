@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2010 Mathias Froehlich
  *
  */
 
@@ -11,7 +11,7 @@ namespace OpenFDM {
 
 class ScopeLock {
 public:
-  ScopeLock(Mutex& mutex) : mMutex(mutex)
+  ScopeLock(const Mutex& mutex) : mMutex(mutex)
   { mMutex.lock(); }
   ~ScopeLock(void)
   { mMutex.unlock(); }
@@ -21,7 +21,7 @@ private:
   ScopeLock(const ScopeLock&);
   ScopeLock& operator=(const ScopeLock&);
 
-  Mutex& mMutex;
+  const Mutex& mMutex;
 };
 
 } // namespace OpenFDM
