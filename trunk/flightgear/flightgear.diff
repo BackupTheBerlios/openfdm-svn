@@ -1,7 +1,20 @@
-diff -urNb flightgear/configure.ac flightgear-OpenFDM/configure.ac
---- flightgear/configure.ac	2011-02-04 21:40:50.243193039 +0100
-+++ flightgear-OpenFDM/configure.ac	2011-02-04 21:43:59.514302275 +0100
-@@ -638,6 +638,14 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1ec1f62..a141ae7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -54,6 +54,7 @@ option(ENABLE_LARCSIM "Set to ON to build FlightGear with LaRCsim FDM" ON)
+ option(ENABLE_YASIM "Set to ON to build FlightGear with YASIM FDM" ON)
+ option(ENABLE_JSBSIM "Set to ON to build FlightGear with JSBSim FDM" ON)
+ option(ENABLE_FGADMIN "Set to ON to build FlightGear with FGADMIN" ON)
++option(FG_ENABLE_OPENFDM_FDM "Set to ON to build FlightGear with OpenFDM FDM" ON)
+ option(EVENT_INPUT "Set to ON to build FlightGear with event-based Input support" OFF)
+ option(ENABLE_LIBSVN "Set to ON to build terrasync with libsvnclient support" OFF)
+ 
+diff --git a/configure.ac b/configure.ac
+index 3635cfe..cb0ff54 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -646,6 +646,14 @@ if test "x$ac_cv_header_simgear_screen_jpgfactory_hxx" = "xyes"; then
  fi
  AM_CONDITIONAL(ENABLE_JPEG_SERVER, test "x$ac_cv_header_simgear_screen_jpgfactory_hxx" = "xyes")
  
@@ -16,7 +29,7 @@ diff -urNb flightgear/configure.ac flightgear-OpenFDM/configure.ac
  # Check for "plib" without which we cannot go on
  case "${host}" in
  *-apple-darwin*)
-@@ -906,6 +914,7 @@
+@@ -914,6 +922,7 @@ AC_CONFIG_FILES([ \
  	src/FDM/JSBSim/models/atmosphere/Makefile \
  	src/FDM/JSBSim/models/propulsion/Makefile \
  	src/FDM/LaRCsim/Makefile \
@@ -24,49 +37,36 @@ diff -urNb flightgear/configure.ac flightgear-OpenFDM/configure.ac
  	src/FDM/SP/Makefile \
  	src/FDM/UIUCModel/Makefile \
  	src/FDM/YASim/Makefile \
-diff -urNb flightgear/src/FDM/fdm_shell.cxx flightgear-OpenFDM/src/FDM/fdm_shell.cxx
---- flightgear/src/FDM/fdm_shell.cxx	2011-02-04 21:40:51.239883094 +0100
-+++ flightgear-OpenFDM/src/FDM/fdm_shell.cxx	2011-02-04 21:46:38.588038239 +0100
-@@ -48,6 +48,9 @@
- #include <FDM/UFO.hxx>
- #include <FDM/NullFDM.hxx>
- #include <FDM/YASim/YASim.hxx>
-+#ifdef FG_ENABLE_OPENFDM_FDM
-+#include <FDM/OpenFDM/FGOpenFDM.h>
-+#endif
+diff --git a/src/FDM/CMakeLists.txt b/src/FDM/CMakeLists.txt
+index 74d695f..70ca3d6 100644
+--- a/src/FDM/CMakeLists.txt
++++ b/src/FDM/CMakeLists.txt
+@@ -9,6 +9,12 @@ set(SP_FDM_SOURCES
+ 	)
+ endif()
  
- /*
-  * Evil global variable required by Network/FGNative,
-@@ -258,6 +261,10 @@
-         _impl = new FGNullFDM( dt );
-     } else if ( model == "yasim" ) {
-         _impl = new YASim( dt );
-+#ifdef FG_ENABLE_OPENFDM_FDM
-+    } else if ( model == "openfdm" ) {
-+        _impl = new OpenFDM::FGOpenFDM();
-+#endif
-     } else {
-         throw sg_exception(string("Unrecognized flight model '") + model
-                + "', cannot init flight dynamics model.");
-diff -urNb flightgear/src/FDM/flight.hxx flightgear-OpenFDM/src/FDM/flight.hxx
---- flightgear/src/FDM/flight.hxx	2011-02-04 21:40:51.239883094 +0100
-+++ flightgear-OpenFDM/src/FDM/flight.hxx	2011-02-04 21:43:59.514302275 +0100
-@@ -402,7 +402,10 @@
- 	FG_PARACHUTE = 9,
- 
- 	// Driven externally via a serial port, net, file, etc.
--	FG_EXTERNAL = 10
-+	FG_EXTERNAL = 10,
++if(FG_ENABLE_OPENFDM_FDM)
++set(OPENFDM_SOURCES
++	OpenFDM/FGOpenFDM.cpp
++	)
++endif()
 +
-+	// OpenFDM. Reads OpenFDM and JSBSim files.
-+	FG_OPENFDM = 11
-     };
- 
-     // initialization
-diff -urNb flightgear/src/FDM/Makefile.am flightgear-OpenFDM/src/FDM/Makefile.am
---- flightgear/src/FDM/Makefile.am	2011-02-04 21:40:50.976543581 +0100
-+++ flightgear-OpenFDM/src/FDM/Makefile.am	2011-02-04 21:43:59.514302275 +0100
-@@ -4,8 +4,14 @@
+ set(UIUC_SOURCES
+ 	uiuc_1DdataFileReader.cpp
+ 	uiuc_1Dinterpolation.cpp
+@@ -133,6 +139,7 @@ set(SOURCES
+ 	TankProperties.cxx
+ 	groundcache.cxx
+ 	${SP_FDM_SOURCES}
++	${OPENFDM_SOURCES}
+ 	ExternalNet/ExternalNet.cxx
+ 	ExternalPipe/ExternalPipe.cxx
+ 	)
+diff --git a/src/FDM/Makefile.am b/src/FDM/Makefile.am
+index 41bfe3f..b94a8d4 100644
+--- a/src/FDM/Makefile.am
++++ b/src/FDM/Makefile.am
+@@ -4,8 +4,14 @@ else
  SP_DIR =
  endif
  
@@ -82,10 +82,85 @@ diff -urNb flightgear/src/FDM/Makefile.am flightgear-OpenFDM/src/FDM/Makefile.am
  
  noinst_LIBRARIES = libFlight.a
  
-diff -urNb flightgear/src/Main/Makefile.am flightgear-OpenFDM/src/Main/Makefile.am
---- flightgear/src/Main/Makefile.am	2011-02-04 21:40:51.856564229 +0100
-+++ flightgear-OpenFDM/src/Main/Makefile.am	2011-02-04 21:44:34.298452374 +0100
-@@ -9,6 +9,13 @@
+diff --git a/src/FDM/fdm_shell.cxx b/src/FDM/fdm_shell.cxx
+index 8055bce..e77be1c 100644
+--- a/src/FDM/fdm_shell.cxx
++++ b/src/FDM/fdm_shell.cxx
+@@ -48,6 +48,9 @@
+ #include <FDM/UFO.hxx>
+ #include <FDM/NullFDM.hxx>
+ #include <FDM/YASim/YASim.hxx>
++#ifdef FG_ENABLE_OPENFDM_FDM
++#include <FDM/OpenFDM/FGOpenFDM.h>
++#endif
+ 
+ 
+ /*
+@@ -245,6 +248,10 @@ void FDMShell::createImplementation()
+         _impl = new FGNullFDM( dt );
+     } else if ( model == "yasim" ) {
+         _impl = new YASim( dt );
++#ifdef FG_ENABLE_OPENFDM_FDM
++    } else if ( model == "openfdm" ) {
++        _impl = new OpenFDM::FGOpenFDM();
++#endif
+     } else {
+         throw sg_exception(string("Unrecognized flight model '") + model
+                + "', cannot init flight dynamics model.");
+diff --git a/src/FDM/flight.hxx b/src/FDM/flight.hxx
+index 6965d30..49de534 100644
+--- a/src/FDM/flight.hxx
++++ b/src/FDM/flight.hxx
+@@ -402,7 +402,10 @@ public:
+ 	FG_PARACHUTE = 9,
+ 
+ 	// Driven externally via a serial port, net, file, etc.
+-	FG_EXTERNAL = 10
++	FG_EXTERNAL = 10,
++
++	// OpenFDM. Reads OpenFDM and JSBSim files.
++	FG_OPENFDM = 11
+     };
+ 
+     // initialization
+diff --git a/src/Include/config_cmake.h.in b/src/Include/config_cmake.h.in
+index 0477170..86f0ce4 100644
+--- a/src/Include/config_cmake.h.in
++++ b/src/Include/config_cmake.h.in
+@@ -28,6 +28,7 @@
+ #cmakedefine ENABLE_LARCSIM
+ #cmakedefine ENABLE_YASIM
+ #cmakedefine ENABLE_JSBSIM
++#cmakedefine FG_ENABLE_OPENFDM_FDM
+ 
+ #cmakedefine HAVE_SVN_CLIENT_H
+ #cmakedefine HAVE_LIBSVN_CLIENT_1
+diff --git a/src/Main/CMakeLists.txt b/src/Main/CMakeLists.txt
+index 954c020..7fd0dd8 100644
+--- a/src/Main/CMakeLists.txt
++++ b/src/Main/CMakeLists.txt
+@@ -47,9 +47,16 @@ else()
+   set(HLA_LIBRARIES "")
+ endif()
+ 
++if(FG_ENABLE_OPENFDM_FDM)
++  set(OPENFDM_LIBRARIES "-lOpenFDMJSBReader -lOpenFDMeasyxmlXML -lOpenFDMXML -lOpenFDM")
++else()
++  set(OPENFDM_LIBRARIES "")
++endif()
++
+ target_link_libraries(fgfs 
+ 	${FG_LIBS}
+         ${HLA_LIBRARIES}
++	${OPENFDM_LIBRARIES}
+ 	${SIMGEAR_LIBRARIES}
+ 	${OPENSCENEGRAPH_LIBRARIES} 
+ 	${OPENAL_LIBRARY} 
+diff --git a/src/Main/Makefile.am b/src/Main/Makefile.am
+index c4525ed..6abb582 100644
+--- a/src/Main/Makefile.am
++++ b/src/Main/Makefile.am
+@@ -9,6 +9,13 @@ else
  SP_FDM_LIBS =
  endif
  
@@ -99,7 +174,7 @@ diff -urNb flightgear/src/Main/Makefile.am flightgear-OpenFDM/src/Main/Makefile.
  if WITH_EVENTINPUT
  EVENT_LIBS = $(eventinput_LIBS)
  else
-@@ -90,6 +97,7 @@
+@@ -90,6 +97,7 @@ fgfs_LDADD = \
  	$(top_builddir)/src/FDM/LaRCsim/libLaRCsim.a \
  	$(top_builddir)/src/FDM/UIUCModel/libUIUCModel.a \
  	$(SP_FDM_LIBS) \
