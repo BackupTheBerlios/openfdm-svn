@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2005 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2005 Mathias Froehlich
  *
  */
 
@@ -128,7 +128,7 @@ public:
 
     return true;
   }
-  
+
   virtual void
   releaseWire(void) const
   {
@@ -139,7 +139,7 @@ public:
 
   void setInterface(FGInterface *ifce)
   { mIfce = ifce; }
-  
+
 private:
   FGInterface *mIfce;
 };
@@ -267,7 +267,7 @@ public:
     mCurrentNode = oldNode->getNode(pName.c_str(), true);
 
     tieObject(node);
-    
+
     mCurrentNode = oldNode;
 
     ModelVisitor::apply(node);
@@ -302,7 +302,7 @@ public:
 
     std::string pName = toPropname(modelGroup.getName());
     mCurrentNode = oldNode->getNode(pName.c_str(), true);
-    
+
     traverse(modelGroup);
 
     tieObject(modelGroup);
@@ -324,7 +324,7 @@ private:
       SGPropertyNode* sgProp = mCurrentNode->getChild(pName.c_str(), 0, true);
       Variant value;
       object.getPropertyValue(it->getName(), value);
-      
+
       if (value.isString())
         sgProp->tie(FGStringPropertyAdapter(&object, it->getName()));
       else if (value.isReal())
@@ -333,11 +333,11 @@ private:
         sgProp->tie(FGIntegerPropertyAdapter(&object, it->getName()));
       else if (value.isUnsigned())
         sgProp->tie(FGIntegerPropertyAdapter(&object, it->getName()));
-      
+
       else if (value.isMatrix()) {
         Matrix m = value.toMatrix();
         unsigned reshapeSize = rows(m) * cols(m);
-        
+
         sgProp->tie(FGRealPropertyAdapter(&object, it->getName()));
         for (unsigned i = 2; i <= reshapeSize; ++i) {
           sgProp = mCurrentNode->getChild(pName.c_str(), i-1, true);
@@ -425,14 +425,14 @@ void FGOpenFDM::init()
   reader.loadAircraft(aircraftFile);
   if (reader.getErrorState()) {
     SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() cannot read aircraft!");
-    
+
     SG_LOG(SG_FLIGHT, SG_ALERT, "FGOpenFDM::init() Error messages from JSBSim reader:");
     ReaderWriter::StringList errors = reader.getErrors();
     ReaderWriter::StringList::const_iterator it;
     for (it = errors.begin(); it != errors.end(); ++it) {
       SG_LOG(SG_FLIGHT, SG_ALERT, (*it));
     }
-    
+
     return;
   }
   mData->vehicle = reader.getVehicle();
@@ -494,7 +494,7 @@ void FGOpenFDM::init()
 
   Rotation geodOr = vehicle->getGeodOrientation();
   Vector3 euler = geodOr.getEuler();
-  _set_Euler_Angles(euler(1), euler(2), euler(3));
+  _set_Euler_Angles(euler(0), euler(1), euler(2));
 }
 
 void FGOpenFDM::bind()
@@ -550,7 +550,7 @@ FGOpenFDM::update(double dt)
     vehicle->setGeodPosition(gp);
   }
 
-  // Check the orientation 
+  // Check the orientation
   Vector3 euler = vehicle->getGeodOrientation().getEuler();
   if (!equal(euler, Vector3(get_Phi(), get_Theta(), get_Psi()))) {
     Quaternion
@@ -562,7 +562,7 @@ FGOpenFDM::update(double dt)
            << "\n\tcurrent: "<< go );
     vehicle->setGeodOrientation(go);
   }
-  
+
   double acrad = vehicle->getRadius();
   double groundCacheRadius = acrad
     + 2*dt*norm(vehicle->getVelocity().getLinear());

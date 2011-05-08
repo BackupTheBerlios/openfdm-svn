@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2005 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2005 Mathias Froehlich
  *
  */
 
@@ -36,8 +36,8 @@ protected:
   }
 
 private:
-  std::string mPropertyName;
   WeakPtr<Object> mObject;
+  std::string mPropertyName;
 };
 
 
@@ -60,7 +60,7 @@ public:
       mValue = variantValue.toString();
     return mValue.c_str();
   }
-  
+
   virtual FGStringPropertyAdapter* clone(void) const
   { return new FGStringPropertyAdapter(*this); }
 
@@ -91,7 +91,7 @@ public:
       return false;
     if (cols(m) <= c)
       return false;
-    
+
     m(r, c) = value;
     return setPropertyValue(Variant(m));
   }
@@ -117,7 +117,7 @@ public:
       return m(r, c);
     }
   }
-  
+
   virtual FGRealPropertyAdapter* clone(void) const
   { return new FGRealPropertyAdapter(*this); }
 private:
@@ -184,7 +184,7 @@ public:
 
   virtual bool setValue(double value)
   { return false; }
-  
+
   virtual double getValue(void) const
   { return mOutputCallback->getValue(); }
 
@@ -232,7 +232,7 @@ public:
         return 0;
     }
   }
-  
+
   virtual FGRealPortReflector* clone(void) const
   { return new FGRealPortReflector(*this); }
 
