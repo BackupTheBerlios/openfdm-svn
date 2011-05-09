@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2008 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2008 Mathias Froehlich
  *
  */
 
@@ -129,7 +129,7 @@ Tailhook::output(const TaskInfo& taskInfo)
   real_type vel1 = dot(relVel0.getLinear(), wireDir1);
 
 // Log(Model,Error) << vel0 << "  " << vel1 << endl;
-  
+
   real_type v = 0.5*(vel0 + vel1);
   if (v < 0.1) {
     mHasWire = false;
@@ -242,7 +242,7 @@ Tailhook::computeCurrentTailhookAngle(void)
   real_type nx2nz2 = n(0)*n(0) + n(2)*n(2);
 
   // we need to didive through that later, with exact operations it should
-  // be safe to not check that because of n(3) being bounded away from zero,
+  // be safe to not check that because of n(2) being bounded away from zero,
   // but due to the square the value can underflow
   if (fabs(nx2nz2) <= Limits<real_type>::min())
     return mAngleCommand;

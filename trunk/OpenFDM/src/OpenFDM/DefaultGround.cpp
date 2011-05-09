@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2008 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2008 Mathias Froehlich
  *
  */
 
@@ -30,8 +30,8 @@ DefaultGround::getGroundPlane(real_type, const Vector3& refPos) const
 
   // Get the unit down vector.
   Quaternion hlOr = planet->getGeodHLOrientation(refPos);
-  Vector3 unitDown = hlOr.backTransform(Vector3::unit(3));
-  
+  Vector3 unitDown = hlOr.backTransform(Vector3::unit(2));
+
   // Get the distance from the planets center.
   Geodetic geod = planet->toGeod(refPos);
   geod.altitude = 0;
