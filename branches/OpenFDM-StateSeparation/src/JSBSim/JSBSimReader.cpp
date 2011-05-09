@@ -1531,11 +1531,11 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(1);
-    v(1) = realData(fcsComponent->getElement("c1"), 1);
+    v(0) = realData(fcsComponent->getElement("c1"), 1);
     discreteTransfFunc->setNumerator(v);
     v.resize(2);
-    v(1) = 1;
-    v(2) = realData(fcsComponent->getElement("c1"), 1);
+    v(0) = 1;
+    v(1) = realData(fcsComponent->getElement("c1"), 1);
     discreteTransfFunc->setDenominator(v);
     out = model->getPort("output");
 
@@ -1552,11 +1552,11 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(2);
-    v(1) = realData(fcsComponent->getElement("c1"), 1);
-    v(2) = realData(fcsComponent->getElement("c2"), 1);
+    v(0) = realData(fcsComponent->getElement("c1"), 1);
+    v(1) = realData(fcsComponent->getElement("c2"), 1);
     discreteTransfFunc->setNumerator(v);
-    v(1) = realData(fcsComponent->getElement("c3"), 1);
-    v(2) = realData(fcsComponent->getElement("c4"), 1);
+    v(0) = realData(fcsComponent->getElement("c3"), 1);
+    v(1) = realData(fcsComponent->getElement("c4"), 1);
     discreteTransfFunc->setDenominator(v);
 
     out = model->getPort("output");
@@ -1574,11 +1574,11 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(1);
-    v(1) = 1;
+    v(0) = 1;
     discreteTransfFunc->setNumerator(v);
     v.resize(2);
-    v(1) = 1;
-    v(2) = realData(fcsComponent->getElement("c1"), 1);
+    v(0) = 1;
+    v(1) = realData(fcsComponent->getElement("c1"), 1);
     discreteTransfFunc->setDenominator(v);
     out = model->getPort("output");
 
@@ -1595,13 +1595,13 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(3);
-    v(1) = realData(fcsComponent->getElement("c1"), 1);
-    v(2) = realData(fcsComponent->getElement("c2"), 1);
-    v(3) = realData(fcsComponent->getElement("c3"), 1);
+    v(0) = realData(fcsComponent->getElement("c1"), 1);
+    v(1) = realData(fcsComponent->getElement("c2"), 1);
+    v(2) = realData(fcsComponent->getElement("c3"), 1);
     discreteTransfFunc->setNumerator(v);
-    v(1) = realData(fcsComponent->getElement("c4"), 1);
-    v(2) = realData(fcsComponent->getElement("c5"), 1);
-    v(3) = realData(fcsComponent->getElement("c6"), 1);
+    v(0) = realData(fcsComponent->getElement("c4"), 1);
+    v(1) = realData(fcsComponent->getElement("c5"), 1);
+    v(2) = realData(fcsComponent->getElement("c6"), 1);
     discreteTransfFunc->setDenominator(v);
 
     out = model->getPort("output");
