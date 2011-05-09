@@ -1,4 +1,4 @@
-/* -*-c++-*- OpenFDM - Copyright (C) 2004-2008 Mathias Froehlich 
+/* -*-c++-*- OpenFDM - Copyright (C) 2004-2008 Mathias Froehlich
  *
  */
 
@@ -245,7 +245,7 @@ getAirSpring(const XMLElement* airSpringElem, const std::string& name)
   aoDamp->setMaxDamperConstant(maxDamp);
   return aoDamp;
 }
-  
+
 JSBSimReader::JSBSimReader(void)
 {
 }
@@ -338,7 +338,7 @@ JSBSimReader::convertDocument(const XMLElement* topElem)
     if (!convertPropulsion(propulsionElem))
       return error("Cannot convert PROPULSION data");
   }
-  
+
   // Convert the aerodynamic force.
   const XMLElement* aeroElem = topElem->getElement("aerodynamics");
   if (aeroElem) {
@@ -414,7 +414,7 @@ JSBSimReader::convertMetrics(const XMLElement* metricsElem)
   // a point not being the center of gravity, use that here ...
   Vector3 cg = mBodyReference;
   mBodyReference = vrp;
-  
+
   // Attach the eye point.
   FreeFrame* epFrame = new FreeFrame("Eyepoint Frame");
   epFrame->setPosition(structToBody(ep));
@@ -470,7 +470,7 @@ JSBSimReader::convertMassBalance(const XMLElement* massBalance)
   I(0, 2) = Unit::slugSquareFoot().convertFrom(ixz);
   real_type iyz = realData(massBalance->getElement("iyz"), 0);
   I(1, 2) = Unit::slugSquareFoot().convertFrom(iyz);
-  
+
   mass = realData(massBalance->getElement("emptywt"), 0);
   mass = Unit::lbs().convertFrom(mass);
 
@@ -520,7 +520,7 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
                         SpatialInertia(wheelInertia, wheelMass));
   mVehicle->getMultiBodySystem()->addModel(mass);
   wheel->addInteract(mass);
-  
+
   RevoluteJoint* wj = new RevoluteJoint(name + " Wheel Joint");
   mVehicle->getMultiBodySystem()->addModel(wj);
   parent->addInteract(wj);
@@ -563,7 +563,7 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
     // ... and provides an output force
     Connection::connect(rollingFric->getOutputPort(0), wj->getInputPort(0));
   }
-  
+
   real_type wheelDiam = realData(wheelElem->getElement("wheelDiameter"));
   WheelContact* wc = new WheelContact(name + " Wheel Contact");
   mVehicle->getMultiBodySystem()->addModel(wc);
@@ -575,7 +575,7 @@ JSBSimReader::attachWheel(const XMLElement* wheelElem, const std::string& name,
   wc->setSpringDamping(Unit::lbfPerFoot().convertFrom(tireDamp));
   real_type fc = realData(wheelElem->getElement("frictionCoef"), 0.9);
   wc->setFrictionCoeficient(fc);
-  
+
   PortProvider* port = wj->getOutputPort(0);
   std::string nameBase = "Wheel " + numStr + " Position";
   addOutputModel(port, nameBase,
@@ -607,14 +607,14 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         Vector3 loc
           = locationData((*it)->getElement("location"), Vector3(0, 0, 0));
         sg->setPosition(structToBody(loc));
-        
+
         real_type k = realData((*it)->getElement("spring_coeff"), 0);
         sg->setSpringConstant(Unit::lbfPerFoot().convertFrom(k));
         real_type d = realData((*it)->getElement("damping_coeff"), 0);
         sg->setSpringDamping(Unit::lbfPerFootPerSecond().convertFrom(d));
         real_type fs = realData((*it)->getElement("static_friction"), 0);
         sg->setFrictionCoeficient(fs);
-        
+
         // Connect apprioriate input and output models
 
         // FIXME
@@ -667,7 +667,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           Connection::connect(unitConv->getOutputPort(0),
                               sg->getInputPort("steeringAngle"));
         }
-        
+
         std::string brake = stringData((*it)->getElement("brake_group"));
         if (brake == "LEFT") {
           if (!connectJSBExpression("gear/left-brake-pos-norm",
@@ -678,7 +678,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
                                     sg->getInputPort("brakeCommand")))
             return error("could not connect brake command for group RIGHT");
         }
-        
+
       } else if (type == "STRUCTURE" || type == "CONTACT") {
         // Very simple contact force. Penalty method.
         SimpleContact* sc = new SimpleContact((*it)->getAttribute("name"));
@@ -695,7 +695,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         sc->setSpringDamping(Unit::lbfPerFootPerSecond().convertFrom(d));
         real_type fs = realData((*it)->getElement("static_friction"), 0);
         sc->setFrictionCoeficient(fs);
-        
+
       } else if (type == "NOSEGEAR") {
         // Ok, a compressable gear like the F-18's main gear is.
         // Some kind of hardcoding here ...
@@ -715,7 +715,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           // A new part modelling the steering
           RigidBody* steer = new RigidBody(name + " Steer");
           mVehicle->getMultiBodySystem()->addModel(steer);
-          
+
           // connect that via a revolute joint to the toplevel body.
           // Note the 0.05m below, most steering wheels have some kind of
           // castering auto line up behavour. That is doe with this 0.05m.
@@ -729,7 +729,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           parentPos = structToBody(compressJointPos) + Vector3(0.05, 0, 0);
           sj->setPosition(parentPos);
           sj->setOrientation(Quaternion::unit());
-          
+
           UnaryFunctionModel* scale
             = new UnaryFunctionModel(name + " Scale", UnaryFunctionModel::Abs);
           addFCSModel(scale);
@@ -745,9 +745,9 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
             return error("could not connect to steering command");
           Connection::connect(scale->getOutputPort(0), sProd->getInputPort(1));
           Connection::connectRoute(sProd->getOutputPort(0), sj->getInputPort(0));
-  
+
           strutParent = steer;
-          
+
           // Prepare outputs
           PortProvider* port = sj->getOutputPort(0);
           std::string nameBase = "Steering " + numStr + " Position";
@@ -757,7 +757,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           addOutputModel(port, nameBase + " Deg",
                          "gear/gear[" + numStr + "]/steering-pos-deg");
         }
-        
+
         const XMLElement* launchbarElem = (*it)->getElement("launchbar");
         if (launchbarElem) {
           Launchbar* launchbar = new Launchbar(name + " Launchbar");
@@ -790,14 +790,14 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
           addOutputModel(port, nameBase + " Deg", "gear/launchbar-pos-deg");
         }
 
-        
+
         // Now the compressible part of the strut
         RigidBody* arm = new RigidBody(name + " Strut");
         mVehicle->getMultiBodySystem()->addModel(arm);
         Mass* mass = new Mass(name + " Strut Mass", inertiaFrom(Vector3(0, 0, 1), SpatialInertia(100)));
         mVehicle->getMultiBodySystem()->addModel(mass);
         arm->addInteract(mass);
-        
+
         // This time it is a prismatic joint
         PrismaticJoint* pj = new PrismaticJoint(name + " Compress Joint");
         mVehicle->getMultiBodySystem()->addModel(pj);
@@ -806,7 +806,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         pj->setJointAxis(Vector3(0, 0, -1));
         pj->setPosition(structToBody(compressJointPos) - parentPos);
         parentPos = structToBody(compressJointPos);
-        
+
         // The damper element
         const XMLElement* airSpringElem = (*it)->getElement("damper");
         AirSpring* aoDamp = getAirSpring(airSpringElem, name);
@@ -814,20 +814,20 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         Connection::connect(aoDamp->getOutputPort(0), pj->getInputPort(0));
         Connection::connect(pj->getOutputPort(0), aoDamp->getInputPort(0));
         Connection::connect(pj->getOutputPort(1), aoDamp->getInputPort(1));
-        
+
         // Attach a wheel to that strut part.
         attachWheel((*it)->getElement("wheel"), name, numStr, arm, parentPos);
-        
+
         // Prepare some outputs ...
         PortProvider* port = pj->getOutputPort(0);
         addOutputModel(port, "Gear " + numStr + " Compression",
                        "gear/gear[" + numStr + "]/compression-m");
-        
+
         port = lookupJSBExpression("gear/gear-pos-norm");
         addOutputModel(port, "Gear " + numStr + " Position",
                        "gear/gear[" + numStr + "]/position-norm");
-        
-        
+
+
       } else if (type == "F18_MLG") {
         /// Ok, a compressable gear like the F-18's main gear is.
         /// Some kind of hardcoding here ...
@@ -842,7 +842,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         Mass* mass = new Mass(name + " Strut Mass", inertiaFrom(Vector3(-1, 0, 0), SpatialInertia(80)));
         mVehicle->getMultiBodySystem()->addModel(mass);
         arm->addInteract(mass);
-        
+
         // Connect that with a revolute joint to the main body
         RevoluteJoint* rj = new RevoluteJoint(name + " Arm Joint");
         mVehicle->getMultiBodySystem()->addModel(rj);
@@ -856,7 +856,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         Vector3 compressJointPos = locationData((*it)->getElement("location"));
         rj->setPosition(structToBody(compressJointPos));
         rj->setOrientation(Quaternion::unit());
-        
+
         LineForce* lineForce = new LineForce(name + " Air Spring LineForce");
         mVehicle->getMultiBodySystem()->addModel(lineForce);
         mVehicle->getTopBody()->addInteract(lineForce);
@@ -871,7 +871,7 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         lineForce->setPosition0(structToBody(asMnt0));
         lineForce->setPosition1(structToBody(asMnt1)
                                 - structToBody(compressJointPos));
-        
+
         // The damper element
         const XMLElement* airSpringElem = (*it)->getElement("damper");
         AirSpring* aoDamp = getAirSpring(airSpringElem, name);
@@ -884,20 +884,20 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         // ... and provides an output force
         Connection::connect(aoDamp->getOutputPort(0),
                             lineForce->getInputPort(0));
-        
+
         // Attach a wheel to that strut part.
         attachWheel((*it)->getElement("wheel"), name, numStr, arm,
                     structToBody(compressJointPos));
-        
+
         PortProvider* port = rj->getOutputPort(0);
         addOutputModel(port, "Gear " + numStr + " Compression",
                        "gear/gear[" + numStr + "]/compression-rad");
-        
+
         /// FIXME add a retract joint ...
         port = lookupJSBExpression("gear/gear-pos-norm");
         addOutputModel(port, "Gear " + numStr + " Position",
                        "gear/gear[" + numStr + "]/position-norm");
-        
+
       } else if (type == "TAILHOOK") {
         const XMLElement* tailhookElem = (*it);
         std::string name = (*it)->getAttribute("name");
@@ -914,11 +914,11 @@ JSBSimReader::convertGroundReactionsElem(const XMLElement* gr)
         tailhook->setPosition(loc);
         addMultiBodyModel(tailhook);
         mVehicle->getTopBody()->addInteract(tailhook);
-        
+
         if (!connectJSBExpression("/controls/gear/tailhook",
                                   tailhook->getInputPort(0)))
           return error("could not connect to tailhook command");
-        
+
         // expose the tailhook position
         PortProvider* port = tailhook->getOutputPort(0);
         std::string nameBase = "Tailhook Position";
@@ -1032,7 +1032,7 @@ JSBSimReader::convertEngine(const XMLElement* engine,
   if (engineTopElem->getName() == "turbine_engine") {
     if (!convertTurbine(engineTopElem, number, loc, orientation, 0))
       return error("Error readinge turbine configuration");
-    
+
 //   } else if (engineTopElem->getName() == "piston_engine") {
 //     if (!convertPiston(engineTopElem, number, 0))
 //       return error("Error readinge piston configuration");
@@ -1399,11 +1399,11 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(1);
-    v(1) = realData(fcsComponent->getElement("c1"), 1);
+    v(0) = realData(fcsComponent->getElement("c1"), 1);
     discreteTransfFunc->setNumerator(v);
     v.resize(2);
-    v(1) = 1;
-    v(2) = realData(fcsComponent->getElement("c1"), 1);
+    v(0) = 1;
+    v(1) = realData(fcsComponent->getElement("c1"), 1);
     discreteTransfFunc->setDenominator(v);
     out = model->getOutputPort(0);
 
@@ -1420,11 +1420,11 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(2);
-    v(1) = realData(fcsComponent->getElement("c1"), 1);
-    v(2) = realData(fcsComponent->getElement("c2"), 1);
+    v(0) = realData(fcsComponent->getElement("c1"), 1);
+    v(1) = realData(fcsComponent->getElement("c2"), 1);
     discreteTransfFunc->setNumerator(v);
-    v(1) = realData(fcsComponent->getElement("c3"), 1);
-    v(2) = realData(fcsComponent->getElement("c4"), 1);
+    v(0) = realData(fcsComponent->getElement("c3"), 1);
+    v(1) = realData(fcsComponent->getElement("c4"), 1);
     discreteTransfFunc->setDenominator(v);
 
     out = model->getOutputPort(0);
@@ -1442,11 +1442,11 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(1);
-    v(1) = 1;
+    v(0) = 1;
     discreteTransfFunc->setNumerator(v);
     v.resize(2);
-    v(1) = 1;
-    v(2) = realData(fcsComponent->getElement("c1"), 1);
+    v(0) = 1;
+    v(1) = realData(fcsComponent->getElement("c1"), 1);
     discreteTransfFunc->setDenominator(v);
     out = model->getOutputPort(0);
 
@@ -1463,13 +1463,13 @@ JSBSimReader::convertFCSComponent(const XMLElement* fcsComponent)
       return error("could not connect to transfer function input \""
                    + token + "\"");
     Vector v(3);
-    v(1) = realData(fcsComponent->getElement("c1"), 1);
-    v(2) = realData(fcsComponent->getElement("c2"), 1);
-    v(3) = realData(fcsComponent->getElement("c3"), 1);
+    v(0) = realData(fcsComponent->getElement("c1"), 1);
+    v(1) = realData(fcsComponent->getElement("c2"), 1);
+    v(2) = realData(fcsComponent->getElement("c3"), 1);
     discreteTransfFunc->setNumerator(v);
-    v(1) = realData(fcsComponent->getElement("c4"), 1);
-    v(2) = realData(fcsComponent->getElement("c5"), 1);
-    v(3) = realData(fcsComponent->getElement("c6"), 1);
+    v(0) = realData(fcsComponent->getElement("c4"), 1);
+    v(1) = realData(fcsComponent->getElement("c5"), 1);
+    v(2) = realData(fcsComponent->getElement("c6"), 1);
     discreteTransfFunc->setDenominator(v);
 
     out = model->getOutputPort(0);
@@ -1505,11 +1505,11 @@ JSBSimReader::convertAerodynamics(const XMLElement* aero)
 
     } else if ((*it)->getName() == "axis") {
       std::string axisname = (*it)->getAttribute("name");
-      
+
       SharedPtr<Summer> sum = new Summer(axisname + " Sum");
       addMultiBodyModel(sum);
       sum->setNumSummands(0);
-      
+
       // Now parse the summands
       std::list<const XMLElement*> funcs = (*it)->getElements();
       std::list<const XMLElement*>::const_iterator fit;
@@ -1517,7 +1517,7 @@ JSBSimReader::convertAerodynamics(const XMLElement* aero)
         if (!convertFunction(*fit, sum))
           return error("Cannot convert function");
       }
-      
+
       if (!sum->getNumSummands())
         continue;
       PortProvider* port = sum->getOutputPort(0);
@@ -1731,7 +1731,7 @@ JSBSimReader::readTable1D(const XMLElement* tableElem,
       break;
     values.push_back(val);
   }
-  
+
   if (values.size() % 2)
     return error("Inconsistent 1D table data!");
 
