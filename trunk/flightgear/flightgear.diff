@@ -151,7 +151,7 @@ index 954c020..7fd0dd8 100644
 +
  target_link_libraries(fgfs 
  	${FG_LIBS}
-         ${HLA_LIBRARIES}
+ 	${HLA_LIBRARIES}
 +	${OPENFDM_LIBRARIES}
  	${SIMGEAR_LIBRARIES}
  	${OPENSCENEGRAPH_LIBRARIES} 
